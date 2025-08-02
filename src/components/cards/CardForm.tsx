@@ -36,7 +36,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           .from("cards")
           .insert({
             user_id: user.id,
-            owner_user: "user1",
+            owner_user: user.email || "user1",
             name: cardData.name,
             card_type: cardData.card_type as "credit" | "debit",
             last_four_digits: cardData.last_four_digits,
