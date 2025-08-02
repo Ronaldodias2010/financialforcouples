@@ -44,6 +44,10 @@
     --border: 240 6% 12%;
     --input: 240 6% 10%;
     --ring: 45 93% 47%;
+    
+    /* Popover for dropdowns */
+    --popover: 240 10% 7%;
+    --popover-foreground: 0 0% 98%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(45 93% 47%), hsl(45 100% 65%));

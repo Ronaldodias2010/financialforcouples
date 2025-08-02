@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CreditCard, Plus } from "lucide-react";
@@ -15,6 +16,7 @@ interface CardFormProps {
 
 export const CardForm = ({ onCardAdded }: CardFormProps) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [cardData, setCardData] = useState({
     name: "",
@@ -48,7 +50,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
 
       if (error) throw error;
 
-      toast.success("Cartão adicionado com sucesso!");
+      toast.success(t('messages.cardAdded'));
       setCardData({
         name: "",
         card_type: "",
@@ -61,7 +63,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
       onCardAdded();
     } catch (error) {
       console.error("Error adding card:", error);
-      toast.error("Erro ao adicionar cartão");
+      toast.error(t('messages.cardError'));
     } finally {
       setLoading(false);
     }
@@ -72,12 +74,12 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Plus className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Adicionar Cartão</h3>
+          <h3 className="text-lg font-semibold">{t('cards.add')}</h3>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nome do Cartão</Label>
+            <Label htmlFor="name">{t('cards.name')}</Label>
             <Input
               id="name"
               value={cardData.name}
@@ -88,24 +90,23 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="card_type">Tipo do Cartão</Label>
+            <Label htmlFor="card_type">{t('cards.type')}</Label>
             <Select 
               value={cardData.card_type} 
               onValueChange={(value) => setCardData(prev => ({ ...prev, card_type: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder={t('cards.selectType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="credit">Crédito</SelectItem>
-                <SelectItem value="debit">Débito</SelectItem>
-                
+                <SelectItem value="credit">{t('cards.credit')}</SelectItem>
+                <SelectItem value="debit">{t('cards.debit')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="last_four_digits">Últimos 4 Dígitos</Label>
+            <Label htmlFor="last_four_digits">{t('cards.lastFourDigits')}</Label>
             <Input
               id="last_four_digits"
               value={cardData.last_four_digits}
@@ -118,7 +119,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           {cardData.card_type === "credit" && (
             <>
               <div>
-                <Label htmlFor="credit_limit">Limite de Crédito</Label>
+                <Label htmlFor="credit_limit">{t('cards.creditLimit')}</Label>
                 <Input
                   id="credit_limit"
                   type="number"
@@ -130,13 +131,13 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="due_date">Dia de Vencimento</Label>
+                <Label htmlFor="due_date">{t('cards.dueDate')}</Label>
                 <Select 
                   value={cardData.due_date} 
                   onValueChange={(value) => setCardData(prev => ({ ...prev, due_date: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o dia" />
+                    <SelectValue placeholder={t('cards.selectDay')} />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
@@ -151,7 +152,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           )}
 
           <div>
-            <Label htmlFor="current_balance">Saldo Atual</Label>
+            <Label htmlFor="current_balance">{t('cards.currentBalance')}</Label>
             <Input
               id="current_balance"
               type="number"
@@ -163,7 +164,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="currency">Moeda</Label>
+            <Label htmlFor="currency">{t('cards.currency')}</Label>
             <Select 
               value={cardData.currency} 
               onValueChange={(value) => setCardData(prev => ({ ...prev, currency: value }))}
@@ -180,7 +181,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Adicionando..." : "Adicionar Cartão"}
+            {loading ? t('cards.adding') : t('cards.addCard')}
           </Button>
         </form>
       </div>
