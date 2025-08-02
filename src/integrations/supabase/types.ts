@@ -225,6 +225,38 @@ export type Database = {
           },
         ]
       }
+      subcategories: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           account_id: string | null
@@ -235,6 +267,8 @@ export type Database = {
           currency: Database["public"]["Enums"]["currency_type"]
           description: string
           id: string
+          payment_method: string | null
+          subcategory: string | null
           transaction_date: string
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
@@ -249,6 +283,8 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           description: string
           id?: string
+          payment_method?: string | null
+          subcategory?: string | null
           transaction_date?: string
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
@@ -263,6 +299,8 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           description?: string
           id?: string
+          payment_method?: string | null
+          subcategory?: string | null
           transaction_date?: string
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string

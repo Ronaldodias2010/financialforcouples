@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { FinancialCard } from "./FinancialCard";
 import { TransactionForm } from "./TransactionForm";
-import { TransactionList } from "./TransactionList";
+import { MonthlyExpensesView } from "./MonthlyExpensesView";
+import { CategoryManager } from "./CategoryManager";
 import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
@@ -15,15 +16,17 @@ interface Transaction {
   type: "income" | "expense";
   amount: number;
   description: string;
-  category: string;
-  date: string;
-  user: "user1" | "user2";
+  category_id: string;
+  subcategory?: string;
+  transaction_date: Date;
+  payment_method: "cash" | "credit_card" | "debit_card";
+  card_id?: string;
+  user_id: string;
 }
 
 export const FinancialDashboard = () => {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [viewMode, setViewMode] = useState<"combined" | "user1" | "user2">("combined");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile">("dashboard");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
@@ -56,35 +59,9 @@ export const FinancialDashboard = () => {
   };
 
   const handleAddTransaction = (transaction: Transaction) => {
-    setTransactions(prev => [transaction, ...prev]);
+    // Transaction is now handled directly in the form component
+    // Refresh can be handled via useEffect in child components
   };
-
-  const filteredTransactions = transactions.filter(transaction => {
-    if (viewMode === "combined") return true;
-    return transaction.user === viewMode;
-  });
-
-  const calculateTotals = (userFilter?: "user1" | "user2") => {
-    const relevantTransactions = userFilter 
-      ? transactions.filter(t => t.user === userFilter)
-      : transactions;
-
-    const income = relevantTransactions
-      .filter(t => t.type === "income")
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const expenses = relevantTransactions
-      .filter(t => t.type === "expense")
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    return {
-      income,
-      expenses,
-      balance: income - expenses
-    };
-  };
-
-  const totals = calculateTotals(viewMode === "combined" ? undefined : viewMode);
 
   const getUserLabel = (userKey: "user1" | "user2") => {
     if (userKey === "user1" && userDisplayName) {
@@ -120,6 +97,86 @@ export const FinancialDashboard = () => {
     );
   }
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return (
+          <>
+            {/* Financial Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FinancialCard
+                title="Saldo Total"
+                amount={3500}
+                icon={Wallet}
+                type="balance"
+                change={2.5}
+              />
+              <FinancialCard
+                title="Entradas"
+                amount={5000}
+                icon={TrendingUp}
+                type="income"
+                change={8.2}
+              />
+              <FinancialCard
+                title="Saídas"
+                amount={1500}
+                icon={TrendingDown}
+                type="expense"
+                change={-3.1}
+              />
+            </div>
+
+            {/* Main Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Transaction Form */}
+              <div>
+                <TransactionForm onSubmit={handleAddTransaction} />
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => setCurrentPage("cards")}
+              >
+                <CreditCard className="h-6 w-6" />
+                <span>Cartões</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex flex-col gap-2">
+                <TrendingUp className="h-6 w-6" />
+                <span>Investimentos</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => setCurrentPage("accounts")}
+              >
+                <Wallet className="h-6 w-6" />
+                <span>Contas</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => setCurrentPage("profile")}
+              >
+                <Settings className="h-6 w-6" />
+                <span>Configurações</span>
+              </Button>
+            </div>
+          </>
+        );
+      case "transactions":
+        return <MonthlyExpensesView />;
+      case "categories":
+        return <CategoryManager />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 space-y-8">
@@ -133,108 +190,32 @@ export const FinancialDashboard = () => {
           </p>
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="flex justify-center">
-          <div className="flex gap-2 p-1 bg-muted rounded-lg">
-            <Button
-              variant={viewMode === "combined" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("combined")}
-              className="flex items-center gap-2"
-            >
-              <Users className="h-4 w-4" />
-              Combinado
-            </Button>
-            <Button
-              variant={viewMode === "user1" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("user1")}
-              className="flex items-center gap-2"
-            >
-              <User className="h-4 w-4" />
-              {getUserLabel("user1")}
-            </Button>
-            <Button
-              variant={viewMode === "user2" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("user2")}
-              className="flex items-center gap-2"
-            >
-              <User className="h-4 w-4" />
-              {getUserLabel("user2")}
-            </Button>
-          </div>
-        </div>
-
-        {/* Financial Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FinancialCard
-            title="Saldo Total"
-            amount={totals.balance}
-            icon={Wallet}
-            type="balance"
-            change={2.5}
-          />
-          <FinancialCard
-            title="Entradas"
-            amount={totals.income}
-            icon={TrendingUp}
-            type="income"
-            change={8.2}
-          />
-          <FinancialCard
-            title="Saídas"
-            amount={totals.expenses}
-            icon={TrendingDown}
-            type="expense"
-            change={-3.1}
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Transaction Form */}
-          <div>
-            <TransactionForm onSubmit={handleAddTransaction} />
-          </div>
-
-          {/* Transaction List */}
-          <div>
-            <TransactionList transactions={filteredTransactions} />
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button 
-            variant="outline" 
-            className="h-20 flex flex-col gap-2"
-            onClick={() => setCurrentPage("cards")}
+        {/* Navigation Tabs */}
+        <div className="flex justify-center gap-4 border-b">
+          <Button
+            variant={activeTab === "dashboard" ? "default" : "ghost"}
+            onClick={() => setActiveTab("dashboard")}
+            className="pb-2"
           >
-            <CreditCard className="h-6 w-6" />
-            <span>Cartões</span>
+            Dashboard
           </Button>
-          <Button variant="outline" className="h-20 flex flex-col gap-2">
-            <TrendingUp className="h-6 w-6" />
-            <span>Investimentos</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="h-20 flex flex-col gap-2"
-            onClick={() => setCurrentPage("accounts")}
+          <Button
+            variant={activeTab === "transactions" ? "default" : "ghost"}
+            onClick={() => setActiveTab("transactions")}
+            className="pb-2"
           >
-            <Wallet className="h-6 w-6" />
-            <span>Contas</span>
+            Gastos Mensais
           </Button>
-          <Button 
-            variant="outline" 
-            className="h-20 flex flex-col gap-2"
-            onClick={() => setCurrentPage("profile")}
+          <Button
+            variant={activeTab === "categories" ? "default" : "ghost"}
+            onClick={() => setActiveTab("categories")}
+            className="pb-2"
           >
-            <Settings className="h-6 w-6" />
-            <span>Configurações</span>
+            Categorias
           </Button>
         </div>
+
+        {renderTabContent()}
 
         {/* Footer */}
         <div className="text-center py-8">

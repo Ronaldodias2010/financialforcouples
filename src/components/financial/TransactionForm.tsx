@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, MinusCircle } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { PlusCircle, MinusCircle, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
@@ -16,61 +23,125 @@ interface Transaction {
   type: "income" | "expense";
   amount: number;
   description: string;
-  category: string;
-  date: string;
-  user: "user1" | "user2";
+  category_id: string;
+  subcategory?: string;
+  transaction_date: Date;
+  payment_method: "cash" | "credit_card" | "debit_card";
+  card_id?: string;
+  user_id: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Card {
+  id: string;
+  name: string;
+  card_type: string;
 }
 
 export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [user, setUser] = useState<"user1" | "user2">("user1");
+  const [categoryId, setCategoryId] = useState("");
+  const [subcategory, setSubcategory] = useState("");
+  const [transactionDate, setTransactionDate] = useState<Date>(new Date());
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "credit_card" | "debit_card">("cash");
+  const [cardId, setCardId] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || !description || !category) return;
+  useEffect(() => {
+    fetchCategories();
+    fetchCards();
+  }, []);
 
-    const transaction: Transaction = {
-      id: Date.now().toString(),
-      type,
-      amount: parseFloat(amount),
-      description,
-      category,
-      date: new Date().toISOString(),
-      user,
-    };
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name')
+        .order('name');
 
-    onSubmit(transaction);
-    
-    // Reset form
-    setAmount("");
-    setDescription("");
-    setCategory("");
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar as categorias",
+        variant: "destructive",
+      });
+    }
   };
 
-  const incomeCategories = [
-    "Salário",
-    "Freelance",
-    "Investimentos",
-    "Bonificação",
-    "Outros"
-  ];
+  const fetchCards = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cards')
+        .select('id, name, card_type')
+        .order('name');
 
-  const expenseCategories = [
-    "Alimentação",
-    "Transporte",
-    "Moradia",
-    "Saúde",
-    "Educação",
-    "Entretenimento",
-    "Compras",
-    "Contas",
-    "Outros"
-  ];
+      if (error) throw error;
+      setCards(data || []);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os cartões",
+        variant: "destructive",
+      });
+    }
+  };
 
-  const categories = type === "income" ? incomeCategories : expenseCategories;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount || !description || !categoryId) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          type,
+          amount: parseFloat(amount),
+          description,
+          category_id: categoryId,
+          subcategory: subcategory || null,
+          transaction_date: transactionDate.toISOString().split('T')[0],
+          payment_method: paymentMethod,
+          card_id: paymentMethod !== 'cash' ? cardId : null,
+          user_id: user.id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Transação adicionada com sucesso!",
+      });
+
+      // Reset form
+      setAmount("");
+      setDescription("");
+      setCategoryId("");
+      setSubcategory("");
+      setTransactionDate(new Date());
+      setPaymentMethod("cash");
+      setCardId("");
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao adicionar transação",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <Card className="p-6 border-card-border bg-card">
@@ -102,6 +173,34 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
             </Button>
           </div>
 
+          {/* Date */}
+          <div>
+            <Label>Data da Transação</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !transactionDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {transactionDate ? format(transactionDate, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={transactionDate}
+                  onSelect={(date) => date && setTransactionDate(date)}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
           {/* Amount */}
           <div>
             <Label htmlFor="amount">Valor</Label>
@@ -129,36 +228,68 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
             />
           </div>
 
+          {/* Payment Method */}
+          <div>
+            <Label>Forma de Pagamento</Label>
+            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "credit_card" | "debit_card")}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a forma de pagamento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cash">Dinheiro</SelectItem>
+                <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
+                <SelectItem value="debit_card">Cartão de Débito</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Card Selection */}
+          {(paymentMethod === "credit_card" || paymentMethod === "debit_card") && (
+            <div>
+              <Label>Cartão</Label>
+              <Select value={cardId} onValueChange={setCardId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um cartão" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cards.map((card) => (
+                    <SelectItem key={card.id} value={card.id}>
+                      {card.name} ({card.card_type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Category */}
           <div>
             <Label htmlFor="category">Categoria</Label>
-            <Select value={category} onValueChange={setCategory} required>
+            <Select value={categoryId} onValueChange={setCategoryId} required>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* User */}
+          {/* Subcategory */}
           <div>
-            <Label htmlFor="user">Usuário</Label>
-            <Select value={user} onValueChange={(value) => setUser(value as "user1" | "user2")}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user1">Usuário 1</SelectItem>
-                <SelectItem value="user2">Usuário 2</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="subcategory">Subcategoria (Opcional)</Label>
+            <Input
+              id="subcategory"
+              placeholder="Ex: Mercado, Posto de gasolina..."
+              value={subcategory}
+              onChange={(e) => setSubcategory(e.target.value)}
+            />
           </div>
+
 
           <Button type="submit" className="w-full">
             Adicionar Transação
