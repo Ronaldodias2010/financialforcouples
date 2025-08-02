@@ -88,6 +88,7 @@ export type Database = {
       }
       categories: {
         Row: {
+          category_type: string
           color: string | null
           created_at: string
           icon: string | null
@@ -96,6 +97,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category_type?: string
           color?: string | null
           created_at?: string
           icon?: string | null
@@ -104,6 +106,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category_type?: string
           color?: string | null
           created_at?: string
           icon?: string | null
@@ -267,8 +270,11 @@ export type Database = {
           currency: Database["public"]["Enums"]["currency_type"]
           description: string
           id: string
+          installment_number: number | null
+          is_installment: boolean | null
           payment_method: string | null
           subcategory: string | null
+          total_installments: number | null
           transaction_date: string
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
@@ -283,8 +289,11 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           description: string
           id?: string
+          installment_number?: number | null
+          is_installment?: boolean | null
           payment_method?: string | null
           subcategory?: string | null
+          total_installments?: number | null
           transaction_date?: string
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
@@ -299,8 +308,11 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           description?: string
           id?: string
+          installment_number?: number | null
+          is_installment?: boolean | null
           payment_method?: string | null
           subcategory?: string | null
+          total_installments?: number | null
           transaction_date?: string
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string

@@ -51,6 +51,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [transactionDate, setTransactionDate] = useState<Date>(new Date());
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "credit_card" | "debit_card">("cash");
   const [cardId, setCardId] = useState("");
+  const [isInstallment, setIsInstallment] = useState(false);
+  const [totalInstallments, setTotalInstallments] = useState("1");
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const { toast } = useToast();
@@ -58,13 +60,14 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   useEffect(() => {
     fetchCategories();
     fetchCards();
-  }, []);
+  }, [type]);
 
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name')
+        .select('id, name, category_type')
+        .eq('category_type', type)
         .order('name');
 
       if (error) throw error;
@@ -115,6 +118,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           transaction_date: transactionDate.toISOString().split('T')[0],
           payment_method: paymentMethod,
           card_id: paymentMethod !== 'cash' ? cardId : null,
+          is_installment: paymentMethod === 'credit_card' ? isInstallment : false,
+          total_installments: paymentMethod === 'credit_card' && isInstallment ? parseInt(totalInstallments) : null,
           user_id: user.id
         });
 
@@ -133,6 +138,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       setTransactionDate(new Date());
       setPaymentMethod("cash");
       setCardId("");
+      setIsInstallment(false);
+      setTotalInstallments("1");
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -230,7 +237,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
           {/* Payment Method */}
           <div>
-            <Label>Forma de Pagamento</Label>
+            <Label>{type === "income" ? "Forma de Recebimento" : "Forma de Pagamento"}</Label>
             <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "credit_card" | "debit_card")}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a forma de pagamento" />
@@ -259,6 +266,40 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Installment Options for Credit Card */}
+          {paymentMethod === "credit_card" && type === "expense" && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="installment"
+                  checked={isInstallment}
+                  onChange={(e) => setIsInstallment(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <Label htmlFor="installment">Pagamento Parcelado</Label>
+              </div>
+              
+              {isInstallment && (
+                <div>
+                  <Label htmlFor="installments">Número de Parcelas</Label>
+                  <Select value={totalInstallments} onValueChange={setTotalInstallments}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o número de parcelas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }, (_, i) => i + 1).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num}x
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
 

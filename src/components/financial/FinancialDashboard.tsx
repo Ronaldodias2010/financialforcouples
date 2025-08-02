@@ -3,6 +3,7 @@ import { FinancialCard } from "./FinancialCard";
 import { TransactionForm } from "./TransactionForm";
 import { MonthlyExpensesView } from "./MonthlyExpensesView";
 import { CategoryManager } from "./CategoryManager";
+import { RecurringExpensesManager } from "./RecurringExpensesManager";
 import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
@@ -172,6 +173,8 @@ export const FinancialDashboard = () => {
         return <MonthlyExpensesView />;
       case "categories":
         return <CategoryManager />;
+      case "recurring":
+        return <RecurringExpensesManager />;
       default:
         return null;
     }
@@ -213,18 +216,17 @@ export const FinancialDashboard = () => {
           >
             Categorias
           </Button>
+          <Button
+            variant={activeTab === "recurring" ? "default" : "ghost"}
+            onClick={() => setActiveTab("recurring")}
+            className="pb-2"
+          >
+            Gastos Recorrentes
+          </Button>
         </div>
 
         {renderTabContent()}
 
-        {/* Footer */}
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">
-            Para funcionalidades avançadas como autenticação, banco de dados e integrações,
-            <br />
-            conecte seu projeto ao Supabase clicando no botão verde no topo da tela.
-          </p>
-        </div>
       </div>
     </div>
   );
