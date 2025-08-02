@@ -122,6 +122,7 @@ export type Database = {
           preferred_currency:
             | Database["public"]["Enums"]["currency_type"]
             | null
+          second_user_name: string | null
           updated_at: string
           user_id: string
         }
@@ -133,6 +134,7 @@ export type Database = {
           preferred_currency?:
             | Database["public"]["Enums"]["currency_type"]
             | null
+          second_user_name?: string | null
           updated_at?: string
           user_id: string
         }
@@ -144,6 +146,7 @@ export type Database = {
           preferred_currency?:
             | Database["public"]["Enums"]["currency_type"]
             | null
+          second_user_name?: string | null
           updated_at?: string
           user_id?: string
         }
