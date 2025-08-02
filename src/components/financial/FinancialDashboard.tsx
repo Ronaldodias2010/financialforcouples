@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FinancialCard } from "./FinancialCard";
 import { TransactionForm } from "./TransactionForm";
+import { UserExpenseChart } from "./UserExpenseChart";
 import { MonthlyExpensesView } from "./MonthlyExpensesView";
 import { CategoryManager } from "./CategoryManager";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
@@ -138,6 +139,11 @@ export const FinancialDashboard = () => {
               {/* Transaction Form */}
               <div>
                 <TransactionForm onSubmit={handleAddTransaction} />
+              </div>
+              
+              {/* User Expense Comparison Chart */}
+              <div>
+                <UserExpenseChart />
               </div>
             </div>
 
