@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FinancialCard } from "./FinancialCard";
 import { TransactionForm } from "./TransactionForm";
 import { TransactionList } from "./TransactionList";
+import { CardsPage } from "@/pages/CardsPage";
+import { AccountsPage } from "@/pages/AccountsPage";
+import { UserProfilePage } from "@/pages/UserProfilePage";
 import { Button } from "@/components/ui/button";
-import { Wallet, TrendingUp, TrendingDown, CreditCard, Users, User } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, CreditCard, Users, User, Settings } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Transaction {
   id: string;
@@ -16,8 +21,33 @@ interface Transaction {
 }
 
 export const FinancialDashboard = () => {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [viewMode, setViewMode] = useState<"combined" | "user1" | "user2">("combined");
+  const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile">("dashboard");
+  const [userDisplayName, setUserDisplayName] = useState<string>("");
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (data?.display_name) {
+        setUserDisplayName(data.display_name);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   const handleAddTransaction = (transaction: Transaction) => {
     setTransactions(prev => [transaction, ...prev]);
@@ -49,6 +79,37 @@ export const FinancialDashboard = () => {
   };
 
   const totals = calculateTotals(viewMode === "combined" ? undefined : viewMode);
+
+  const getUserLabel = (userKey: "user1" | "user2") => {
+    if (userKey === "user1" && userDisplayName) {
+      return userDisplayName;
+    }
+    return userKey === "user1" ? "Usuário 1" : "Usuário 2";
+  };
+
+  if (currentPage === "cards") {
+    return (
+      <div className="container mx-auto p-6">
+        <CardsPage onBack={() => setCurrentPage("dashboard")} />
+      </div>
+    );
+  }
+
+  if (currentPage === "accounts") {
+    return (
+      <div className="container mx-auto p-6">
+        <AccountsPage onBack={() => setCurrentPage("dashboard")} />
+      </div>
+    );
+  }
+
+  if (currentPage === "profile") {
+    return (
+      <div className="container mx-auto p-6">
+        <UserProfilePage onBack={() => setCurrentPage("dashboard")} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,7 +143,7 @@ export const FinancialDashboard = () => {
               className="flex items-center gap-2"
             >
               <User className="h-4 w-4" />
-              Usuário 1
+              {getUserLabel("user1")}
             </Button>
             <Button
               variant={viewMode === "user2" ? "default" : "ghost"}
@@ -91,7 +152,7 @@ export const FinancialDashboard = () => {
               className="flex items-center gap-2"
             >
               <User className="h-4 w-4" />
-              Usuário 2
+              {getUserLabel("user2")}
             </Button>
           </div>
         </div>
@@ -136,7 +197,11 @@ export const FinancialDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button variant="outline" className="h-20 flex flex-col gap-2">
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col gap-2"
+            onClick={() => setCurrentPage("cards")}
+          >
             <CreditCard className="h-6 w-6" />
             <span>Cartões</span>
           </Button>
@@ -144,13 +209,21 @@ export const FinancialDashboard = () => {
             <TrendingUp className="h-6 w-6" />
             <span>Investimentos</span>
           </Button>
-          <Button variant="outline" className="h-20 flex flex-col gap-2">
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col gap-2"
+            onClick={() => setCurrentPage("accounts")}
+          >
             <Wallet className="h-6 w-6" />
             <span>Contas</span>
           </Button>
-          <Button variant="outline" className="h-20 flex flex-col gap-2">
-            <Users className="h-6 w-6" />
-            <span>Relatórios</span>
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col gap-2"
+            onClick={() => setCurrentPage("profile")}
+          >
+            <Settings className="h-6 w-6" />
+            <span>Configurações</span>
           </Button>
         </div>
 
