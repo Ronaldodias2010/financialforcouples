@@ -2,41 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Financial App Design System - Sophisticated palette with gold, emerald, and navy */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Background gradients */
+    --background: 240 10% 3.9%;
+    --background-secondary: 240 8% 8%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card system */
+    --card: 240 10% 7%;
+    --card-foreground: 0 0% 98%;
+    --card-border: 240 6% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Financial primary colors - Gold theme */
+    --primary: 45 93% 47%;  /* Rich gold */
+    --primary-foreground: 240 10% 3.9%;
+    --primary-glow: 45 100% 65%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Financial secondary - Emerald */
+    --secondary: 142 71% 45%;  /* Emerald green */
+    --secondary-foreground: 240 10% 3.9%;
+    --secondary-glow: 142 71% 65%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Navy blue */
+    --accent: 220 91% 15%;
+    --accent-foreground: 0 0% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Status colors */
+    --success: 142 71% 45%;  /* Emerald for positive */
+    --success-foreground: 240 10% 3.9%;
+    --expense: 0 84% 60%;    /* Red for expenses */
+    --expense-foreground: 0 0% 98%;
+    --income: 142 71% 45%;   /* Green for income */
+    --income-foreground: 240 10% 3.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* UI elements */
+    --muted: 240 6% 12%;
+    --muted-foreground: 240 5% 65%;
+    --border: 240 6% 12%;
+    --input: 240 6% 10%;
+    --ring: 45 93% 47%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(45 93% 47%), hsl(45 100% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 71% 65%));
+    --gradient-accent: linear-gradient(135deg, hsl(220 91% 15%), hsl(220 91% 25%));
+    --gradient-background: linear-gradient(135deg, hsl(240 10% 3.9%), hsl(240 8% 8%));
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Shadows */
+    --shadow-gold: 0 10px 30px -10px hsl(45 93% 47% / 0.3);
+    --shadow-emerald: 0 10px 30px -10px hsl(142 71% 45% / 0.3);
+    --shadow-elegant: 0 20px 60px -10px hsl(240 10% 3.9% / 0.4);
 
-    --radius: 0.5rem;
+    /* Radius */
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +122,25 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background: var(--gradient-background);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary-glow));
   }
 }
