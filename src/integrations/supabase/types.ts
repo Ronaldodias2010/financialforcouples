@@ -14,7 +14,278 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      accounts: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          balance: number
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_type"]
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          balance?: number
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          balance?: number
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cards: {
+        Row: {
+          card_type: Database["public"]["Enums"]["card_type"]
+          created_at: string
+          credit_limit: number | null
+          currency: Database["public"]["Enums"]["currency_type"]
+          current_balance: number | null
+          id: string
+          last_four_digits: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_type: Database["public"]["Enums"]["card_type"]
+          created_at?: string
+          credit_limit?: number | null
+          currency?: Database["public"]["Enums"]["currency_type"]
+          current_balance?: number | null
+          id?: string
+          last_four_digits?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_type?: Database["public"]["Enums"]["card_type"]
+          created_at?: string
+          credit_limit?: number | null
+          currency?: Database["public"]["Enums"]["currency_type"]
+          current_balance?: number | null
+          id?: string
+          last_four_digits?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          preferred_currency:
+            | Database["public"]["Enums"]["currency_type"]
+            | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_currency?:
+            | Database["public"]["Enums"]["currency_type"]
+            | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_currency?:
+            | Database["public"]["Enums"]["currency_type"]
+            | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recurring_expenses: {
+        Row: {
+          account_id: string | null
+          amount: number
+          card_id: string | null
+          category_id: string | null
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_type"]
+          frequency_days: number
+          id: string
+          is_active: boolean | null
+          name: string
+          next_due_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          card_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          frequency_days?: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          next_due_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          card_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          frequency_days?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          next_due_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_expenses_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          card_id: string | null
+          category_id: string | null
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_type"]
+          description: string
+          id: string
+          transaction_date: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          card_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          description: string
+          id?: string
+          transaction_date?: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          card_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          description?: string
+          id?: string
+          transaction_date?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +294,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      account_type: "checking" | "savings" | "investment"
+      card_type: "credit" | "debit"
+      currency_type: "BRL" | "USD" | "EUR"
+      transaction_type: "income" | "expense"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +424,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_type: ["checking", "savings", "investment"],
+      card_type: ["credit", "debit"],
+      currency_type: ["BRL", "USD", "EUR"],
+      transaction_type: ["income", "expense"],
+    },
   },
 } as const
