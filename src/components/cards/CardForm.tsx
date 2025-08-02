@@ -22,7 +22,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
     last_four_digits: "",
     credit_limit: "",
     current_balance: "",
-    currency: "BRL"
+    currency: "BRL",
+    due_date: ""
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +41,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           last_four_digits: cardData.last_four_digits,
           credit_limit: cardData.credit_limit ? parseFloat(cardData.credit_limit) : null,
           current_balance: parseFloat(cardData.current_balance) || 0,
-          currency: cardData.currency as "BRL" | "USD" | "EUR"
+          currency: cardData.currency as "BRL" | "USD" | "EUR",
+          due_date: cardData.due_date ? parseInt(cardData.due_date) : null
         });
 
       if (error) throw error;
@@ -52,7 +54,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
         last_four_digits: "",
         credit_limit: "",
         current_balance: "",
-        currency: "BRL"
+        currency: "BRL",
+        due_date: ""
       });
       onCardAdded();
     } catch (error) {
@@ -112,17 +115,38 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           </div>
 
           {cardData.card_type === "credit" && (
-            <div>
-              <Label htmlFor="credit_limit">Limite de Crédito</Label>
-              <Input
-                id="credit_limit"
-                type="number"
-                step="0.01"
-                value={cardData.credit_limit}
-                onChange={(e) => setCardData(prev => ({ ...prev, credit_limit: e.target.value }))}
-                placeholder="0.00"
-              />
-            </div>
+            <>
+              <div>
+                <Label htmlFor="credit_limit">Limite de Crédito</Label>
+                <Input
+                  id="credit_limit"
+                  type="number"
+                  step="0.01"
+                  value={cardData.credit_limit}
+                  onChange={(e) => setCardData(prev => ({ ...prev, credit_limit: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="due_date">Dia de Vencimento</Label>
+                <Select 
+                  value={cardData.due_date} 
+                  onValueChange={(value) => setCardData(prev => ({ ...prev, due_date: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o dia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <SelectItem key={day} value={day.toString()}>
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           )}
 
           <div>

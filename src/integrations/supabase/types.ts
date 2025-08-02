@@ -54,6 +54,7 @@ export type Database = {
           credit_limit: number | null
           currency: Database["public"]["Enums"]["currency_type"]
           current_balance: number | null
+          due_date: number | null
           id: string
           last_four_digits: string | null
           name: string
@@ -66,6 +67,7 @@ export type Database = {
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"]
           current_balance?: number | null
+          due_date?: number | null
           id?: string
           last_four_digits?: string | null
           name: string
@@ -78,6 +80,7 @@ export type Database = {
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"]
           current_balance?: number | null
+          due_date?: number | null
           id?: string
           last_four_digits?: string | null
           name?: string

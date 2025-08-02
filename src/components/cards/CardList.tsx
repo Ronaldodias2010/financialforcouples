@@ -14,6 +14,7 @@ interface CardData {
   credit_limit: number | null;
   current_balance: number;
   currency: string;
+  due_date: number | null;
 }
 
 interface CardListProps {
@@ -104,6 +105,11 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
                     {card.credit_limit && (
                       <p className="text-sm text-muted-foreground">
                         Limite: {formatCurrency(card.credit_limit, card.currency)}
+                      </p>
+                    )}
+                    {card.due_date && card.card_type === "credit" && (
+                      <p className="text-sm text-muted-foreground">
+                        Vencimento: dia {card.due_date}
                       </p>
                     )}
                   </div>
