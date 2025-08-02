@@ -15,7 +15,8 @@ export const UserProfileForm = () => {
   const [profile, setProfile] = useState({
     display_name: "",
     preferred_currency: "BRL",
-    second_user_name: ""
+    second_user_name: "",
+    second_user_email: ""
   });
   const [passwordData, setPasswordData] = useState({
     current_password: "",
@@ -33,7 +34,7 @@ export const UserProfileForm = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("display_name, preferred_currency, second_user_name, second_user_email")
         .eq("user_id", user?.id)
         .single();
 
@@ -46,7 +47,8 @@ export const UserProfileForm = () => {
         setProfile({
           display_name: data.display_name || "",
           preferred_currency: data.preferred_currency || "BRL",
-          second_user_name: data.second_user_name || ""
+          second_user_name: data.second_user_name || "",
+          second_user_email: data.second_user_email || ""
         });
       }
     } catch (error) {
@@ -65,7 +67,8 @@ export const UserProfileForm = () => {
           user_id: user.id,
           display_name: profile.display_name,
           preferred_currency: profile.preferred_currency as "BRL" | "USD" | "EUR",
-          second_user_name: profile.second_user_name
+          second_user_name: profile.second_user_name,
+          second_user_email: profile.second_user_email
         });
 
       if (error) throw error;
@@ -102,6 +105,33 @@ export const UserProfileForm = () => {
     } catch (error) {
       console.error("Error updating password:", error);
       toast.error("Erro ao atualizar senha");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendInvite = async () => {
+    if (!profile.second_user_email || !profile.second_user_name) {
+      toast.error("Preencha o nome e email do segundo usuário");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-invite', {
+        body: {
+          email: profile.second_user_email,
+          name: profile.second_user_name,
+          inviter_name: profile.display_name || user?.email
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success("Convite enviado com sucesso!");
+    } catch (error) {
+      console.error("Error sending invite:", error);
+      toast.error("Erro ao enviar convite");
     } finally {
       setLoading(false);
     }
@@ -192,17 +222,39 @@ export const UserProfileForm = () => {
 
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-medium mb-2">Segundo Usuário</h4>
-                  <div>
-                    <Label htmlFor="user2_name">Nome de Exibição</Label>
-                    <Input
-                      id="user2_name"
-                      value={profile.second_user_name}
-                      onChange={(e) => setProfile(prev => ({ ...prev, second_user_name: e.target.value }))}
-                      placeholder="Nome do segundo usuário (ex: Maria, João, etc.)"
-                    />
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Este nome aparecerá no lugar de "Usuário 2" em todo o sistema
-                    </p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="user2_name">Nome de Exibição</Label>
+                      <Input
+                        id="user2_name"
+                        value={profile.second_user_name}
+                        onChange={(e) => setProfile(prev => ({ ...prev, second_user_name: e.target.value }))}
+                        placeholder="Nome do segundo usuário (ex: Maria, João, etc.)"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="user2_email">Email para Convite</Label>
+                      <Input
+                        id="user2_email"
+                        type="email"
+                        value={profile.second_user_email}
+                        onChange={(e) => setProfile(prev => ({ ...prev, second_user_email: e.target.value }))}
+                        placeholder="email@exemplo.com"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Email onde o convite será enviado para o segundo usuário se cadastrar
+                      </p>
+                    </div>
+                    {profile.second_user_email && profile.second_user_name && (
+                      <Button 
+                        onClick={sendInvite} 
+                        disabled={loading}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        {loading ? "Enviando..." : "Enviar Convite"}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
