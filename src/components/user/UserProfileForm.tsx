@@ -14,7 +14,8 @@ export const UserProfileForm = () => {
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({
     display_name: "",
-    preferred_currency: "BRL"
+    preferred_currency: "BRL",
+    second_user_name: ""
   });
   const [passwordData, setPasswordData] = useState({
     current_password: "",
@@ -44,7 +45,8 @@ export const UserProfileForm = () => {
       if (data) {
         setProfile({
           display_name: data.display_name || "",
-          preferred_currency: data.preferred_currency || "BRL"
+          preferred_currency: data.preferred_currency || "BRL",
+          second_user_name: data.second_user_name || ""
         });
       }
     } catch (error) {
@@ -62,7 +64,8 @@ export const UserProfileForm = () => {
         .upsert({
           user_id: user.id,
           display_name: profile.display_name,
-          preferred_currency: profile.preferred_currency as "BRL" | "USD" | "EUR"
+          preferred_currency: profile.preferred_currency as "BRL" | "USD" | "EUR",
+          second_user_name: profile.second_user_name
         });
 
       if (error) throw error;
@@ -112,8 +115,9 @@ export const UserProfileForm = () => {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Perfil</TabsTrigger>
+          <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="billing">Cobrança</TabsTrigger>
           <TabsTrigger value="security">Segurança</TabsTrigger>
         </TabsList>
@@ -134,7 +138,7 @@ export const UserProfileForm = () => {
               </div>
 
               <div>
-                <Label htmlFor="display_name">Nome de Exibição</Label>
+                <Label htmlFor="display_name">Seu Nome</Label>
                 <Input
                   id="display_name"
                   value={profile.display_name}
@@ -159,6 +163,52 @@ export const UserProfileForm = () => {
 
               <Button onClick={updateProfile} disabled={loading}>
                 {loading ? "Salvando..." : "Salvar Perfil"}
+              </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-4">
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Configuração de Usuários</h3>
+              </div>
+              
+              <div className="grid gap-4">
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium mb-2">Usuário Principal (Você)</h4>
+                  <div>
+                    <Label htmlFor="user1_name">Nome de Exibição</Label>
+                    <Input
+                      id="user1_name"
+                      value={profile.display_name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, display_name: e.target.value }))}
+                      placeholder="Seu nome"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium mb-2">Segundo Usuário</h4>
+                  <div>
+                    <Label htmlFor="user2_name">Nome de Exibição</Label>
+                    <Input
+                      id="user2_name"
+                      value={profile.second_user_name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, second_user_name: e.target.value }))}
+                      placeholder="Nome do segundo usuário (ex: Maria, João, etc.)"
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Este nome aparecerá no lugar de "Usuário 2" em todo o sistema
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={updateProfile} disabled={loading}>
+                {loading ? "Salvando..." : "Salvar Configurações"}
               </Button>
             </div>
           </Card>

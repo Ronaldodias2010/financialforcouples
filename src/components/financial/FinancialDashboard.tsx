@@ -26,6 +26,7 @@ export const FinancialDashboard = () => {
   const [viewMode, setViewMode] = useState<"combined" | "user1" | "user2">("combined");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile">("dashboard");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
+  const [secondUserName, setSecondUserName] = useState<string>("");
 
   useEffect(() => {
     if (user) {
@@ -37,12 +38,17 @@ export const FinancialDashboard = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, second_user_name")
         .eq("user_id", user?.id)
-        .single();
+        .maybeSingle();
 
-      if (data?.display_name) {
-        setUserDisplayName(data.display_name);
+      if (data) {
+        if (data.display_name) {
+          setUserDisplayName(data.display_name);
+        }
+        if (data.second_user_name) {
+          setSecondUserName(data.second_user_name);
+        }
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -83,6 +89,9 @@ export const FinancialDashboard = () => {
   const getUserLabel = (userKey: "user1" | "user2") => {
     if (userKey === "user1" && userDisplayName) {
       return userDisplayName;
+    }
+    if (userKey === "user2" && secondUserName) {
+      return secondUserName;
     }
     return userKey === "user1" ? "Usuário 1" : "Usuário 2";
   };
