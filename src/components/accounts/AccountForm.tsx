@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Wallet, Plus } from "lucide-react";
@@ -15,6 +16,7 @@ interface AccountFormProps {
 
 export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [accountData, setAccountData] = useState({
     name: "",
@@ -42,7 +44,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
       if (error) throw error;
 
-      toast.success("Conta adicionada com sucesso!");
+      toast.success(t('messages.accountAdded') || "Conta adicionada com sucesso!");
       setAccountData({
         name: "",
         account_type: "",
@@ -52,7 +54,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
       onAccountAdded();
     } catch (error) {
       console.error("Error adding account:", error);
-      toast.error("Erro ao adicionar conta");
+      toast.error(t('messages.accountError') || "Erro ao adicionar conta");
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Plus className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Adicionar Conta</h3>
+          <h3 className="text-lg font-semibold">{t('accounts.add')}</h3>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

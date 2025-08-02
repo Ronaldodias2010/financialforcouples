@@ -10,9 +10,16 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Financial App
-          </h1>
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/86cb4573-9e29-470c-959b-b9920f947406.png" 
+              alt="Relationship Financial Logo" 
+              className="h-12 w-12 object-contain"
+            />
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Relationship Financial
+            </h1>
+          </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />

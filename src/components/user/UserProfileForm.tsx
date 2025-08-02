@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User, CreditCard, Lock, DollarSign } from "lucide-react";
 
 export const UserProfileForm = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({
     display_name: "",
@@ -141,24 +143,24 @@ export const UserProfileForm = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <User className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold">Configurações de Usuário</h2>
+        <h2 className="text-2xl font-bold">{t('userProfile.title')}</h2>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="profile">Perfil</TabsTrigger>
-          <TabsTrigger value="users">Usuários</TabsTrigger>
-          <TabsTrigger value="billing">Cobrança</TabsTrigger>
-          <TabsTrigger value="security">Segurança</TabsTrigger>
+          <TabsTrigger value="profile">{t('userProfile.profile')}</TabsTrigger>
+          <TabsTrigger value="users">{t('userProfile.users')}</TabsTrigger>
+          <TabsTrigger value="billing">{t('userProfile.billing')}</TabsTrigger>
+          <TabsTrigger value="security">{t('userProfile.security')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4">
           <Card className="p-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Informações Pessoais</h3>
+              <h3 className="text-lg font-semibold">{t('userProfile.personalInfo')}</h3>
               
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('userProfile.email')}</Label>
                 <Input
                   id="email"
                   value={user?.email || ""}
@@ -168,7 +170,7 @@ export const UserProfileForm = () => {
               </div>
 
               <div>
-                <Label htmlFor="display_name">Seu Nome</Label>
+                <Label htmlFor="display_name">{t('userProfile.displayName')}</Label>
                 <Input
                   id="display_name"
                   value={profile.display_name}
@@ -178,7 +180,7 @@ export const UserProfileForm = () => {
               </div>
 
               <div>
-                <Label htmlFor="currency">Moeda Preferida</Label>
+                <Label htmlFor="currency">{t('userProfile.preferredCurrency')}</Label>
                 <select
                   id="currency"
                   value={profile.preferred_currency}
@@ -192,7 +194,7 @@ export const UserProfileForm = () => {
               </div>
 
               <Button onClick={updateProfile} disabled={loading}>
-                {loading ? "Salvando..." : "Salvar Perfil"}
+                {loading ? t('userProfile.saving') : t('userProfile.saveProfile')}
               </Button>
             </div>
           </Card>
@@ -203,14 +205,14 @@ export const UserProfileForm = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <User className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Configuração de Usuários</h3>
+                <h3 className="text-lg font-semibold">{t('userProfile.userConfig')}</h3>
               </div>
               
               <div className="grid gap-4">
                 <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Usuário Principal (Você)</h4>
+                  <h4 className="font-medium mb-2">{t('userProfile.mainUser')}</h4>
                   <div>
-                    <Label htmlFor="user1_name">Nome de Exibição</Label>
+                    <Label htmlFor="user1_name">{t('userProfile.displayName')}</Label>
                     <Input
                       id="user1_name"
                       value={profile.display_name}
@@ -221,10 +223,10 @@ export const UserProfileForm = () => {
                 </div>
 
                 <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Segundo Usuário</h4>
+                  <h4 className="font-medium mb-2">{t('userProfile.secondUser')}</h4>
                   <div className="space-y-3">
                     <div>
-                      <Label htmlFor="user2_name">Nome de Exibição</Label>
+                      <Label htmlFor="user2_name">{t('userProfile.displayName')}</Label>
                       <Input
                         id="user2_name"
                         value={profile.second_user_name}
@@ -233,7 +235,7 @@ export const UserProfileForm = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="user2_email">Email para Convite</Label>
+                      <Label htmlFor="user2_email">{t('userProfile.inviteEmail')}</Label>
                       <Input
                         id="user2_email"
                         type="email"
@@ -252,7 +254,7 @@ export const UserProfileForm = () => {
                         variant="outline"
                         className="w-full"
                       >
-                        {loading ? "Enviando..." : "Enviar Convite"}
+                        {loading ? t('userProfile.sending') : t('userProfile.sendInvite')}
                       </Button>
                     )}
                   </div>
@@ -260,7 +262,7 @@ export const UserProfileForm = () => {
               </div>
 
               <Button onClick={updateProfile} disabled={loading}>
-                {loading ? "Salvando..." : "Salvar Configurações"}
+                {loading ? t('userProfile.saving') : t('userProfile.saveSettings')}
               </Button>
             </div>
           </Card>
@@ -271,17 +273,17 @@ export const UserProfileForm = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Informações de Cobrança</h3>
+                <h3 className="text-lg font-semibold">{t('userProfile.billingInfo')}</h3>
               </div>
               
               <div className="text-center py-8 text-muted-foreground">
                 <CreditCard className="h-12 w-12 mx-auto mb-4" />
-                <p>Plano gratuito ativo</p>
-                <p className="text-sm">Atualize para o plano premium para funcionalidades avançadas</p>
+                <p>{t('userProfile.freePlan')}</p>
+                <p className="text-sm">{t('userProfile.upgradeText')}</p>
               </div>
 
               <Button variant="outline" className="w-full">
-                Atualizar Plano
+                {t('userProfile.upgradePlan')}
               </Button>
             </div>
           </Card>
@@ -292,11 +294,11 @@ export const UserProfileForm = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Lock className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Alterar Senha</h3>
+                <h3 className="text-lg font-semibold">{t('userProfile.changePassword')}</h3>
               </div>
 
               <div>
-                <Label htmlFor="new_password">Nova Senha</Label>
+                <Label htmlFor="new_password">{t('userProfile.newPassword')}</Label>
                 <Input
                   id="new_password"
                   type="password"
@@ -307,7 +309,7 @@ export const UserProfileForm = () => {
               </div>
 
               <div>
-                <Label htmlFor="confirm_password">Confirmar Nova Senha</Label>
+                <Label htmlFor="confirm_password">{t('userProfile.confirmPassword')}</Label>
                 <Input
                   id="confirm_password"
                   type="password"
@@ -318,7 +320,7 @@ export const UserProfileForm = () => {
               </div>
 
               <Button onClick={updatePassword} disabled={loading}>
-                {loading ? "Atualizando..." : "Atualizar Senha"}
+                {loading ? t('userProfile.updating') : t('userProfile.updatePassword')}
               </Button>
             </div>
           </Card>

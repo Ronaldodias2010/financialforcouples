@@ -13,6 +13,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
@@ -56,6 +57,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchCategories();
@@ -156,7 +158,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     <Card className="p-6 border-card-border bg-card">
       <div className="space-y-6">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-foreground">Nova Transação</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('transactionForm.title')}</h3>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -169,7 +171,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
               className="flex items-center gap-2"
             >
               <PlusCircle className="h-4 w-4" />
-              Entrada
+              {t('transactionForm.income')}
             </Button>
             <Button
               type="button"
@@ -178,13 +180,13 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
               className="flex items-center gap-2"
             >
               <MinusCircle className="h-4 w-4" />
-              Saída
+              {t('transactionForm.expense')}
             </Button>
           </div>
 
           {/* Date */}
           <div>
-            <Label>Data da Transação</Label>
+            <Label>{t('transactionForm.transactionDate')}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -195,7 +197,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {transactionDate ? format(transactionDate, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+                  {transactionDate ? format(transactionDate, "PPP", { locale: ptBR }) : <span>{t('transactionForm.selectDate')}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -212,7 +214,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
           {/* Amount */}
           <div>
-            <Label htmlFor="amount">Valor</Label>
+            <Label htmlFor="amount">{t('transactionForm.amount')}</Label>
             <Input
               id="amount"
               type="number"
@@ -227,7 +229,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
           {/* Description */}
           <div>
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description">{t('transactionForm.description')}</Label>
             <Input
               id="description"
               placeholder="Ex: Almoço no restaurante"
@@ -239,15 +241,15 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
           {/* Payment Method */}
           <div>
-            <Label>{type === "income" ? "Forma de Recebimento" : "Forma de Pagamento"}</Label>
+            <Label>{type === "income" ? t('transactionForm.receiptMethod') : t('transactionForm.paymentMethod')}</Label>
             <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "credit_card" | "debit_card")}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a forma de pagamento" />
+                <SelectValue placeholder={t('transactionForm.selectPaymentMethod')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cash">Dinheiro</SelectItem>
-                <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                <SelectItem value="debit_card">Cartão de Débito</SelectItem>
+                <SelectItem value="cash">{t('transactionForm.cash')}</SelectItem>
+                <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
+                <SelectItem value="debit_card">{t('transactionForm.debitCard')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -255,10 +257,10 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           {/* Card Selection */}
           {(paymentMethod === "credit_card" || paymentMethod === "debit_card") && (
             <div>
-              <Label>Cartão</Label>
+              <Label>{t('transactionForm.card')}</Label>
               <Select value={cardId} onValueChange={setCardId} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um cartão" />
+                  <SelectValue placeholder={t('transactionForm.selectCard')} />
                 </SelectTrigger>
                 <SelectContent>
                   {cards.map((card) => (
@@ -282,15 +284,15 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                   onChange={(e) => setIsInstallment(e.target.checked)}
                   className="rounded border-gray-300"
                 />
-                <Label htmlFor="installment">Pagamento Parcelado</Label>
+                <Label htmlFor="installment">{t('transactionForm.installmentPayment')}</Label>
               </div>
               
               {isInstallment && (
                 <div>
-                  <Label htmlFor="installments">Número de Parcelas</Label>
+                  <Label htmlFor="installments">{t('transactionForm.installments')}</Label>
                   <Select value={totalInstallments} onValueChange={setTotalInstallments}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o número de parcelas" />
+                      <SelectValue placeholder={t('transactionForm.selectInstallments')} />
                     </SelectTrigger>
                     <SelectContent>
                       {Array.from({ length: 24 }, (_, i) => i + 1).map((num) => (
@@ -307,10 +309,10 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
           {/* Category */}
           <div>
-            <Label htmlFor="category">Categoria</Label>
+            <Label htmlFor="category">{t('transactionForm.category')}</Label>
             <Select value={categoryId} onValueChange={setCategoryId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione uma categoria" />
+                <SelectValue placeholder={t('transactionForm.selectCategory')} />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
@@ -324,7 +326,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
           {/* Subcategory */}
           <div>
-            <Label htmlFor="subcategory">Subcategoria (Opcional)</Label>
+            <Label htmlFor="subcategory">{t('transactionForm.subcategory')}</Label>
             <Input
               id="subcategory"
               placeholder="Ex: Mercado, Posto de gasolina..."
@@ -335,7 +337,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
 
           <Button type="submit" className="w-full">
-            Adicionar Transação
+            {t('transactionForm.addTransaction')}
           </Button>
         </form>
       </div>
