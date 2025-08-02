@@ -34,7 +34,7 @@ const Index = () => {
               alt="Financial Management Logo" 
               className="h-48 w-48 object-contain -mb-2"
             />
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-4">
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-6">
               Gestão Financeira para Casais
             </h1>
           </div>
