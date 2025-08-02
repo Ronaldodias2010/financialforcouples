@@ -12,12 +12,12 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img 
-              src="/lovable-uploads/86cb4573-9e29-470c-959b-b9920f947406.png" 
-              alt="Relationship Financial Logo" 
-              className="h-12 w-12 object-contain"
+              src="/lovable-uploads/logo-new.png" 
+              alt="Financial Management Logo" 
+              className="h-10 w-10 object-contain"
             />
             <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Relationship Financial
+              Gestão Financeira para Casais
             </h1>
           </div>
           <div className="flex items-center gap-4">

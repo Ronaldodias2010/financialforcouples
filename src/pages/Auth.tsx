@@ -13,6 +13,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [isResetMode, setIsResetMode] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -93,6 +94,34 @@ export default function Auth() {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Email enviado!",
+        description: "Verifique seu email para redefinir a senha.",
+      });
+      setIsResetMode(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message || "Erro ao enviar email de recuperação.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-primary/20">
@@ -119,7 +148,34 @@ export default function Auth() {
             </TabsList>
             
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
+              {isResetMode ? (
+                <form onSubmit={handlePasswordReset} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Enviar Email de Recuperação
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="w-full"
+                    onClick={() => setIsResetMode(false)}
+                  >
+                    Voltar ao Login
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <Input
@@ -150,7 +206,16 @@ export default function Auth() {
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Entrar
                 </Button>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  className="w-full text-sm"
+                  onClick={() => setIsResetMode(true)}
+                >
+                  Esqueci minha senha
+                </Button>
               </form>
+              )}
             </TabsContent>
             
             <TabsContent value="signup">
