@@ -12,7 +12,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img 
-              src="/lovable-uploads/logo-new.png" 
+              src="/lovable-uploads/dd7ede7f-5f8a-4148-ad57-7447549dd45d.png"
               alt="Financial Management Logo" 
               className="h-10 w-10 object-contain"
             />
