@@ -22,6 +22,7 @@ export type Database = {
           currency: Database["public"]["Enums"]["currency_type"]
           id: string
           name: string
+          owner_user: string | null
           updated_at: string
           user_id: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           id?: string
           name: string
+          owner_user?: string | null
           updated_at?: string
           user_id: string
         }
@@ -42,6 +44,7 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           id?: string
           name?: string
+          owner_user?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -58,6 +61,7 @@ export type Database = {
           id: string
           last_four_digits: string | null
           name: string
+          owner_user: string | null
           updated_at: string
           user_id: string
         }
@@ -71,6 +75,7 @@ export type Database = {
           id?: string
           last_four_digits?: string | null
           name: string
+          owner_user?: string | null
           updated_at?: string
           user_id: string
         }
@@ -84,6 +89,7 @@ export type Database = {
           id?: string
           last_four_digits?: string | null
           name?: string
+          owner_user?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -97,6 +103,7 @@ export type Database = {
           icon: string | null
           id: string
           name: string
+          owner_user: string | null
           user_id: string
         }
         Insert: {
@@ -106,6 +113,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name: string
+          owner_user?: string | null
           user_id: string
         }
         Update: {
@@ -115,6 +123,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name?: string
+          owner_user?: string | null
           user_id?: string
         }
         Relationships: []
@@ -174,6 +183,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           next_due_date: string
+          owner_user: string | null
           updated_at: string
           user_id: string
         }
@@ -189,6 +199,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           next_due_date: string
+          owner_user?: string | null
           updated_at?: string
           user_id: string
         }
@@ -204,6 +215,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           next_due_date?: string
+          owner_user?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -275,6 +287,7 @@ export type Database = {
           id: string
           installment_number: number | null
           is_installment: boolean | null
+          owner_user: string | null
           payment_method: string | null
           subcategory: string | null
           total_installments: number | null
@@ -294,6 +307,7 @@ export type Database = {
           id?: string
           installment_number?: number | null
           is_installment?: boolean | null
+          owner_user?: string | null
           payment_method?: string | null
           subcategory?: string | null
           total_installments?: number | null
@@ -313,6 +327,7 @@ export type Database = {
           id?: string
           installment_number?: number | null
           is_installment?: boolean | null
+          owner_user?: string | null
           payment_method?: string | null
           subcategory?: string | null
           total_installments?: number | null

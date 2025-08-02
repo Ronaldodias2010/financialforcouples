@@ -28,7 +28,11 @@ interface Transaction {
   };
 }
 
-export const MonthlyExpensesView = () => {
+interface MonthlyExpensesViewProps {
+  viewMode: "both" | "user1" | "user2";
+}
+
+export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedCategory, setSelectedCategory] = useState<string>("all");

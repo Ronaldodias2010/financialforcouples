@@ -6,9 +6,10 @@ import { ArrowLeft } from "lucide-react";
 
 interface AccountsPageProps {
   onBack: () => void;
+  currentUser?: "user1" | "user2";
 }
 
-export const AccountsPage = ({ onBack }: AccountsPageProps) => {
+export const AccountsPage = ({ onBack, currentUser = "user1" }: AccountsPageProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleAccountAdded = () => {
@@ -26,7 +27,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <AccountForm onAccountAdded={handleAccountAdded} />
+        <AccountForm onAccountAdded={handleAccountAdded} currentUser={currentUser} />
         <AccountList refreshTrigger={refreshTrigger} />
       </div>
     </div>

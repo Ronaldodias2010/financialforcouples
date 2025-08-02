@@ -17,7 +17,11 @@ interface Category {
   category_type: "income" | "expense";
 }
 
-export const CategoryManager = () => {
+interface CategoryManagerProps {
+  currentUser: "user1" | "user2";
+}
+
+export const CategoryManager = ({ currentUser }: CategoryManagerProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState("#6366f1");
@@ -88,6 +92,7 @@ export const CategoryManager = () => {
             name: newCategoryName,
             color: newCategoryColor,
             category_type: newCategoryType,
+            owner_user: currentUser,
             user_id: user.id
           });
 

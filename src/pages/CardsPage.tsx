@@ -6,9 +6,10 @@ import { ArrowLeft } from "lucide-react";
 
 interface CardsPageProps {
   onBack: () => void;
+  currentUser?: "user1" | "user2";
 }
 
-export const CardsPage = ({ onBack }: CardsPageProps) => {
+export const CardsPage = ({ onBack, currentUser = "user1" }: CardsPageProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleCardAdded = () => {
@@ -26,7 +27,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <CardForm onCardAdded={handleCardAdded} />
+        <CardForm onCardAdded={handleCardAdded} currentUser={currentUser} />
         <CardList refreshTrigger={refreshTrigger} />
       </div>
     </div>

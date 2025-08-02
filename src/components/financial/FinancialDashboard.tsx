@@ -31,6 +31,8 @@ export const FinancialDashboard = () => {
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile">("dashboard");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
+  const [currentUser, setCurrentUser] = useState<"user1" | "user2">("user1");
 
   useEffect(() => {
     if (user) {
@@ -77,7 +79,7 @@ export const FinancialDashboard = () => {
   if (currentPage === "cards") {
     return (
       <div className="container mx-auto p-6">
-        <CardsPage onBack={() => setCurrentPage("dashboard")} />
+        <CardsPage onBack={() => setCurrentPage("dashboard")} currentUser={currentUser} />
       </div>
     );
   }
@@ -85,7 +87,7 @@ export const FinancialDashboard = () => {
   if (currentPage === "accounts") {
     return (
       <div className="container mx-auto p-6">
-        <AccountsPage onBack={() => setCurrentPage("dashboard")} />
+        <AccountsPage onBack={() => setCurrentPage("dashboard")} currentUser={currentUser} />
       </div>
     );
   }
@@ -132,7 +134,7 @@ export const FinancialDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Transaction Form */}
               <div>
-                <TransactionForm onSubmit={handleAddTransaction} />
+                <TransactionForm onSubmit={handleAddTransaction} currentUser={currentUser} />
               </div>
             </div>
 
@@ -170,11 +172,11 @@ export const FinancialDashboard = () => {
           </>
         );
       case "transactions":
-        return <MonthlyExpensesView />;
+        return <MonthlyExpensesView viewMode={viewMode} />;
       case "categories":
-        return <CategoryManager />;
+        return <CategoryManager currentUser={currentUser} />;
       case "recurring":
-        return <RecurringExpensesManager />;
+        return <RecurringExpensesManager currentUser={currentUser} />;
       default:
         return null;
     }
@@ -191,6 +193,58 @@ export const FinancialDashboard = () => {
           <p className="text-lg text-muted-foreground">
             Controle financeiro inteligente para casais
           </p>
+          
+          {/* User Controls */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 pt-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="text-sm font-medium">Inserir como:</span>
+              <div className="flex gap-2">
+                <Button
+                  variant={currentUser === "user1" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentUser("user1")}
+                >
+                  {getUserLabel("user1")}
+                </Button>
+                <Button
+                  variant={currentUser === "user2" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentUser("user2")}
+                >
+                  {getUserLabel("user2")}
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="text-sm font-medium">Visualizar:</span>
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === "both" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("both")}
+                >
+                  Ambos
+                </Button>
+                <Button
+                  variant={viewMode === "user1" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("user1")}
+                >
+                  {getUserLabel("user1")}
+                </Button>
+                <Button
+                  variant={viewMode === "user2" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("user2")}
+                >
+                  {getUserLabel("user2")}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Navigation Tabs */}

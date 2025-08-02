@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
+  currentUser: "user1" | "user2";
 }
 
 interface Transaction {
@@ -42,7 +43,7 @@ interface Card {
   card_type: string;
 }
 
-export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
+export const TransactionForm = ({ onSubmit, currentUser }: TransactionFormProps) => {
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -110,6 +111,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       const { error } = await supabase
         .from('transactions')
         .insert({
+          user_id: user.id,
+          owner_user: currentUser,
           type,
           amount: parseFloat(amount),
           description,
@@ -120,7 +123,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           card_id: paymentMethod !== 'cash' ? cardId : null,
           is_installment: paymentMethod === 'credit_card' ? isInstallment : false,
           total_installments: paymentMethod === 'credit_card' && isInstallment ? parseInt(totalInstallments) : null,
-          user_id: user.id
+          installment_number: paymentMethod === 'credit_card' && isInstallment ? 1 : null
         });
 
       if (error) throw error;

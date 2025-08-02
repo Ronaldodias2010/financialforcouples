@@ -11,9 +11,10 @@ import { CreditCard, Plus } from "lucide-react";
 
 interface CardFormProps {
   onCardAdded: () => void;
+  currentUser?: "user1" | "user2";
 }
 
-export const CardForm = ({ onCardAdded }: CardFormProps) => {
+export const CardForm = ({ onCardAdded, currentUser = "user1" }: CardFormProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [cardData, setCardData] = useState({
@@ -32,18 +33,19 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("cards")
-        .insert({
-          user_id: user.id,
-          name: cardData.name,
-          card_type: cardData.card_type as "credit" | "debit",
-          last_four_digits: cardData.last_four_digits,
-          credit_limit: cardData.credit_limit ? parseFloat(cardData.credit_limit) : null,
-          current_balance: parseFloat(cardData.current_balance) || 0,
-          currency: cardData.currency as "BRL" | "USD" | "EUR",
-          due_date: cardData.due_date ? parseInt(cardData.due_date) : null
-        });
+        const { error } = await supabase
+          .from("cards")
+          .insert({
+            user_id: user.id,
+            owner_user: currentUser,
+            name: cardData.name,
+            card_type: cardData.card_type as "credit" | "debit",
+            last_four_digits: cardData.last_four_digits,
+            credit_limit: cardData.credit_limit ? parseFloat(cardData.credit_limit) : null,
+            current_balance: parseFloat(cardData.current_balance) || 0,
+            currency: cardData.currency as "BRL" | "USD" | "EUR",
+            due_date: cardData.due_date ? parseInt(cardData.due_date) : null
+          });
 
       if (error) throw error;
 
