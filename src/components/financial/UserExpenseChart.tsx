@@ -77,7 +77,7 @@ export const UserExpenseChart = () => {
       }, {}) || {};
 
       const pieData: ExpenseData[] = Object.entries(userExpenses).map(([user, amount], index) => ({
-        user: user === 'user1' ? 'Usuário 1' : 'Usuário 2',
+        user: user === 'user1' ? t('chart.user1') : t('chart.user2'),
         amount: amount,
         color: COLORS[transactionType][index % COLORS[transactionType].length]
       }));
@@ -139,7 +139,7 @@ export const UserExpenseChart = () => {
               <p className="font-medium">{label}</p>
               {payload.map((entry: any, index: number) => (
                 <p key={index} style={{ color: entry.color }}>
-                  {entry.dataKey === 'user1' ? 'Usuário 1' : 'Usuário 2'}: {formatCurrency(entry.value)}
+                  {entry.dataKey === 'user1' ? t('chart.user1') : t('chart.user2')}: {formatCurrency(entry.value)}
                 </p>
               ))}
             </>
@@ -174,7 +174,7 @@ export const UserExpenseChart = () => {
               <TrendingDown className="h-5 w-5 text-expense" />
             )}
             <h3 className="text-lg font-semibold">
-              Comparativo entre Usuários
+              {t('chart.userComparison')}
             </h3>
           </div>
           <div className="flex gap-2">
@@ -183,8 +183,8 @@ export const UserExpenseChart = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="expense">Gastos</SelectItem>
-                <SelectItem value="income">Receitas</SelectItem>
+                <SelectItem value="expense">{t('chart.expenses')}</SelectItem>
+                <SelectItem value="income">{t('chart.income')}</SelectItem>
               </SelectContent>
             </Select>
             
@@ -193,9 +193,9 @@ export const UserExpenseChart = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="current">Mês Atual</SelectItem>
-                <SelectItem value="last3">3 Meses</SelectItem>
-                <SelectItem value="last6">6 Meses</SelectItem>
+                <SelectItem value="current">{t('chart.currentMonth')}</SelectItem>
+                <SelectItem value="last3">{t('chart.last3Months')}</SelectItem>
+                <SelectItem value="last6">{t('chart.last6Months')}</SelectItem>
               </SelectContent>
             </Select>
             
@@ -205,8 +205,8 @@ export const UserExpenseChart = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pie">Pizza</SelectItem>
-                  <SelectItem value="bar">Barras</SelectItem>
+                  <SelectItem value="pie">{t('chart.pieChart')}</SelectItem>
+                  <SelectItem value="bar">{t('chart.barChart')}</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -217,7 +217,7 @@ export const UserExpenseChart = () => {
           <div className="h-48 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhum {transactionType === "income" ? "receita" : "gasto"} encontrado no período</p>
+              <p>{t('chart.noData').replace('{type}', transactionType === "income" ? t('chart.receipt') : t('chart.expense'))}</p>
             </div>
           </div>
         ) : (
@@ -268,7 +268,7 @@ export const UserExpenseChart = () => {
 
             <div className="text-center pt-2 border-t">
               <p className="text-sm text-muted-foreground">
-                Total: <span className="font-semibold text-foreground">{formatCurrency(totalExpenses)}</span>
+                {t('chart.total')}: <span className="font-semibold text-foreground">{formatCurrency(totalExpenses)}</span>
               </p>
             </div>
           </>

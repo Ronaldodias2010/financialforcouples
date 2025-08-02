@@ -76,6 +76,7 @@ const translations = {
     
     // Cards
     'cards.title': 'Gerenciar Cartões',
+    'cards.manage': 'Gerenciar Cartões',
     'cards.add': 'Adicionar Cartão',
     'cards.name': 'Nome do Cartão',
     'cards.type': 'Tipo do Cartão',
@@ -136,6 +137,22 @@ const translations = {
     'common.select': 'Selecionar',
     'back': 'Voltar',
     'accounts.manage': 'Gerenciar Contas',
+    
+    // Chart
+    'chart.userComparison': 'Comparativo entre Usuários',
+    'chart.expenses': 'Gastos',
+    'chart.income': 'Receitas',
+    'chart.currentMonth': 'Mês Atual',
+    'chart.last3Months': '3 Meses',
+    'chart.last6Months': '6 Meses',
+    'chart.pieChart': 'Pizza',
+    'chart.barChart': 'Barras',
+    'chart.total': 'Total',
+    'chart.user1': 'Usuário 1',
+    'chart.user2': 'Usuário 2',
+    'chart.noData': 'Nenhum {type} encontrado no período',
+    'chart.expense': 'gasto',
+    'chart.receipt': 'receita',
     
     // User Profile
     'userProfile.title': 'Perfil do Usuário',
@@ -233,6 +250,7 @@ const translations = {
     
     // Cards
     'cards.title': 'Manage Cards',
+    'cards.manage': 'Manage Cards',
     'cards.add': 'Add Card',
     'cards.name': 'Card Name',
     'cards.type': 'Card Type',
@@ -293,6 +311,22 @@ const translations = {
     'common.select': 'Select',
     'back': 'Back',
     'accounts.manage': 'Manage Accounts',
+    
+    // Chart
+    'chart.userComparison': 'User Comparison',
+    'chart.expenses': 'Expenses',
+    'chart.income': 'Income',
+    'chart.currentMonth': 'Current Month',
+    'chart.last3Months': '3 Months',
+    'chart.last6Months': '6 Months',
+    'chart.pieChart': 'Pie',
+    'chart.barChart': 'Bar',
+    'chart.total': 'Total',
+    'chart.user1': 'User 1',
+    'chart.user2': 'User 2',
+    'chart.noData': 'No {type} found in the period',
+    'chart.expense': 'expense',
+    'chart.receipt': 'income',
     
     // User Profile
     'userProfile.title': 'User Profile',
