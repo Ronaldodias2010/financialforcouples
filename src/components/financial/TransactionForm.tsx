@@ -200,7 +200,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                   {transactionDate ? format(transactionDate, "PPP", { locale: ptBR }) : <span>{t('transactionForm.selectDate')}</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 bg-card border border-border" align="start">
                 <Calendar
                   mode="single"
                   selected={transactionDate}

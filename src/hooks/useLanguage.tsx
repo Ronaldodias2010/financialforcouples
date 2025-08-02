@@ -134,6 +134,8 @@ const translations = {
     'common.all': 'Todos',
     'common.none': 'Nenhum',
     'common.select': 'Selecionar',
+    'back': 'Voltar',
+    'accounts.manage': 'Gerenciar Contas',
     
     // User Profile
     'userProfile.title': 'Perfil do Usuário',
@@ -289,6 +291,8 @@ const translations = {
     'common.all': 'All',
     'common.none': 'None',
     'common.select': 'Select',
+    'back': 'Back',
+    'accounts.manage': 'Manage Accounts',
     
     // User Profile
     'userProfile.title': 'User Profile',
