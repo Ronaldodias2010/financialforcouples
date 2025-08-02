@@ -32,9 +32,9 @@ const Index = () => {
             <img 
               src="/lovable-uploads/dd7ede7f-5f8a-4148-ad57-7447549dd45d.png"
               alt="Financial Management Logo" 
-              className="h-40 w-40 object-contain -mb-2"
+              className="h-48 w-48 object-contain -mb-2"
             />
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-4">
               Gestão Financeira para Casais
             </h1>
           </div>
