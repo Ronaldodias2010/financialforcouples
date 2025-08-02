@@ -11,10 +11,9 @@ import { CreditCard, Plus } from "lucide-react";
 
 interface CardFormProps {
   onCardAdded: () => void;
-  currentUser?: "user1" | "user2";
 }
 
-export const CardForm = ({ onCardAdded, currentUser = "user1" }: CardFormProps) => {
+export const CardForm = ({ onCardAdded }: CardFormProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [cardData, setCardData] = useState({
@@ -37,7 +36,7 @@ export const CardForm = ({ onCardAdded, currentUser = "user1" }: CardFormProps) 
           .from("cards")
           .insert({
             user_id: user.id,
-            owner_user: currentUser,
+            owner_user: "user1",
             name: cardData.name,
             card_type: cardData.card_type as "credit" | "debit",
             last_four_digits: cardData.last_four_digits,

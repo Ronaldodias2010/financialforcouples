@@ -11,10 +11,9 @@ import { Wallet, Plus } from "lucide-react";
 
 interface AccountFormProps {
   onAccountAdded: () => void;
-  currentUser?: "user1" | "user2";
 }
 
-export const AccountForm = ({ onAccountAdded, currentUser = "user1" }: AccountFormProps) => {
+export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [accountData, setAccountData] = useState({
@@ -34,7 +33,7 @@ export const AccountForm = ({ onAccountAdded, currentUser = "user1" }: AccountFo
         .from("accounts")
         .insert({
           user_id: user.id,
-          owner_user: currentUser,
+          owner_user: "user1",
           name: accountData.name,
           account_type: accountData.account_type as "checking" | "savings" | "investment",
           balance: parseFloat(accountData.balance) || 0,

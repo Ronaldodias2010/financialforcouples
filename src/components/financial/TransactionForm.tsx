@@ -16,7 +16,6 @@ import { useToast } from "@/hooks/use-toast";
 
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
-  currentUser: "user1" | "user2";
 }
 
 interface Transaction {
@@ -43,7 +42,7 @@ interface Card {
   card_type: string;
 }
 
-export const TransactionForm = ({ onSubmit, currentUser }: TransactionFormProps) => {
+export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -112,7 +111,7 @@ export const TransactionForm = ({ onSubmit, currentUser }: TransactionFormProps)
         .from('transactions')
         .insert({
           user_id: user.id,
-          owner_user: currentUser,
+          owner_user: "user1",
           type,
           amount: parseFloat(amount),
           description,

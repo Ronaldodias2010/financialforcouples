@@ -37,11 +37,7 @@ interface Card {
   card_type: string;
 }
 
-interface RecurringExpensesManagerProps {
-  currentUser: "user1" | "user2";
-}
-
-export const RecurringExpensesManager = ({ currentUser }: RecurringExpensesManagerProps) => {
+export const RecurringExpensesManager = () => {
   const [expenses, setExpenses] = useState<RecurringExpense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
@@ -150,7 +146,7 @@ export const RecurringExpensesManager = ({ currentUser }: RecurringExpensesManag
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
             next_due_date: nextDueDate.toISOString().split('T')[0],
-            owner_user: currentUser,
+            owner_user: "user1",
             user_id: user.id,
           });
 

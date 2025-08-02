@@ -8,7 +8,7 @@ import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
 import { Button } from "@/components/ui/button";
-import { Wallet, TrendingUp, TrendingDown, CreditCard, Users, User, Settings } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -32,7 +32,7 @@ export const FinancialDashboard = () => {
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
-  const [currentUser, setCurrentUser] = useState<"user1" | "user2">("user1");
+  const currentUser = "user1"; // Fixed to user1 (logged user)
 
   useEffect(() => {
     if (user) {
@@ -79,7 +79,7 @@ export const FinancialDashboard = () => {
   if (currentPage === "cards") {
     return (
       <div className="container mx-auto p-6">
-        <CardsPage onBack={() => setCurrentPage("dashboard")} currentUser={currentUser} />
+        <CardsPage onBack={() => setCurrentPage("dashboard")} />
       </div>
     );
   }
@@ -87,7 +87,7 @@ export const FinancialDashboard = () => {
   if (currentPage === "accounts") {
     return (
       <div className="container mx-auto p-6">
-        <AccountsPage onBack={() => setCurrentPage("dashboard")} currentUser={currentUser} />
+        <AccountsPage onBack={() => setCurrentPage("dashboard")} />
       </div>
     );
   }
@@ -134,7 +134,7 @@ export const FinancialDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Transaction Form */}
               <div>
-                <TransactionForm onSubmit={handleAddTransaction} currentUser={currentUser} />
+                <TransactionForm onSubmit={handleAddTransaction} />
               </div>
             </div>
 
@@ -174,9 +174,9 @@ export const FinancialDashboard = () => {
       case "transactions":
         return <MonthlyExpensesView viewMode={viewMode} />;
       case "categories":
-        return <CategoryManager currentUser={currentUser} />;
+        return <CategoryManager />;
       case "recurring":
-        return <RecurringExpensesManager currentUser={currentUser} />;
+        return <RecurringExpensesManager />;
       default:
         return null;
     }
@@ -195,28 +195,7 @@ export const FinancialDashboard = () => {
           </p>
           
           {/* User Controls */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 pt-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span className="text-sm font-medium">Inserir como:</span>
-              <div className="flex gap-2">
-                <Button
-                  variant={currentUser === "user1" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentUser("user1")}
-                >
-                  {getUserLabel("user1")}
-                </Button>
-                <Button
-                  variant={currentUser === "user2" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentUser("user2")}
-                >
-                  {getUserLabel("user2")}
-                </Button>
-              </div>
-            </div>
-            
+          <div className="flex items-center justify-center gap-4 pt-4">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="text-sm font-medium">Visualizar:</span>
