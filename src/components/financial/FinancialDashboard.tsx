@@ -213,7 +213,7 @@ export const FinancialDashboard = () => {
               <Button 
                 variant="outline" 
                 className="h-20 flex flex-col gap-2"
-                onClick={() => setActiveTab("investments")}
+                onClick={() => setCurrentPage("investments")}
               >
                 <TrendingUp className="h-6 w-6" />
                 <span>Investimentos</span>
