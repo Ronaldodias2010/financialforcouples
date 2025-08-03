@@ -79,6 +79,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       fetchAccounts();
     } else {
       fetchCards();
+      fetchAccounts(); // Buscar contas também para despesas (cartão de débito)
     }
   }, [type]);
 
@@ -182,6 +183,16 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       return;
     }
 
+    // Validar conta para despesas com cartão de débito
+    if (type === "expense" && paymentMethod === "debit_card" && !accountId) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma conta para o cartão de débito",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
@@ -216,6 +227,23 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
         const selectedAccount = accounts.find(acc => acc.id === accountId);
         if (selectedAccount) {
           const newBalance = selectedAccount.balance + transactionAmount;
+          
+          const { error: updateError } = await supabase
+            .from('accounts')
+            .update({ balance: newBalance })
+            .eq('id', accountId);
+
+          if (updateError) {
+            console.error('Erro ao atualizar saldo da conta:', updateError);
+          }
+        }
+      }
+
+      // Atualizar saldo da conta para despesas com cartão de débito
+      if (type === "expense" && paymentMethod === "debit_card" && accountId) {
+        const selectedAccount = accounts.find(acc => acc.id === accountId);
+        if (selectedAccount) {
+          const newBalance = selectedAccount.balance - transactionAmount;
           
           const { error: updateError } = await supabase
             .from('accounts')
@@ -448,6 +476,30 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                         <span>{card.name}</span>
                         <span className="text-muted-foreground ml-2">
                           {card.card_type}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Account Selection for Expenses with Debit Card */}
+          {type === "expense" && paymentMethod === "debit_card" && (
+            <div>
+              <Label htmlFor="account">{t('transactionForm.selectAccount')}</Label>
+              <Select value={accountId} onValueChange={setAccountId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{account.name}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {account.currency} {account.balance.toFixed(2)}
                         </span>
                       </div>
                     </SelectItem>
