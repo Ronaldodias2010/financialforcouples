@@ -123,30 +123,8 @@ export const UserProfileForm = () => {
 
     setLoading(true);
     try {
-      // Check if there's an existing invite for this email
-      const { data: existingInvite, error: checkError } = await supabase
-        .from('user_invites')
-        .select('created_at, status')
-        .eq('inviter_user_id', user?.id)
-        .eq('invitee_email', profile.second_user_email)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      // If there's a pending invite less than 7 days old, don't allow resending
-      if (existingInvite && existingInvite.status === 'pending') {
-        const inviteDate = new Date(existingInvite.created_at);
-        const daysDiff = (new Date().getTime() - inviteDate.getTime()) / (1000 * 3600 * 24);
-        
-        if (daysDiff < 7) {
-          toast.error(`Você pode reenviar o convite após ${Math.ceil(7 - daysDiff)} dias`);
-          return;
-        }
-      }
+      // Temporarily removed 7-day restriction for testing
+      // TODO: Re-implement with personalized message after 24 hours
 
       const { error } = await supabase.functions.invoke('send-invite', {
         body: {
