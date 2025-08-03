@@ -11,7 +11,7 @@ import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
 const CHART_COLORS = {
   income: {
     user1: '#10b981', // Verde para receitas do usuário 1
-    user2: '#34d399', // Verde claro para receitas do usuário 2
+    user2: '#3b82f6', // Azul para receitas do usuário 2
   },
   expense: {
     user1: '#ef4444', // Vermelho para despesas do usuário 1
