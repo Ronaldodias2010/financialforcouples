@@ -173,8 +173,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       return;
     }
 
-    // Validar cartão para despesas com cartão
-    if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "credit_card") && !cardId) {
+    // Validar cartão para despesas com cartão de crédito
+    if (type === "expense" && paymentMethod === "credit_card" && !cardId) {
       toast({
         title: "Erro",
         description: "Selecione um cartão para o pagamento",
@@ -461,8 +461,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
             </div>
           )}
 
-          {/* Card Selection for Expenses with Card */}
-          {type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "credit_card") && (
+          {/* Card Selection for Expenses with Credit Card */}
+          {type === "expense" && paymentMethod === "credit_card" && (
             <div>
               <Label htmlFor="card">{t('transactionForm.selectCard')}</Label>
               <Select value={cardId} onValueChange={setCardId} required>
