@@ -47,7 +47,7 @@ export const UserExpenseChart = () => {
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('display_name, second_user_name')
-        .eq('user_id', user?.id)
+        .eq('id', user?.id)
         .single();
 
       if (error) throw error;
