@@ -71,7 +71,11 @@ export const UserExpenseChart = () => {
 
       // Process data for pie chart
       const userExpenses = transactions?.reduce((acc: Record<string, number>, transaction) => {
-        const user = transaction.owner_user || 'user1';
+        // Normalizar owner_user: se for um email ou não for 'user1' ou 'user2', tratar como 'user1'
+        let user = transaction.owner_user || 'user1';
+        if (user !== 'user1' && user !== 'user2') {
+          user = 'user1'; // Emails e outros valores são tratados como user1
+        }
         acc[user] = (acc[user] || 0) + transaction.amount;
         return acc;
       }, {}) || {};
@@ -98,7 +102,11 @@ export const UserExpenseChart = () => {
             monthlyExpenses[month] = { user1: 0, user2: 0 };
           }
           
-          const userKey = transaction.owner_user === 'user1' ? 'user1' : 'user2';
+          // Normalizar owner_user: se for um email ou não for 'user1' ou 'user2', tratar como 'user1'
+          let userKey = transaction.owner_user || 'user1';
+          if (userKey !== 'user1' && userKey !== 'user2') {
+            userKey = 'user1'; // Emails e outros valores são tratados como user1
+          }
           monthlyExpenses[month][userKey] += transaction.amount;
         });
 

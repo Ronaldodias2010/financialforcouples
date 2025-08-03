@@ -204,7 +204,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
         .from('transactions')
         .insert({
           user_id: user.id,
-          owner_user: user.email || "user1",
+          owner_user: "user1",
           type,
           amount: transactionAmount,
           currency: currency,

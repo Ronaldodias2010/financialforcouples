@@ -225,21 +225,41 @@ export const useFinancialData = () => {
       return transactions;
     }
     
-    return transactions.filter(transaction => 
-      transaction.owner_user === viewMode || 
-      (viewMode === 'user1' && transaction.owner_user === user?.email)
-    );
+    return transactions.filter(transaction => {
+      // Normalizar owner_user: emails e outros valores são tratados como user1
+      let normalizedUser = transaction.owner_user || 'user1';
+      if (normalizedUser !== 'user1' && normalizedUser !== 'user2') {
+        normalizedUser = 'user1';
+      }
+      return normalizedUser === viewMode;
+    });
   };
 
   const getExpensesByUser = (viewMode: 'both' | 'user1' | 'user2') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
     const user1Expenses = filteredTransactions
-      .filter(t => t.type === 'expense' && (t.owner_user === 'user1' || t.owner_user === user?.email))
+      .filter(t => {
+        if (t.type !== 'expense') return false;
+        // Normalizar owner_user: emails e outros valores são tratados como user1
+        let normalizedUser = t.owner_user || 'user1';
+        if (normalizedUser !== 'user1' && normalizedUser !== 'user2') {
+          normalizedUser = 'user1';
+        }
+        return normalizedUser === 'user1';
+      })
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
     
     const user2Expenses = filteredTransactions
-      .filter(t => t.type === 'expense' && t.owner_user === 'user2')
+      .filter(t => {
+        if (t.type !== 'expense') return false;
+        // Normalizar owner_user: emails e outros valores são tratados como user1
+        let normalizedUser = t.owner_user || 'user1';
+        if (normalizedUser !== 'user1' && normalizedUser !== 'user2') {
+          normalizedUser = 'user1';
+        }
+        return normalizedUser === 'user2';
+      })
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
 
     return { user1Expenses, user2Expenses };
