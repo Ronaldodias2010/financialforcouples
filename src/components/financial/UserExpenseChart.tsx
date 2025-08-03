@@ -39,6 +39,27 @@ export const UserExpenseChart = () => {
     if (user) {
       fetchUserProfiles();
       fetchExpenseData();
+      
+      // Set up realtime listener for transactions
+      const channel = supabase
+        .channel('transaction-changes')
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'transactions',
+            filter: `user_id=eq.${user.id}`
+          }, 
+          () => {
+            console.log('Transaction change detected, refreshing chart...');
+            fetchExpenseData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user, period, transactionType]);
 
@@ -47,11 +68,12 @@ export const UserExpenseChart = () => {
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('display_name, second_user_name')
-        .eq('id', user?.id)
+        .eq('user_id', user?.id)
         .single();
 
       if (error) throw error;
 
+      console.log('Profiles fetched:', profiles);
       setUserProfiles({
         user1: profiles?.display_name || t('chart.user1'),
         user2: profiles?.second_user_name || t('chart.user2')
@@ -88,11 +110,14 @@ export const UserExpenseChart = () => {
       const { data: transactions, error } = await supabase
         .from('transactions')
         .select('owner_user, amount, transaction_date')
+        .eq('user_id', user?.id)
         .eq('type', transactionType)
         .gte('transaction_date', startDate.toISOString().split('T')[0])
         .lte('transaction_date', endDate.toISOString().split('T')[0]);
 
       if (error) throw error;
+      
+      console.log('Chart transactions fetched:', transactions);
 
       // Process data for pie chart
       const userExpenses = transactions?.reduce((acc: Record<string, number>, transaction) => {
