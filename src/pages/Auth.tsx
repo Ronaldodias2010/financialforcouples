@@ -56,6 +56,28 @@ export default function Auth() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+      
+      if (error) throw error;
+      
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro no login com Google",
+        description: error.message || "Erro ao fazer login com Google.",
+      });
+      setIsLoading(false);
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -208,6 +230,16 @@ export default function Auth() {
                 </Button>
                 <Button 
                   type="button" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Continuar com Google
+                </Button>
+                <Button 
+                  type="button" 
                   variant="ghost" 
                   className="w-full text-sm"
                   onClick={() => setIsResetMode(true)}
@@ -259,6 +291,16 @@ export default function Auth() {
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Criar Conta
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Continuar com Google
                 </Button>
               </form>
             </TabsContent>

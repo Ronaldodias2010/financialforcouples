@@ -65,13 +65,13 @@ export const UserProfileForm = () => {
     try {
       const { error } = await supabase
         .from("profiles")
-        .upsert({
-          user_id: user.id,
+        .update({
           display_name: profile.display_name,
           preferred_currency: profile.preferred_currency as "BRL" | "USD" | "EUR",
           second_user_name: profile.second_user_name,
           second_user_email: profile.second_user_email
-        });
+        })
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
