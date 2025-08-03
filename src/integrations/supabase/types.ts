@@ -140,6 +140,142 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_goals: {
+        Row: {
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_type"]
+          current_amount: number
+          description: string | null
+          id: string
+          name: string
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          current_amount?: number
+          description?: string | null
+          id?: string
+          name: string
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          current_amount?: number
+          description?: string | null
+          id?: string
+          name?: string
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      investment_performance: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          investment_id: string
+          value: number
+          yield_percentage: number | null
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          investment_id: string
+          value?: number
+          yield_percentage?: number | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          investment_id?: string
+          value?: number
+          yield_percentage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_performance_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investments: {
+        Row: {
+          amount: number
+          broker: string | null
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_type"]
+          current_value: number
+          goal_id: string | null
+          id: string
+          is_shared: boolean | null
+          name: string
+          notes: string | null
+          owner_user: string | null
+          purchase_date: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          broker?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          current_value?: number
+          goal_id?: string | null
+          id?: string
+          is_shared?: boolean | null
+          name: string
+          notes?: string | null
+          owner_user?: string | null
+          purchase_date?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          broker?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          current_value?: number
+          goal_id?: string | null
+          id?: string
+          is_shared?: boolean | null
+          name?: string
+          notes?: string | null
+          owner_user?: string | null
+          purchase_date?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "investment_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

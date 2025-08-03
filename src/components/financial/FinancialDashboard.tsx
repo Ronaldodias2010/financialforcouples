@@ -5,6 +5,7 @@ import { UserExpenseChart } from "./UserExpenseChart";
 import { MonthlyExpensesView } from "./MonthlyExpensesView";
 import { CategoryManager } from "./CategoryManager";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
+import { InvestmentDashboard } from "./InvestmentDashboard";
 import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
@@ -34,7 +35,7 @@ export const FinancialDashboard = () => {
   const { t } = useLanguage();
   const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile">("dashboard");
+  const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments">("dashboard");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
@@ -141,6 +142,10 @@ export const FinancialDashboard = () => {
     );
   }
 
+  if (currentPage === "investments") {
+    return <InvestmentDashboard onBack={() => setCurrentPage("dashboard")} viewMode={viewMode} />;
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -205,7 +210,11 @@ export const FinancialDashboard = () => {
                 <CreditCard className="h-6 w-6" />
                 <span>{t('nav.cards')}</span>
               </Button>
-              <Button variant="outline" className="h-20 flex flex-col gap-2">
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => setActiveTab("investments")}
+              >
                 <TrendingUp className="h-6 w-6" />
                 <span>Investimentos</span>
               </Button>
@@ -226,6 +235,21 @@ export const FinancialDashboard = () => {
         return <CategoryManager />;
       case "recurring":
         return <RecurringExpensesManager />;
+      case "investments":
+        return (
+          <div className="text-center py-8">
+            <h2 className="text-2xl font-bold mb-4">🎉 Módulo de Investimentos Criado!</h2>
+            <p className="text-muted-foreground mb-4">
+              Todas as funcionalidades foram implementadas com sucesso
+            </p>
+            <Button 
+              onClick={() => setCurrentPage("investments")}
+              className="bg-gradient-to-r from-green-500 to-blue-500 text-white"
+            >
+              Acessar Módulo de Investimentos
+            </Button>
+          </div>
+        );
       default:
         return null;
     }
