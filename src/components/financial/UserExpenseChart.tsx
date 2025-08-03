@@ -1,16 +1,30 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
+
+// Cores para diferenciação visual
+const CHART_COLORS = {
+  income: {
+    user1: '#10b981', // Verde para receitas do usuário 1
+    user2: '#34d399', // Verde claro para receitas do usuário 2
+  },
+  expense: {
+    user1: '#ef4444', // Vermelho para despesas do usuário 1
+    user2: '#f97316', // Laranja para despesas do usuário 2
+  }
+};
 
 interface FinancialData {
   category: string;
   user1: number;
   user2: number;
+  user1Color: string;
+  user2Color: string;
 }
 
 interface MonthlyExpense {
@@ -136,12 +150,16 @@ export const UserExpenseChart = () => {
         {
           category: 'Receitas',
           user1: incomeByUser.user1,
-          user2: incomeByUser.user2
+          user2: incomeByUser.user2,
+          user1Color: CHART_COLORS.income.user1,
+          user2Color: CHART_COLORS.income.user2
         },
         {
           category: 'Despesas',
           user1: expenseByUser.user1,
-          user2: expenseByUser.user2
+          user2: expenseByUser.user2,
+          user1Color: CHART_COLORS.expense.user1,
+          user2Color: CHART_COLORS.expense.user2
         }
       ];
 
@@ -211,6 +229,20 @@ export const UserExpenseChart = () => {
     return null;
   };
 
+  const renderCustomBar = (props: any) => {
+    const { payload, ...rest } = props;
+    const category = payload.category;
+    const isIncome = category === 'Receitas';
+    
+    return (
+      <Bar 
+        {...rest} 
+        fill={isIncome ? CHART_COLORS.income.user1 : CHART_COLORS.expense.user1}
+        radius={[2, 2, 0, 0]} 
+      />
+    );
+  };
+
   if (loading) {
     return (
       <Card className="p-6 h-full">
@@ -229,7 +261,7 @@ export const UserExpenseChart = () => {
           <div className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">
-              Receitas vs Despesas
+              Análise Financeira por Usuário
             </h3>
           </div>
           <div className="flex gap-2">
@@ -263,8 +295,16 @@ export const UserExpenseChart = () => {
                     <XAxis dataKey="category" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="user1" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="user2" fill="hsl(var(--secondary))" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="user1" radius={[2, 2, 0, 0]}>
+                      {financialData.map((entry, index) => (
+                        <Cell key={`cell-user1-${index}`} fill={entry.user1Color} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="user2" radius={[2, 2, 0, 0]}>
+                      {financialData.map((entry, index) => (
+                        <Cell key={`cell-user2-${index}`} fill={entry.user2Color} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 ) : (
                   <BarChart data={monthlyData}>
@@ -272,27 +312,59 @@ export const UserExpenseChart = () => {
                     <XAxis dataKey="month" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="user1" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="user2" fill="hsl(var(--secondary))" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="user1" fill={CHART_COLORS.income.user1} radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="user2" fill={CHART_COLORS.income.user2} radius={[2, 2, 0, 0]} />
                   </BarChart>
                 )}
               </ResponsiveContainer>
             </div>
 
-            <div className="flex justify-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: 'hsl(var(--primary))' }}
-                ></div>
-                <span>{userProfiles.user1}</span>
+            {/* Legenda personalizada com cores corretas */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <span className="font-medium">Receitas</span>
+                </div>
+                <div className="flex items-center gap-4 ml-6">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: CHART_COLORS.income.user1 }}
+                    ></div>
+                    <span>{userProfiles.user1}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: CHART_COLORS.income.user2 }}
+                    ></div>
+                    <span>{userProfiles.user2}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: 'hsl(var(--secondary))' }}
-                ></div>
-                <span>{userProfiles.user2}</span>
+              
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-red-600" />
+                  <span className="font-medium">Despesas</span>
+                </div>
+                <div className="flex items-center gap-4 ml-6">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: CHART_COLORS.expense.user1 }}
+                    ></div>
+                    <span>{userProfiles.user1}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: CHART_COLORS.expense.user2 }}
+                    ></div>
+                    <span>{userProfiles.user2}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </>
