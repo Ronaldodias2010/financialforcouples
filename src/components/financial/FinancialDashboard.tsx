@@ -32,12 +32,13 @@ interface Transaction {
 export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { getFinancialSummary, userPreferredCurrency, refreshData } = useFinancialData();
+  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile">("dashboard");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
+  const [financialComparison, setFinancialComparison] = useState({ incomeChange: 0, expenseChange: 0, balanceChange: 0 });
   const currentUser = "user1"; // Fixed to user1 (logged user)
   
   const financialSummary = getFinancialSummary();
@@ -45,8 +46,14 @@ export const FinancialDashboard = () => {
   useEffect(() => {
     if (user) {
       fetchUserProfile();
+      loadFinancialComparison();
     }
-  }, [user]);
+  }, [user, financialSummary.balance, financialSummary.totalIncome, financialSummary.totalExpenses]);
+
+  const loadFinancialComparison = async () => {
+    const comparison = await getFinancialComparison();
+    setFinancialComparison(comparison);
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -122,7 +129,7 @@ export const FinancialDashboard = () => {
                 currency={financialSummary.currency}
                 icon={Wallet}
                 type="balance"
-                change={2.5}
+                change={financialComparison.balanceChange}
               />
               <FinancialCard
                 title={t('dashboard.income')}
@@ -130,7 +137,7 @@ export const FinancialDashboard = () => {
                 currency={financialSummary.currency}
                 icon={TrendingUp}
                 type="income"
-                change={8.2}
+                change={financialComparison.incomeChange}
               />
               <FinancialCard
                 title={t('dashboard.expenses')}
@@ -138,7 +145,7 @@ export const FinancialDashboard = () => {
                 currency={financialSummary.currency}
                 icon={TrendingDown}
                 type="expense"
-                change={-3.1}
+                change={financialComparison.expenseChange}
               />
             </div>
 

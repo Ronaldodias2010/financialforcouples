@@ -150,6 +150,76 @@ export const useFinancialData = () => {
     };
   };
 
+  const getFinancialComparison = async () => {
+    try {
+      // Get previous month data
+      const prevMonth = new Date();
+      prevMonth.setMonth(prevMonth.getMonth() - 1);
+      
+      const startOfPrevMonth = new Date(prevMonth);
+      startOfPrevMonth.setDate(1);
+      startOfPrevMonth.setHours(0, 0, 0, 0);
+      
+      const endOfPrevMonth = new Date(prevMonth);
+      endOfPrevMonth.setMonth(endOfPrevMonth.getMonth() + 1);
+      endOfPrevMonth.setDate(0);
+      endOfPrevMonth.setHours(23, 59, 59, 999);
+
+      const { data: prevTransactions, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .gte('transaction_date', startOfPrevMonth.toISOString().split('T')[0])
+        .lte('transaction_date', endOfPrevMonth.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      // Calculate previous month totals
+      let prevTotalIncome = 0;
+      let prevTotalExpenses = 0;
+
+      (prevTransactions || []).forEach((transaction) => {
+        const amountInUserCurrency = convertCurrency(
+          transaction.amount,
+          transaction.currency,
+          userPreferredCurrency
+        );
+
+        if (transaction.type === 'income') {
+          prevTotalIncome += amountInUserCurrency;
+        } else {
+          prevTotalExpenses += amountInUserCurrency;
+        }
+      });
+
+      const prevBalance = prevTotalIncome - prevTotalExpenses;
+      const currentSummary = getFinancialSummary();
+
+      // Calculate percentage changes
+      const incomeChange = prevTotalIncome === 0 ? 0 : 
+        ((currentSummary.totalIncome - prevTotalIncome) / prevTotalIncome) * 100;
+      
+      const expenseChange = prevTotalExpenses === 0 ? 0 : 
+        ((currentSummary.totalExpenses - prevTotalExpenses) / prevTotalExpenses) * 100;
+      
+      const balanceChange = prevBalance === 0 ? 0 : 
+        ((currentSummary.balance - prevBalance) / Math.abs(prevBalance)) * 100;
+
+      return {
+        incomeChange: Number(incomeChange.toFixed(1)),
+        expenseChange: Number(expenseChange.toFixed(1)),
+        balanceChange: Number(balanceChange.toFixed(1))
+      };
+    } catch (error) {
+      console.error('Error calculating financial comparison:', error);
+      return {
+        incomeChange: 0,
+        expenseChange: 0,
+        balanceChange: 0
+      };
+    }
+  };
+
   const getTransactionsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
     if (viewMode === 'both') {
       return transactions;
@@ -180,6 +250,7 @@ export const useFinancialData = () => {
     userPreferredCurrency,
     loading,
     getFinancialSummary,
+    getFinancialComparison,
     getTransactionsByUser,
     getExpensesByUser,
     refreshData: fetchTransactions
