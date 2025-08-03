@@ -144,11 +144,11 @@ export const FutureExpensesView = () => {
   };
 
   const calculateCardPaymentAmount = async (card: any, userId: string): Promise<number> => {
-    // Para cartão de crédito, calcular: limite - saldo utilizado
+    // Para cartão de crédito, calcular: limite - saldo atual
     if (card.card_type === 'credit' && card.credit_limit) {
-      const usedAmount = card.current_balance || 0;
-      const availableAmount = card.credit_limit - usedAmount;
-      return Math.max(0, usedAmount); // Retorna o valor utilizado (que deve ser pago)
+      const currentBalance = card.current_balance || 0;
+      const futurePaymentAmount = card.credit_limit - currentBalance;
+      return Math.max(0, futurePaymentAmount);
     }
     
     // Para outros tipos de cartão, usar saldo atual
