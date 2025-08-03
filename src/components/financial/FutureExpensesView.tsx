@@ -176,11 +176,21 @@ export const FutureExpensesView = () => {
 
   const getNextDueDate = (dueDay: number): string => {
     const now = new Date();
+    const currentDay = now.getDate();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     
-    let nextDueDate = new Date(currentYear, currentMonth, dueDay);
+    let nextDueDate: Date;
     
+    // Se ainda não passou o dia de vencimento no mês atual
+    if (currentDay <= dueDay) {
+      nextDueDate = new Date(currentYear, currentMonth, dueDay);
+    } else {
+      // Se já passou, usar o próximo mês
+      nextDueDate = new Date(currentYear, currentMonth + 1, dueDay);
+    }
+    
+    // Garantir que não retorne uma data no passado
     if (nextDueDate <= now) {
       nextDueDate = new Date(currentYear, currentMonth + 1, dueDay);
     }
