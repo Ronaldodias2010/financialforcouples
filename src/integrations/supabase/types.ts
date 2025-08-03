@@ -363,12 +363,78 @@ export type Database = {
           },
         ]
       }
+      user_couples: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
+      user_invites: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          invitee_email: string
+          invitee_name: string
+          inviter_user_id: string
+          status: string
+          temp_password: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitee_email: string
+          invitee_name: string
+          inviter_user_id: string
+          status?: string
+          temp_password: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitee_email?: string
+          invitee_name?: string
+          inviter_user_id?: string
+          status?: string
+          temp_password?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_temp_password: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       account_type: "checking" | "savings" | "investment"
