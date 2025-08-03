@@ -136,11 +136,6 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
                     <p className="text-sm">
                       Limite Disponível: {formatCurrency(card.initial_balance || 0, card.currency)}
                     </p>
-                    {card.current_balance > 0 && (
-                      <p className="text-sm">
-                        Total para Pagamento: {formatCurrency(card.current_balance, card.currency)}
-                      </p>
-                    )}
                     {card.credit_limit && (
                       <p className="text-sm text-muted-foreground">
                         Limite: {formatCurrency(card.credit_limit, card.currency)}
