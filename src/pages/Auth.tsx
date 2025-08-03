@@ -152,7 +152,7 @@ export default function Auth() {
             <img 
               src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png" 
               alt="Financial App Logo" 
-              className="h-20 w-20 object-contain"
+              className="h-28 w-28 object-contain"
             />
           </div>
           <div>
