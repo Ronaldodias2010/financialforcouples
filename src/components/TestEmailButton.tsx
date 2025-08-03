@@ -12,7 +12,7 @@ export default function TestEmailButton() {
     try {
       const { data, error } = await supabase.functions.invoke('test-email', {
         body: {
-          email: 'ronadias2010@gmail.com'
+          email: 'ronadias2010@gmail.com' // Usando seu email verificado
         }
       });
 
