@@ -61,13 +61,10 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [subcategory, setSubcategory] = useState("");
   const [transactionDate, setTransactionDate] = useState<Date>(new Date());
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "deposit" | "transfer">("cash");
-  const [cardId, setCardId] = useState("");
-  const [isInstallment, setIsInstallment] = useState(false);
-  const [totalInstallments, setTotalInstallments] = useState("1");
+  const [accountId, setAccountId] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>("BRL");
   const [categories, setCategories] = useState<Category[]>([]);
-  const [cards, setCards] = useState<Card[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -76,6 +73,9 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   useEffect(() => {
     fetchCategories();
     fetchUserPreferredCurrency();
+    if (type === "income") {
+      fetchAccounts();
+    }
   }, [type]);
 
   const fetchUserPreferredCurrency = async () => {
@@ -117,10 +117,38 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('id, name, account_type, balance, currency')
+        .order('name');
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar as contas",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !description || !categoryId) return;
+
+    // Validar conta para receitas com depósito ou transferência
+    if (type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer") && !accountId) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma conta para o depósito/transferência",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -128,6 +156,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
       const transactionAmount = parseFloat(amount);
 
+      // Inserir transação
       const { error } = await supabase
         .from('transactions')
         .insert({
@@ -142,13 +171,30 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           transaction_date: transactionDate.toISOString().split('T')[0],
           payment_method: paymentMethod,
           card_id: null,
-          account_id: null,
+          account_id: accountId || null,
           is_installment: false,
           total_installments: null,
           installment_number: null
         });
 
       if (error) throw error;
+
+      // Atualizar saldo da conta para receitas com depósito ou transferência
+      if (type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer") && accountId) {
+        const selectedAccount = accounts.find(acc => acc.id === accountId);
+        if (selectedAccount) {
+          const newBalance = selectedAccount.balance + transactionAmount;
+          
+          const { error: updateError } = await supabase
+            .from('accounts')
+            .update({ balance: newBalance })
+            .eq('id', accountId);
+
+          if (updateError) {
+            console.error('Erro ao atualizar saldo da conta:', updateError);
+          }
+        }
+      }
 
       toast({
         title: "Sucesso",
@@ -162,6 +208,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       setSubcategory("");
       setTransactionDate(new Date());
       setPaymentMethod("cash");
+      setAccountId("");
       setCurrency(userPreferredCurrency);
     } catch (error: any) {
       toast({
@@ -319,6 +366,30 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Account Selection for Income with Deposit/Transfer */}
+          {type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer") && (
+            <div>
+              <Label htmlFor="account">{t('transactionForm.selectAccount')}</Label>
+              <Select value={accountId} onValueChange={setAccountId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{account.name}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {account.currency} {account.balance.toFixed(2)}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Category */}
           <div>
