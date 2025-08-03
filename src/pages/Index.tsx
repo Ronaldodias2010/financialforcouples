@@ -30,9 +30,9 @@ const Index = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col items-center text-center mb-8">
             <img 
-              src="/lovable-uploads/dd7ede7f-5f8a-4148-ad57-7447549dd45d.png"
+              src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png"
               alt="Financial Management Logo" 
-              className="h-48 w-48 object-contain -mb-2"
+              className="h-14 w-14 object-contain -mb-14"
             />
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-10">
               Gestão Financeira para Casais
