@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
-import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
-interface ExpenseData {
-  user: string;
-  amount: number;
-  color: string;
+interface FinancialData {
+  category: string;
+  user1: number;
+  user2: number;
 }
 
 interface MonthlyExpense {
@@ -22,23 +22,16 @@ interface MonthlyExpense {
 export const UserExpenseChart = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [chartType, setChartType] = useState<"pie" | "bar">("pie");
   const [period, setPeriod] = useState<"current" | "last3" | "last6">("current");
-  const [transactionType, setTransactionType] = useState<"income" | "expense">("expense");
-  const [expenseData, setExpenseData] = useState<ExpenseData[]>([]);
+  const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyExpense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userProfiles, setUserProfiles] = useState<{[key: string]: string}>({});
-
-  const COLORS = {
-    expense: ['hsl(var(--expense))', 'hsl(var(--primary))'],
-    income: ['hsl(var(--income))', 'hsl(var(--secondary))']
-  };
+  const [userProfiles, setUserProfiles] = useState({ user1: 'Usuário 1', user2: 'Usuário 2' });
 
   useEffect(() => {
     if (user) {
       fetchUserProfiles();
-      fetchExpenseData();
+      fetchFinancialData();
       
       // Set up realtime listener for transactions
       const channel = supabase
@@ -52,7 +45,7 @@ export const UserExpenseChart = () => {
           }, 
           () => {
             console.log('Transaction change detected, refreshing chart...');
-            fetchExpenseData();
+            fetchFinancialData();
           }
         )
         .subscribe();
@@ -61,7 +54,7 @@ export const UserExpenseChart = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, period, transactionType]);
+  }, [user, period]);
 
   const fetchUserProfiles = async () => {
     try {
@@ -87,7 +80,7 @@ export const UserExpenseChart = () => {
     }
   };
 
-  const fetchExpenseData = async () => {
+  const fetchFinancialData = async () => {
     try {
       setLoading(true);
       
@@ -101,17 +94,19 @@ export const UserExpenseChart = () => {
           break;
         case "last3":
           startDate.setMonth(startDate.getMonth() - 3);
+          startDate.setDate(1);
           break;
         case "last6":
           startDate.setMonth(startDate.getMonth() - 6);
+          startDate.setDate(1);
           break;
       }
 
+      // Fetch both income and expense transactions
       const { data: transactions, error } = await supabase
         .from('transactions')
-        .select('owner_user, amount, transaction_date')
+        .select('owner_user, amount, transaction_date, type')
         .eq('user_id', user?.id)
-        .eq('type', transactionType)
         .gte('transaction_date', startDate.toISOString().split('T')[0])
         .lte('transaction_date', endDate.toISOString().split('T')[0]);
 
@@ -119,28 +114,42 @@ export const UserExpenseChart = () => {
       
       console.log('Chart transactions fetched:', transactions);
 
-      // Process data for pie chart
-      const userExpenses = transactions?.reduce((acc: Record<string, number>, transaction) => {
+      // Process data for combined chart
+      const incomeByUser = { user1: 0, user2: 0 };
+      const expenseByUser = { user1: 0, user2: 0 };
+
+      transactions?.forEach((transaction) => {
         // Normalizar owner_user: se for um email ou não for 'user1' ou 'user2', tratar como 'user1'
-        let user = transaction.owner_user || 'user1';
-        if (user !== 'user1' && user !== 'user2') {
-          user = 'user1'; // Emails e outros valores são tratados como user1
+        let owner = transaction.owner_user || 'user1';
+        if (owner !== 'user1' && owner !== 'user2') {
+          owner = 'user1'; // Emails e outros valores são tratados como user1
         }
-        acc[user] = (acc[user] || 0) + transaction.amount;
-        return acc;
-      }, {}) || {};
 
-      const pieData: ExpenseData[] = Object.entries(userExpenses).map(([user, amount], index) => ({
-        user: user === 'user1' ? userProfiles.user1 || t('chart.user1') : userProfiles.user2 || t('chart.user2'),
-        amount: amount,
-        color: COLORS[transactionType][index % COLORS[transactionType].length]
-      }));
+        if (transaction.type === 'income') {
+          incomeByUser[owner as 'user1' | 'user2'] += transaction.amount;
+        } else {
+          expenseByUser[owner as 'user1' | 'user2'] += transaction.amount;
+        }
+      });
 
-      setExpenseData(pieData);
+      const chartData: FinancialData[] = [
+        {
+          category: 'Receitas',
+          user1: incomeByUser.user1,
+          user2: incomeByUser.user2
+        },
+        {
+          category: 'Despesas',
+          user1: expenseByUser.user1,
+          user2: expenseByUser.user2
+        }
+      ];
 
-      // Process data for bar chart (monthly breakdown)
+      setFinancialData(chartData);
+
+      // Process data for monthly breakdown if needed
       if (period !== "current") {
-        const monthlyExpenses: Record<string, { user1: number; user2: number }> = {};
+        const monthlyBreakdown: Record<string, { user1Income: number; user1Expense: number; user2Income: number; user2Expense: number }> = {};
         
         transactions?.forEach(transaction => {
           const month = new Date(transaction.transaction_date).toLocaleDateString('pt-BR', { 
@@ -148,29 +157,32 @@ export const UserExpenseChart = () => {
             year: '2-digit' 
           });
           
-          if (!monthlyExpenses[month]) {
-            monthlyExpenses[month] = { user1: 0, user2: 0 };
+          if (!monthlyBreakdown[month]) {
+            monthlyBreakdown[month] = { user1Income: 0, user1Expense: 0, user2Income: 0, user2Expense: 0 };
           }
           
-          // Normalizar owner_user: se for um email ou não for 'user1' ou 'user2', tratar como 'user1'
-          let userKey = transaction.owner_user || 'user1';
-          if (userKey !== 'user1' && userKey !== 'user2') {
-            userKey = 'user1'; // Emails e outros valores são tratados como user1
+          let owner = transaction.owner_user || 'user1';
+          if (owner !== 'user1' && owner !== 'user2') {
+            owner = 'user1';
           }
-          monthlyExpenses[month][userKey] += transaction.amount;
+
+          if (transaction.type === 'income') {
+            monthlyBreakdown[month][`${owner}Income` as keyof typeof monthlyBreakdown[string]] += transaction.amount;
+          } else {
+            monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += transaction.amount;
+          }
         });
 
-        const barData: MonthlyExpense[] = Object.entries(monthlyExpenses).map(([month, amounts]) => ({
+        const monthlyChartData: MonthlyExpense[] = Object.entries(monthlyBreakdown).map(([month, data]) => ({
           month,
-          user1: amounts.user1,
-          user2: amounts.user2
+          user1: data.user1Income - data.user1Expense, // Net amount
+          user2: data.user2Income - data.user2Expense  // Net amount
         }));
 
-        setMonthlyData(barData.sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime()));
+        setMonthlyData(monthlyChartData);
       }
-
     } catch (error) {
-      console.error('Error fetching expense data:', error);
+      console.error('Erro ao buscar dados financeiros:', error);
     } finally {
       setLoading(false);
     }
@@ -187,21 +199,12 @@ export const UserExpenseChart = () => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-          {chartType === "pie" ? (
-            <>
-              <p className="font-medium">{payload[0].payload.user}</p>
-              <p className="text-primary">{formatCurrency(payload[0].value)}</p>
-            </>
-          ) : (
-            <>
-              <p className="font-medium">{label}</p>
-              {payload.map((entry: any, index: number) => (
-                <p key={index} style={{ color: entry.color }}>
-                  {entry.dataKey === 'user1' ? userProfiles.user1 || t('chart.user1') : userProfiles.user2 || t('chart.user2')}: {formatCurrency(entry.value)}
-                </p>
-              ))}
-            </>
-          )}
+          <p className="font-medium">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.dataKey === 'user1' ? userProfiles.user1 : userProfiles.user2}: {formatCurrency(entry.value)}
+            </p>
+          ))}
         </div>
       );
     }
@@ -219,115 +222,78 @@ export const UserExpenseChart = () => {
     );
   }
 
-  const totalExpenses = expenseData.reduce((sum, item) => sum + item.amount, 0);
-
   return (
     <Card className="p-6 h-full">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {transactionType === "income" ? (
-              <TrendingUp className="h-5 w-5 text-income" />
-            ) : (
-              <TrendingDown className="h-5 w-5 text-expense" />
-            )}
+            <BarChart3 className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">
-              {t('chart.userComparison')}
+              Receitas vs Despesas
             </h3>
           </div>
           <div className="flex gap-2">
-            <Select value={transactionType} onValueChange={(value: "income" | "expense") => setTransactionType(value)}>
-              <SelectTrigger className="w-28">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="expense">{t('chart.expenses')}</SelectItem>
-                <SelectItem value="income">{t('chart.income')}</SelectItem>
-              </SelectContent>
-            </Select>
-            
             <Select value={period} onValueChange={(value: "current" | "last3" | "last6") => setPeriod(value)}>
-              <SelectTrigger className="w-28">
+              <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="current">{t('chart.currentMonth')}</SelectItem>
-                <SelectItem value="last3">{t('chart.last3Months')}</SelectItem>
-                <SelectItem value="last6">{t('chart.last6Months')}</SelectItem>
+                <SelectItem value="current">Mês Atual</SelectItem>
+                <SelectItem value="last3">Últimos 3 Meses</SelectItem>
+                <SelectItem value="last6">Últimos 6 Meses</SelectItem>
               </SelectContent>
             </Select>
-            
-            {period !== "current" && (
-              <Select value={chartType} onValueChange={(value: "pie" | "bar") => setChartType(value)}>
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pie">{t('chart.pieChart')}</SelectItem>
-                  <SelectItem value="bar">{t('chart.barChart')}</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
           </div>
         </div>
 
-        {expenseData.length === 0 ? (
+        {financialData.length === 0 || financialData.every(item => item.user1 === 0 && item.user2 === 0) ? (
           <div className="h-48 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('chart.noData').replace('{type}', transactionType === "income" ? t('chart.receipt') : t('chart.expense'))}</p>
+              <p>Nenhum dado financeiro encontrado para este período</p>
             </div>
           </div>
         ) : (
           <>
-            <div className="h-48">
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                {chartType === "pie" || period === "current" ? (
-                  <PieChart>
-                    <Pie
-                      data={expenseData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="amount"
-                    >
-                      {expenseData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
+                {period === "current" ? (
+                  <BarChart data={financialData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis dataKey="category" className="text-xs" />
+                    <YAxis className="text-xs" />
                     <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
+                    <Bar dataKey="user1" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="user2" fill="hsl(var(--secondary))" radius={[2, 2, 0, 0]} />
+                  </BarChart>
                 ) : (
                   <BarChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                     <XAxis dataKey="month" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="user1" fill={COLORS[transactionType][0]} radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="user2" fill={COLORS[transactionType][1]} radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="user1" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="user2" fill="hsl(var(--secondary))" radius={[2, 2, 0, 0]} />
                   </BarChart>
                 )}
               </ResponsiveContainer>
             </div>
 
             <div className="flex justify-center gap-4 text-sm">
-              {expenseData.map((item, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: item.color }}
-                  ></div>
-                  <span>{item.user}: {formatCurrency(item.amount)}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center pt-2 border-t">
-              <p className="text-sm text-muted-foreground">
-                {t('chart.total')}: <span className="font-semibold text-foreground">{formatCurrency(totalExpenses)}</span>
-              </p>
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: 'hsl(var(--primary))' }}
+                ></div>
+                <span>{userProfiles.user1}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: 'hsl(var(--secondary))' }}
+                ></div>
+                <span>{userProfiles.user2}</span>
+              </div>
             </div>
           </>
         )}
