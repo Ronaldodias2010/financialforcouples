@@ -206,7 +206,8 @@ export const FutureExpensesView = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR");
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString("pt-BR");
   };
 
   const getTypeIcon = (type: string) => {
