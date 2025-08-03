@@ -63,6 +63,7 @@ export type Database = {
           current_balance: number | null
           due_date: number | null
           id: string
+          initial_balance: number | null
           last_four_digits: string | null
           name: string
           owner_user: string | null
@@ -78,6 +79,7 @@ export type Database = {
           current_balance?: number | null
           due_date?: number | null
           id?: string
+          initial_balance?: number | null
           last_four_digits?: string | null
           name: string
           owner_user?: string | null
@@ -93,6 +95,7 @@ export type Database = {
           current_balance?: number | null
           due_date?: number | null
           id?: string
+          initial_balance?: number | null
           last_four_digits?: string | null
           name?: string
           owner_user?: string | null
