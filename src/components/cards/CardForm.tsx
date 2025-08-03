@@ -175,7 +175,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           )}
 
           <div>
-            <Label htmlFor="current_balance">{t('cards.currentBalance')}</Label>
+            <Label htmlFor="current_balance">Saldo Inicial</Label>
             <Input
               id="current_balance"
               type="number"
