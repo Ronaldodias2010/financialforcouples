@@ -2,6 +2,7 @@ import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
+import TestEmailButton from "@/components/TestEmailButton";
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -11,6 +12,7 @@ const Index = () => {
       <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex justify-end items-center">
           <div className="flex items-center gap-4">
+            <TestEmailButton />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
               <span>{user?.email}</span>
