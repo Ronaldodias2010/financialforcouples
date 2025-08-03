@@ -28,7 +28,7 @@ interface Transaction {
   category_id: string;
   subcategory?: string;
   transaction_date: Date;
-  payment_method: "cash" | "deposit" | "transfer";
+  payment_method: "cash" | "deposit" | "transfer" | "debit_card" | "credit_card";
   card_id?: string;
   user_id: string;
   currency: CurrencyCode;
@@ -60,12 +60,14 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [categoryId, setCategoryId] = useState("");
   const [subcategory, setSubcategory] = useState("");
   const [transactionDate, setTransactionDate] = useState<Date>(new Date());
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "deposit" | "transfer">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "deposit" | "transfer" | "debit_card" | "credit_card">("cash");
   const [accountId, setAccountId] = useState("");
+  const [cardId, setCardId] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>("BRL");
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
@@ -75,6 +77,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     fetchUserPreferredCurrency();
     if (type === "income") {
       fetchAccounts();
+    } else {
+      fetchCards();
     }
   }, [type]);
 
@@ -135,6 +139,24 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     }
   };
 
+  const fetchCards = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cards')
+        .select('id, name, card_type')
+        .order('name');
+
+      if (error) throw error;
+      setCards(data || []);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os cartões",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +167,16 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       toast({
         title: "Erro",
         description: "Selecione uma conta para o depósito/transferência",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar cartão para despesas com cartão
+    if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "credit_card") && !cardId) {
+      toast({
+        title: "Erro",
+        description: "Selecione um cartão para o pagamento",
         variant: "destructive",
       });
       return;
@@ -170,7 +202,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           subcategory: subcategory || null,
           transaction_date: transactionDate.toISOString().split('T')[0],
           payment_method: paymentMethod,
-          card_id: null,
+          card_id: cardId || null,
           account_id: accountId || null,
           is_installment: false,
           total_installments: null,
@@ -209,6 +241,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       setTransactionDate(new Date());
       setPaymentMethod("cash");
       setAccountId("");
+      setCardId("");
       setCurrency(userPreferredCurrency);
     } catch (error: any) {
       toast({
@@ -355,14 +388,23 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           {/* Payment Method */}
           <div>
             <Label>{type === "income" ? t('transactionForm.receiptMethod') : t('transactionForm.paymentMethod')}</Label>
-            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "deposit" | "transfer")}>
+            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "deposit" | "transfer" | "debit_card" | "credit_card")}>
               <SelectTrigger>
                 <SelectValue placeholder={t('transactionForm.selectPaymentMethod')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="cash">{t('transactionForm.cash')}</SelectItem>
-                <SelectItem value="deposit">{t('transactionForm.deposit')}</SelectItem>
-                <SelectItem value="transfer">{t('transactionForm.transfer')}</SelectItem>
+                {type === "income" ? (
+                  <>
+                    <SelectItem value="deposit">{t('transactionForm.deposit')}</SelectItem>
+                    <SelectItem value="transfer">{t('transactionForm.transfer')}</SelectItem>
+                  </>
+                ) : (
+                  <>
+                    <SelectItem value="debit_card">{t('transactionForm.debitCard')}</SelectItem>
+                    <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -382,6 +424,30 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                         <span>{account.name}</span>
                         <span className="text-muted-foreground ml-2">
                           {account.currency} {account.balance.toFixed(2)}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Card Selection for Expenses with Card */}
+          {type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "credit_card") && (
+            <div>
+              <Label htmlFor="card">{t('transactionForm.selectCard')}</Label>
+              <Select value={cardId} onValueChange={setCardId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('transactionForm.selectCardPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {cards.map((card) => (
+                    <SelectItem key={card.id} value={card.id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{card.name}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {card.card_type}
                         </span>
                       </div>
                     </SelectItem>

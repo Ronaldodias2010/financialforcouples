@@ -24,7 +24,7 @@ interface Transaction {
   category_id: string;
   subcategory?: string;
   transaction_date: Date;
-  payment_method: "cash" | "deposit" | "transfer";
+  payment_method: "cash" | "deposit" | "transfer" | "debit_card" | "credit_card";
   card_id?: string;
   user_id: string;
 }
