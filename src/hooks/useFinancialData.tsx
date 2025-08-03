@@ -44,6 +44,33 @@ export const useFinancialData = () => {
     }
   }, [userPreferredCurrency]);
 
+  // Listen for profile changes
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          if (payload.new && payload.new.preferred_currency) {
+            setUserPreferredCurrency(payload.new.preferred_currency as CurrencyCode);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const fetchUserPreferredCurrency = async () => {
     try {
       const { data, error } = await supabase
