@@ -14,6 +14,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
+  const [isTempLogin, setIsTempLogin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -31,19 +32,46 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) throw error;
-      
-      if (data.user) {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Redirecionando para o dashboard...",
+      // Se for login com senha provisória, usar a edge function
+      if (isTempLogin) {
+        const { data, error } = await supabase.functions.invoke('validate-temp-login', {
+          body: {
+            email,
+            temp_password: password
+          }
         });
-        window.location.href = '/';
+
+        if (error) throw error;
+
+        if (data.success) {
+          toast({
+            title: "Login realizado com sucesso!",
+            description: "Conta vinculada com sucesso. Redirecionando...",
+          });
+          
+          // Usar o session_url para fazer login
+          if (data.session_url) {
+            window.location.href = data.session_url;
+          } else {
+            window.location.href = '/';
+          }
+        }
+      } else {
+        // Login normal
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (error) throw error;
+        
+        if (data.user) {
+          toast({
+            title: "Login realizado com sucesso!",
+            description: "Redirecionando para o dashboard...",
+          });
+          window.location.href = '/';
+        }
       }
     } catch (error: any) {
       toast({
@@ -212,15 +240,32 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Senha</Label>
+                  <Label htmlFor="signin-password">
+                    {isTempLogin ? "Senha Provisória" : "Senha"}
+                  </Label>
                   <Input
                     id="signin-password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={isTempLogin ? "Senha provisória do convite" : "••••••••"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="temp-login"
+                    checked={isTempLogin}
+                    onChange={(e) => setIsTempLogin(e.target.checked)}
+                    className="w-4 h-4 text-primary bg-background border-gray-300 rounded focus:ring-primary focus:ring-2"
+                  />
+                  <Label 
+                    htmlFor="temp-login" 
+                    className="text-sm font-medium text-muted-foreground cursor-pointer"
+                  >
+                    Login com senha provisória (convite)
+                  </Label>
                 </div>
                 <Button 
                   type="submit" 
