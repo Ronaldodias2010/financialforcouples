@@ -74,16 +74,42 @@ export const UserExpenseChart = () => {
     try {
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('display_name, second_user_name')
+        .select('display_name')
         .eq('user_id', user?.id)
         .single();
 
       if (error) throw error;
 
+      let secondUserName = t('chart.user2');
+
+      // Only show second user if there's an active couple relationship
+      const { data: coupleData, error: coupleError } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (coupleData) {
+        // Get partner's ID (the other user in the couple)
+        const partnerId = coupleData.user1_id === user?.id ? coupleData.user2_id : coupleData.user1_id;
+        
+        // Get partner's profile
+        const { data: partnerData, error: partnerError } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", partnerId)
+          .maybeSingle();
+
+        if (partnerData?.display_name) {
+          secondUserName = partnerData.display_name;
+        }
+      }
+
       console.log('Profiles fetched:', profiles);
       setUserProfiles({
         user1: profiles?.display_name || t('chart.user1'),
-        user2: profiles?.second_user_name || t('chart.user2')
+        user2: secondUserName
       });
     } catch (error) {
       console.error('Erro ao buscar perfis:', error);

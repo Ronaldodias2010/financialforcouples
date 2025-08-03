@@ -59,17 +59,40 @@ export const FinancialDashboard = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, second_user_name")
+        .select("display_name")
         .eq("user_id", user?.id)
         .maybeSingle();
 
-      if (data) {
-        if (data.display_name) {
-          setUserDisplayName(data.display_name);
+      if (data?.display_name) {
+        setUserDisplayName(data.display_name);
+      }
+
+      // Only show second user if there's an active couple relationship
+      const { data: coupleData, error: coupleError } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (coupleData) {
+        // Get partner's ID (the other user in the couple)
+        const partnerId = coupleData.user1_id === user?.id ? coupleData.user2_id : coupleData.user1_id;
+        
+        // Get partner's profile
+        const { data: partnerData, error: partnerError } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", partnerId)
+          .maybeSingle();
+
+        if (partnerData?.display_name) {
+          setSecondUserName(partnerData.display_name);
+        } else {
+          setSecondUserName("");
         }
-        if (data.second_user_name) {
-          setSecondUserName(data.second_user_name);
-        }
+      } else {
+        setSecondUserName("");
       }
     } catch (error) {
       console.error("Error fetching profile:", error);

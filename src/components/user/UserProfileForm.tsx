@@ -123,6 +123,31 @@ export const UserProfileForm = () => {
 
     setLoading(true);
     try {
+      // Check if there's an existing invite for this email
+      const { data: existingInvite, error: checkError } = await supabase
+        .from('user_invites')
+        .select('created_at, status')
+        .eq('inviter_user_id', user?.id)
+        .eq('invitee_email', profile.second_user_email)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      // If there's a pending invite less than 7 days old, don't allow resending
+      if (existingInvite && existingInvite.status === 'pending') {
+        const inviteDate = new Date(existingInvite.created_at);
+        const daysDiff = (new Date().getTime() - inviteDate.getTime()) / (1000 * 3600 * 24);
+        
+        if (daysDiff < 7) {
+          toast.error(`Você pode reenviar o convite após ${Math.ceil(7 - daysDiff)} dias`);
+          return;
+        }
+      }
+
       const { error } = await supabase.functions.invoke('send-invite', {
         body: {
           email: profile.second_user_email,
@@ -131,12 +156,63 @@ export const UserProfileForm = () => {
         }
       });
 
-      if (error) throw error;
-
-      toast.success("Convite enviado com sucesso!");
+      if (error) {
+        // Check if it's the Resend domain verification error
+        if (error.message && error.message.includes('verify a domain')) {
+          toast.error("Para enviar emails para outros usuários, é necessário verificar um domínio no Resend. Por enquanto, você só pode enviar convites para ronadias2010@gmail.com");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Convite enviado com sucesso!");
+      }
     } catch (error) {
       console.error("Error sending invite:", error);
       toast.error("Erro ao enviar convite");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeIncompleteUser = async () => {
+    if (!profile.second_user_email) {
+      toast.error("Nenhum usuário para remover");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Remove pending invites
+      const { error: inviteError } = await supabase
+        .from('user_invites')
+        .delete()
+        .eq('inviter_user_id', user?.id)
+        .eq('invitee_email', profile.second_user_email);
+
+      if (inviteError) throw inviteError;
+
+      // Clear the second user fields
+      setProfile(prev => ({
+        ...prev,
+        second_user_name: "",
+        second_user_email: ""
+      }));
+
+      // Update profile in database
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          second_user_name: null,
+          second_user_email: null
+        })
+        .eq("user_id", user?.id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Usuário removido com sucesso! Agora você pode reenviar o convite.");
+    } catch (error) {
+      console.error("Error removing user:", error);
+      toast.error("Erro ao remover usuário");
     } finally {
       setLoading(false);
     }
@@ -250,16 +326,28 @@ export const UserProfileForm = () => {
                         Email onde o convite será enviado para o segundo usuário se cadastrar
                       </p>
                     </div>
-                    {profile.second_user_email && profile.second_user_name && (
-                      <Button 
-                        onClick={sendInvite} 
-                        disabled={loading}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        {loading ? t('userProfile.sending') : t('userProfile.sendInvite')}
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {profile.second_user_email && profile.second_user_name && (
+                        <Button 
+                          onClick={sendInvite} 
+                          disabled={loading}
+                          variant="outline"
+                          className="flex-1"
+                        >
+                          {loading ? t('userProfile.sending') : t('userProfile.sendInvite')}
+                        </Button>
+                      )}
+                      {profile.second_user_email && (
+                        <Button 
+                          onClick={removeIncompleteUser} 
+                          disabled={loading}
+                          variant="outline"
+                          className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                        >
+                          {loading ? "Removendo..." : "Remover Usuário"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
