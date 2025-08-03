@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { Wallet, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ interface AccountData {
   id: string;
   name: string;
   account_type: string;
+  account_model: string | null;
   balance: number;
   currency: string;
 }
@@ -20,6 +22,7 @@ interface AccountListProps {
 
 export const AccountList = ({ refreshTrigger }: AccountListProps) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [accounts, setAccounts] = useState<AccountData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +44,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
       setAccounts(data || []);
     } catch (error) {
       console.error("Error fetching accounts:", error);
-      toast.error("Erro ao carregar contas");
+      toast.error(t('messages.accountError') || "Erro ao carregar contas");
     } finally {
       setLoading(false);
     }
@@ -56,11 +59,11 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
 
       if (error) throw error;
 
-      toast.success("Conta removida com sucesso!");
+      toast.success(t('messages.accountDeleted') || "Conta removida com sucesso!");
       fetchAccounts();
     } catch (error) {
       console.error("Error deleting account:", error);
-      toast.error("Erro ao remover conta");
+      toast.error(t('messages.accountDeleteError') || "Erro ao remover conta");
     }
   };
 
@@ -73,26 +76,35 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
 
   const getAccountTypeLabel = (type: string) => {
     const types = {
-      checking: "Conta Corrente",
-      savings: "Poupança",
-      investment: "Investimento",
-      other: "Outra"
+      checking: t('accounts.types.checking') || "Conta Corrente",
+      savings: t('accounts.types.savings') || "Poupança",
+      investment: t('accounts.types.investment') || "Investimento",
+      other: t('accounts.types.other') || "Outra"
     };
     return types[type as keyof typeof types] || type;
   };
 
+  const getAccountModelLabel = (model: string | null) => {
+    if (!model) return "";
+    const models = {
+      personal: t('accounts.models.personal') || "Pessoal",
+      business: t('accounts.models.business') || "Empresarial"
+    };
+    return models[model as keyof typeof models] || model;
+  };
+
   if (loading) {
-    return <div>Carregando contas...</div>;
+    return <div>{t('common.loading') || "Carregando contas..."}</div>;
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Suas Contas</h3>
+      <h3 className="text-lg font-semibold">{t('accounts.yourAccounts') || "Suas Contas"}</h3>
       
       {accounts.length === 0 ? (
         <Card className="p-6 text-center text-muted-foreground">
           <Wallet className="h-12 w-12 mx-auto mb-4" />
-          <p>Nenhuma conta cadastrada</p>
+          <p>{t('accounts.noAccounts') || "Nenhuma conta cadastrada"}</p>
         </Card>
       ) : (
         <div className="grid gap-4">
@@ -105,6 +117,11 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                     <h4 className="font-semibold">{account.name}</h4>
                     <p className="text-sm text-muted-foreground">
                       {getAccountTypeLabel(account.account_type)}
+                      {account.account_model && (
+                        <span className="ml-2 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs">
+                          {getAccountModelLabel(account.account_model)}
+                        </span>
+                      )}
                     </p>
                     <p className="text-lg font-bold text-primary">
                       {formatCurrency(account.balance, account.currency)}
