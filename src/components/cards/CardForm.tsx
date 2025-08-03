@@ -46,6 +46,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
             credit_limit: cardData.credit_limit ? parseFloat(cardData.credit_limit) : null,
             current_balance: 0, // Será calculado pelo trigger baseado nas transações
             initial_balance: parseFloat(cardData.current_balance) || 0,
+            initial_balance_original: parseFloat(cardData.current_balance) || 0, // Valor inicial fixo
             currency: cardData.currency as "BRL" | "USD" | "EUR",
             due_date: cardData.due_date ? parseInt(cardData.due_date) : null,
             closing_date: cardData.closing_date ? parseInt(cardData.closing_date) : null
