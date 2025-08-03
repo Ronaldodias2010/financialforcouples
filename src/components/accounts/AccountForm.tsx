@@ -73,7 +73,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nome da Conta</Label>
+            <Label htmlFor="name">{t('accounts.name') || 'Nome da Conta'}</Label>
             <Input
               id="name"
               value={accountData.name}
@@ -84,19 +84,18 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="account_type">Tipo da Conta</Label>
+            <Label htmlFor="account_type">{t('accounts.type') || 'Tipo da Conta'}</Label>
             <Select 
               value={accountData.account_type} 
               onValueChange={(value) => setAccountData(prev => ({ ...prev, account_type: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder={t('accounts.selectType') || 'Selecione o tipo'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="checking">Conta Corrente</SelectItem>
-                <SelectItem value="savings">Poupança</SelectItem>
-                <SelectItem value="investment">Investimento</SelectItem>
-                
+                <SelectItem value="checking">{t('accounts.types.checking') || 'Conta Corrente'}</SelectItem>
+                <SelectItem value="savings">{t('accounts.types.savings') || 'Poupança'}</SelectItem>
+                <SelectItem value="investment">{t('accounts.types.investment') || 'Investimento'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -111,14 +110,14 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
                 <SelectValue placeholder="Selecione o modelo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="personal">Pessoal</SelectItem>
-                <SelectItem value="business">Empresarial</SelectItem>
+                <SelectItem value="personal">{t('accounts.models.personal') || 'Pessoal'}</SelectItem>
+                <SelectItem value="business">{t('accounts.models.business') || 'Empresarial'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="balance">Saldo Atual</Label>
+            <Label htmlFor="balance">{t('accounts.balance') || 'Saldo Atual'}</Label>
             <Input
               id="balance"
               type="number"
@@ -148,7 +147,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Adicionando..." : "Adicionar Conta"}
+            {loading ? (t('accounts.adding') || "Adicionando...") : (t('accounts.addAccount') || "Adicionar Conta")}
           </Button>
         </form>
       </div>
