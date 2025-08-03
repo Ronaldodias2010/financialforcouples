@@ -16,6 +16,7 @@ interface FutureExpense {
   category: string;
   card_name?: string;
   installment_info?: string;
+  owner_user?: string;
 }
 
 export const FutureExpensesView = () => {
@@ -44,7 +45,7 @@ export const FutureExpensesView = () => {
         .select(`
           *,
           categories(name),
-          cards(name)
+          cards(name, owner_user)
         `)
         .eq("user_id", user.id)
         .eq("is_installment", true)
@@ -58,7 +59,7 @@ export const FutureExpensesView = () => {
         .select(`
           *,
           categories(name),
-          cards(name),
+          cards(name, owner_user),
           accounts(name)
         `)
         .eq("user_id", user.id)
@@ -91,7 +92,8 @@ export const FutureExpensesView = () => {
           type: 'installment',
           category: installment.categories?.name || 'Sem categoria',
           card_name: installment.cards?.name,
-          installment_info: `${installment.installment_number}/${installment.total_installments}`
+          installment_info: `${installment.installment_number}/${installment.total_installments}`,
+          owner_user: installment.cards?.owner_user || installment.owner_user
         });
       });
 
@@ -104,7 +106,8 @@ export const FutureExpensesView = () => {
           due_date: recur.next_due_date,
           type: 'recurring',
           category: recur.categories?.name || 'Sem categoria',
-          card_name: recur.cards?.name || recur.accounts?.name
+          card_name: recur.cards?.name || recur.accounts?.name,
+          owner_user: recur.cards?.owner_user || recur.owner_user
         });
       });
 
@@ -121,7 +124,8 @@ export const FutureExpensesView = () => {
               due_date: nextDueDate,
               type: 'card_payment',
               category: 'Cartão de Crédito',
-              card_name: card.name
+              card_name: card.name,
+              owner_user: card.owner_user
             });
           }
         }
@@ -140,54 +144,15 @@ export const FutureExpensesView = () => {
   };
 
   const calculateCardPaymentAmount = async (card: any, userId: string): Promise<number> => {
-    // Se não tem data de fechamento, usar saldo atual
-    if (!card.closing_date) {
-      return card.current_balance || 0;
+    // Para cartão de crédito, calcular: limite - saldo utilizado
+    if (card.card_type === 'credit' && card.credit_limit) {
+      const usedAmount = card.current_balance || 0;
+      const availableAmount = card.credit_limit - usedAmount;
+      return Math.max(0, usedAmount); // Retorna o valor utilizado (que deve ser pago)
     }
-
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
     
-    // Determinar período de fechamento (do fechamento anterior até o próximo fechamento)
-    let currentClosingDate = new Date(currentYear, currentMonth, card.closing_date);
-    let previousClosingDate = new Date(currentYear, currentMonth - 1, card.closing_date);
-    
-    // Se ainda não passou da data de fechamento deste mês
-    if (now.getDate() < card.closing_date) {
-      currentClosingDate = new Date(currentYear, currentMonth, card.closing_date);
-      previousClosingDate = new Date(currentYear, currentMonth - 1, card.closing_date);
-    } else {
-      // Já passou da data de fechamento, próximo fechamento é mês que vem
-      currentClosingDate = new Date(currentYear, currentMonth + 1, card.closing_date);
-      previousClosingDate = new Date(currentYear, currentMonth, card.closing_date);
-    }
-
-    try {
-      // Buscar transações do cartão no período desde o último fechamento
-      const { data: transactions, error } = await supabase
-        .from("transactions")
-        .select("amount, type")
-        .eq("user_id", userId)
-        .eq("card_id", card.id)
-        .gte("transaction_date", previousClosingDate.toISOString().split('T')[0])
-        .lt("transaction_date", currentClosingDate.toISOString().split('T')[0]);
-
-      if (error) throw error;
-
-      // Calcular saldo baseado nas transações do período
-      const periodBalance = transactions?.reduce((total, transaction) => {
-        return transaction.type === 'expense' ? total + transaction.amount : total - transaction.amount;
-      }, 0) || 0;
-
-      // Somar com saldo anterior (se existir)
-      const totalBalance = (card.current_balance || 0) + periodBalance;
-
-      return Math.max(0, totalBalance); // Não pode ser negativo
-    } catch (error) {
-      console.error("Error calculating card payment amount:", error);
-      return card.current_balance || 0;
-    }
+    // Para outros tipos de cartão, usar saldo atual
+    return card.current_balance || 0;
   };
 
   const getNextDueDate = (dueDay: number): string => {
@@ -321,7 +286,7 @@ export const FutureExpensesView = () => {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {expense.category} {expense.card_name && `• ${expense.card_name}`}
+                        {expense.category} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${expense.owner_user === 'user1' ? 'Usuário 1' : 'Usuário 2'}`}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Vencimento: {formatDate(expense.due_date)}
