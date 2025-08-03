@@ -37,6 +37,13 @@ export const useFinancialData = () => {
     }
   }, [user]);
 
+  // Re-fetch data when preferred currency changes
+  useEffect(() => {
+    if (user && userPreferredCurrency) {
+      fetchTransactions();
+    }
+  }, [userPreferredCurrency]);
+
   const fetchUserPreferredCurrency = async () => {
     try {
       const { data, error } = await supabase

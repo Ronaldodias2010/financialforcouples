@@ -24,12 +24,11 @@ export const FinancialCard = ({
   change,
   className 
 }: FinancialCardProps) => {
-  const { convertCurrency, formatCurrency } = useCurrencyConverter();
+  const { formatCurrency } = useCurrencyConverter();
   
-  const finalDisplayCurrency = displayCurrency || currency;
-  const displayAmount = currency !== finalDisplayCurrency 
-    ? convertCurrency(amount, currency, finalDisplayCurrency)
-    : amount;
+  // Use the provided currency directly since amount is already converted
+  const finalDisplayCurrency = currency;
+  const displayAmount = amount;
 
   const getColorClasses = () => {
     switch (type) {
