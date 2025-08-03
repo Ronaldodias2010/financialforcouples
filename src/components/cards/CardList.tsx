@@ -134,11 +134,11 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
                       {getOwnerName(card.owner_user)}
                     </p>
                     <p className="text-sm">
-                      Saldo Inicial: {formatCurrency(card.initial_balance || 0, card.currency)}
+                      Limite Disponível: {formatCurrency(card.initial_balance || 0, card.currency)}
                     </p>
                     {card.current_balance > 0 && (
                       <p className="text-sm">
-                        Gastos Realizados: {formatCurrency(card.current_balance, card.currency)}
+                        Total para Pagamento: {formatCurrency(card.current_balance, card.currency)}
                       </p>
                     )}
                     {card.credit_limit && (
