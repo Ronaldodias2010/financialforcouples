@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       accounts: {
         Row: {
+          account_model: string | null
           account_type: Database["public"]["Enums"]["account_type"]
           balance: number
           created_at: string
@@ -27,6 +28,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_model?: string | null
           account_type: Database["public"]["Enums"]["account_type"]
           balance?: number
           created_at?: string
@@ -38,6 +40,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_model?: string | null
           account_type?: Database["public"]["Enums"]["account_type"]
           balance?: number
           created_at?: string

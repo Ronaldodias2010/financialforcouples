@@ -167,6 +167,14 @@ export const FinancialDashboard = () => {
               <Button 
                 variant="outline" 
                 className="h-20 flex flex-col gap-2"
+                onClick={() => setCurrentPage("accounts")}
+              >
+                <Wallet className="h-6 w-6" />
+                <span>{t('nav.accounts')}</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
                 onClick={() => setCurrentPage("cards")}
               >
                 <CreditCard className="h-6 w-6" />
@@ -175,14 +183,6 @@ export const FinancialDashboard = () => {
               <Button variant="outline" className="h-20 flex flex-col gap-2">
                 <TrendingUp className="h-6 w-6" />
                 <span>Investimentos</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col gap-2"
-                onClick={() => setCurrentPage("accounts")}
-              >
-                <Wallet className="h-6 w-6" />
-                <span>{t('nav.accounts')}</span>
               </Button>
               <Button 
                 variant="outline" 

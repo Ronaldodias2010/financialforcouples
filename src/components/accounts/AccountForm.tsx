@@ -21,6 +21,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
   const [accountData, setAccountData] = useState({
     name: "",
     account_type: "",
+    account_model: "personal",
     balance: "",
     currency: "BRL"
   });
@@ -38,6 +39,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           owner_user: "user1",
           name: accountData.name,
           account_type: accountData.account_type as "checking" | "savings" | "investment",
+          account_model: accountData.account_model as "personal" | "business",
           balance: parseFloat(accountData.balance) || 0,
           currency: accountData.currency as "BRL" | "USD" | "EUR"
         });
@@ -48,6 +50,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
       setAccountData({
         name: "",
         account_type: "",
+        account_model: "personal",
         balance: "",
         currency: "BRL"
       });
@@ -94,6 +97,22 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
                 <SelectItem value="savings">Poupança</SelectItem>
                 <SelectItem value="investment">Investimento</SelectItem>
                 
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="account_model">Modelo da Conta</Label>
+            <Select 
+              value={accountData.account_model} 
+              onValueChange={(value) => setAccountData(prev => ({ ...prev, account_model: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o modelo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="personal">Pessoal</SelectItem>
+                <SelectItem value="business">Empresarial</SelectItem>
               </SelectContent>
             </Select>
           </div>
