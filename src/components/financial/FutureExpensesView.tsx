@@ -24,12 +24,31 @@ export const FutureExpensesView = () => {
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
+      fetchUserProfile();
       fetchFutureExpenses();
     }
   }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const fetchFutureExpenses = async () => {
     if (!user) return;
@@ -219,6 +238,15 @@ export const FutureExpensesView = () => {
     }
   };
 
+  const getOwnerName = (ownerUser: string) => {
+    if (ownerUser === 'user1') {
+      return userProfile?.display_name || 'Usuário Principal';
+    } else if (ownerUser === 'user2') {
+      return userProfile?.second_user_name || 'Usuário 2';
+    }
+    return ownerUser;
+  };
+
   const categories = Array.from(new Set(futureExpenses.map(expense => expense.category)));
   const filteredExpenses = selectedCategory === "all" 
     ? futureExpenses 
@@ -286,7 +314,7 @@ export const FutureExpensesView = () => {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {expense.category} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${expense.owner_user === 'user1' ? 'Usuário 1' : 'Usuário 2'}`}
+                        {expense.category} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Vencimento: {formatDate(expense.due_date)}

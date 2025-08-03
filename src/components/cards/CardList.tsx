@@ -16,6 +16,7 @@ interface CardData {
   currency: string;
   due_date: number | null;
   closing_date: number | null;
+  owner_user: string;
 }
 
 interface CardListProps {
@@ -26,12 +27,31 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
   const { user } = useAuth();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
+      fetchUserProfile();
       fetchCards();
     }
   }, [user, refreshTrigger]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const fetchCards = async () => {
     try {
@@ -75,6 +95,15 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
     }).format(value);
   };
 
+  const getOwnerName = (ownerUser: string) => {
+    if (ownerUser === 'user1') {
+      return userProfile?.display_name || 'Usuário Principal';
+    } else if (ownerUser === 'user2') {
+      return userProfile?.second_user_name || 'Usuário 2';
+    }
+    return ownerUser;
+  };
+
   if (loading) {
     return <div>Carregando cartões...</div>;
   }
@@ -99,6 +128,9 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
                     <h4 className="font-semibold">{card.name}</h4>
                     <p className="text-sm text-muted-foreground">
                       {card.card_type} • ****{card.last_four_digits}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Dono: {getOwnerName(card.owner_user)}
                     </p>
                     <p className="text-sm">
                       Saldo: {formatCurrency(card.current_balance, card.currency)}
