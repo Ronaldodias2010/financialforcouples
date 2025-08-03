@@ -45,6 +45,14 @@ interface Card {
   card_type: string;
 }
 
+interface Account {
+  id: string;
+  name: string;
+  account_type: string;
+  balance: number;
+  currency: string;
+}
+
 export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
@@ -60,6 +68,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>("BRL");
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accountId, setAccountId] = useState("");
   const { toast } = useToast();
   const { t } = useLanguage();
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
@@ -67,6 +77,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   useEffect(() => {
     fetchCategories();
     fetchCards();
+    fetchAccounts();
     fetchUserPreferredCurrency();
   }, [type]);
 
@@ -127,13 +138,67 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('id, name, account_type, balance, currency')
+        .order('name');
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar as contas",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !description || !categoryId) return;
+    
+    // Validação específica para cartão de débito
+    if (paymentMethod === 'debit_card' && !accountId) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma conta para débito",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
+
+      const transactionAmount = parseFloat(amount);
+
+      // Se for cartão de débito, atualizar saldo da conta
+      if (paymentMethod === 'debit_card' && accountId) {
+        const selectedAccount = accounts.find(acc => acc.id === accountId);
+        if (!selectedAccount) {
+          throw new Error("Conta selecionada não encontrada");
+        }
+
+        // Converter o valor da transação para a moeda da conta
+        const amountInAccountCurrency = convertCurrency(transactionAmount, currency, selectedAccount.currency as CurrencyCode);
+        
+        // Calcular novo saldo (subtrair para despesa, somar para receita)
+        const newBalance = type === 'expense' 
+          ? selectedAccount.balance - amountInAccountCurrency
+          : selectedAccount.balance + amountInAccountCurrency;
+
+        // Atualizar saldo da conta
+        const { error: accountError } = await supabase
+          .from('accounts')
+          .update({ balance: newBalance })
+          .eq('id', accountId);
+
+        if (accountError) throw accountError;
+      }
 
       const { error } = await supabase
         .from('transactions')
@@ -141,7 +206,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           user_id: user.id,
           owner_user: user.email || "user1",
           type,
-          amount: parseFloat(amount),
+          amount: transactionAmount,
           currency: currency,
           description,
           category_id: categoryId,
@@ -149,6 +214,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           transaction_date: transactionDate.toISOString().split('T')[0],
           payment_method: paymentMethod,
           card_id: paymentMethod !== 'cash' ? cardId : null,
+          account_id: paymentMethod === 'debit_card' ? accountId : null,
           is_installment: paymentMethod === 'credit_card' ? isInstallment : false,
           total_installments: paymentMethod === 'credit_card' && isInstallment ? parseInt(totalInstallments) : null,
           installment_number: paymentMethod === 'credit_card' && isInstallment ? 1 : null
@@ -169,6 +235,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       setTransactionDate(new Date());
       setPaymentMethod("cash");
       setCardId("");
+      setAccountId("");
       setIsInstallment(false);
       setTotalInstallments("1");
       setCurrency(userPreferredCurrency);
@@ -330,7 +397,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           </div>
 
           {/* Card Selection */}
-          {(paymentMethod === "credit_card" || paymentMethod === "debit_card") && (
+          {paymentMethod === "credit_card" && (
             <div>
               <Label>{t('transactionForm.card')}</Label>
               <Select value={cardId} onValueChange={setCardId} required>
@@ -341,6 +408,28 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                   {cards.map((card) => (
                     <SelectItem key={card.id} value={card.id}>
                       {card.name} ({card.card_type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Account Selection for Debit Card */}
+          {paymentMethod === "debit_card" && (
+            <div>
+              <Label>{t('transactionForm.account') || 'Conta Bancária'}</Label>
+              <Select value={accountId} onValueChange={setAccountId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('transactionForm.selectAccount') || 'Selecione a conta'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name} - {new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: account.currency,
+                      }).format(account.balance)}
                     </SelectItem>
                   ))}
                 </SelectContent>
