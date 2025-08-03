@@ -76,10 +76,12 @@ export const FinancialDashboard = () => {
     }
   };
 
-  const handleAddTransaction = (transaction: Transaction) => {
+  const handleAddTransaction = async (transaction: Transaction) => {
     // Transaction is now handled directly in the form component
     // Refresh data after transaction is added
-    setTimeout(() => refreshData(), 1000);
+    console.log("Transação adicionada:", transaction);
+    await refreshData();
+    await loadFinancialComparison();
   };
 
   const getUserLabel = (userKey: "user1" | "user2") => {

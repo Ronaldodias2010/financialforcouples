@@ -116,6 +116,7 @@ export const useFinancialData = () => {
 
       if (error) throw error;
       
+      console.log('Transactions fetched:', data);
       setTransactions(data || []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -142,6 +143,8 @@ export const useFinancialData = () => {
       }
     });
 
+    console.log('Financial Summary:', { totalIncome, totalExpenses, transactionsCount: transactions.length });
+    
     return {
       totalIncome,
       totalExpenses,
