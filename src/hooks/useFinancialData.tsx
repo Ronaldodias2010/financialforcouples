@@ -59,7 +59,9 @@ export const useFinancialData = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
+          console.log('Profile updated:', payload);
           if (payload.new && payload.new.preferred_currency) {
+            console.log('New currency:', payload.new.preferred_currency);
             setUserPreferredCurrency(payload.new.preferred_currency as CurrencyCode);
           }
         }
