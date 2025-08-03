@@ -130,7 +130,7 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
                       {card.card_type} • ****{card.last_four_digits}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Dono: {getOwnerName(card.owner_user)}
+                      {getOwnerName(card.owner_user)}
                     </p>
                     <p className="text-sm">
                       Saldo: {formatCurrency(card.current_balance, card.currency)}
