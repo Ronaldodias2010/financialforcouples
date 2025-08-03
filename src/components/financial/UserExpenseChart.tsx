@@ -28,6 +28,7 @@ export const UserExpenseChart = () => {
   const [expenseData, setExpenseData] = useState<ExpenseData[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyExpense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfiles, setUserProfiles] = useState<{[key: string]: string}>({});
 
   const COLORS = {
     expense: ['hsl(var(--expense))', 'hsl(var(--primary))'],
@@ -36,9 +37,33 @@ export const UserExpenseChart = () => {
 
   useEffect(() => {
     if (user) {
+      fetchUserProfiles();
       fetchExpenseData();
     }
   }, [user, period, transactionType]);
+
+  const fetchUserProfiles = async () => {
+    try {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('display_name, second_user_name')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+
+      setUserProfiles({
+        user1: profiles?.display_name || t('chart.user1'),
+        user2: profiles?.second_user_name || t('chart.user2')
+      });
+    } catch (error) {
+      console.error('Erro ao buscar perfis:', error);
+      setUserProfiles({
+        user1: t('chart.user1'),
+        user2: t('chart.user2')
+      });
+    }
+  };
 
   const fetchExpenseData = async () => {
     try {
@@ -81,7 +106,7 @@ export const UserExpenseChart = () => {
       }, {}) || {};
 
       const pieData: ExpenseData[] = Object.entries(userExpenses).map(([user, amount], index) => ({
-        user: user === 'user1' ? t('chart.user1') : t('chart.user2'),
+        user: user === 'user1' ? userProfiles.user1 || t('chart.user1') : userProfiles.user2 || t('chart.user2'),
         amount: amount,
         color: COLORS[transactionType][index % COLORS[transactionType].length]
       }));
@@ -147,7 +172,7 @@ export const UserExpenseChart = () => {
               <p className="font-medium">{label}</p>
               {payload.map((entry: any, index: number) => (
                 <p key={index} style={{ color: entry.color }}>
-                  {entry.dataKey === 'user1' ? t('chart.user1') : t('chart.user2')}: {formatCurrency(entry.value)}
+                  {entry.dataKey === 'user1' ? userProfiles.user1 || t('chart.user1') : userProfiles.user2 || t('chart.user2')}: {formatCurrency(entry.value)}
                 </p>
               ))}
             </>
