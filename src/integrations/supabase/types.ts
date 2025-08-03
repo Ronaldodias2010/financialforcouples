@@ -56,6 +56,7 @@ export type Database = {
       cards: {
         Row: {
           card_type: Database["public"]["Enums"]["card_type"]
+          closing_date: number | null
           created_at: string
           credit_limit: number | null
           currency: Database["public"]["Enums"]["currency_type"]
@@ -70,6 +71,7 @@ export type Database = {
         }
         Insert: {
           card_type: Database["public"]["Enums"]["card_type"]
+          closing_date?: number | null
           created_at?: string
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"]
@@ -84,6 +86,7 @@ export type Database = {
         }
         Update: {
           card_type?: Database["public"]["Enums"]["card_type"]
+          closing_date?: number | null
           created_at?: string
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"]

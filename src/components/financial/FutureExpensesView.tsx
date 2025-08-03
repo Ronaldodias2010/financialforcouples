@@ -73,8 +73,7 @@ export const FutureExpensesView = () => {
         .select("*")
         .eq("user_id", user.id)
         .eq("card_type", "credit")
-        .not("due_date", "is", null)
-        .gt("current_balance", 0);
+        .not("due_date", "is", null);
 
       if (installmentsError) throw installmentsError;
       if (recurringError) throw recurringError;
@@ -109,21 +108,24 @@ export const FutureExpensesView = () => {
         });
       });
 
-      // Adicionar vencimentos de cartões
-      cards?.forEach(card => {
-        if (card.due_date && card.current_balance > 0) {
-          const nextDueDate = getNextDueDate(card.due_date);
-          expenses.push({
-            id: `card-${card.id}`,
-            description: `Pagamento ${card.name}`,
-            amount: card.current_balance,
-            due_date: nextDueDate,
-            type: 'card_payment',
-            category: 'Cartão de Crédito',
-            card_name: card.name
-          });
+      // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento
+      for (const card of cards || []) {
+        if (card.due_date) {
+          const paymentAmount = await calculateCardPaymentAmount(card, user.id);
+          if (paymentAmount > 0) {
+            const nextDueDate = getNextDueDate(card.due_date);
+            expenses.push({
+              id: `card-${card.id}`,
+              description: `Pagamento ${card.name}`,
+              amount: paymentAmount,
+              due_date: nextDueDate,
+              type: 'card_payment',
+              category: 'Cartão de Crédito',
+              card_name: card.name
+            });
+          }
         }
-      });
+      }
 
       // Ordenar por data
       expenses.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
@@ -134,6 +136,57 @@ export const FutureExpensesView = () => {
       toast.error("Erro ao carregar gastos futuros");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const calculateCardPaymentAmount = async (card: any, userId: string): Promise<number> => {
+    // Se não tem data de fechamento, usar saldo atual
+    if (!card.closing_date) {
+      return card.current_balance || 0;
+    }
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Determinar período de fechamento (do fechamento anterior até o próximo fechamento)
+    let currentClosingDate = new Date(currentYear, currentMonth, card.closing_date);
+    let previousClosingDate = new Date(currentYear, currentMonth - 1, card.closing_date);
+    
+    // Se ainda não passou da data de fechamento deste mês
+    if (now.getDate() < card.closing_date) {
+      currentClosingDate = new Date(currentYear, currentMonth, card.closing_date);
+      previousClosingDate = new Date(currentYear, currentMonth - 1, card.closing_date);
+    } else {
+      // Já passou da data de fechamento, próximo fechamento é mês que vem
+      currentClosingDate = new Date(currentYear, currentMonth + 1, card.closing_date);
+      previousClosingDate = new Date(currentYear, currentMonth, card.closing_date);
+    }
+
+    try {
+      // Buscar transações do cartão no período desde o último fechamento
+      const { data: transactions, error } = await supabase
+        .from("transactions")
+        .select("amount, type")
+        .eq("user_id", userId)
+        .eq("card_id", card.id)
+        .gte("transaction_date", previousClosingDate.toISOString().split('T')[0])
+        .lt("transaction_date", currentClosingDate.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      // Calcular saldo baseado nas transações do período
+      const periodBalance = transactions?.reduce((total, transaction) => {
+        return transaction.type === 'expense' ? total + transaction.amount : total - transaction.amount;
+      }, 0) || 0;
+
+      // Somar com saldo anterior (se existir)
+      const totalBalance = (card.current_balance || 0) + periodBalance;
+
+      return Math.max(0, totalBalance); // Não pode ser negativo
+    } catch (error) {
+      console.error("Error calculating card payment amount:", error);
+      return card.current_balance || 0;
     }
   };
 

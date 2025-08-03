@@ -25,7 +25,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
     credit_limit: "",
     current_balance: "",
     currency: "BRL",
-    due_date: ""
+    due_date: "",
+    closing_date: ""
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +46,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
             credit_limit: cardData.credit_limit ? parseFloat(cardData.credit_limit) : null,
             current_balance: parseFloat(cardData.current_balance) || 0,
             currency: cardData.currency as "BRL" | "USD" | "EUR",
-            due_date: cardData.due_date ? parseInt(cardData.due_date) : null
+            due_date: cardData.due_date ? parseInt(cardData.due_date) : null,
+            closing_date: cardData.closing_date ? parseInt(cardData.closing_date) : null
           });
 
       if (error) throw error;
@@ -58,7 +60,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
         credit_limit: "",
         current_balance: "",
         currency: "BRL",
-        due_date: ""
+        due_date: "",
+        closing_date: ""
       });
       onCardAdded();
     } catch (error) {
@@ -128,6 +131,25 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
                   onChange={(e) => setCardData(prev => ({ ...prev, credit_limit: e.target.value }))}
                   placeholder="0.00"
                 />
+              </div>
+              
+              <div>
+                <Label htmlFor="closing_date">Data de Fechamento</Label>
+                <Select 
+                  value={cardData.closing_date} 
+                  onValueChange={(value) => setCardData(prev => ({ ...prev, closing_date: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o dia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <SelectItem key={day} value={day.toString()}>
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
