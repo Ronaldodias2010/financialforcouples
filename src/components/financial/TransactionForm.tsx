@@ -7,13 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PlusCircle, MinusCircle, CalendarIcon } from "lucide-react";
+import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
@@ -30,6 +31,7 @@ interface Transaction {
   payment_method: "cash" | "credit_card" | "debit_card";
   card_id?: string;
   user_id: string;
+  currency: CurrencyCode;
 }
 
 interface Category {
@@ -54,15 +56,39 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [cardId, setCardId] = useState("");
   const [isInstallment, setIsInstallment] = useState(false);
   const [totalInstallments, setTotalInstallments] = useState("1");
+  const [currency, setCurrency] = useState<CurrencyCode>("BRL");
+  const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>("BRL");
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
 
   useEffect(() => {
     fetchCategories();
     fetchCards();
+    fetchUserPreferredCurrency();
   }, [type]);
+
+  const fetchUserPreferredCurrency = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('preferred_currency')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data && data.preferred_currency) {
+        setUserPreferredCurrency(data.preferred_currency as CurrencyCode);
+        setCurrency(data.preferred_currency as CurrencyCode);
+      }
+    } catch (error) {
+      console.error('Error fetching user preferred currency:', error);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -116,6 +142,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
           owner_user: user.email || "user1",
           type,
           amount: parseFloat(amount),
+          currency: currency,
           description,
           category_id: categoryId,
           subcategory: subcategory || null,
@@ -144,6 +171,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
       setCardId("");
       setIsInstallment(false);
       setTotalInstallments("1");
+      setCurrency(userPreferredCurrency);
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -212,19 +240,66 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
             </Popover>
           </div>
 
-          {/* Amount */}
-          <div>
-            <Label htmlFor="amount">{t('transactionForm.amount')}</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              placeholder="0,00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="text-lg"
-              required
-            />
+          {/* Currency and Amount */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="currency">{t('transactionForm.currency')}</Label>
+              <Select value={currency} onValueChange={(value) => setCurrency(value as CurrencyCode)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a moeda" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(CURRENCY_INFO).map((currencyInfo) => (
+                    <SelectItem key={currencyInfo.code} value={currencyInfo.code}>
+                      <div className="flex items-center gap-2">
+                        <span>{currencyInfo.symbol}</span>
+                        <span>{currencyInfo.name} ({currencyInfo.code})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="amount">{t('transactionForm.amount')}</Label>
+              <div className="relative">
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  placeholder="0,00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="text-lg pl-12"
+                  required
+                />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                  {getCurrencySymbol(currency)}
+                </div>
+              </div>
+              
+              {/* Currency Conversion Preview */}
+              {amount && currency !== userPreferredCurrency && (
+                <div className="mt-2 p-2 bg-muted rounded-md">
+                  <div className="text-sm text-muted-foreground">
+                    Valor convertido para {CURRENCY_INFO[userPreferredCurrency].name}:
+                  </div>
+                  <div className="font-medium text-primary">
+                    {formatCurrency(
+                      convertCurrency(parseFloat(amount), currency, userPreferredCurrency),
+                      userPreferredCurrency
+                    )}
+                  </div>
+                  {ratesLoading && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                      Atualizando cotação...
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Description */}

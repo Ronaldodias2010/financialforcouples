@@ -72,6 +72,7 @@ const translations = {
     'transactionForm.category': 'Categoria',
     'transactionForm.selectCategory': 'Selecionar categoria',
     'transactionForm.subcategory': 'Subcategoria',
+    'transactionForm.currency': 'Moeda',
     'transactionForm.addTransaction': 'Adicionar Transação',
     
     // Cards
@@ -246,6 +247,7 @@ const translations = {
     'transactionForm.category': 'Category',
     'transactionForm.selectCategory': 'Select category',
     'transactionForm.subcategory': 'Subcategory',
+    'transactionForm.currency': 'Currency',
     'transactionForm.addTransaction': 'Add Transaction',
     
     // Cards

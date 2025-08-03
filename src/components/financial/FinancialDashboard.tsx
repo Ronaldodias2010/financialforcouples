@@ -14,6 +14,7 @@ import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings } from "lu
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
+import { useFinancialData } from "@/hooks/useFinancialData";
 
 interface Transaction {
   id: string;
@@ -31,12 +32,15 @@ interface Transaction {
 export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { getFinancialSummary, userPreferredCurrency, refreshData } = useFinancialData();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile">("dashboard");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const currentUser = "user1"; // Fixed to user1 (logged user)
+  
+  const financialSummary = getFinancialSummary();
 
   useEffect(() => {
     if (user) {
@@ -67,7 +71,8 @@ export const FinancialDashboard = () => {
 
   const handleAddTransaction = (transaction: Transaction) => {
     // Transaction is now handled directly in the form component
-    // Refresh can be handled via useEffect in child components
+    // Refresh data after transaction is added
+    setTimeout(() => refreshData(), 1000);
   };
 
   const getUserLabel = (userKey: "user1" | "user2") => {
@@ -113,21 +118,24 @@ export const FinancialDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FinancialCard
                 title={t('dashboard.balance')}
-                amount={3500}
+                amount={financialSummary.balance}
+                currency={financialSummary.currency}
                 icon={Wallet}
                 type="balance"
                 change={2.5}
               />
               <FinancialCard
                 title={t('dashboard.income')}
-                amount={5000}
+                amount={financialSummary.totalIncome}
+                currency={financialSummary.currency}
                 icon={TrendingUp}
                 type="income"
                 change={8.2}
               />
               <FinancialCard
                 title={t('dashboard.expenses')}
-                amount={1500}
+                amount={financialSummary.totalExpenses}
+                currency={financialSummary.currency}
                 icon={TrendingDown}
                 type="expense"
                 change={-3.1}

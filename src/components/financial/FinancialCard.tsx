@@ -1,11 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 
 interface FinancialCardProps {
   title: string;
   amount: number;
-  currency?: string;
+  currency?: CurrencyCode;
+  displayCurrency?: CurrencyCode;
   icon: LucideIcon;
   type: "income" | "expense" | "balance";
   change?: number;
@@ -16,17 +18,18 @@ export const FinancialCard = ({
   title, 
   amount, 
   currency = "BRL", 
+  displayCurrency,
   icon: Icon, 
   type,
   change,
   className 
 }: FinancialCardProps) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: currency,
-    }).format(value);
-  };
+  const { convertCurrency, formatCurrency } = useCurrencyConverter();
+  
+  const finalDisplayCurrency = displayCurrency || currency;
+  const displayAmount = currency !== finalDisplayCurrency 
+    ? convertCurrency(amount, currency, finalDisplayCurrency)
+    : amount;
 
   const getColorClasses = () => {
     switch (type) {
@@ -64,7 +67,7 @@ export const FinancialCard = ({
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold text-foreground">
-            {formatCurrency(amount)}
+            {formatCurrency(displayAmount, finalDisplayCurrency)}
           </p>
           {change !== undefined && (
             <p className={cn(
