@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, Languages, LogOut } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, Languages, LogOut, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AdminLanguageProvider, useAdminLanguage } from "@/hooks/useAdminLanguage";
+import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 
 interface SubscriptionMetrics {
@@ -44,6 +45,7 @@ interface RecentAlert {
 
 const AdminDashboardContent = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { language, setLanguage } = useAdminLanguage();
   const [metrics, setMetrics] = useState<SubscriptionMetrics>({
@@ -226,9 +228,15 @@ const AdminDashboardContent = () => {
   return (
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">🧮 {language === 'en' ? 'Admin Dashboard' : 'Painel Administrativo'}</h1>
-          <p className="text-muted-foreground">{language === 'en' ? 'Manage users and subscriptions' : 'Gerenciar usuários e assinaturas'}</p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {language === 'en' ? 'Back to Dashboard' : 'Voltar ao Dashboard'}
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">🧮 {language === 'en' ? 'Admin Dashboard' : 'Painel Administrativo'}</h1>
+            <p className="text-muted-foreground">{language === 'en' ? 'Manage users and subscriptions' : 'Gerenciar usuários e assinaturas'}</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
