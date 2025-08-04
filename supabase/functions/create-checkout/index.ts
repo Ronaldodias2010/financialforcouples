@@ -61,7 +61,7 @@ serve(async (req) => {
               name: "Couples Financials Premium",
               description: "Plano Premium com IA, análises avançadas e recursos exclusivos"
             },
-            unit_amount: 2990, // R$ 29.90
+            unit_amount: 1990, // R$ 19.90
             recurring: { interval: "month" },
           },
           quantity: 1,
