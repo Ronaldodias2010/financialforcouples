@@ -75,33 +75,99 @@ const AdminDashboardContent = () => {
     try {
       setLoading(true);
       
-      // Fetch subscription metrics
-      const { data: subscribers, error: subscribersError } = await supabase
-        .from('subscribers')
-        .select('*');
+      // First try to get cached metrics from Supabase
+      const { data: cachedMetrics, error: cacheError } = await supabase
+        .from('stripe_metrics_cache')
+        .select('*')
+        .order('last_updated', { ascending: false })
+        .limit(1);
 
-      if (subscribersError) throw subscribersError;
+      let shouldRefreshFromStripe = true;
+      
+      if (cachedMetrics && cachedMetrics.length > 0 && !cacheError) {
+        const lastUpdated = new Date(cachedMetrics[0].last_updated);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
+        
+        // Use cached data if it's less than 1 hour old
+        if (hoursDiff < 1) {
+          shouldRefreshFromStripe = false;
+          
+          // Calculate monthly revenue in appropriate currency
+          let monthlyRevenue = cachedMetrics[0].monthly_revenue_brl;
+          if (language === 'en') {
+            monthlyRevenue = await convertCurrency(monthlyRevenue, 'BRL', 'USD');
+          }
+          
+          setMetrics({
+            activeUsers: cachedMetrics[0].active_users,
+            canceledSubscriptions: cachedMetrics[0].canceled_subscriptions,
+            failedPayments: cachedMetrics[0].failed_payments,
+            monthlyRevenue
+          });
+          
+          console.log('Using cached metrics:', cachedMetrics[0]);
+        }
+      }
 
-      // Calculate metrics
-      const activeUsers = subscribers?.filter(s => s.subscribed).length || 0;
-      const canceledSubscriptions = subscribers?.filter(s => !s.subscribed).length || 0;
-      
-      // Calculate monthly revenue in BRL
-      const monthlyRevenueBRL = activeUsers * 29.90;
-      
-      // Convert to USD if language is English
-      const monthlyRevenue = language === 'en' 
-        ? await convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
-        : monthlyRevenueBRL;
-      
-      setMetrics({
-        activeUsers,
-        canceledSubscriptions,
-        failedPayments: Math.floor(Math.random() * 100), // Mock data
-        monthlyRevenue
-      });
+      // Refresh metrics from Stripe if needed
+      if (shouldRefreshFromStripe) {
+        try {
+          console.log('Fetching fresh metrics from Stripe...');
+          const { data: stripeMetrics, error: stripeError } = await supabase.functions.invoke('stripe-admin-metrics');
+          
+          if (stripeError) {
+            console.error('Error fetching Stripe metrics:', stripeError);
+            throw stripeError;
+          }
+          
+          if (stripeMetrics) {
+            // Calculate monthly revenue in appropriate currency
+            let monthlyRevenue = stripeMetrics.monthlyRevenueBRL;
+            if (language === 'en') {
+              monthlyRevenue = await convertCurrency(monthlyRevenue, 'BRL', 'USD');
+            }
+            
+            setMetrics({
+              activeUsers: stripeMetrics.activeUsers,
+              canceledSubscriptions: stripeMetrics.canceledSubscriptions,
+              failedPayments: stripeMetrics.failedPayments,
+              monthlyRevenue
+            });
+            
+            console.log('Updated with fresh Stripe metrics:', stripeMetrics);
+          }
+        } catch (stripeError) {
+          console.error('Failed to fetch from Stripe, using fallback data:', stripeError);
+          
+          // Fallback to basic subscriber data from Supabase
+          const { data: subscribers, error: subscribersError } = await supabase
+            .from('subscribers')
+            .select('*');
 
-      // Fetch user profiles with subscription data
+          if (!subscribersError && subscribers) {
+            const activeUsers = subscribers.filter(s => s.subscribed).length || 0;
+            const canceledSubscriptions = subscribers.filter(s => !s.subscribed).length || 0;
+            
+            // Calculate monthly revenue in BRL
+            const monthlyRevenueBRL = activeUsers * 29.90;
+            
+            // Convert to USD if language is English
+            const monthlyRevenue = language === 'en' 
+              ? await convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
+              : monthlyRevenueBRL;
+            
+            setMetrics({
+              activeUsers,
+              canceledSubscriptions,
+              failedPayments: Math.floor(Math.random() * 100), // Mock data as fallback
+              monthlyRevenue
+            });
+          }
+        }
+      }
+
+      // Fetch user profiles with subscription data for the user table
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -109,39 +175,74 @@ const AdminDashboardContent = () => {
           subscribers!inner(*)
         `);
 
-      if (profilesError) throw profilesError;
-
-      // Transform data for display
-      const formattedUsers: SubscriptionUser[] = profiles?.map(profile => {
-        const subscriber = (profile as any).subscribers;
-        const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
-        const now = new Date();
-        
-        let status: 'active' | 'overdue' | 'canceled' | 'expired' = 'canceled';
-        if (subscriber.subscribed) {
-          if (subscriptionEnd && subscriptionEnd > now) {
-            status = 'active';
-          } else if (subscriptionEnd && subscriptionEnd < now) {
-            status = 'expired';
+      let formattedUsers: SubscriptionUser[] = [];
+      
+      if (!profilesError && profiles) {
+        // Transform data for display
+        formattedUsers = profiles.map(profile => {
+          const subscriber = (profile as any).subscribers;
+          const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
+          const now = new Date();
+          
+          let status: 'active' | 'overdue' | 'canceled' | 'expired' = 'canceled';
+          if (subscriber.subscribed) {
+            if (subscriptionEnd && subscriptionEnd > now) {
+              status = 'active';
+            } else if (subscriptionEnd && subscriptionEnd < now) {
+              status = 'expired';
+            }
           }
-        }
 
-        return {
-          id: profile.user_id,
-          email: subscriber.email,
-          display_name: profile.display_name || 'Usuário',
-          subscribed: subscriber.subscribed,
-          subscription_tier: subscriber.subscription_tier || 'essential',
-          subscription_end: subscriber.subscription_end,
-          stripe_customer_id: subscriber.stripe_customer_id,
-          last_payment: subscriber.updated_at,
-          status
-        };
-      }) || [];
+          return {
+            id: profile.user_id,
+            email: subscriber.email,
+            display_name: profile.display_name || 'Usuário',
+            subscribed: subscriber.subscribed,
+            subscription_tier: subscriber.subscription_tier || 'essential',
+            subscription_end: subscriber.subscription_end,
+            stripe_customer_id: subscriber.stripe_customer_id,
+            last_payment: subscriber.updated_at,
+            status
+          };
+        });
+      } else {
+        // Fallback: get users from subscribers table directly
+        const { data: subscribers, error: subscribersError } = await supabase
+          .from('subscribers')
+          .select('*');
+
+        if (!subscribersError && subscribers) {
+          formattedUsers = subscribers.map(subscriber => {
+            const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
+            const now = new Date();
+            
+            let status: 'active' | 'overdue' | 'canceled' | 'expired' = 'canceled';
+            if (subscriber.subscribed) {
+              if (subscriptionEnd && subscriptionEnd > now) {
+                status = 'active';
+              } else if (subscriptionEnd && subscriptionEnd < now) {
+                status = 'expired';
+              }
+            }
+
+            return {
+              id: subscriber.user_id,
+              email: subscriber.email,
+              display_name: 'Usuário', // Default since we don't have profile data
+              subscribed: subscriber.subscribed,
+              subscription_tier: subscriber.subscription_tier || 'essential',
+              subscription_end: subscriber.subscription_end,
+              stripe_customer_id: subscriber.stripe_customer_id,
+              last_payment: subscriber.updated_at,
+              status
+            };
+          });
+        }
+      }
 
       setUsers(formattedUsers);
 
-      // Generate mock alerts
+      // Generate mock alerts based on users
       const mockAlerts: RecentAlert[] = formattedUsers.slice(0, 3).map((user, index) => ({
         id: `alert_${index}`,
         date: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -260,6 +361,14 @@ const AdminDashboardContent = () => {
           <Button onClick={exportToCSV} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             {language === 'en' ? 'Export' : 'Exportar'}
+          </Button>
+          <Button 
+            onClick={fetchDashboardData} 
+            variant="outline"
+            disabled={loading}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            {language === 'en' ? 'Refresh' : 'Atualizar'}
           </Button>
           <Button onClick={signOut} variant="outline">
             <LogOut className="h-4 w-4 mr-2" />

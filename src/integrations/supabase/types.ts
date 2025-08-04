@@ -586,6 +586,36 @@ export type Database = {
           },
         ]
       }
+      stripe_metrics_cache: {
+        Row: {
+          active_users: number
+          canceled_subscriptions: number
+          created_at: string
+          failed_payments: number
+          id: string
+          last_updated: string
+          monthly_revenue_brl: number
+        }
+        Insert: {
+          active_users?: number
+          canceled_subscriptions?: number
+          created_at?: string
+          failed_payments?: number
+          id?: string
+          last_updated?: string
+          monthly_revenue_brl?: number
+        }
+        Update: {
+          active_users?: number
+          canceled_subscriptions?: number
+          created_at?: string
+          failed_payments?: number
+          id?: string
+          last_updated?: string
+          monthly_revenue_brl?: number
+        }
+        Relationships: []
+      }
       subcategories: {
         Row: {
           category_id: string | null

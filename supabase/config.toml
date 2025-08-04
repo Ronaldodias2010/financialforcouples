@@ -2,3 +2,6 @@ project_id = "elxttabdtddlavhseipz"
 
 [functions.validate-temp-login]
 verify_jwt = false
+
+[functions.stripe-admin-metrics]
+verify_jwt = true
