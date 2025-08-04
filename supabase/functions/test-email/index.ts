@@ -23,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Financial App <onboarding@resend.dev>",
+      from: "Financial App <contato@couplesfinancials.com>",
       to: [email],
       subject: "Teste de Email - Financial App",
       html: `

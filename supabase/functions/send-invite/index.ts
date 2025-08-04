@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
     const loginUrl = `${req.headers.get("origin")}/auth`;
 
     const emailResponse = await resend.emails.send({
-      from: "Financial App <onboarding@resend.dev>", // You'll need to change this to your verified domain
+      from: "Financial App <contato@couplesfinancials.com>",
       to: [email],
       subject: `${inviter_name} convidou você para o Financial App`,
       html: `
