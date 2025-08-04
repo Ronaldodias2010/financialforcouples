@@ -22,7 +22,7 @@ export const PremiumFeatureGuard = ({ feature, children, fallback }: PremiumFeat
 
   return (
     <>
-      <div onClick={() => setShowUpgrade(true)} className="cursor-pointer opacity-60 hover:opacity-80 transition-opacity">
+      <div onClick={() => setShowUpgrade(true)} className="cursor-pointer">
         {children}
       </div>
       <UpgradeModal 
