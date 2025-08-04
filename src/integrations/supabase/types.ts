@@ -53,6 +53,56 @@ export type Database = {
         }
         Relationships: []
       }
+      card_mileage_rules: {
+        Row: {
+          amount_threshold: number
+          bank_name: string
+          card_brand: string
+          card_id: string | null
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_type"]
+          id: string
+          is_active: boolean
+          miles_per_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_threshold?: number
+          bank_name: string
+          card_brand: string
+          card_id?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          id?: string
+          is_active?: boolean
+          miles_per_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_threshold?: number
+          bank_name?: string
+          card_brand?: string
+          card_id?: string | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"]
+          id?: string
+          is_active?: boolean
+          miles_per_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_mileage_rules_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cards: {
         Row: {
           card_type: Database["public"]["Enums"]["card_type"]
@@ -272,6 +322,106 @@ export type Database = {
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "investment_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mileage_goals: {
+        Row: {
+          created_at: string
+          current_miles: number
+          description: string | null
+          id: string
+          is_completed: boolean
+          name: string
+          target_date: string | null
+          target_miles: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_miles?: number
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          name: string
+          target_date?: string | null
+          target_miles: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_miles?: number
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          name?: string
+          target_date?: string | null
+          target_miles?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mileage_history: {
+        Row: {
+          amount_spent: number
+          calculation_date: string
+          card_id: string | null
+          created_at: string
+          id: string
+          miles_earned: number
+          month_year: string
+          rule_id: string | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_spent: number
+          calculation_date?: string
+          card_id?: string | null
+          created_at?: string
+          id?: string
+          miles_earned: number
+          month_year: string
+          rule_id?: string | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_spent?: number
+          calculation_date?: string
+          card_id?: string | null
+          created_at?: string
+          id?: string
+          miles_earned?: number
+          month_year?: string
+          rule_id?: string | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mileage_history_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_history_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "card_mileage_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_history_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]
