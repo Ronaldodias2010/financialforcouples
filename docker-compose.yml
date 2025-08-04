@@ -1,0 +1,52 @@
+# Docker Compose para ambiente de desenvolvimento/teste local
+version: '3.8'
+
+services:
+  # Frontend da aplicação Couples Financials
+  couples-financials-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: couples-financials-app
+    ports:
+      - "3000:80"
+    environment:
+      # Variáveis de ambiente serão injetadas via arquivo .env ou AWS Secrets
+      - NODE_ENV=production
+    networks:
+      - couples-financials-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx como proxy reverso (opcional para ambiente local)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: couples-financials-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+      # Para SSL em produção, montar certificados aqui
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - couples-financials-frontend
+    networks:
+      - couples-financials-network
+    restart: unless-stopped
+
+networks:
+  couples-financials-network:
+    driver: bridge
+    name: couples-financials-network
+
+# Volumes para persistir dados se necessário
+volumes:
+  app-data:
+    driver: local
