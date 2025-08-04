@@ -379,21 +379,21 @@ export const UserProfileForm = () => {
               
               {subscriptionLoading ? (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">Carregando informações da assinatura...</p>
+                  <p className="text-muted-foreground">{t('subscription.loadingInfo')}</p>
                 </div>
               ) : subscribed ? (
                 <div className="space-y-4">
                   <div className="p-4 border rounded-lg bg-green-50 border-green-200">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <h4 className="font-medium text-green-800">Plano {subscriptionTier || 'Premium'} Ativo</h4>
+                      <h4 className="font-medium text-green-800">{t('subscription.planActive')} {subscriptionTier || 'Premium'}</h4>
                     </div>
                     <p className="text-sm text-green-700">
-                      Você tem acesso a todos os recursos premium!
+                      {t('subscription.premiumAccess')}
                     </p>
                     {subscriptionEnd && (
                       <p className="text-sm text-green-600 mt-2">
-                        Próxima renovação: {formatDate(subscriptionEnd)}
+                        {t('subscription.nextRenewal')}: {formatDate(subscriptionEnd)}
                       </p>
                     )}
                   </div>
@@ -404,7 +404,7 @@ export const UserProfileForm = () => {
                     variant="outline" 
                     className="w-full"
                   >
-                    {openingPortal ? "Abrindo Portal..." : "Gerenciar Assinatura"}
+                    {openingPortal ? t('subscription.openingPortal') : t('subscription.manageSubscription')}
                   </Button>
                 </div>
               ) : (
@@ -421,7 +421,7 @@ export const UserProfileForm = () => {
                     variant="default" 
                     className="w-full"
                   >
-                    {creatingCheckout ? "Processando..." : t('userProfile.upgradePlan')}
+                    {creatingCheckout ? t('subscription.processing') : t('userProfile.upgradePlan')}
                   </Button>
                 </div>
               )}
