@@ -197,7 +197,7 @@ export const MileageSystem = () => {
     if (error) {
       toast({
         title: "Erro",
-        description: "Erro ao criar regra de milhagem",
+        description: t('mileage.ruleCreateError'),
         variant: "destructive"
       });
       return;
@@ -205,7 +205,7 @@ export const MileageSystem = () => {
 
     toast({
       title: "Sucesso",
-      description: "Regra de milhagem criada com sucesso"
+      description: t('mileage.ruleCreated')
     });
 
     setRuleForm({
@@ -236,7 +236,7 @@ export const MileageSystem = () => {
     if (error) {
       toast({
         title: "Erro",
-        description: "Erro ao criar meta de milhagem",
+        description: t('mileage.goalCreateError'),
         variant: "destructive"
       });
       return;
@@ -244,7 +244,7 @@ export const MileageSystem = () => {
 
     toast({
       title: "Sucesso",
-      description: "Meta de milhagem criada com sucesso"
+      description: t('mileage.goalCreated')
     });
 
     setGoalForm({
@@ -266,7 +266,7 @@ export const MileageSystem = () => {
     if (error) {
       toast({
         title: "Erro",
-        description: "Erro ao atualizar status da regra",
+        description: t('mileage.ruleStatusError'),
         variant: "destructive"
       });
       return;
@@ -284,7 +284,7 @@ export const MileageSystem = () => {
     if (error) {
       toast({
         title: "Erro",
-        description: "Erro ao deletar regra",
+        description: t('mileage.ruleDeleteError'),
         variant: "destructive"
       });
       return;
@@ -292,7 +292,7 @@ export const MileageSystem = () => {
 
     toast({
       title: "Sucesso",
-      description: "Regra deletada com sucesso"
+      description: t('mileage.ruleDeleted')
     });
 
     loadMileageRules();
@@ -307,7 +307,7 @@ export const MileageSystem = () => {
     if (error) {
       toast({
         title: "Erro",
-        description: "Erro ao deletar meta",
+        description: t('mileage.goalDeleteError'),
         variant: "destructive"
       });
       return;
@@ -315,7 +315,7 @@ export const MileageSystem = () => {
 
     toast({
       title: "Sucesso",
-      description: "Meta deletada com sucesso"
+      description: t('mileage.goalDeleted')
     });
 
     loadMileageGoals();
@@ -326,10 +326,10 @@ export const MileageSystem = () => {
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Sistema de Milhagem
+          {t('mileage.title')}
         </h1>
         <p className="text-muted-foreground">
-          Gerencie suas milhas de cartão de crédito e metas de viagem
+          {t('mileage.subtitle')}
         </p>
       </div>
 
@@ -337,34 +337,34 @@ export const MileageSystem = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Milhas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('mileage.totalMiles')}</CardTitle>
             <Plane className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalMiles.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">milhas acumuladas</p>
+            <p className="text-xs text-muted-foreground">{t('mileage.milesAccumulated')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cartões Ativos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('mileage.activeCards')}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{mileageRules.filter(r => r.is_active).length}</div>
-            <p className="text-xs text-muted-foreground">regras configuradas</p>
+            <p className="text-xs text-muted-foreground">{t('mileage.rulesConfigured')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Metas Ativas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('mileage.activeGoals')}</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{mileageGoals.filter(g => !g.is_completed).length}</div>
-            <p className="text-xs text-muted-foreground">em progresso</p>
+            <p className="text-xs text-muted-foreground">{t('mileage.inProgress')}</p>
           </CardContent>
         </Card>
       </div>
@@ -372,36 +372,36 @@ export const MileageSystem = () => {
       {/* Main Content */}
       <Tabs defaultValue="rules" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="rules">Regras de Milhagem</TabsTrigger>
-          <TabsTrigger value="goals">Metas</TabsTrigger>
-          <TabsTrigger value="history">Histórico</TabsTrigger>
+          <TabsTrigger value="rules">{t('mileage.rules')}</TabsTrigger>
+          <TabsTrigger value="goals">{t('mileage.goals')}</TabsTrigger>
+          <TabsTrigger value="history">{t('mileage.history')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rules" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Regras de Milhagem</h3>
+            <h3 className="text-lg font-semibold">{t('mileage.rules')}</h3>
             <Button onClick={() => setShowRuleForm(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Nova Regra
+              {t('mileage.newRule')}
             </Button>
           </div>
 
           {showRuleForm && (
             <Card>
               <CardHeader>
-                <CardTitle>Nova Regra de Milhagem</CardTitle>
+                <CardTitle>{t('mileage.ruleTitle')}</CardTitle>
                 <CardDescription>
-                  Configure como as milhas são calculadas para um cartão específico
+                  {t('mileage.ruleDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateRule} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="card">Cartão</Label>
+                      <Label htmlFor="card">{t('mileage.card')}</Label>
                       <Select value={ruleForm.card_id} onValueChange={(value) => setRuleForm({...ruleForm, card_id: value})}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione um cartão" />
+                          <SelectValue placeholder={t('mileage.selectCard')} />
                         </SelectTrigger>
                         <SelectContent>
                           {cards.map((card) => (
@@ -414,29 +414,29 @@ export const MileageSystem = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="bank_name">Nome do Banco</Label>
+                      <Label htmlFor="bank_name">{t('mileage.bankName')}</Label>
                       <Input
                         id="bank_name"
                         value={ruleForm.bank_name}
                         onChange={(e) => setRuleForm({...ruleForm, bank_name: e.target.value})}
-                        placeholder="Ex: Nubank, Itaú, Bradesco"
+                        placeholder={t('mileage.bankPlaceholder')}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="card_brand">Bandeira</Label>
+                      <Label htmlFor="card_brand">{t('mileage.cardBrand')}</Label>
                       <Input
                         id="card_brand"
                         value={ruleForm.card_brand}
                         onChange={(e) => setRuleForm({...ruleForm, card_brand: e.target.value})}
-                        placeholder="Ex: Visa, Mastercard, Elo"
+                        placeholder={t('mileage.brandPlaceholder')}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="currency">Moeda</Label>
+                      <Label htmlFor="currency">{t('mileage.currency')}</Label>
                       <Select value={ruleForm.currency} onValueChange={(value: "BRL" | "USD" | "EUR") => setRuleForm({...ruleForm, currency: value})}>
                         <SelectTrigger>
                           <SelectValue />
@@ -450,36 +450,36 @@ export const MileageSystem = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="miles_per_amount">Milhas por Valor</Label>
+                      <Label htmlFor="miles_per_amount">{t('mileage.milesPerAmount')}</Label>
                       <Input
                         id="miles_per_amount"
                         type="number"
                         step="0.1"
                         value={ruleForm.miles_per_amount}
                         onChange={(e) => setRuleForm({...ruleForm, miles_per_amount: Number(e.target.value)})}
-                        placeholder="Ex: 1 (1 milha)"
+                        placeholder={t('mileage.milesPlaceholder')}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="amount_threshold">A cada</Label>
+                      <Label htmlFor="amount_threshold">{t('mileage.amountThreshold')}</Label>
                       <Input
                         id="amount_threshold"
                         type="number"
                         step="0.01"
                         value={ruleForm.amount_threshold}
                         onChange={(e) => setRuleForm({...ruleForm, amount_threshold: Number(e.target.value)})}
-                        placeholder="Ex: 3 (R$ 3,00 gastos)"
+                        placeholder={t('mileage.thresholdPlaceholder')}
                         required
                       />
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    <Button type="submit">Criar Regra</Button>
+                    <Button type="submit">{t('mileage.createRule')}</Button>
                     <Button type="button" variant="outline" onClick={() => setShowRuleForm(false)}>
-                      Cancelar
+                      {t('common.cancel')}
                     </Button>
                   </div>
                 </form>
@@ -496,14 +496,14 @@ export const MileageSystem = () => {
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold">{rule.card?.name}</h4>
                         <Badge variant={rule.is_active ? "default" : "secondary"}>
-                          {rule.is_active ? "Ativo" : "Inativo"}
+                          {rule.is_active ? t('mileage.active') : t('mileage.inactive')}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {rule.bank_name} • {rule.card_brand}
                       </p>
                       <p className="text-sm">
-                        {rule.miles_per_amount} milha(s) a cada {rule.currency} {rule.amount_threshold}
+                        {rule.miles_per_amount} {t('mileage.milesEarned')} {t('mileage.amountThreshold')} {rule.currency} {rule.amount_threshold}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -512,7 +512,7 @@ export const MileageSystem = () => {
                         variant="outline"
                         onClick={() => toggleRuleStatus(rule.id, rule.is_active)}
                       >
-                        {rule.is_active ? "Desativar" : "Ativar"}
+                        {rule.is_active ? t('mileage.deactivate') : t('mileage.activate')}
                       </Button>
                       <Button
                         size="sm"
@@ -531,49 +531,49 @@ export const MileageSystem = () => {
 
         <TabsContent value="goals" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Metas de Milhagem</h3>
+            <h3 className="text-lg font-semibold">{t('mileage.goals')}</h3>
             <Button onClick={() => setShowGoalForm(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Nova Meta
+              {t('mileage.newGoal')}
             </Button>
           </div>
 
           {showGoalForm && (
             <Card>
               <CardHeader>
-                <CardTitle>Nova Meta de Milhagem</CardTitle>
+                <CardTitle>{t('mileage.goalTitle')}</CardTitle>
                 <CardDescription>
-                  Defina uma meta para acumular milhas
+                  {t('mileage.goalDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateGoal} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="goal_name">Nome da Meta</Label>
+                      <Label htmlFor="goal_name">{t('mileage.goalName')}</Label>
                       <Input
                         id="goal_name"
                         value={goalForm.name}
                         onChange={(e) => setGoalForm({...goalForm, name: e.target.value})}
-                        placeholder="Ex: Viagem para Europa"
+                        placeholder={t('mileage.goalNamePlaceholder')}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="target_miles">Milhas Necessárias</Label>
+                      <Label htmlFor="target_miles">{t('mileage.targetMiles')}</Label>
                       <Input
                         id="target_miles"
                         type="number"
                         value={goalForm.target_miles}
                         onChange={(e) => setGoalForm({...goalForm, target_miles: e.target.value})}
-                        placeholder="Ex: 50000"
+                        placeholder={t('mileage.targetMilesPlaceholder')}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="target_date">Data Meta (Opcional)</Label>
+                      <Label htmlFor="target_date">{t('mileage.targetDate')}</Label>
                       <Input
                         id="target_date"
                         type="date"
@@ -584,19 +584,19 @@ export const MileageSystem = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="goal_description">Descrição (Opcional)</Label>
+                    <Label htmlFor="goal_description">{t('mileage.description')}</Label>
                     <Textarea
                       id="goal_description"
                       value={goalForm.description}
                       onChange={(e) => setGoalForm({...goalForm, description: e.target.value})}
-                      placeholder="Descreva sua meta..."
+                      placeholder={t('mileage.descriptionPlaceholder')}
                     />
                   </div>
 
                   <div className="flex gap-2">
-                    <Button type="submit">Criar Meta</Button>
+                    <Button type="submit">{t('mileage.createGoal')}</Button>
                     <Button type="button" variant="outline" onClick={() => setShowGoalForm(false)}>
-                      Cancelar
+                      {t('common.cancel')}
                     </Button>
                   </div>
                 </form>
@@ -620,7 +620,7 @@ export const MileageSystem = () => {
                         </div>
                         <div className="flex gap-2">
                           <Badge variant={goal.is_completed ? "default" : "secondary"}>
-                            {goal.is_completed ? "Concluída" : "Em Progresso"}
+                            {goal.is_completed ? t('mileage.completed') : t('mileage.inProgress')}
                           </Badge>
                           <Button
                             size="sm"
@@ -634,15 +634,15 @@ export const MileageSystem = () => {
 
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>{goal.current_miles.toLocaleString()} milhas</span>
-                          <span>{goal.target_miles.toLocaleString()} milhas</span>
+                          <span>{goal.current_miles.toLocaleString()} {t('mileage.milesEarned')}</span>
+                          <span>{goal.target_miles.toLocaleString()} {t('mileage.milesEarned')}</span>
                         </div>
                         <Progress value={progress} className="h-2" />
                         <div className="text-sm text-muted-foreground">
-                          {progress.toFixed(1)}% concluído
+                          {progress.toFixed(1)}% {t('mileage.progressText')}
                           {goal.target_date && (
                             <span className="ml-2">
-                              • Meta: {format(new Date(goal.target_date), "dd/MM/yyyy")}
+                              • {t('mileage.target')}: {format(new Date(goal.target_date), "dd/MM/yyyy")}
                             </span>
                           )}
                         </div>
@@ -656,7 +656,7 @@ export const MileageSystem = () => {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
-          <h3 className="text-lg font-semibold">Histórico de Milhagem</h3>
+          <h3 className="text-lg font-semibold">{t('mileage.historyTitle')}</h3>
           
           <div className="grid gap-4">
             {mileageHistory.map((record) => (
@@ -667,11 +667,11 @@ export const MileageSystem = () => {
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold">{record.card?.name}</h4>
                         <Badge variant="outline">
-                          +{record.miles_earned.toLocaleString()} milhas
+                          +{record.miles_earned.toLocaleString()} {t('mileage.milesEarned')}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Gasto: R$ {record.amount_spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {t('mileage.spent')}: R$ {record.amount_spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                     <div className="text-right">

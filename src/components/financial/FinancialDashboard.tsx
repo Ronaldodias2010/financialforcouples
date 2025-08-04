@@ -152,7 +152,7 @@ export const FinancialDashboard = () => {
       <div className="container mx-auto p-6">
         <div className="mb-6">
           <Button variant="outline" onClick={() => setCurrentPage("dashboard")}>
-            ← Voltar ao Dashboard
+            ← {t('mileage.backToDashboard')}
           </Button>
         </div>
         <MileageSystem />
@@ -230,7 +230,7 @@ export const FinancialDashboard = () => {
                 onClick={() => setCurrentPage("investments")}
               >
                 <TrendingUp className="h-6 w-6" />
-                <span>Investimentos</span>
+                <span>{t('nav.investments')}</span>
               </Button>
               <Button 
                 variant="outline" 
@@ -238,7 +238,7 @@ export const FinancialDashboard = () => {
                 onClick={() => setCurrentPage("mileage")}
               >
                 <Plane className="h-6 w-6" />
-                <span>Milhagem</span>
+                <span>{t('nav.mileage')}</span>
               </Button>
               <Button 
                 variant="outline" 
