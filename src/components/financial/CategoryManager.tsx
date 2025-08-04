@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/hooks/useLanguage";
 import { Plus, Trash2, Edit } from "lucide-react";
 
 interface Category {
@@ -27,7 +26,6 @@ export const CategoryManager = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
 
   useEffect(() => {
     fetchCategories();
@@ -160,22 +158,22 @@ export const CategoryManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
+        <h2 className="text-2xl font-bold">Gerenciar Categorias</h2>
         <Select value={filterType} onValueChange={(value) => setFilterType(value as "all" | "income" | "expense")}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t('categories.all')}</SelectItem>
-            <SelectItem value="income">{t('categories.income')}</SelectItem>
-            <SelectItem value="expense">{t('categories.expense')}</SelectItem>
+            <SelectItem value="all">Todas as Categorias</SelectItem>
+            <SelectItem value="income">Categorias de Entrada</SelectItem>
+            <SelectItem value="expense">Categorias de Saída</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold">{t('categories.title')}</h3>
+          <h3 className="text-lg font-semibold">Categorias</h3>
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
@@ -183,7 +181,7 @@ export const CategoryManager = () => {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                {t('categories.add')}
+                Nova Categoria
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -231,8 +229,8 @@ export const CategoryManager = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="expense">{t('categories.expenseType')}</SelectItem>
-                      <SelectItem value="income">{t('categories.incomeType')}</SelectItem>
+                      <SelectItem value="expense">Saída</SelectItem>
+                      <SelectItem value="income">Entrada</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -272,7 +270,7 @@ export const CategoryManager = () => {
                   />
                   <span className="font-medium">{category.name}</span>
                   <span className="text-xs px-2 py-1 rounded-full bg-muted">
-                    {category.category_type === 'income' ? t('categories.incomeType') : t('categories.expenseType')}
+                    {category.category_type === 'income' ? 'Entrada' : 'Saída'}
                   </span>
                   {category.icon && <span className="text-lg">{category.icon}</span>}
                 </div>

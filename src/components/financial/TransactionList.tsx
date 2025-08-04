@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpCircle, ArrowDownCircle, User } from "lucide-react";
-import { useLanguage } from "@/hooks/useLanguage";
 
 interface Transaction {
   id: string;
@@ -18,7 +17,6 @@ interface TransactionListProps {
 }
 
 export const TransactionList = ({ transactions }: TransactionListProps) => {
-  const { t } = useLanguage();
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -41,12 +39,12 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
   return (
     <Card className="p-6 border-card-border bg-card">
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-foreground">{t('transactions.recent')}</h3>
+        <h3 className="text-lg font-semibold text-foreground">Transações Recentes</h3>
         
         {transactions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>{t('transactions.noTransactions')}</p>
-            <p className="text-sm">{t('transactions.addFirst')}</p>
+            <p>Nenhuma transação registrada ainda.</p>
+            <p className="text-sm">Adicione sua primeira transação acima!</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -78,7 +76,7 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
                       </Badge>
                       <Badge className={`text-xs ${getUserColor(transaction.user)}`}>
                         <User className="h-3 w-3 mr-1" />
-                        {transaction.user === "user1" ? t('dashboard.user1') : t('dashboard.user2')}
+                        {transaction.user === "user1" ? "Usuário 1" : "Usuário 2"}
                       </Badge>
                     </div>
                   </div>
