@@ -127,6 +127,16 @@ const translations = {
     'categories.name': 'Nome da Categoria',
     'categories.adding': 'Adicionando...',
     'categories.addCategory': 'Adicionar Categoria',
+    'categories.all': 'Todas as Categorias',
+    'categories.income': 'Categorias de Entrada',
+    'categories.expense': 'Categorias de Saída',
+    'categories.incomeType': 'Entrada',
+    'categories.expenseType': 'Saída',
+    
+    // Transactions
+    'transactions.recent': 'Transações Recentes',
+    'transactions.noTransactions': 'Nenhuma transação registrada ainda.',
+    'transactions.addFirst': 'Adicione sua primeira transação acima!',
     
     // Messages
     'messages.cardAdded': 'Cartão adicionado com sucesso!',
@@ -524,6 +534,16 @@ const translations = {
     'categories.name': 'Category Name',
     'categories.adding': 'Adding...',
     'categories.addCategory': 'Add Category',
+    'categories.all': 'All Categories',
+    'categories.income': 'Income Categories',
+    'categories.expense': 'Expense Categories',
+    'categories.incomeType': 'Income',
+    'categories.expenseType': 'Expense',
+    
+    // Transactions
+    'transactions.recent': 'Recent Transactions',
+    'transactions.noTransactions': 'No transactions recorded yet.',
+    'transactions.addFirst': 'Add your first transaction above!',
     
     // Messages
     'messages.cardAdded': 'Card added successfully!',
