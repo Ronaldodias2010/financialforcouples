@@ -24,7 +24,7 @@ interface PremiumAccessEmailProps {
   days_duration: number;
 }
 
-export const PremiumAccessEmail = ({
+export const PremiumAccessEmailEn = ({
   user_email,
   start_date,
   end_date,
@@ -34,7 +34,7 @@ export const PremiumAccessEmail = ({
 }: PremiumAccessEmailProps) => (
   <Html>
     <Head />
-    <Preview>🎉 Acesso Premium Concedido no Couples Financials!</Preview>
+    <Preview>🎉 Premium Access Granted on Couples Financials!</Preview>
     <Body style={main}>
       <Container style={container}>
         {/* Header with Logo */}
@@ -60,34 +60,34 @@ export const PremiumAccessEmail = ({
 
         {/* Main Content */}
         <Section style={contentSection}>
-          <Heading style={h2}>🎉 Acesso Premium Concedido!</Heading>
+          <Heading style={h2}>🎉 Premium Access Granted!</Heading>
           
           <Text style={text}>
-            Parabéns! Você recebeu acesso <strong>Premium</strong> gratuito ao Couples Financials.
+            Congratulations! You have received free <strong>Premium</strong> access to Couples Financials.
           </Text>
 
           {/* Premium Badge */}
           <Section style={premiumBadge}>
-            <Text style={premiumText}>✨ PREMIUM ATIVO ✨</Text>
+            <Text style={premiumText}>✨ PREMIUM ACTIVE ✨</Text>
           </Section>
 
           {/* Access Details */}
           <Section style={accessDetailsBox}>
-            <Heading style={h3}>📅 Detalhes do seu acesso Premium:</Heading>
+            <Heading style={h3}>📅 Your Premium access details:</Heading>
             <Text style={detailText}>
-              <strong>Período:</strong> {days_duration} dias
+              <strong>Duration:</strong> {days_duration} days
             </Text>
             <Text style={detailText}>
-              <strong>Início:</strong> {start_date}
+              <strong>Start:</strong> {start_date}
             </Text>
             <Text style={detailText}>
-              <strong>Término:</strong> {end_date}
+              <strong>End:</strong> {end_date}
             </Text>
             <Text style={detailText}>
               <strong>Email:</strong> {user_email}
             </Text>
             <Text style={detailText}>
-              <strong>Senha Temporária:</strong> 
+              <strong>Temporary Password:</strong> 
               <span style={passwordCode}>{temp_password}</span>
             </Text>
           </Section>
@@ -98,59 +98,59 @@ export const PremiumAccessEmail = ({
               href={login_url}
               style={premiumButton}
             >
-              🚀 Acessar Premium Agora
+              🚀 Access Premium Now
             </Link>
           </Section>
 
           {/* Premium Features */}
           <Section style={featuresSection}>
-            <Heading style={h3}>💎 Recursos Premium Liberados:</Heading>
-            <Text style={featureText}>✅ Relatórios avançados e análises detalhadas</Text>
-            <Text style={featureText}>✅ Exportação ilimitada de dados</Text>
-            <Text style={featureText}>✅ Categorias personalizadas sem limites</Text>
-            <Text style={featureText}>✅ Metas financeiras avançadas</Text>
-            <Text style={featureText}>✅ Análise de tendências e projeções</Text>
-            <Text style={featureText}>✅ Backup automático na nuvem</Text>
-            <Text style={featureText}>✅ Suporte prioritário</Text>
+            <Heading style={h3}>💎 Premium Features Unlocked:</Heading>
+            <Text style={featureText}>✅ Advanced reports and detailed analytics</Text>
+            <Text style={featureText}>✅ Unlimited data export</Text>
+            <Text style={featureText}>✅ Unlimited custom categories</Text>
+            <Text style={featureText}>✅ Advanced financial goals</Text>
+            <Text style={featureText}>✅ Trend analysis and projections</Text>
+            <Text style={featureText}>✅ Automatic cloud backup</Text>
+            <Text style={featureText}>✅ Priority support</Text>
           </Section>
 
           {/* Instructions */}
           <Section style={instructionsSection}>
-            <Heading style={h3}>🔑 Como acessar:</Heading>
+            <Heading style={h3}>🔑 How to access:</Heading>
             <Text style={instructionText}>
-              1. Clique no botão "Acessar Premium Agora"
+              1. Click the "Access Premium Now" button
             </Text>
             <Text style={instructionText}>
-              2. Faça login com seu email e a senha temporária
+              2. Sign in with your email and temporary password
             </Text>
             <Text style={instructionText}>
-              3. Todas as funcionalidades Premium estarão disponíveis
+              3. All Premium features will be available
             </Text>
             <Text style={instructionText}>
-              4. Altere sua senha nas configurações se necessário
+              4. Change your password in settings if needed
             </Text>
           </Section>
 
           <Hr style={divider} />
 
           <Text style={warningText}>
-            <strong>⏰ Importante:</strong> Este acesso Premium expira em {end_date}. 
-            Após esta data, sua conta retornará automaticamente ao plano gratuito.
+            <strong>⏰ Important:</strong> This Premium access expires on {end_date}. 
+            After this date, your account will automatically return to the free plan.
           </Text>
 
           <Text style={gratitudeText}>
-            Aproveite ao máximo todos os recursos Premium e descubra como o Couples Financials 
-            pode revolucionar a gestão financeira do seu relacionamento! 💚
+            Make the most of all Premium features and discover how Couples Financials 
+            can revolutionize your relationship's financial management! 💚
           </Text>
         </Section>
 
         {/* Footer */}
         <Section style={footer}>
           <Text style={footerText}>
-            Couples Financials - Gestão financeira inteligente para relacionamentos
+            Couples Financials - Intelligent financial management for relationships
           </Text>
           <Text style={footerSubtext}>
-            Construindo um futuro financeiro sólido, juntos 💚
+            Building a solid financial future, together 💚
           </Text>
         </Section>
       </Container>

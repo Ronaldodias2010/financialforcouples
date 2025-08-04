@@ -15,26 +15,24 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import * as React from 'npm:react@18.3.1'
 
-interface PremiumAccessEmailProps {
-  user_email: string;
-  start_date: string;
-  end_date: string;
+interface CouplesFinancialsEmailProps {
+  name: string;
+  inviter_name: string;
+  email: string;
   temp_password: string;
   login_url: string;
-  days_duration: number;
 }
 
-export const PremiumAccessEmail = ({
-  user_email,
-  start_date,
-  end_date,
+export const CouplesFinancialsEmailEn = ({
+  name,
+  inviter_name,
+  email,
   temp_password,
   login_url,
-  days_duration,
-}: PremiumAccessEmailProps) => (
+}: CouplesFinancialsEmailProps) => (
   <Html>
     <Head />
-    <Preview>🎉 Acesso Premium Concedido no Couples Financials!</Preview>
+    <Preview>{inviter_name} invited you to Couples Financials</Preview>
     <Body style={main}>
       <Container style={container}>
         {/* Header with Logo */}
@@ -60,34 +58,25 @@ export const PremiumAccessEmail = ({
 
         {/* Main Content */}
         <Section style={contentSection}>
-          <Heading style={h2}>🎉 Acesso Premium Concedido!</Heading>
+          <Heading style={h2}>You're invited! 💚</Heading>
           
           <Text style={text}>
-            Parabéns! Você recebeu acesso <strong>Premium</strong> gratuito ao Couples Financials.
+            Hello <strong>{name}</strong>,
+          </Text>
+          
+          <Text style={text}>
+            <strong>{inviter_name}</strong> invited you to use <strong>Couples Financials</strong>, 
+            an intelligent financial management platform for couples.
           </Text>
 
-          {/* Premium Badge */}
-          <Section style={premiumBadge}>
-            <Text style={premiumText}>✨ PREMIUM ATIVO ✨</Text>
-          </Section>
-
-          {/* Access Details */}
-          <Section style={accessDetailsBox}>
-            <Heading style={h3}>📅 Detalhes do seu acesso Premium:</Heading>
-            <Text style={detailText}>
-              <strong>Período:</strong> {days_duration} dias
+          {/* Credentials Box */}
+          <Section style={credentialsBox}>
+            <Heading style={h3}>🔑 Your login credentials:</Heading>
+            <Text style={credentialText}>
+              <strong>Email:</strong> {email}
             </Text>
-            <Text style={detailText}>
-              <strong>Início:</strong> {start_date}
-            </Text>
-            <Text style={detailText}>
-              <strong>Término:</strong> {end_date}
-            </Text>
-            <Text style={detailText}>
-              <strong>Email:</strong> {user_email}
-            </Text>
-            <Text style={detailText}>
-              <strong>Senha Temporária:</strong> 
+            <Text style={credentialText}>
+              <strong>Temporary Password:</strong> 
               <span style={passwordCode}>{temp_password}</span>
             </Text>
           </Section>
@@ -96,61 +85,54 @@ export const PremiumAccessEmail = ({
           <Section style={buttonSection}>
             <Link
               href={login_url}
-              style={premiumButton}
+              style={button}
             >
-              🚀 Acessar Premium Agora
+              🚀 Access Couples Financials
             </Link>
-          </Section>
-
-          {/* Premium Features */}
-          <Section style={featuresSection}>
-            <Heading style={h3}>💎 Recursos Premium Liberados:</Heading>
-            <Text style={featureText}>✅ Relatórios avançados e análises detalhadas</Text>
-            <Text style={featureText}>✅ Exportação ilimitada de dados</Text>
-            <Text style={featureText}>✅ Categorias personalizadas sem limites</Text>
-            <Text style={featureText}>✅ Metas financeiras avançadas</Text>
-            <Text style={featureText}>✅ Análise de tendências e projeções</Text>
-            <Text style={featureText}>✅ Backup automático na nuvem</Text>
-            <Text style={featureText}>✅ Suporte prioritário</Text>
           </Section>
 
           {/* Instructions */}
           <Section style={instructionsSection}>
-            <Heading style={h3}>🔑 Como acessar:</Heading>
+            <Heading style={h3}>📋 How to get started:</Heading>
             <Text style={instructionText}>
-              1. Clique no botão "Acessar Premium Agora"
+              1. Click the button above to access the platform
             </Text>
             <Text style={instructionText}>
-              2. Faça login com seu email e a senha temporária
+              2. Use your email and temporary password to sign in
             </Text>
             <Text style={instructionText}>
-              3. Todas as funcionalidades Premium estarão disponíveis
+              3. After logging in, change your password in settings
             </Text>
             <Text style={instructionText}>
-              4. Altere sua senha nas configurações se necessário
+              4. Your financial data will be linked with {inviter_name}
             </Text>
+          </Section>
+
+          {/* Features */}
+          <Section style={featuresSection}>
+            <Heading style={h3}>💎 What you can do together:</Heading>
+            <Text style={featureText}>✅ Manage transactions together</Text>
+            <Text style={featureText}>✅ Track expenses by category</Text>
+            <Text style={featureText}>✅ Control cards and bank accounts</Text>
+            <Text style={featureText}>✅ View detailed financial reports</Text>
+            <Text style={featureText}>✅ Set financial goals as a couple</Text>
           </Section>
 
           <Hr style={divider} />
 
           <Text style={warningText}>
-            <strong>⏰ Importante:</strong> Este acesso Premium expira em {end_date}. 
-            Após esta data, sua conta retornará automaticamente ao plano gratuito.
-          </Text>
-
-          <Text style={gratitudeText}>
-            Aproveite ao máximo todos os recursos Premium e descubra como o Couples Financials 
-            pode revolucionar a gestão financeira do seu relacionamento! 💚
+            <strong>⚠️ Important:</strong> This temporary password expires in 7 days. 
+            If you weren't expecting this invitation, you can safely ignore this email.
           </Text>
         </Section>
 
         {/* Footer */}
         <Section style={footer}>
           <Text style={footerText}>
-            Couples Financials - Gestão financeira inteligente para relacionamentos
+            Couples Financials - Intelligent financial management for relationships
           </Text>
           <Text style={footerSubtext}>
-            Construindo um futuro financeiro sólido, juntos 💚
+            Building a solid financial future, together 💚
           </Text>
         </Section>
       </Container>
@@ -227,41 +209,24 @@ const text = {
   fontSize: '16px',
   lineHeight: '24px',
   margin: '16px 0',
-  textAlign: 'center' as const,
 }
 
-const premiumBadge = {
-  textAlign: 'center' as const,
-  margin: '24px 0',
-}
-
-const premiumText = {
-  background: 'linear-gradient(135deg, #F59E0B, #10B981)',
-  color: '#0f0f23',
-  fontSize: '20px',
-  fontWeight: 'bold',
-  padding: '12px 24px',
-  borderRadius: '25px',
-  display: 'inline-block',
-  boxShadow: '0 10px 30px -10px rgba(245, 158, 11, 0.5)',
-}
-
-const accessDetailsBox = {
+const credentialsBox = {
   backgroundColor: '#2a2a3e',
-  border: '2px solid #10B981',
+  border: '2px solid #F59E0B',
   borderRadius: '8px',
   padding: '20px',
   margin: '24px 0',
 }
 
-const detailText = {
+const credentialText = {
   color: '#FAFAFA',
   fontSize: '16px',
   margin: '8px 0',
 }
 
 const passwordCode = {
-  backgroundColor: '#F59E0B',
+  backgroundColor: '#10B981',
   color: '#0f0f23',
   fontFamily: 'monospace',
   fontSize: '18px',
@@ -276,8 +241,8 @@ const buttonSection = {
   margin: '32px 0',
 }
 
-const premiumButton = {
-  background: 'linear-gradient(135deg, #F59E0B, #10B981)',
+const button = {
+  backgroundColor: '#F59E0B',
   color: '#0f0f23',
   fontSize: '18px',
   fontWeight: 'bold',
@@ -285,7 +250,7 @@ const premiumButton = {
   borderRadius: '8px',
   textDecoration: 'none',
   display: 'inline-block',
-  boxShadow: '0 10px 30px -10px rgba(245, 158, 11, 0.5)',
+  boxShadow: '0 10px 30px -10px rgba(245, 158, 11, 0.3)',
 }
 
 const instructionsSection = {
@@ -324,17 +289,6 @@ const warningText = {
   padding: '16px',
   borderRadius: '8px',
   margin: '24px 0',
-}
-
-const gratitudeText = {
-  color: '#10B981',
-  fontSize: '16px',
-  fontStyle: 'italic',
-  textAlign: 'center' as const,
-  margin: '24px 0',
-  padding: '16px',
-  backgroundColor: '#1f2937',
-  borderRadius: '8px',
 }
 
 const footer = {

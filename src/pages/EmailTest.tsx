@@ -11,6 +11,7 @@ import { Mail, Send, Loader2 } from 'lucide-react';
 export default function EmailTest() {
   const [email, setEmail] = useState('ronadias2010@gmail.com');
   const [template, setTemplate] = useState('invite');
+  const [language, setLanguage] = useState<'pt' | 'en'>('pt');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -29,7 +30,8 @@ export default function EmailTest() {
       const { data, error } = await supabase.functions.invoke('test-email', {
         body: {
           email,
-          template
+          template,
+          language
         }
       });
 
@@ -95,6 +97,19 @@ export default function EmailTest() {
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="language">Idioma / Language</Label>
+            <Select value={language} onValueChange={(value: 'pt' | 'en') => setLanguage(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o idioma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pt">🇧🇷 Português</SelectItem>
+                <SelectItem value="en">🇺🇸 English</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-4">
             <Button 
               onClick={sendTestEmail} 
@@ -125,8 +140,9 @@ export default function EmailTest() {
           <div className="bg-muted/50 p-4 rounded-lg">
             <h4 className="font-semibold text-sm mb-2">Templates disponíveis:</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>📧 <strong>Convite:</strong> Email para convidar usuários</li>
-              <li>⭐ <strong>Premium:</strong> Email de concessão de acesso premium</li>
+              <li>📧 <strong>Convite:</strong> Email para convidar usuários (PT/EN)</li>
+              <li>⭐ <strong>Premium:</strong> Email de concessão de acesso premium (PT/EN)</li>
+              <li>🌐 <strong>Logo fixado:</strong> Usando CDN confiável para imagens</li>
             </ul>
           </div>
         </CardContent>

@@ -4,6 +4,8 @@ import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import React from 'npm:react@18.3.1';
 import { CouplesFinancialsEmail } from './_templates/couples-financials-email.tsx';
 import { PremiumAccessEmail } from './_templates/premium-access-email.tsx';
+import { CouplesFinancialsEmailEn } from './_templates/couples-financials-email-en.tsx';
+import { PremiumAccessEmailEn } from './_templates/premium-access-email-en.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -20,7 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, template } = await req.json();
+    const { email, template, language = 'pt' } = await req.json();
 
     if (!email) {
       throw new Error("Email é obrigatório");
@@ -28,12 +30,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     const testData = {
       email,
-      name: "Usuário Teste",
-      inviter_name: "Admin Couples Financials",
+      name: language === 'pt' ? "Usuário Teste" : "Test User",
+      inviter_name: language === 'pt' ? "Admin Couples Financials" : "Couples Financials Admin",
       temp_password: "TEST2024",
       login_url: "https://elxttabdtddlavhseipz.supabase.co",
-      start_date: new Date().toLocaleDateString('pt-BR'),
-      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR'),
+      start_date: language === 'pt' ? new Date().toLocaleDateString('pt-BR') : new Date().toLocaleDateString('en-US'),
+      end_date: language === 'pt' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR') : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US'),
       days_duration: 30
     };
 
@@ -41,30 +43,55 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
 
     if (template === 'premium') {
-      // Render Premium Access Email
-      emailHtml = await renderAsync(
-        React.createElement(PremiumAccessEmail, {
-          user_email: testData.email,
-          start_date: testData.start_date,
-          end_date: testData.end_date,
-          temp_password: testData.temp_password,
-          login_url: testData.login_url,
-          days_duration: testData.days_duration,
-        })
-      );
-      subject = "🎉 Acesso Premium Concedido - Couples Financials";
+      if (language === 'en') {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumAccessEmailEn, {
+            user_email: testData.email,
+            start_date: testData.start_date,
+            end_date: testData.end_date,
+            temp_password: testData.temp_password,
+            login_url: testData.login_url,
+            days_duration: testData.days_duration,
+          })
+        );
+        subject = "🎉 Premium Access Granted - Couples Financials";
+      } else {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumAccessEmail, {
+            user_email: testData.email,
+            start_date: testData.start_date,
+            end_date: testData.end_date,
+            temp_password: testData.temp_password,
+            login_url: testData.login_url,
+            days_duration: testData.days_duration,
+          })
+        );
+        subject = "🎉 Acesso Premium Concedido - Couples Financials";
+      }
     } else {
-      // Render Invite Email (default)
-      emailHtml = await renderAsync(
-        React.createElement(CouplesFinancialsEmail, {
-          name: testData.name,
-          inviter_name: testData.inviter_name,
-          email: testData.email,
-          temp_password: testData.temp_password,
-          login_url: testData.login_url,
-        })
-      );
-      subject = "💚 Convite para Couples Financials - Teste";
+      if (language === 'en') {
+        emailHtml = await renderAsync(
+          React.createElement(CouplesFinancialsEmailEn, {
+            name: testData.name,
+            inviter_name: testData.inviter_name,
+            email: testData.email,
+            temp_password: testData.temp_password,
+            login_url: testData.login_url,
+          })
+        );
+        subject = "💚 Invitation to Couples Financials - Test";
+      } else {
+        emailHtml = await renderAsync(
+          React.createElement(CouplesFinancialsEmail, {
+            name: testData.name,
+            inviter_name: testData.inviter_name,
+            email: testData.email,
+            temp_password: testData.temp_password,
+            login_url: testData.login_url,
+          })
+        );
+        subject = "💚 Convite para Couples Financials - Teste";
+      }
     }
 
     const emailResponse = await resend.emails.send({

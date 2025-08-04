@@ -40,7 +40,7 @@ export const CouplesFinancialsEmail = ({
           <Row>
             <Column align="center">
               <Img
-                src="https://raw.githubusercontent.com/user-attachments/assets/505b28f4-fde0-468f-9b60-0b0854ed0538"
+                src="https://utfs.io/f/0b2d12de-d9b0-4c44-89f4-e14b3e9b9275-1p.png"
                 width="120"
                 height="120"
                 alt="Couples Financials Logo"
