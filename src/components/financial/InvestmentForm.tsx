@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useUserNames } from "@/hooks/useUserNames";
 
 interface InvestmentGoal {
   id: string;
@@ -29,6 +30,7 @@ interface InvestmentFormProps {
 export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { userNames } = useUserNames();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -261,8 +263,8 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user1">Usuário 1</SelectItem>
-                  <SelectItem value="user2">Usuário 2</SelectItem>
+                  <SelectItem value="user1">{userNames.user1}</SelectItem>
+                  <SelectItem value="user2">{userNames.user2}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
