@@ -55,15 +55,7 @@ serve(async (req) => {
       customer: customerId,
       line_items: [
         {
-          price_data: {
-            currency: "brl",
-            product_data: { 
-              name: "Couples Financials Premium",
-              description: "Plano Premium com IA, análises avançadas e recursos exclusivos"
-            },
-            unit_amount: 1990, // R$ 19.90
-            recurring: { interval: "month" },
-          },
+          price: "price_1RsLL5FOhUY5r0H1WIXv7yuP", // Stripe Price ID for Premium Plan
           quantity: 1,
         },
       ],
