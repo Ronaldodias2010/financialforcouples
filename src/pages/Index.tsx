@@ -1,12 +1,17 @@
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown } from "lucide-react";
+import { LogOut, User, Crown, Settings } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 const Index = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
+
+  // Check if user is admin (simplified - in production use proper role system)
+  const isAdmin = user?.email === 'admin@example.com' || user?.email?.includes('admin');
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,6 +30,16 @@ const Index = () => {
               <Crown className="h-4 w-4 mr-2" />
               Planos
             </Button>
+            {isAdmin && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/admin')}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Admin
+              </Button>
+            )}
             <Button 
               variant="outline" 
               size="sm" 
