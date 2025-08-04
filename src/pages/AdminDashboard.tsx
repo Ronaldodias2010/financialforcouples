@@ -131,8 +131,8 @@ export const AdminDashboard = () => {
         id: `alert_${index}`,
         date: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         user_email: user.email,
-        event: index === 0 ? 'Pagamento falhou' : index === 1 ? 'Assinatura cancelada' : 'Pagamento confirmado',
-        action: index === 0 ? 'Enviar notificação' : index === 1 ? 'Oferecer reativação' : 'Nenhuma ação necessária',
+        event: index === 0 ? t('admin.events.paymentFailed') : index === 1 ? t('admin.events.subscriptionCanceled') : t('admin.events.paymentConfirmed'),
+        action: index === 0 ? t('admin.actions.sendNotification') : index === 1 ? t('admin.actions.offerReactivation') : t('admin.actions.noActionNeeded'),
         user_id: user.id
       }));
 
@@ -141,8 +141,8 @@ export const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível carregar os dados do painel",
+        title: t('error'),
+        description: t('admin.loading.error'),
         variant: "destructive"
       });
     } finally {
@@ -159,21 +159,22 @@ export const AdminDashboard = () => {
 
   const handleSendNotification = async (userId: string, userEmail: string) => {
     toast({
-      title: "Notificação enviada",
-      description: `E-mail enviado para ${userEmail}`,
+      title: t('admin.notifications.sent'),
+      description: t('admin.notifications.sentMessage').replace('{email}', userEmail),
     });
   };
 
   const handleReactivateSubscription = async (userId: string, userEmail: string) => {
     toast({
-      title: "Reativação processada",
-      description: `Solicitação de reativação para ${userEmail}`,
+      title: t('admin.reactivation.processed'),
+      description: t('admin.reactivation.processedMessage').replace('{email}', userEmail),
     });
   };
 
   const exportToCSV = () => {
+    const csvHeaders = [t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment'), t('admin.table.nextBilling')];
     const csvContent = [
-      ['Nome', 'Email', 'Status', 'Plano', 'Último Pagamento', 'Próxima Cobrança'].join(','),
+      csvHeaders.join(','),
       ...filteredUsers.map(user => [
         user.display_name,
         user.email,
@@ -201,9 +202,9 @@ export const AdminDashboard = () => {
         <Card>
           <CardContent className="p-8 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Acesso Negado</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('admin.accessDenied')}</h2>
             <p className="text-muted-foreground">
-              Você não tem permissão para acessar o painel administrativo.
+              {t('admin.accessDeniedMessage')}
             </p>
           </CardContent>
         </Card>
@@ -214,7 +215,7 @@ export const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="container mx-auto py-8">
-        <div className="text-center">Carregando painel administrativo...</div>
+        <div className="text-center">{t('admin.loading')}</div>
       </div>
     );
   }
@@ -223,12 +224,12 @@ export const AdminDashboard = () => {
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">🧮 Painel Administrativo</h1>
-          <p className="text-muted-foreground">Controle de Assinaturas e Usuários Premium</p>
+          <h1 className="text-3xl font-bold">🧮 {t('admin.title')}</h1>
+          <p className="text-muted-foreground">{t('admin.subtitle')}</p>
         </div>
         <Button onClick={exportToCSV} variant="outline">
           <Download className="h-4 w-4 mr-2" />
-          Exportar CSV
+          {t('admin.export')}
         </Button>
       </div>
 
@@ -236,7 +237,7 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuários Premium Ativos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.metrics.activeUsers')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -246,7 +247,7 @@ export const AdminDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Assinaturas Canceladas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.metrics.canceledSubscriptions')}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -256,7 +257,7 @@ export const AdminDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pagamentos Falhos (30 dias)</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.metrics.failedPayments')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -266,7 +267,7 @@ export const AdminDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Mensal Recorrente</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.metrics.monthlyRevenue')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -279,15 +280,15 @@ export const AdminDashboard = () => {
 
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="users">👥 Usuários Premium</TabsTrigger>
-          <TabsTrigger value="alerts">🔔 Alertas Recentes</TabsTrigger>
+          <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
+          <TabsTrigger value="alerts">{t('admin.tabs.alerts')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
           {/* Filtros e Busca */}
           <Card>
             <CardHeader>
-              <CardTitle>📊 Filtros e Busca</CardTitle>
+              <CardTitle>📊 {t('admin.filters.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4">
@@ -295,7 +296,7 @@ export const AdminDashboard = () => {
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="🔎 Buscar por nome ou e-mail"
+                      placeholder={t('admin.search.placeholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -305,14 +306,14 @@ export const AdminDashboard = () => {
                 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-full md:w-48">
-                    <SelectValue placeholder="Filtrar por status" />
+                    <SelectValue placeholder={t('admin.filter.allStatus')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os Status</SelectItem>
-                    <SelectItem value="active">✅ Ativo</SelectItem>
-                    <SelectItem value="overdue">⚠ Atrasado</SelectItem>
-                    <SelectItem value="canceled">❌ Cancelado</SelectItem>
-                    <SelectItem value="expired">⏰ Expirado</SelectItem>
+                    <SelectItem value="all">{t('admin.filter.allStatus')}</SelectItem>
+                    <SelectItem value="active">{t('admin.filter.active')}</SelectItem>
+                    <SelectItem value="overdue">{t('admin.filter.overdue')}</SelectItem>
+                    <SelectItem value="canceled">{t('admin.filter.canceled')}</SelectItem>
+                    <SelectItem value="expired">{t('admin.filter.expired')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -322,20 +323,20 @@ export const AdminDashboard = () => {
           {/* Lista de Usuários */}
           <Card>
             <CardHeader>
-              <CardTitle>Lista de Usuários Premium ({filteredUsers.length})</CardTitle>
+              <CardTitle>{t('admin.users.count').replace('{count}', filteredUsers.length.toString())}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nome do Usuário</TableHead>
-                      <TableHead>E-mail</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Plano</TableHead>
-                      <TableHead>Último Pagamento</TableHead>
-                      <TableHead>Próxima Cobrança</TableHead>
-                      <TableHead>Ações</TableHead>
+                      <TableHead>{t('admin.table.userName')}</TableHead>
+                      <TableHead>{t('admin.table.email')}</TableHead>
+                      <TableHead>{t('admin.table.status')}</TableHead>
+                      <TableHead>{t('admin.table.plan')}</TableHead>
+                      <TableHead>{t('admin.table.lastPayment')}</TableHead>
+                      <TableHead>{t('admin.table.nextBilling')}</TableHead>
+                      <TableHead>{t('admin.table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -349,9 +350,9 @@ export const AdminDashboard = () => {
                             user.status === 'overdue' ? 'destructive' :
                             user.status === 'canceled' ? 'secondary' : 'outline'
                           }>
-                            {user.status === 'active' ? '✅ Ativo' :
-                             user.status === 'overdue' ? '⚠ Atrasado' :
-                             user.status === 'canceled' ? '❌ Cancelado' : '⏰ Expirado'}
+                            {user.status === 'active' ? t('admin.status.active') :
+                             user.status === 'overdue' ? t('admin.status.overdue') :
+                             user.status === 'canceled' ? t('admin.status.canceled') : t('admin.status.expired')}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -365,7 +366,7 @@ export const AdminDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" title="Ver detalhes">
+                            <Button size="sm" variant="outline" title={t('admin.action.view')}>
                               <Eye className="h-4 w-4" />
                             </Button>
                             {user.status === 'active' ? (
@@ -373,7 +374,7 @@ export const AdminDashboard = () => {
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => handleSendNotification(user.id, user.email)}
-                                title="Enviar notificação"
+                                title={t('admin.action.notify')}
                               >
                                 <Mail className="h-4 w-4" />
                               </Button>
@@ -382,7 +383,7 @@ export const AdminDashboard = () => {
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => handleReactivateSubscription(user.id, user.email)}
-                                title="Reativar assinatura"
+                                title={t('admin.action.reactivate')}
                               >
                                 <RotateCcw className="h-4 w-4" />
                               </Button>
@@ -401,8 +402,8 @@ export const AdminDashboard = () => {
         <TabsContent value="alerts">
           <Card>
             <CardHeader>
-              <CardTitle>🔔 Alertas Recentes</CardTitle>
-              <CardDescription>Eventos importantes que requerem atenção</CardDescription>
+              <CardTitle>{t('admin.alerts.title')}</CardTitle>
+              <CardDescription>{t('admin.alerts.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -417,9 +418,9 @@ export const AdminDashboard = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">{alert.action}</p>
-                      {alert.action !== 'Nenhuma ação necessária' && (
+                      {alert.action !== t('admin.actions.noActionNeeded') && (
                         <Button size="sm" variant="outline" className="mt-2">
-                          Executar
+                          {t('admin.actions.execute')}
                         </Button>
                       )}
                     </div>

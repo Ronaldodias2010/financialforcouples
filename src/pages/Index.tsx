@@ -1,5 +1,6 @@
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Crown, Settings } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
@@ -7,6 +8,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 const Index = () => {
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
 
@@ -37,7 +39,7 @@ const Index = () => {
                 onClick={() => navigate('/admin')}
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Admin
+                {t('nav.admin')}
               </Button>
             )}
             <Button 
