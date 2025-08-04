@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PWAPrompt } from "@/components/PWAPrompt";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ChangePassword from "./pages/ChangePassword";
@@ -14,6 +15,7 @@ const App = () => (
   <TooltipProvider>
     <Toaster />
     <Sonner />
+    <PWAPrompt />
     <Routes>
       <Route path="/auth" element={<Auth />} />
       <Route path="/change-password" element={
