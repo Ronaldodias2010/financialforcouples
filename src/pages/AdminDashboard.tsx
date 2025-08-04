@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, Languages } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, Languages, LogOut } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AdminLanguageProvider, useAdminLanguage } from "@/hooks/useAdminLanguage";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
@@ -43,7 +43,7 @@ interface RecentAlert {
 }
 
 const AdminDashboardContent = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { t } = useLanguage();
   const { language, setLanguage } = useAdminLanguage();
   const [metrics, setMetrics] = useState<SubscriptionMetrics>({
@@ -242,6 +242,10 @@ const AdminDashboardContent = () => {
           <Button onClick={exportToCSV} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             {language === 'en' ? 'Export' : 'Exportar'}
+          </Button>
+          <Button onClick={signOut} variant="outline">
+            <LogOut className="h-4 w-4 mr-2" />
+            {language === 'en' ? 'Exit' : 'Sair'}
           </Button>
         </div>
       </div>
