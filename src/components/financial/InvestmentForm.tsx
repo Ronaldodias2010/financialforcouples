@@ -87,13 +87,13 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
           owner_user: formData.owner_user,
           broker: formData.broker || null,
           notes: formData.notes || null,
-          goal_id: formData.goal_id || null
+          goal_id: formData.goal_id === "no_goal" ? null : formData.goal_id || null
         });
 
       if (error) throw error;
 
       // Se houver objetivo associado, atualizar o valor atual
-      if (formData.goal_id) {
+      if (formData.goal_id && formData.goal_id !== "no_goal") {
         const goal = goals.find(g => g.id === formData.goal_id);
         if (goal) {
           const { error: goalError } = await supabase
@@ -230,7 +230,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                   <SelectValue placeholder="Associar a um objetivo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum objetivo</SelectItem>
+                  <SelectItem value="no_goal">Nenhum objetivo</SelectItem>
                   {goals.map((goal) => (
                     <SelectItem key={goal.id} value={goal.id}>
                       {goal.name}
