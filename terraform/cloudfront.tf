@@ -110,9 +110,97 @@ resource "aws_cloudfront_distribution" "app" {
     compress = true
   }
 
-  # Comportamento para outros assets
+  # Comportamento para assets CSS
   ordered_cache_behavior {
-    path_pattern     = "*.{css,js,ico,png,gif,svg,woff,woff2,ttf,eot}"
+    path_pattern     = "*.css"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${var.app_name}-static"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 86400
+    default_ttl            = 604800
+    max_ttl                = 31536000
+
+    compress = true
+  }
+
+  # Comportamento para assets JS
+  ordered_cache_behavior {
+    path_pattern     = "*.js"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${var.app_name}-static"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 86400
+    default_ttl            = 604800
+    max_ttl                = 31536000
+
+    compress = true
+  }
+
+  # Comportamento para assets PNG
+  ordered_cache_behavior {
+    path_pattern     = "*.png"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${var.app_name}-static"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 86400
+    default_ttl            = 604800
+    max_ttl                = 31536000
+
+    compress = true
+  }
+
+  # Comportamento para assets SVG
+  ordered_cache_behavior {
+    path_pattern     = "*.svg"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${var.app_name}-static"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 86400
+    default_ttl            = 604800
+    max_ttl                = 31536000
+
+    compress = true
+  }
+
+  # Comportamento para assets ICO
+  ordered_cache_behavior {
+    path_pattern     = "*.ico"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3-${var.app_name}-static"
