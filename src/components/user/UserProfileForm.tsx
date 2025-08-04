@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User, CreditCard, Lock, DollarSign } from "lucide-react";
@@ -13,7 +14,10 @@ import { User, CreditCard, Lock, DollarSign } from "lucide-react";
 export const UserProfileForm = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { subscribed, subscriptionTier, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading: subscriptionLoading } = useSubscription();
   const [loading, setLoading] = useState(false);
+  const [creatingCheckout, setCreatingCheckout] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
   const [profile, setProfile] = useState({
     display_name: "",
     preferred_currency: "BRL",
@@ -192,8 +196,36 @@ export const UserProfileForm = () => {
       console.error("Error removing user:", error);
       toast.error("Erro ao remover usuário");
     } finally {
-      setLoading(false);
+    setLoading(false);
+  }
+};
+
+  const handleUpgrade = async () => {
+    setCreatingCheckout(true);
+    try {
+      await createCheckoutSession();
+    } catch (error) {
+      console.error("Error creating checkout:", error);
+      toast.error("Erro ao iniciar upgrade. Tente novamente.");
+    } finally {
+      setCreatingCheckout(false);
     }
+  };
+
+  const handleManageSubscription = async () => {
+    setOpeningPortal(true);
+    try {
+      await openCustomerPortal();
+    } catch (error) {
+      console.error("Error opening customer portal:", error);
+      toast.error("Erro ao abrir portal de gerenciamento. Tente novamente.");
+    } finally {
+      setOpeningPortal(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
   return (
@@ -345,15 +377,54 @@ export const UserProfileForm = () => {
                 <h3 className="text-lg font-semibold">{t('userProfile.billingInfo')}</h3>
               </div>
               
-              <div className="text-center py-8 text-muted-foreground">
-                <CreditCard className="h-12 w-12 mx-auto mb-4" />
-                <p>{t('userProfile.freePlan')}</p>
-                <p className="text-sm">{t('userProfile.upgradeText')}</p>
-              </div>
+              {subscriptionLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Carregando informações da assinatura...</p>
+                </div>
+              ) : subscribed ? (
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-lg bg-green-50 border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <h4 className="font-medium text-green-800">Plano {subscriptionTier || 'Premium'} Ativo</h4>
+                    </div>
+                    <p className="text-sm text-green-700">
+                      Você tem acesso a todos os recursos premium!
+                    </p>
+                    {subscriptionEnd && (
+                      <p className="text-sm text-green-600 mt-2">
+                        Próxima renovação: {formatDate(subscriptionEnd)}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <Button 
+                    onClick={handleManageSubscription}
+                    disabled={openingPortal}
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    {openingPortal ? "Abrindo Portal..." : "Gerenciar Assinatura"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CreditCard className="h-12 w-12 mx-auto mb-4" />
+                    <p>{t('userProfile.freePlan')}</p>
+                    <p className="text-sm">{t('userProfile.upgradeText')}</p>
+                  </div>
 
-              <Button variant="outline" className="w-full">
-                {t('userProfile.upgradePlan')}
-              </Button>
+                  <Button 
+                    onClick={handleUpgrade}
+                    disabled={creatingCheckout}
+                    variant="default" 
+                    className="w-full"
+                  >
+                    {creatingCheckout ? "Processando..." : t('userProfile.upgradePlan')}
+                  </Button>
+                </div>
+              )}
             </div>
           </Card>
         </TabsContent>
