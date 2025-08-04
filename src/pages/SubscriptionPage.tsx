@@ -168,7 +168,7 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
                 <div key={index} className="flex items-center gap-2">
                   {feature.icon}
                   <span className="text-sm">{t(`subscription.features.${feature.key}`)}</span>
-                  <Badge variant="secondary" className="ml-auto text-xs">Premium</Badge>
+                  <Badge variant="secondary" className="ml-auto text-xs">{t('subscription.plans.premium')}</Badge>
                 </div>
               ))}
             </div>
