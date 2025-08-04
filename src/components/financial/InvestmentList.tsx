@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, TrendingUp, TrendingDown, Target } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +53,7 @@ interface InvestmentListProps {
 }
 
 export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCurrency }: InvestmentListProps) => {
+  const { t } = useLanguage();
   const { formatCurrency, convertCurrency } = useCurrencyConverter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -123,7 +125,7 @@ export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCur
       <Card>
         <CardContent className="text-center py-8">
           <p className="text-muted-foreground">
-            Nenhum investimento encontrado. Adicione seu primeiro investimento!
+            {t('investments.noInvestments')}
           </p>
         </CardContent>
       </Card>
@@ -133,21 +135,21 @@ export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCur
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Lista de Investimentos</CardTitle>
+        <CardTitle>{t('investments.listTitle')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Valor Investido</TableHead>
-                <TableHead>Valor Atual</TableHead>
-                <TableHead>Rentabilidade</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Objetivo</TableHead>
-                <TableHead>Ações</TableHead>
+                <TableHead>{t('investments.name')}</TableHead>
+                <TableHead>{t('investments.type')}</TableHead>
+                <TableHead>{t('investments.amount')}</TableHead>
+                <TableHead>{t('investments.currentValueField')}</TableHead>
+                <TableHead>{t('investments.returnPercentage')}</TableHead>
+                <TableHead>{t('investments.date')}</TableHead>
+                <TableHead>{t('investments.goal')}</TableHead>
+                <TableHead>{t('investments.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -180,7 +182,7 @@ export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCur
                         )}
                         {investment.is_shared && (
                           <Badge variant="secondary" className="mt-1 text-xs">
-                            Compartilhado
+                            {t('investments.shared')}
                           </Badge>
                         )}
                       </div>

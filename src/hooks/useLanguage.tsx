@@ -245,6 +245,14 @@ const translations = {
     'investments.noInvestments': 'Nenhum investimento encontrado',
     'investments.noGoals': 'Nenhuma meta encontrada',
     'investments.noData': 'Nenhum dado disponível',
+    'investments.actions': 'Ações',
+    'investments.date': 'Data',
+    'investments.shared': 'Compartilhado',
+    'investments.deleteInvestment': 'Excluir Investimento',
+    'investments.deleteConfirm': 'Tem certeza que deseja excluir o investimento "{name}"? Esta ação não pode ser desfeita.',
+    'investments.deleteSuccess': 'Investimento excluído com sucesso!',
+    'investments.deleteError': 'Erro ao excluir investimento',
+    'investments.listTitle': 'Lista de Investimentos',
     
     // Mileage
     'mileage.title': 'Sistema de Milhagem',
@@ -598,6 +606,14 @@ const translations = {
     'investments.noInvestments': 'No investments found',
     'investments.noGoals': 'No goals found',
     'investments.noData': 'No data available',
+    'investments.actions': 'Actions',
+    'investments.date': 'Date',
+    'investments.shared': 'Shared',
+    'investments.deleteInvestment': 'Delete Investment',
+    'investments.deleteConfirm': 'Are you sure you want to delete the investment "{name}"? This action cannot be undone.',
+    'investments.deleteSuccess': 'Investment deleted successfully!',
+    'investments.deleteError': 'Error deleting investment',
+    'investments.listTitle': 'Investment List',
     
     // Mileage
     'mileage.title': 'Mileage System',

@@ -196,7 +196,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
             onClick={() => setShowInvestmentForm(false)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            {t('nav.back')}
           </Button>
           <h2 className="text-2xl font-bold">Adicionar Investimento</h2>
         </div>
@@ -219,7 +219,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
             onClick={onBack}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            {t('nav.back')}
           </Button>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             {t('investments.title')}
@@ -301,7 +301,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-center py-8">
-                    Nenhum investimento encontrado. Adicione seu primeiro investimento!
+                    {t('investments.noInvestments')}
                   </p>
                 )}
               </CardContent>
@@ -342,7 +342,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-center py-8">
-                    Nenhum objetivo definido ainda.
+                    {t('investments.noGoals')}
                   </p>
                 )}
               </CardContent>
