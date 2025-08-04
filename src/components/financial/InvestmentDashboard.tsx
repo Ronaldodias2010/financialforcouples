@@ -265,11 +265,11 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="investments">Investimentos</TabsTrigger>
-          <TabsTrigger value="goals">Objetivos</TabsTrigger>
-          <TabsTrigger value="charts">Gráficos</TabsTrigger>
-          <TabsTrigger value="simulator">Simulador</TabsTrigger>
+          <TabsTrigger value="overview">{t('investments.overview')}</TabsTrigger>
+          <TabsTrigger value="investments">{t('investments.title')}</TabsTrigger>
+          <TabsTrigger value="goals">{t('investments.goals')}</TabsTrigger>
+          <TabsTrigger value="charts">{t('investments.portfolioChart')}</TabsTrigger>
+          <TabsTrigger value="simulator">{t('investments.profitabilitySimulator')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -278,7 +278,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5" />
-                  Distribuição por Tipo
+                  {t('investments.distribution')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -311,7 +311,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
-                  Objetivos Ativos
+                  {t('investments.activeGoals')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
