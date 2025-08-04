@@ -141,6 +141,9 @@ const translations = {
     
     // Common
     'common.required': 'obrigatório',
+    'common.error': 'Erro',
+    'common.fillRequiredFields': 'Preencha todos os campos obrigatórios',
+    'common.errorCreating': 'Erro ao criar investimento',
     'common.cancel': 'Cancelar',
     'common.save': 'Salvar',
     'common.edit': 'Editar',
@@ -253,6 +256,38 @@ const translations = {
     'investments.deleteSuccess': 'Investimento excluído com sucesso!',
     'investments.deleteError': 'Erro ao excluir investimento',
     'investments.listTitle': 'Lista de Investimentos',
+    'investments.newInvestmentForm': {
+      'title': 'Novo Investimento',
+      'name': 'Nome do Investimento',
+      'type': 'Tipo',
+      'selectType': 'Selecione o tipo',
+      'investedAmount': 'Valor Investido',
+      'currentValue': 'Valor Atual',
+      'purchaseDate': 'Data da Compra',
+      'currency': 'Moeda',
+      'broker': 'Corretora',
+      'goal': 'Objetivo (Opcional)',
+      'associateGoal': 'Associar a um objetivo',
+      'noGoal': 'Nenhum objetivo',
+      'sharedInvestment': 'Investimento compartilhado',
+      'owner': 'Proprietário',
+      'user1': 'Usuário 1',
+      'user2': 'Usuário 2',
+      'notes': 'Observações',
+      'notesPlaceholder': 'Observações sobre o investimento...',
+      'brokerPlaceholder': 'Ex: XP Investimentos',
+      'namePlaceholder': 'Ex: Tesouro Selic 2027',
+      'cancel': 'Cancelar',
+      'save': 'Salvar Investimento',
+      'saving': 'Salvando...',
+      'types': {
+        'renda_fixa': 'Renda Fixa',
+        'renda_variavel': 'Renda Variável',
+        'cripto': 'Criptomoedas',
+        'fundos': 'Fundos',
+        'tesouro_direto': 'Tesouro Direto'
+      }
+    },
     
     // Mileage
     'mileage.title': 'Sistema de Milhagem',
@@ -502,6 +537,9 @@ const translations = {
     
     // Common
     'common.required': 'required',
+    'common.error': 'Error',
+    'common.fillRequiredFields': 'Fill in all required fields',
+    'common.errorCreating': 'Error creating investment',
     'common.cancel': 'Cancel',
     'common.save': 'Save',
     'common.edit': 'Edit',
@@ -614,6 +652,38 @@ const translations = {
     'investments.deleteSuccess': 'Investment deleted successfully!',
     'investments.deleteError': 'Error deleting investment',
     'investments.listTitle': 'Investment List',
+    'investments.newInvestmentForm': {
+      'title': 'New Investment',
+      'name': 'Investment Name',
+      'type': 'Type',
+      'selectType': 'Select type',
+      'investedAmount': 'Invested Amount',
+      'currentValue': 'Current Value',
+      'purchaseDate': 'Purchase Date',
+      'currency': 'Currency',
+      'broker': 'Broker',
+      'goal': 'Goal (Optional)',
+      'associateGoal': 'Associate with a goal',
+      'noGoal': 'No goal',
+      'sharedInvestment': 'Shared investment',
+      'owner': 'Owner',
+      'user1': 'User 1',
+      'user2': 'User 2',
+      'notes': 'Notes',
+      'notesPlaceholder': 'Notes about the investment...',
+      'brokerPlaceholder': 'Ex: XP Investimentos',
+      'namePlaceholder': 'Ex: Treasury Bond 2027',
+      'cancel': 'Cancel',
+      'save': 'Save Investment',
+      'saving': 'Saving...',
+      'types': {
+        'renda_fixa': 'Fixed Income',
+        'renda_variavel': 'Variable Income',
+        'cripto': 'Cryptocurrencies',
+        'fundos': 'Funds',
+        'tesouro_direto': 'Treasury Direct'
+      }
+    },
     
     // Mileage
     'mileage.title': 'Mileage System',
@@ -737,7 +807,18 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<'pt' | 'en'>('pt');
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['pt']] || key;
+    const keys = key.split('.');
+    let value: any = translations[language];
+    
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k];
+      } else {
+        return key;
+      }
+    }
+    
+    return typeof value === 'string' ? value : key;
   };
 
   return (

@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface InvestmentGoal {
   id: string;
@@ -29,6 +30,7 @@ interface InvestmentFormProps {
 export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -45,11 +47,11 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
   });
 
   const investmentTypes = [
-    { value: "renda_fixa", label: "Renda Fixa" },
-    { value: "renda_variavel", label: "Renda Variável" },
-    { value: "cripto", label: "Criptomoedas" },
-    { value: "fundos", label: "Fundos" },
-    { value: "tesouro_direto", label: "Tesouro Direto" }
+    { value: "renda_fixa", label: t('investments.newInvestmentForm.types.renda_fixa') },
+    { value: "renda_variavel", label: t('investments.newInvestmentForm.types.renda_variavel') },
+    { value: "cripto", label: t('investments.newInvestmentForm.types.cripto') },
+    { value: "fundos", label: t('investments.newInvestmentForm.types.fundos') },
+    { value: "tesouro_direto", label: t('investments.newInvestmentForm.types.tesouro_direto') }
   ];
 
   const currencies = [
@@ -63,8 +65,8 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
     
     if (!formData.name || !formData.type || !formData.amount || !formData.current_value) {
       toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
+        title: t('common.error'),
+        description: t('common.fillRequiredFields'),
         variant: "destructive",
       });
       return;
@@ -111,8 +113,8 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
     } catch (error) {
       console.error("Error creating investment:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao criar investimento",
+        title: t('common.error'),
+        description: t('common.errorCreating'),
         variant: "destructive",
       });
     } finally {
@@ -123,29 +125,29 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Novo Investimento</CardTitle>
+        <CardTitle>{t('investments.newInvestmentForm.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome do Investimento *</Label>
+              <Label htmlFor="name">{t('investments.newInvestmentForm.name')} *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Ex: Tesouro Selic 2027"
+                placeholder={t('investments.newInvestmentForm.namePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="type">Tipo *</Label>
+              <Label htmlFor="type">{t('investments.newInvestmentForm.type')} *</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value) => setFormData({...formData, type: value})}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
+                  <SelectValue placeholder={t('investments.newInvestmentForm.selectType')} />
                 </SelectTrigger>
                 <SelectContent>
                   {investmentTypes.map((type) => (
@@ -158,7 +160,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="amount">Valor Investido *</Label>
+              <Label htmlFor="amount">{t('investments.newInvestmentForm.investedAmount')} *</Label>
               <Input
                 id="amount"
                 type="number"
@@ -170,7 +172,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="current_value">Valor Atual *</Label>
+              <Label htmlFor="current_value">{t('investments.newInvestmentForm.currentValue')} *</Label>
               <Input
                 id="current_value"
                 type="number"
@@ -182,7 +184,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="purchase_date">Data da Compra</Label>
+              <Label htmlFor="purchase_date">{t('investments.newInvestmentForm.purchaseDate')}</Label>
               <Input
                 id="purchase_date"
                 type="date"
@@ -192,7 +194,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currency">Moeda</Label>
+              <Label htmlFor="currency">{t('investments.newInvestmentForm.currency')}</Label>
               <Select
                 value={formData.currency}
                 onValueChange={(value) => setFormData({...formData, currency: value})}
@@ -211,26 +213,26 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="broker">Corretora</Label>
+              <Label htmlFor="broker">{t('investments.newInvestmentForm.broker')}</Label>
               <Input
                 id="broker"
                 value={formData.broker}
                 onChange={(e) => setFormData({...formData, broker: e.target.value})}
-                placeholder="Ex: XP Investimentos"
+                placeholder={t('investments.newInvestmentForm.brokerPlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="goal">Objetivo (Opcional)</Label>
+              <Label htmlFor="goal">{t('investments.newInvestmentForm.goal')}</Label>
               <Select
                 value={formData.goal_id}
                 onValueChange={(value) => setFormData({...formData, goal_id: value})}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Associar a um objetivo" />
+                  <SelectValue placeholder={t('investments.newInvestmentForm.associateGoal')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="no_goal">Nenhum objetivo</SelectItem>
+                  <SelectItem value="no_goal">{t('investments.newInvestmentForm.noGoal')}</SelectItem>
                   {goals.map((goal) => (
                     <SelectItem key={goal.id} value={goal.id}>
                       {goal.name}
@@ -248,11 +250,11 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                 checked={formData.is_shared}
                 onCheckedChange={(checked) => setFormData({...formData, is_shared: checked})}
               />
-              <Label htmlFor="is_shared">Investimento compartilhado</Label>
+              <Label htmlFor="is_shared">{t('investments.newInvestmentForm.sharedInvestment')}</Label>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="owner">Proprietário</Label>
+              <Label htmlFor="owner">{t('investments.newInvestmentForm.owner')}</Label>
               <Select
                 value={formData.owner_user}
                 onValueChange={(value) => setFormData({...formData, owner_user: value})}
@@ -261,29 +263,29 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user1">Usuário 1</SelectItem>
-                  <SelectItem value="user2">Usuário 2</SelectItem>
+                  <SelectItem value="user1">{t('investments.newInvestmentForm.user1')}</SelectItem>
+                  <SelectItem value="user2">{t('investments.newInvestmentForm.user2')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Observações</Label>
+              <Label htmlFor="notes">{t('investments.newInvestmentForm.notes')}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                placeholder="Observações sobre o investimento..."
+                placeholder={t('investments.newInvestmentForm.notesPlaceholder')}
               />
             </div>
           </div>
 
           <div className="flex gap-4">
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-              Cancelar
+              {t('investments.newInvestmentForm.cancel')}
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? "Salvando..." : "Salvar Investimento"}
+              {loading ? t('investments.newInvestmentForm.saving') : t('investments.newInvestmentForm.save')}
             </Button>
           </div>
         </form>
