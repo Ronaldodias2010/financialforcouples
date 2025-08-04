@@ -17,6 +17,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { useFinancialData } from "@/hooks/useFinancialData";
+import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface Transaction {
   id: string;
@@ -232,14 +234,16 @@ export const FinancialDashboard = () => {
                 <TrendingUp className="h-6 w-6" />
                 <span>{t('nav.investments')}</span>
               </Button>
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col gap-2"
-                onClick={() => setCurrentPage("mileage")}
-              >
-                <Plane className="h-6 w-6" />
-                <span>{t('nav.mileage')}</span>
-              </Button>
+              <PremiumFeatureGuard feature="aiMileage">
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => setCurrentPage("mileage")}
+                >
+                  <Plane className="h-6 w-6" />
+                  <span>{t('nav.mileage')}</span>
+                </Button>
+              </PremiumFeatureGuard>
               <Button 
                 variant="outline" 
                 className="h-20 flex flex-col gap-2"
