@@ -212,7 +212,7 @@ export const FinancialDashboard = () => {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Button 
                 variant="outline" 
-                className="h-20 flex flex-col gap-2"
+                className="h-20 flex flex-col gap-2 w-full"
                 onClick={() => setCurrentPage("accounts")}
               >
                 <Wallet className="h-6 w-6" />
@@ -220,7 +220,7 @@ export const FinancialDashboard = () => {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-20 flex flex-col gap-2"
+                className="h-20 flex flex-col gap-2 w-full"
                 onClick={() => setCurrentPage("cards")}
               >
                 <CreditCard className="h-6 w-6" />
@@ -228,25 +228,27 @@ export const FinancialDashboard = () => {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-20 flex flex-col gap-2"
+                className="h-20 flex flex-col gap-2 w-full"
                 onClick={() => setCurrentPage("investments")}
               >
                 <TrendingUp className="h-6 w-6" />
                 <span>{t('nav.investments')}</span>
               </Button>
-              <PremiumFeatureGuard feature="aiMileage">
-                <Button 
-                  variant="outline" 
-                  className="h-20 flex flex-col gap-2"
-                  onClick={() => setCurrentPage("mileage")}
-                >
-                  <Plane className="h-6 w-6" />
-                  <span>{t('nav.mileage')}</span>
-                </Button>
-              </PremiumFeatureGuard>
+              <div className="w-full">
+                <PremiumFeatureGuard feature="aiMileage">
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex flex-col gap-2 w-full"
+                    onClick={() => setCurrentPage("mileage")}
+                  >
+                    <Plane className="h-6 w-6" />
+                    <span>{t('nav.mileage')}</span>
+                  </Button>
+                </PremiumFeatureGuard>
+              </div>
               <Button 
                 variant="outline" 
-                className="h-20 flex flex-col gap-2"
+                className="h-20 flex flex-col gap-2 w-full"
                 onClick={() => setCurrentPage("profile")}
               >
                 <Settings className="h-6 w-6" />
