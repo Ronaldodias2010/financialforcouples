@@ -5,9 +5,10 @@ import { InvestmentList } from "./InvestmentList";
 import { GoalsManager } from "./GoalsManager";
 import { PortfolioChart } from "./PortfolioChart";
 import { RentabilitySimulator } from "./RentabilitySimulator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Target, PieChart, Calculator, Plus, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +54,7 @@ interface InvestmentDashboardProps {
 }
 
 export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardProps) => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
   const { convertCurrency, formatCurrency, getCurrencySymbol } = useCurrencyConverter();
@@ -220,40 +222,40 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
             Voltar
           </Button>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Investimentos
+            {t('investments.title')}
           </h1>
         </div>
         <Button onClick={() => setShowInvestmentForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Novo Investimento
+          {t('investments.newInvestment')}
         </Button>
       </div>
 
       {/* Resumo do Portfólio */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <FinancialCard
-          title="Total Investido"
+          title={t('investments.totalInvested')}
           amount={portfolioSummary.totalInvested}
           currency={userPreferredCurrency as any}
           icon={TrendingUp}
           type="income"
         />
         <FinancialCard
-          title="Valor Atual"
+          title={t('investments.currentValue')}
           amount={portfolioSummary.currentValue}
           currency={userPreferredCurrency as any}
           icon={PieChart}
           type="balance"
         />
         <FinancialCard
-          title="Retorno Total"
+          title={t('investments.totalReturn')}
           amount={portfolioSummary.totalReturn}
           currency={userPreferredCurrency as any}
           icon={TrendingUp}
           type={portfolioSummary.totalReturn >= 0 ? "income" : "expense"}
         />
         <FinancialCard
-          title="Rentabilidade"
+          title={t('investments.returnPercentage')}
           amount={portfolioSummary.returnPercentage}
           currency={"BRL" as any}
           icon={Calculator}
