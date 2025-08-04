@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard } from 'lucide-react';
+import { Loader2, CreditCard, Eye, EyeOff } from 'lucide-react';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,6 +15,8 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
   const [isTempLogin, setIsTempLogin] = useState(false);
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -239,19 +241,33 @@ export default function Auth() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">
-                    {isTempLogin ? "Senha Provisória" : "Senha"}
-                  </Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    placeholder={isTempLogin ? "Senha provisória do convite" : "••••••••"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="signin-password">
+                     {isTempLogin ? "Senha Provisória" : "Senha"}
+                   </Label>
+                   <div className="relative">
+                     <Input
+                       id="signin-password"
+                       type={showSignInPassword ? "text" : "password"}
+                       placeholder={isTempLogin ? "Senha provisória do convite" : "••••••••"}
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       required
+                       className="pr-10"
+                     />
+                     <button
+                       type="button"
+                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                       onClick={() => setShowSignInPassword(!showSignInPassword)}
+                     >
+                       {showSignInPassword ? (
+                         <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                       ) : (
+                         <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                       )}
+                     </button>
+                   </div>
+                 </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -326,17 +342,31 @@ export default function Auth() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="signup-password">Senha</Label>
+                   <div className="relative">
+                     <Input
+                       id="signup-password"
+                       type={showSignUpPassword ? "text" : "password"}
+                       placeholder="••••••••"
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       required
+                       className="pr-10"
+                     />
+                     <button
+                       type="button"
+                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                       onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                     >
+                       {showSignUpPassword ? (
+                         <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                       ) : (
+                         <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                       )}
+                     </button>
+                   </div>
+                 </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
