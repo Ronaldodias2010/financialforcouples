@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { Resend } from "npm:resend@4.0.0";
+import { renderAsync } from 'npm:@react-email/components@0.0.22';
+import React from 'npm:react@18.3.1';
+import { CouplesFinancialsEmail } from '../send-invite/_templates/couples-financials-email.tsx';
+import { PremiumAccessEmail } from '../send-invite/_templates/premium-access-email.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -16,54 +20,66 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email } = await req.json();
+    const { email, template } = await req.json();
 
     if (!email) {
       throw new Error("Email é obrigatório");
     }
 
+    const testData = {
+      email,
+      name: "Usuário Teste",
+      inviter_name: "Admin Couples Financials",
+      temp_password: "TEST2024",
+      login_url: "https://elxttabdtddlavhseipz.supabase.co",
+      start_date: new Date().toLocaleDateString('pt-BR'),
+      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR'),
+      days_duration: 30
+    };
+
+    let emailHtml: string;
+    let subject: string;
+
+    if (template === 'premium') {
+      // Render Premium Access Email
+      emailHtml = await renderAsync(
+        React.createElement(PremiumAccessEmail, {
+          user_email: testData.email,
+          start_date: testData.start_date,
+          end_date: testData.end_date,
+          temp_password: testData.temp_password,
+          login_url: testData.login_url,
+          days_duration: testData.days_duration,
+        })
+      );
+      subject = "🎉 Acesso Premium Concedido - Couples Financials";
+    } else {
+      // Render Invite Email (default)
+      emailHtml = await renderAsync(
+        React.createElement(CouplesFinancialsEmail, {
+          name: testData.name,
+          inviter_name: testData.inviter_name,
+          email: testData.email,
+          temp_password: testData.temp_password,
+          login_url: testData.login_url,
+        })
+      );
+      subject = "💚 Convite para Couples Financials - Teste";
+    }
+
     const emailResponse = await resend.emails.send({
-      from: "Financial App <contato@couplesfinancials.com>",
+      from: "Couples Financials <contato@couplesfinancials.com>",
       to: [email],
-      subject: "Teste de Email - Financial App",
-      html: `
-        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-          <h1 style="color: #333; text-align: center;">Email de Teste ✅</h1>
-          
-          <p>Olá!</p>
-          
-          <p>Este é um email de teste do <strong>Financial App</strong> para confirmar que o sistema de envio de emails está funcionando corretamente.</p>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #28a745; margin-top: 0;">✅ Configuração Confirmada</h3>
-            <p style="margin-bottom: 0;">Sua integração com o Resend está funcionando perfeitamente!</p>
-          </div>
-          
-          <p>Agora você pode:</p>
-          <ul>
-            <li>Enviar convites para outros usuários</li>
-            <li>Receber notificações por email</li>
-            <li>Usar todas as funcionalidades de email do sistema</li>
-          </ul>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
-            Enviado em: ${new Date().toLocaleString('pt-BR')}
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          
-          <p style="color: #999; font-size: 12px; text-align: center;">
-            Financial App - Controle financeiro inteligente para casais
-          </p>
-        </div>
-      `,
+      subject,
+      html: emailHtml,
     });
 
-    console.log("Test email sent successfully:", emailResponse);
+    console.log(`Test ${template || 'invite'} email sent successfully:`, emailResponse);
 
     return new Response(JSON.stringify({
       success: true,
-      message: "Email de teste enviado com sucesso!",
+      message: `Email de teste (${template || 'convite'}) enviado com sucesso!`,
+      template: template || 'invite',
       emailResponse
     }), {
       status: 200,
