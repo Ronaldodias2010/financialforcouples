@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ interface GoalsManagerProps {
 }
 
 export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsManagerProps) => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
   const { formatCurrency } = useCurrencyConverter();
@@ -207,32 +209,32 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Objetivos de Investimento</h2>
+        <h2 className="text-2xl font-bold">{t('goals.title')}</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => openDialog()}>
               <Plus className="h-4 w-4 mr-2" />
-              Novo Objetivo
+              {t('goals.newGoal')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>
-                {editingGoal ? "Editar Objetivo" : "Novo Objetivo"}
+                {editingGoal ? t('goals.editGoal') : t('goals.newGoal')}
               </DialogTitle>
               <DialogDescription>
-                {editingGoal ? "Edite as informações do objetivo" : "Crie um novo objetivo de investimento"}
+                {editingGoal ? t('goals.editGoalDesc') : t('goals.createGoal')}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome do Objetivo *</Label>
+                  <Label htmlFor="name">{t('goals.goalName')}</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="Ex: Comprar apartamento"
+                    placeholder={t('goals.goalNamePlaceholder')}
                   />
                 </div>
 
