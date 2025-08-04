@@ -13,6 +13,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!loading && !user) {
       window.location.href = '/auth';
     }
+    
+    // Verificar se o usuário precisa alterar a senha e não está na página de alteração
+    if (!loading && user && user.user_metadata?.requires_password_change) {
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/change-password') {
+        window.location.href = '/change-password';
+      }
+    }
   }, [user, loading]);
 
   if (loading) {

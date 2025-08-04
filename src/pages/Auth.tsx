@@ -14,7 +14,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
-  const [isTempLogin, setIsTempLogin] = useState(false);
+  
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const { toast } = useToast();
@@ -34,8 +34,18 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-      // Se for login com senha provisória, usar a edge function
-      if (isTempLogin) {
+      // Primeiro verificar se é um convite com senha temporária
+      const { data: inviteData } = await supabase
+        .from('user_invites')
+        .select('*')
+        .eq('invitee_email', email)
+        .eq('temp_password', password)
+        .eq('status', 'pending')
+        .gt('expires_at', new Date().toISOString())
+        .single();
+
+      if (inviteData) {
+        // É um login com senha temporária válida - usar edge function
         const { data, error } = await supabase.functions.invoke('validate-temp-login', {
           body: {
             email,
@@ -47,19 +57,17 @@ export default function Auth() {
 
         if (data.success) {
           toast({
-            title: "Login realizado com sucesso!",
-            description: "Conta vinculada com sucesso. Redirecionando...",
+            title: "Bem-vindo!",
+            description: "Por segurança, você deve criar uma nova senha.",
           });
           
-          // Usar o session_url para fazer login
-          if (data.session_url) {
-            window.location.href = data.session_url;
-          } else {
-            window.location.href = '/';
-          }
+          // Redirecionar para página de alteração de senha após um breve delay
+          setTimeout(() => {
+            window.location.href = '/change-password';
+          }, 1500);
         }
       } else {
-        // Login normal
+        // Login normal com email/senha
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -242,19 +250,17 @@ export default function Auth() {
                   />
                 </div>
                  <div className="space-y-2">
-                   <Label htmlFor="signin-password">
-                     {isTempLogin ? "Senha Provisória" : "Senha"}
-                   </Label>
+                   <Label htmlFor="signin-password">Senha</Label>
                    <div className="relative">
-                     <Input
-                       id="signin-password"
-                       type={showSignInPassword ? "text" : "password"}
-                       placeholder={isTempLogin ? "Senha provisória do convite" : "••••••••"}
-                       value={password}
-                       onChange={(e) => setPassword(e.target.value)}
-                       required
-                       className="pr-10"
-                     />
+                      <Input
+                        id="signin-password"
+                        type={showSignInPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="pr-10"
+                      />
                      <button
                        type="button"
                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
@@ -268,21 +274,6 @@ export default function Auth() {
                      </button>
                    </div>
                  </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="temp-login"
-                    checked={isTempLogin}
-                    onChange={(e) => setIsTempLogin(e.target.checked)}
-                    className="w-4 h-4 text-primary bg-background border-gray-300 rounded focus:ring-primary focus:ring-2"
-                  />
-                  <Label 
-                    htmlFor="temp-login" 
-                    className="text-sm font-medium text-muted-foreground cursor-pointer"
-                  >
-                    Login com senha provisória (convite)
-                  </Label>
-                </div>
                 <Button 
                   type="submit" 
                   className="w-full" 

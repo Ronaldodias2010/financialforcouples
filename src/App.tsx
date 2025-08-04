@@ -5,6 +5,7 @@ import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import EmailTest from "./pages/EmailTest";
 import { AdminDashboard } from "./pages/AdminDashboard";
@@ -15,6 +16,11 @@ const App = () => (
     <Sonner />
     <Routes>
       <Route path="/auth" element={<Auth />} />
+      <Route path="/change-password" element={
+        <ProtectedRoute>
+          <ChangePassword />
+        </ProtectedRoute>
+      } />
       <Route path="/" element={
         <ProtectedRoute>
           <Index />

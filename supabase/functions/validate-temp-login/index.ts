@@ -52,7 +52,8 @@ const handler = async (req: Request): Promise<Response> => {
       password: temp_password,
       email_confirm: true,
       user_metadata: {
-        display_name: invite.invitee_name
+        display_name: invite.invitee_name,
+        requires_password_change: true
       }
     });
 
@@ -112,7 +113,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(JSON.stringify({ 
       success: true, 
       user: authData.user,
-      session_url: sessionData.properties?.action_link 
+      session_url: sessionData.properties?.action_link,
+      requires_password_change: true
     }), {
       status: 200,
       headers: {
