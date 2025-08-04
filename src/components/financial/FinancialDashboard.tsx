@@ -6,12 +6,13 @@ import { MonthlyExpensesView } from "./MonthlyExpensesView";
 import { CategoryManager } from "./CategoryManager";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
 import { InvestmentDashboard } from "./InvestmentDashboard";
+import { MileageSystem } from "./MileageSystem";
 import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { Button } from "@/components/ui/button";
-import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +36,7 @@ export const FinancialDashboard = () => {
   const { t } = useLanguage();
   const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments">("dashboard");
+  const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
@@ -146,6 +147,19 @@ export const FinancialDashboard = () => {
     return <InvestmentDashboard onBack={() => setCurrentPage("dashboard")} viewMode={viewMode} />;
   }
 
+  if (currentPage === "mileage") {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <Button variant="outline" onClick={() => setCurrentPage("dashboard")}>
+            ← Voltar ao Dashboard
+          </Button>
+        </div>
+        <MileageSystem />
+      </div>
+    );
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -193,7 +207,7 @@ export const FinancialDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Button 
                 variant="outline" 
                 className="h-20 flex flex-col gap-2"
@@ -217,6 +231,14 @@ export const FinancialDashboard = () => {
               >
                 <TrendingUp className="h-6 w-6" />
                 <span>Investimentos</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => setCurrentPage("mileage")}
+              >
+                <Plane className="h-6 w-6" />
+                <span>Milhagem</span>
               </Button>
               <Button 
                 variant="outline" 
