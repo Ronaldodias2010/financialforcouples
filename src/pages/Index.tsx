@@ -1,9 +1,12 @@
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Crown } from "lucide-react";
+import { SubscriptionPage } from "./SubscriptionPage";
+import { useState } from "react";
 const Index = () => {
   const { user, signOut } = useAuth();
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
 
   return (
     <div className="min-h-screen bg-background">
@@ -17,6 +20,14 @@ const Index = () => {
             <Button 
               variant="outline" 
               size="sm" 
+              onClick={() => setCurrentPage('subscription')}
+            >
+              <Crown className="h-4 w-4 mr-2" />
+              Planos
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
               onClick={signOut}
             >
               <LogOut className="h-4 w-4 mr-2" />
@@ -26,19 +37,27 @@ const Index = () => {
         </div>
       </header>
       <main>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col items-center text-center mb-8">
-            <img 
-              src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png"
-              alt="Financial Management Logo" 
-              className="h-48 w-48 object-contain -mb-14"
-            />
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-10">
-              Gestão Financeira para Casais
-            </h1>
+        {currentPage === 'dashboard' ? (
+          <>
+            <div className="container mx-auto px-4 py-8">
+              <div className="flex flex-col items-center text-center mb-8">
+                <img 
+                  src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png"
+                  alt="Financial Management Logo" 
+                  className="h-48 w-48 object-contain -mb-14"
+                />
+                <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-10">
+                  Gestão Financeira para Casais
+                </h1>
+              </div>
+            </div>
+            <FinancialDashboard />
+          </>
+        ) : (
+          <div className="container mx-auto px-4 py-8">
+            <SubscriptionPage onBack={() => setCurrentPage('dashboard')} />
           </div>
-        </div>
-        <FinancialDashboard />
+        )}
       </main>
     </div>
   );
