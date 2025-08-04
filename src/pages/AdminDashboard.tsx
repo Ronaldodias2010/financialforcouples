@@ -11,6 +11,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, Languages, LogOut, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { AdminLanguageProvider, useAdminLanguage } from "@/hooks/useAdminLanguage";
 import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
@@ -48,6 +49,7 @@ const AdminDashboardContent = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { language, setLanguage } = useAdminLanguage();
+  const { convertCurrency } = useCurrencyConverter();
   const [metrics, setMetrics] = useState<SubscriptionMetrics>({
     activeUsers: 0,
     canceledSubscriptions: 0,
@@ -67,7 +69,7 @@ const AdminDashboardContent = () => {
   useEffect(() => {
     if (!isAdmin) return;
     fetchDashboardData();
-  }, [isAdmin]);
+  }, [isAdmin, language]); // Add language dependency to recalculate when language changes
 
   const fetchDashboardData = async () => {
     try {
@@ -84,11 +86,19 @@ const AdminDashboardContent = () => {
       const activeUsers = subscribers?.filter(s => s.subscribed).length || 0;
       const canceledSubscriptions = subscribers?.filter(s => !s.subscribed).length || 0;
       
+      // Calculate monthly revenue in BRL
+      const monthlyRevenueBRL = activeUsers * 29.90;
+      
+      // Convert to USD if language is English
+      const monthlyRevenue = language === 'en' 
+        ? await convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
+        : monthlyRevenueBRL;
+      
       setMetrics({
         activeUsers,
         canceledSubscriptions,
         failedPayments: Math.floor(Math.random() * 100), // Mock data
-        monthlyRevenue: activeUsers * 29.90 // Mock calculation
+        monthlyRevenue
       });
 
       // Fetch user profiles with subscription data
@@ -297,7 +307,10 @@ const AdminDashboardContent = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              R$ {metrics.monthlyRevenue.toFixed(2)}
+              {language === 'en' 
+                ? `$ ${metrics.monthlyRevenue.toFixed(2)}` 
+                : `R$ ${metrics.monthlyRevenue.toFixed(2)}`
+              }
             </div>
           </CardContent>
         </Card>
