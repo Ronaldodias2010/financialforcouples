@@ -9,10 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, Languages, LogOut, ArrowLeft } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft } from "lucide-react";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { toast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
-import { AdminLanguageProvider, useAdminLanguage } from "@/hooks/useAdminLanguage";
 import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 
@@ -47,8 +47,7 @@ interface RecentAlert {
 const AdminDashboardContent = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const { language, setLanguage } = useAdminLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const { convertCurrency } = useCurrencyConverter();
   const [metrics, setMetrics] = useState<SubscriptionMetrics>({
     activeUsers: 0,
@@ -342,25 +341,18 @@ const AdminDashboardContent = () => {
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" onClick={() => navigate('/')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {language === 'en' ? 'Back to Dashboard' : 'Voltar ao Dashboard'}
+            {t('nav.back')}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">🧮 {language === 'en' ? 'Admin Dashboard' : 'Painel Administrativo'}</h1>
-            <p className="text-muted-foreground">{language === 'en' ? 'Manage users and subscriptions' : 'Gerenciar usuários e assinaturas'}</p>
+            <h1 className="text-3xl font-bold">🧮 {t('admin.title')}</h1>
+            <p className="text-muted-foreground">{t('admin.subtitle')}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLanguage(language === 'en' ? 'pt' : 'en')}
-          >
-            <Languages className="h-4 w-4 mr-2" />
-            {language === 'en' ? 'PT' : 'EN'}
-          </Button>
+          <LanguageSwitcher />
           <Button onClick={exportToCSV} variant="outline">
             <Download className="h-4 w-4 mr-2" />
-            {language === 'en' ? 'Export' : 'Exportar'}
+            {t('admin.export')}
           </Button>
           <Button 
             onClick={fetchDashboardData} 
@@ -368,11 +360,11 @@ const AdminDashboardContent = () => {
             disabled={loading}
           >
             <RotateCcw className="h-4 w-4 mr-2" />
-            {language === 'en' ? 'Refresh' : 'Atualizar'}
+            {t('admin.refresh')}
           </Button>
           <Button onClick={signOut} variant="outline">
             <LogOut className="h-4 w-4 mr-2" />
-            {language === 'en' ? 'Exit' : 'Sair'}
+            {t('nav.logout')}
           </Button>
         </div>
       </div>
@@ -427,9 +419,9 @@ const AdminDashboardContent = () => {
 
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="users">{language === 'en' ? 'Users' : 'Usuários'}</TabsTrigger>
-          <TabsTrigger value="premium">{language === 'en' ? 'Premium Access' : 'Acesso Premium'}</TabsTrigger>
-          <TabsTrigger value="alerts">{language === 'en' ? 'Alerts' : 'Alertas'}</TabsTrigger>
+          <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
+          <TabsTrigger value="premium">{t('admin.tabs.premiumAccess')}</TabsTrigger>
+          <TabsTrigger value="alerts">{t('admin.tabs.alerts')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
@@ -588,9 +580,5 @@ const AdminDashboardContent = () => {
 };
 
 export const AdminDashboard = () => {
-  return (
-    <AdminLanguageProvider>
-      <AdminDashboardContent />
-    </AdminLanguageProvider>
-  );
+  return <AdminDashboardContent />;
 };

@@ -30,7 +30,7 @@ const Index = () => {
               onClick={() => setCurrentPage('subscription')}
             >
               <Crown className="h-4 w-4 mr-2" />
-              Planos
+              {t('nav.subscription')}
             </Button>
             {isAdmin && (
               <>
@@ -48,7 +48,7 @@ const Index = () => {
                   onClick={() => navigate('/email-test')}
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Teste Email
+                  {t('nav.testEmail')}
                 </Button>
               </>
             )}
@@ -58,7 +58,7 @@ const Index = () => {
               onClick={signOut}
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Sair
+              {t('nav.logout')}
             </Button>
           </div>
         </div>
@@ -74,7 +74,7 @@ const Index = () => {
                   className="h-48 w-48 object-contain -mb-14"
                 />
                 <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-10">
-                  Gestão Financeira para Casais
+                  {t('dashboard.title')}
                 </h1>
               </div>
             </div>

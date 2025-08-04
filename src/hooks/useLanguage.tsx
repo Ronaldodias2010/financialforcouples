@@ -33,6 +33,10 @@ const translations = {
     'nav.investments': 'Investimentos',
     'nav.mileage': 'Milhagem',
     'nav.back': 'Voltar',
+    'nav.admin': 'Admin',
+    'nav.subscription': 'Planos',
+    'nav.testEmail': 'Teste Email',
+    'nav.logout': 'Sair',
     
     // Transactions
     'transaction.add': 'Adicionar Transação',
@@ -421,6 +425,7 @@ const translations = {
     // Admin Dashboard
     'admin.title': 'Painel Administrativo',
     'admin.subtitle': 'Controle de Assinaturas e Usuários Premium',
+    'admin.refresh': 'Atualizar',
     'admin.metrics.activeUsers': 'Usuários Premium Ativos',
     'admin.metrics.canceledSubscriptions': 'Assinaturas Canceladas',
     'admin.metrics.failedPayments': 'Pagamentos Falhos (30 dias)',
@@ -467,7 +472,7 @@ const translations = {
     'admin.actions.execute': 'Executar',
     'admin.tabs.users': '👥 Usuários Premium',
     'admin.tabs.alerts': '🔔 Alertas Recentes',
-    'nav.admin': 'Admin',
+    'admin.tabs.premiumAccess': '⭐ Acesso Premium',
     'error': 'Erro',
     'admin.loading.error': 'Não foi possível carregar os dados do painel',
   },
@@ -495,6 +500,10 @@ const translations = {
     'nav.investments': 'Investments',
     'nav.mileage': 'Mileage',
     'nav.back': 'Back',
+    'nav.admin': 'Admin',
+    'nav.subscription': 'Plans',
+    'nav.testEmail': 'Email Test',
+    'nav.logout': 'Logout',
     
     // Transactions
     'transaction.add': 'Add Transaction',
@@ -929,21 +938,30 @@ const translations = {
     'admin.actions.execute': 'Execute',
     'admin.tabs.users': '👥 Premium Users',
     'admin.tabs.alerts': '🔔 Recent Alerts',
-    'nav.admin': 'Admin',
+    'admin.tabs.premiumAccess': '⭐ Premium Access',
     'error': 'Error',
     'admin.loading.error': 'Could not load dashboard data',
   },
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<'pt' | 'en'>('pt');
+  const [language, setLanguage] = useState<'pt' | 'en'>(() => {
+    // Persist language preference in localStorage
+    const saved = localStorage.getItem('language');
+    return (saved as 'pt' | 'en') || 'pt';
+  });
+
+  const handleSetLanguage = (lang: 'pt' | 'en') => {
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
+  };
 
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations['pt']] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
