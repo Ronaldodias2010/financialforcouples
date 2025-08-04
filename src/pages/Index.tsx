@@ -13,7 +13,7 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
 
   // Check if user is admin (simplified - in production use proper role system)
-  const isAdmin = user?.email === 'admin@example.com' || user?.email?.includes('admin');
+  const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email?.includes('admin');
 
   return (
     <div className="min-h-screen bg-background">
