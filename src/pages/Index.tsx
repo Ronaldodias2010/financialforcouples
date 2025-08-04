@@ -2,7 +2,7 @@ import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -33,14 +33,24 @@ const Index = () => {
               Planos
             </Button>
             {isAdmin && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => navigate('/admin')}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                {t('nav.admin')}
-              </Button>
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/admin')}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  {t('nav.admin')}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/email-test')}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Teste Email
+                </Button>
+              </>
             )}
             <Button 
               variant="outline" 
