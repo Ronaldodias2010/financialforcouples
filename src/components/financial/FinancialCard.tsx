@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface FinancialCardProps {
   title: string;
@@ -25,6 +26,7 @@ export const FinancialCard = ({
   className 
 }: FinancialCardProps) => {
   const { formatCurrency } = useCurrencyConverter();
+  const { t } = useLanguage();
   
   // Use the provided currency directly since amount is already converted
   const finalDisplayCurrency = currency;
@@ -73,7 +75,7 @@ export const FinancialCard = ({
               "text-xs flex items-center gap-1",
               change >= 0 ? "text-income" : "text-expense"
             )}>
-              {change >= 0 ? "+" : ""}{change.toFixed(2)}% vs mês anterior
+              {change >= 0 ? "+" : ""}{change.toFixed(2)}% {t('dashboard.vsPreviousMonth')}
             </p>
           )}
         </div>

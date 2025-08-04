@@ -21,6 +21,7 @@ const translations = {
     'dashboard.both': 'Ambos',
     'dashboard.user1': 'Usuário 1',
     'dashboard.user2': 'Usuário 2',
+    'dashboard.vsPreviousMonth': 'vs mês anterior',
     
     // Navigation
     'nav.dashboard': 'Dashboard',
@@ -417,6 +418,7 @@ const translations = {
     'dashboard.both': 'Both',
     'dashboard.user1': 'User 1',
     'dashboard.user2': 'User 2',
+    'dashboard.vsPreviousMonth': 'vs previous month',
     
     // Navigation
     'nav.dashboard': 'Dashboard',
