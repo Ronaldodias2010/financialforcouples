@@ -43,6 +43,30 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // First check for manual premium access
+    const { data: manualAccess } = await supabaseClient
+      .from('manual_premium_access')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .gte('end_date', new Date().toISOString().split('T')[0])
+      .order('end_date', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (manualAccess) {
+      logStep("Manual premium access found", { endDate: manualAccess.end_date });
+      return new Response(
+        JSON.stringify({ 
+          subscribed: true, 
+          subscription_tier: 'premium',
+          subscription_end: manualAccess.end_date,
+          manual_access: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     

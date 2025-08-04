@@ -9,8 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, Languages } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { AdminLanguageProvider, useAdminLanguage } from "@/hooks/useAdminLanguage";
+import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 
 interface SubscriptionMetrics {
   activeUsers: number;
@@ -40,9 +42,10 @@ interface RecentAlert {
   user_id: string;
 }
 
-export const AdminDashboard = () => {
+const AdminDashboardContent = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { language, setLanguage } = useAdminLanguage();
   const [metrics, setMetrics] = useState<SubscriptionMetrics>({
     activeUsers: 0,
     canceledSubscriptions: 0,
@@ -57,7 +60,7 @@ export const AdminDashboard = () => {
   const [dateFilter, setDateFilter] = useState("");
 
   // Check if user is admin (simplified - in production use proper role system)
-  const isAdmin = user?.email === 'admin@example.com' || user?.email?.includes('admin');
+  const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email === 'admin@example.com' || user?.email?.includes('admin');
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -224,13 +227,23 @@ export const AdminDashboard = () => {
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">🧮 {t('admin.title')}</h1>
-          <p className="text-muted-foreground">{t('admin.subtitle')}</p>
+          <h1 className="text-3xl font-bold">🧮 {language === 'en' ? 'Admin Dashboard' : 'Painel Administrativo'}</h1>
+          <p className="text-muted-foreground">{language === 'en' ? 'Manage users and subscriptions' : 'Gerenciar usuários e assinaturas'}</p>
         </div>
-        <Button onClick={exportToCSV} variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          {t('admin.export')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLanguage(language === 'en' ? 'pt' : 'en')}
+          >
+            <Languages className="h-4 w-4 mr-2" />
+            {language === 'en' ? 'PT' : 'EN'}
+          </Button>
+          <Button onClick={exportToCSV} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            {language === 'en' ? 'Export' : 'Exportar'}
+          </Button>
+        </div>
       </div>
 
       {/* Métricas do Dashboard */}
@@ -280,8 +293,9 @@ export const AdminDashboard = () => {
 
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
-          <TabsTrigger value="alerts">{t('admin.tabs.alerts')}</TabsTrigger>
+          <TabsTrigger value="users">{language === 'en' ? 'Users' : 'Usuários'}</TabsTrigger>
+          <TabsTrigger value="premium">{language === 'en' ? 'Premium Access' : 'Acesso Premium'}</TabsTrigger>
+          <TabsTrigger value="alerts">{language === 'en' ? 'Alerts' : 'Alertas'}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
@@ -399,6 +413,10 @@ export const AdminDashboard = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="premium">
+          <ManualPremiumAccess language={language} />
+        </TabsContent>
+
         <TabsContent value="alerts">
           <Card>
             <CardHeader>
@@ -432,5 +450,13 @@ export const AdminDashboard = () => {
         </TabsContent>
       </Tabs>
     </div>
+  );
+};
+
+export const AdminDashboard = () => {
+  return (
+    <AdminLanguageProvider>
+      <AdminDashboardContent />
+    </AdminLanguageProvider>
   );
 };

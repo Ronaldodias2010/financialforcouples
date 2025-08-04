@@ -326,6 +326,45 @@ export type Database = {
           },
         ]
       }
+      manual_premium_access: {
+        Row: {
+          created_at: string
+          created_by_admin_id: string
+          email: string
+          end_date: string
+          id: string
+          start_date: string
+          status: string
+          temp_password: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_admin_id: string
+          email: string
+          end_date: string
+          id?: string
+          start_date?: string
+          status?: string
+          temp_password: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by_admin_id?: string
+          email?: string
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string
+          temp_password?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mileage_goals: {
         Row: {
           created_at: string
@@ -768,6 +807,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_manual_premium_expiration: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_temp_password: {
         Args: Record<PropertyKey, never>
         Returns: string
