@@ -38,6 +38,13 @@ export default function SendConfirmationEmail() {
     }
   };
 
+  // Auto-enviar email para ronadias2010@gmail.com ao carregar a página
+  React.useEffect(() => {
+    if (email === 'ronadias2010@gmail.com') {
+      sendConfirmationEmail();
+    }
+  }, []);
+
   return (
     <div className="container mx-auto p-6 max-w-md">
       <Card>
