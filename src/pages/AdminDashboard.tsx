@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
+import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
 
 interface SubscriptionMetrics {
   activeUsers: number;
@@ -420,6 +421,7 @@ const AdminDashboardContent = () => {
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList>
           <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
+          <TabsTrigger value="non-premium">Usuários Não Premium</TabsTrigger>
           <TabsTrigger value="premium">{t('admin.tabs.premiumAccess')}</TabsTrigger>
           <TabsTrigger value="alerts">{t('admin.tabs.alerts')}</TabsTrigger>
         </TabsList>
@@ -537,6 +539,10 @@ const AdminDashboardContent = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="non-premium">
+          <NonPremiumUsersList />
         </TabsContent>
 
         <TabsContent value="premium">
