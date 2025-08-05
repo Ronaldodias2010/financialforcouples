@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { useSubscription } from "@/hooks/useSubscription";
+import { UserInviteCard } from "@/components/ui/user-invite-card";
 
 interface Transaction {
   id: string;
@@ -319,13 +320,21 @@ export const FinancialDashboard = () => {
                 >
                   {getUserLabel("user1")}
                 </Button>
-                <Button
-                  variant={viewMode === "user2" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("user2")}
-                >
-                  {getUserLabel("user2")}
-                </Button>
+                <div className="flex items-center">
+                  <Button
+                    variant={viewMode === "user2" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("user2")}
+                  >
+                    {getUserLabel("user2")}
+                  </Button>
+                  {getUserLabel("user2") === t('dashboard.user2') && (
+                    <UserInviteCard
+                      showCard={true}
+                      onInviteClick={() => setCurrentPage("profile")}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
