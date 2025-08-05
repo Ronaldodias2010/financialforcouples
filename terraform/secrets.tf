@@ -7,6 +7,10 @@ resource "aws_secretsmanager_secret" "supabase_credentials" {
     Name        = "${var.app_name}-supabase-secrets"
     Environment = var.environment
   }
+
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # Valores das credenciais do Supabase
@@ -32,6 +36,10 @@ resource "aws_secretsmanager_secret" "app_config" {
   tags = {
     Name        = "${var.app_name}-app-config"
     Environment = var.environment
+  }
+
+  lifecycle {
+    ignore_changes = [name]
   }
 }
 

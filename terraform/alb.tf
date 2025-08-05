@@ -18,6 +18,10 @@ resource "aws_lb" "app" {
   tags = {
     Name = "${var.app_name}-alb"
   }
+
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # Target Group para o ALB
@@ -43,6 +47,10 @@ resource "aws_lb_target_group" "app" {
 
   tags = {
     Name = "${var.app_name}-target-group"
+  }
+
+  lifecycle {
+    ignore_changes = [name]
   }
 }
 

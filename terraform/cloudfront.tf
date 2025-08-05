@@ -263,4 +263,8 @@ resource "aws_cloudfront_function" "spa_routing" {
   comment = "Function to handle SPA routing"
   publish = true
   code    = file("${path.module}/cloudfront-function.js")
+
+  lifecycle {
+    ignore_changes = [name]
+  }
 }

@@ -24,6 +24,10 @@ resource "aws_cloudwatch_log_group" "ecs" {
   tags = {
     Name = "${var.app_name}-ecs-logs"
   }
+
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # IAM Role para execução de tasks ECS
@@ -42,6 +46,10 @@ resource "aws_iam_role" "ecs_execution_role" {
       }
     ]
   })
+
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # Anexar política para execução de tasks ECS
@@ -87,6 +95,10 @@ resource "aws_iam_role" "ecs_task_role" {
       }
     ]
   })
+
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # Definição da task ECS
