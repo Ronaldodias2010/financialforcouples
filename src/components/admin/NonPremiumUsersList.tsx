@@ -9,6 +9,61 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import { toast } from "@/hooks/use-toast";
 
+const translations = {
+  pt: {
+    title: "Usuários Essencial",
+    description: "Lista de clientes ativos que possuem assinatura essencial",
+    usersFound: "usuários encontrados",
+    exportCsv: "Exportar CSV",
+    filters: "🔍 Filtros",
+    searchPlaceholder: "Buscar por email ou nome...",
+    usersList: "📋 Lista de Usuários",
+    name: "Nome",
+    email: "Email",
+    plan: "Plano",
+    registrationDate: "Data de Cadastro",
+    lastAccess: "Último Acesso",
+    actions: "Ações",
+    noUsersFound: "Nenhum usuário encontrado para a busca atual",
+    noUsersAtAll: "Nenhum usuário essencial encontrado",
+    emailButton: "Email",
+    loading: "Carregando usuários essencial...",
+    exportSuccess: "Exportação realizada",
+    exportDescription: "Lista de usuários essencial exportada com sucesso",
+    emailSent: "Email enviado",
+    emailSentTo: "Email de marketing enviado para",
+    emailError: "Erro ao enviar email de marketing",
+    error: "Erro",
+    loadError: "Erro ao carregar lista de usuários essencial"
+  },
+  en: {
+    title: "Essential Users",
+    description: "List of active clients with essential subscription",
+    usersFound: "users found",
+    exportCsv: "Export CSV",
+    filters: "🔍 Filters",
+    searchPlaceholder: "Search by email or name...",
+    usersList: "📋 Users List",
+    name: "Name",
+    email: "Email",
+    plan: "Plan",
+    registrationDate: "Registration Date",
+    lastAccess: "Last Access",
+    actions: "Actions",
+    noUsersFound: "No users found for current search",
+    noUsersAtAll: "No essential users found",
+    emailButton: "Email",
+    loading: "Loading essential users...",
+    exportSuccess: "Export completed",
+    exportDescription: "Essential users list exported successfully",
+    emailSent: "Email sent",
+    emailSentTo: "Marketing email sent to",
+    emailError: "Error sending marketing email",
+    error: "Error",
+    loadError: "Error loading essential users list"
+  }
+};
+
 interface NonPremiumUser {
   id: string;
   email: string;
@@ -19,7 +74,8 @@ interface NonPremiumUser {
 }
 
 export const NonPremiumUsersList = () => {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const t = translations[language as keyof typeof translations] || translations.pt;
   const [users, setUsers] = useState<NonPremiumUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,7 +88,7 @@ export const NonPremiumUsersList = () => {
     try {
       setLoading(true);
       
-      // Buscar usuários que não são premium
+      // Buscar usuários essencial (não premium)
       // Primeiro, vamos buscar todos os profiles com seus dados de subscrição
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -40,13 +96,7 @@ export const NonPremiumUsersList = () => {
           user_id,
           display_name,
           created_at,
-          subscription_tier,
-          subscribers!left(
-            email,
-            subscribed,
-            subscription_tier,
-            created_at
-          )
+          subscription_tier
         `);
 
       if (profilesError) {
@@ -54,28 +104,38 @@ export const NonPremiumUsersList = () => {
         throw profilesError;
       }
 
-      let nonPremiumUsers: NonPremiumUser[] = [];
+      let essentialUsers: NonPremiumUser[] = [];
 
-      if (profiles) {
-        // Filtrar usuários que não são premium
+      // Buscar todos os usuários subscribers
+      const { data: subscribers, error: subscribersError } = await supabase
+        .from('subscribers')
+        .select('*');
+
+      if (subscribersError) {
+        console.error('Erro ao buscar subscribers:', subscribersError);
+        throw subscribersError;
+      }
+
+      if (profiles && subscribers) {
+        // Filtrar usuários que são essencial (não premium)
         const filteredProfiles = profiles.filter(profile => {
-          const subscriber = (profile as any).subscribers;
-          const isNotPremium = !subscriber || 
-                              !subscriber.subscribed || 
-                              subscriber.subscription_tier === 'essential' ||
-                              profile.subscription_tier === 'essential';
-          return isNotPremium;
+          const subscriber = subscribers.find(s => s.user_id === profile.user_id);
+          const isEssential = !subscriber || 
+                             !subscriber.subscribed || 
+                             subscriber.subscription_tier === 'essential' ||
+                             profile.subscription_tier === 'essential';
+          return isEssential;
         });
 
-        nonPremiumUsers = filteredProfiles.map(profile => {
-          const subscriber = (profile as any).subscribers;
+        essentialUsers = filteredProfiles.map(profile => {
+          const subscriber = subscribers.find(s => s.user_id === profile.user_id);
           return {
             id: profile.user_id,
             email: subscriber?.email || 'Email não disponível',
             display_name: profile.display_name || 'Usuário',
             created_at: profile.created_at,
             subscription_tier: profile.subscription_tier || 'essential',
-            last_login: subscriber?.created_at
+            last_login: subscriber?.updated_at
           };
         });
       }
@@ -84,12 +144,11 @@ export const NonPremiumUsersList = () => {
       const { data: usersWithoutProfile, error: usersError } = await supabase
         .from('subscribers')
         .select('*')
-        .eq('subscribed', false)
-        .or('subscription_tier.eq.essential,subscription_tier.is.null');
+        .or('subscription_tier.eq.essential,subscription_tier.is.null,subscribed.eq.false');
 
       if (!usersError && usersWithoutProfile) {
         const additionalUsers = usersWithoutProfile
-          .filter(user => !nonPremiumUsers.some(existing => existing.email === user.email))
+          .filter(user => !essentialUsers.some(existing => existing.email === user.email))
           .map(user => ({
             id: user.user_id,
             email: user.email,
@@ -99,15 +158,15 @@ export const NonPremiumUsersList = () => {
             last_login: user.updated_at
           }));
 
-        nonPremiumUsers = [...nonPremiumUsers, ...additionalUsers];
+        essentialUsers = [...essentialUsers, ...additionalUsers];
       }
 
-      setUsers(nonPremiumUsers);
+      setUsers(essentialUsers);
     } catch (error) {
-      console.error('Erro ao buscar usuários não premium:', error);
+      console.error('Erro ao buscar usuários essencial:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao carregar lista de usuários não premium",
+        title: t.error,
+        description: t.loadError,
         variant: "destructive"
       });
     } finally {
@@ -121,15 +180,15 @@ export const NonPremiumUsersList = () => {
   );
 
   const exportToCSV = () => {
-    const csvHeaders = ['Nome', 'Email', 'Plano', 'Data de Cadastro', 'Último Acesso'];
+    const csvHeaders = [t.name, t.email, t.plan, t.registrationDate, t.lastAccess];
     const csvContent = [
       csvHeaders.join(','),
       ...filteredUsers.map(user => [
         user.display_name,
         user.email,
         user.subscription_tier,
-        new Date(user.created_at).toLocaleDateString('pt-BR'),
-        user.last_login ? new Date(user.last_login).toLocaleDateString('pt-BR') : 'N/A'
+        new Date(user.created_at).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR'),
+        user.last_login ? new Date(user.last_login).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR') : 'N/A'
       ].join(','))
     ].join('\n');
 
@@ -137,15 +196,15 @@ export const NonPremiumUsersList = () => {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'usuarios_nao_premium.csv');
+    link.setAttribute('download', `usuarios_essencial.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     toast({
-      title: "Exportação realizada",
-      description: "Lista de usuários não premium exportada com sucesso",
+      title: t.exportSuccess,
+      description: t.exportDescription,
     });
   };
 
@@ -154,13 +213,13 @@ export const NonPremiumUsersList = () => {
       // Aqui você pode implementar o envio de email marketing
       // Por exemplo, usando a função send-invite ou criando uma nova função
       toast({
-        title: "Email enviado",
-        description: `Email de marketing enviado para ${userEmail}`,
+        title: t.emailSent,
+        description: `${t.emailSentTo} ${userEmail}`,
       });
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Erro ao enviar email de marketing",
+        title: t.error,
+        description: t.emailError,
         variant: "destructive"
       });
     }
@@ -170,7 +229,7 @@ export const NonPremiumUsersList = () => {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <div className="text-center">Carregando usuários não premium...</div>
+          <div className="text-center">{t.loading}</div>
         </CardContent>
       </Card>
     );
@@ -183,20 +242,20 @@ export const NonPremiumUsersList = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Usuários Não Premium
+            {t.title}
           </CardTitle>
           <CardDescription>
-            Lista de clientes ativos que não possuem assinatura premium
+            {t.description}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div className="text-2xl font-bold text-blue-600">
-              {filteredUsers.length} usuários encontrados
+              {filteredUsers.length} {t.usersFound}
             </div>
             <Button onClick={exportToCSV} variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              Exportar CSV
+              {t.exportCsv}
             </Button>
           </div>
         </CardContent>
@@ -205,7 +264,7 @@ export const NonPremiumUsersList = () => {
       {/* Filtros e busca */}
       <Card>
         <CardHeader>
-          <CardTitle>🔍 Filtros</CardTitle>
+          <CardTitle>{t.filters}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
@@ -213,7 +272,7 @@ export const NonPremiumUsersList = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por email ou nome..."
+                  placeholder={t.searchPlaceholder}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -227,19 +286,19 @@ export const NonPremiumUsersList = () => {
       {/* Tabela de usuários */}
       <Card>
         <CardHeader>
-          <CardTitle>📋 Lista de Usuários</CardTitle>
+          <CardTitle>{t.usersList}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Plano</TableHead>
-                  <TableHead>Data de Cadastro</TableHead>
-                  <TableHead>Último Acesso</TableHead>
-                  <TableHead>Ações</TableHead>
+                  <TableHead>{t.name}</TableHead>
+                  <TableHead>{t.email}</TableHead>
+                  <TableHead>{t.plan}</TableHead>
+                  <TableHead>{t.registrationDate}</TableHead>
+                  <TableHead>{t.lastAccess}</TableHead>
+                  <TableHead>{t.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -247,7 +306,7 @@ export const NonPremiumUsersList = () => {
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
                       <div className="text-muted-foreground">
-                        {searchTerm ? 'Nenhum usuário encontrado para a busca atual' : 'Nenhum usuário não premium encontrado'}
+                        {searchTerm ? t.noUsersFound : t.noUsersAtAll}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -264,11 +323,11 @@ export const NonPremiumUsersList = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(user.created_at).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR')}
                       </TableCell>
                       <TableCell>
                         {user.last_login 
-                          ? new Date(user.last_login).toLocaleDateString('pt-BR')
+                          ? new Date(user.last_login).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR')
                           : 'N/A'
                         }
                       </TableCell>
@@ -279,7 +338,7 @@ export const NonPremiumUsersList = () => {
                           onClick={() => sendMarketingEmail(user.email)}
                         >
                           <Mail className="h-4 w-4 mr-1" />
-                          Email
+                          {t.emailButton}
                         </Button>
                       </TableCell>
                     </TableRow>
