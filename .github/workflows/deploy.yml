@@ -183,6 +183,21 @@ jobs:
           terraform import aws_lb_target_group.app "$TG_ARN" || true
         fi
         
+        # Import ALB Listeners
+        if [ "$ALB_ARN" != "none" ] && [ "$ALB_ARN" != "None" ]; then
+          # Import HTTP listener (port 80)
+          HTTP_LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn "$ALB_ARN" --query 'Listeners[?Port==`80`].ListenerArn' --output text 2>/dev/null || echo "none")
+          if [ "$HTTP_LISTENER_ARN" != "none" ] && [ "$HTTP_LISTENER_ARN" != "None" ]; then
+            terraform import aws_lb_listener.app "$HTTP_LISTENER_ARN" || true
+          fi
+          
+          # Import HTTPS listener (port 443) if it exists
+          HTTPS_LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn "$ALB_ARN" --query 'Listeners[?Port==`443`].ListenerArn' --output text 2>/dev/null || echo "none")
+          if [ "$HTTPS_LISTENER_ARN" != "none" ] && [ "$HTTPS_LISTENER_ARN" != "None" ]; then
+            terraform import 'aws_lb_listener.app_https[0]' "$HTTPS_LISTENER_ARN" || true
+          fi
+        fi
+        
         # Import CloudWatch Log Group
         terraform import aws_cloudwatch_log_group.ecs /ecs/couples-financials || true
         
