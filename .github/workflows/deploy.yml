@@ -146,20 +146,39 @@ jobs:
           -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
           -out=tfplan
 
+    - name: Import existing resources
+      working-directory: terraform
+      run: |
+        # Import existing ALB (ignore errors if doesn't exist)
+        terraform import aws_lb.app arn:aws:elasticloadbalancing:${{ env.AWS_REGION }}:$(aws sts get-caller-identity --query Account --output text):loadbalancer/app/couples-financials-alb/* || true
+        
+        # Import existing Target Group (ignore errors if doesn't exist)
+        terraform import aws_lb_target_group.app arn:aws:elasticloadbalancing:${{ env.AWS_REGION }}:$(aws sts get-caller-identity --query Account --output text):targetgroup/couples-financials-tg/* || true
+        
+        # Import existing CloudWatch Log Group (ignore errors if doesn't exist)
+        terraform import aws_cloudwatch_log_group.ecs /ecs/couples-financials || true
+        
+        # Import existing IAM Roles (ignore errors if don't exist)
+        terraform import aws_iam_role.ecs_execution_role couples-financials-ecs-execution-role || true
+        terraform import aws_iam_role.ecs_task_role couples-financials-ecs-task-role || true
+        
+        # Import existing Secrets (ignore errors if don't exist)
+        terraform import aws_secretsmanager_secret.supabase_credentials couples-financials-supabase-credentials || true
+        terraform import aws_secretsmanager_secret.app_config couples-financials-app-config || true
+        
+        # Import existing CloudFront Function (if enabled)
+        if [ "${{ vars.ENABLE_CLOUDFRONT }}" = "true" ]; then
+          terraform import 'aws_cloudfront_function.spa_routing[0]' couples-financials-spa-routing || true
+        fi
+
     - name: Terraform Apply
       working-directory: terraform
       if: github.ref == 'refs/heads/main'
       run: |
-        terraform apply -auto-approve tfplan || \
-        (echo "Apply failed, trying to refresh state and retry..." && \
-         terraform refresh \
+        terraform apply -auto-approve \
           -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
           -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
-          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" && \
-         terraform apply -auto-approve \
-          -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
-          -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
-          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}")
+          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
 
   # Job de deploy da aplicação no ECS
   deploy-application:
