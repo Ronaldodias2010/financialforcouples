@@ -6,7 +6,8 @@ import { LogOut, User, Crown, Settings, Mail } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-const Index = () => {
+
+const AppDashboard = () => {
   const { user, signOut } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -90,4 +91,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default AppDashboard;

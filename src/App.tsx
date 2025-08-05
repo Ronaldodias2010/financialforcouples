@@ -4,7 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PWAPrompt } from "@/components/PWAPrompt";
-import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import AppDashboard from "./pages/AppDashboard";
 import Auth from "./pages/Auth";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
@@ -17,15 +18,16 @@ const App = () => (
     <Sonner />
     <PWAPrompt />
     <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/app" element={
+        <ProtectedRoute>
+          <AppDashboard />
+        </ProtectedRoute>
+      } />
       <Route path="/auth" element={<Auth />} />
       <Route path="/change-password" element={
         <ProtectedRoute>
           <ChangePassword />
-        </ProtectedRoute>
-      } />
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Index />
         </ProtectedRoute>
       } />
       <Route path="/admin" element={
@@ -34,6 +36,13 @@ const App = () => (
         </ProtectedRoute>
       } />
       <Route path="/email-test" element={<EmailTest />} />
+      {/* Redirect legacy routes */}
+      <Route path="/login" element={<Auth />} />
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <AppDashboard />
+        </ProtectedRoute>
+      } />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -9,7 +9,12 @@ export const PWAPrompt = () => {
   const [showInstallPrompt, setShowInstallPrompt] = useState(true);
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(true);
 
+  // Only show on /app routes (not on landing page)
+  const currentPath = window.location.pathname;
+  const shouldShowOnCurrentPath = currentPath.startsWith('/app') || currentPath === '/auth' || currentPath === '/admin';
+
   if (!isInstallable && !updateAvailable) return null;
+  if (!shouldShowOnCurrentPath) return null;
 
   return (
     <>
