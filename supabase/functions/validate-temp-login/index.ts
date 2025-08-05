@@ -46,10 +46,11 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create user account with the temp password
+    // Create user account with a secure password (not the temp one)
+    const securePassword = `${temp_password}${Date.now()}${Math.random()}`;
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email,
-      password: temp_password,
+      password: securePassword,
       email_confirm: true,
       user_metadata: {
         display_name: invite.invitee_name,

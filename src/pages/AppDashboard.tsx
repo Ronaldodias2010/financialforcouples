@@ -27,7 +27,12 @@ const AppDashboard = () => {
           .eq('user_id', user.id)
           .single();
         
-        setDisplayName(data?.display_name || user.email?.split('@')[0] || 'Usuário');
+        // Use display_name se disponível, senão usa o nome dos user_metadata, ou email como fallback
+        const name = data?.display_name || 
+                    user.user_metadata?.display_name || 
+                    user.email?.split('@')[0] || 
+                    'Usuário';
+        setDisplayName(name);
       }
     };
 
