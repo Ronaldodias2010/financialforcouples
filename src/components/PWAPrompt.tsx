@@ -20,7 +20,7 @@ export const PWAPrompt = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <img 
-                  src="/lovable-uploads/couples-financials-icon-512.png" 
+                  src="/lovable-uploads/a3413c4f-0329-4c0f-8e9d-4a6a7447c4dd.png" 
                   alt="Couples Financials" 
                   className="w-8 h-8 rounded"
                 />
