@@ -122,7 +122,7 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}/app`;
+      const redirectUrl = `${window.location.origin}/email-confirmation`;
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -138,10 +138,17 @@ export default function Auth() {
       if (error) throw error;
       
       if (data.user) {
+        // Mostrar toast com duração estendida de 20 segundos
         toast({
-          title: "Conta criada com sucesso!",
-          description: "Verifique seu email para confirmar a conta.",
+          title: "✅ Conta criada com sucesso!",
+          description: "📧 Um email de confirmação foi enviado para sua caixa de entrada. Clique no link do email para ativar sua conta.",
+          duration: 20000, // 20 segundos
         });
+        
+        // Limpar formulário
+        setEmail('');
+        setPassword('');
+        setDisplayName('');
       }
     } catch (error: any) {
       toast({

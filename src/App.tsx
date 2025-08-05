@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import EmailTest from "./pages/EmailTest";
+import EmailConfirmation from "./pages/EmailConfirmation";
 import { AdminDashboard } from "./pages/AdminDashboard";
 
 const App = () => (
@@ -25,6 +26,7 @@ const App = () => (
         </ProtectedRoute>
       } />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/email-confirmation" element={<EmailConfirmation />} />
       <Route path="/change-password" element={
         <ProtectedRoute>
           <ChangePassword />
