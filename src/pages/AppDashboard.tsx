@@ -76,18 +76,7 @@ const AppDashboard = () => {
       </header>
       <main>
         {currentPage === 'dashboard' ? (
-          <>
-            <div className="container mx-auto px-4 py-8">
-              <div className="flex flex-col items-center text-center mb-8">
-                <img 
-                  src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png"
-                  alt="Financial Management Logo" 
-                  className="h-48 w-48 object-contain"
-                />
-              </div>
-            </div>
-            <FinancialDashboard />
-          </>
+          <FinancialDashboard />
         ) : (
           <div className="container mx-auto px-4 py-8">
             <SubscriptionPage onBack={() => setCurrentPage('dashboard')} />

@@ -6,6 +6,10 @@ import { CouplesFinancialsEmail } from './_templates/couples-financials-email.ts
 import { PremiumAccessEmail } from './_templates/premium-access-email.tsx';
 import { CouplesFinancialsEmailEn } from './_templates/couples-financials-email-en.tsx';
 import { PremiumAccessEmailEn } from './_templates/premium-access-email-en.tsx';
+import { EmailConfirmationPT } from './_templates/email-confirmation-pt.tsx';
+import { EmailConfirmationEN } from './_templates/email-confirmation-en.tsx';
+import { PasswordResetPT } from './_templates/password-reset-pt.tsx';
+import { PasswordResetEN } from './_templates/password-reset-en.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -36,7 +40,10 @@ const handler = async (req: Request): Promise<Response> => {
       login_url: "https://elxttabdtddlavhseipz.supabase.co",
       start_date: language === 'pt' ? new Date().toLocaleDateString('pt-BR') : new Date().toLocaleDateString('en-US'),
       end_date: language === 'pt' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR') : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US'),
-      days_duration: 30
+      days_duration: 30,
+      userEmail: email,
+      loginUrl: "https://couples-financials.com/auth",
+      resetUrl: "https://couples-financials.com/reset-password"
     };
 
     let emailHtml: string;
@@ -67,6 +74,42 @@ const handler = async (req: Request): Promise<Response> => {
           })
         );
         subject = "🎉 Acesso Premium Concedido - Couples Financials";
+      }
+    } else if (template === 'confirmation') {
+      if (language === 'en') {
+        emailHtml = await renderAsync(
+          React.createElement(EmailConfirmationEN, {
+            userEmail: testData.userEmail,
+            loginUrl: testData.loginUrl,
+          })
+        );
+        subject = "🎉 Account Confirmed - Couples Financials";
+      } else {
+        emailHtml = await renderAsync(
+          React.createElement(EmailConfirmationPT, {
+            userEmail: testData.userEmail,
+            loginUrl: testData.loginUrl,
+          })
+        );
+        subject = "🎉 Conta Confirmada - Couples Financials";
+      }
+    } else if (template === 'password-reset') {
+      if (language === 'en') {
+        emailHtml = await renderAsync(
+          React.createElement(PasswordResetEN, {
+            userEmail: testData.userEmail,
+            resetUrl: testData.resetUrl,
+          })
+        );
+        subject = "🔐 Password Reset - Couples Financials";
+      } else {
+        emailHtml = await renderAsync(
+          React.createElement(PasswordResetPT, {
+            userEmail: testData.userEmail,
+            resetUrl: testData.resetUrl,
+          })
+        );
+        subject = "🔐 Redefinir Senha - Couples Financials";
       }
     } else {
       if (language === 'en') {

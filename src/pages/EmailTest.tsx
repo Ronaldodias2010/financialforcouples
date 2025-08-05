@@ -37,9 +37,16 @@ export default function EmailTest() {
 
       if (error) throw error;
 
+      const templateNames = {
+        invite: 'Convite',
+        premium: 'Premium',
+        confirmation: 'Confirmação',
+        'password-reset': 'Reset de Senha'
+      };
+
       toast({
         title: "Email enviado com sucesso! ✅",
-        description: `Template "${template === 'premium' ? 'Premium' : 'Convite'}" enviado para ${email}`,
+        description: `Template "${templateNames[template as keyof typeof templateNames] || 'Desconhecido'}" enviado para ${email}`,
       });
 
     } catch (error: any) {
@@ -93,6 +100,8 @@ export default function EmailTest() {
               <SelectContent>
                 <SelectItem value="invite">🤝 Email de Convite</SelectItem>
                 <SelectItem value="premium">⭐ Email de Acesso Premium</SelectItem>
+                <SelectItem value="confirmation">🎉 Confirmação de Conta</SelectItem>
+                <SelectItem value="password-reset">🔐 Redefinir Senha</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -142,6 +151,8 @@ export default function EmailTest() {
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>📧 <strong>Convite:</strong> Email para convidar usuários (PT/EN)</li>
               <li>⭐ <strong>Premium:</strong> Email de concessão de acesso premium (PT/EN)</li>
+              <li>🎉 <strong>Confirmação:</strong> Email de confirmação de conta (PT/EN)</li>
+              <li>🔐 <strong>Reset Senha:</strong> Email de redefinição de senha (PT/EN)</li>
               <li>🌐 <strong>Logo fixado:</strong> Usando CDN confiável para imagens</li>
             </ul>
           </div>

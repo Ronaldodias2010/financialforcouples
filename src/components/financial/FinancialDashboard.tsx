@@ -302,15 +302,18 @@ export const FinancialDashboard = () => {
             </div>
           </div>
           {/* Logo and title close together */}
-          <div className="flex flex-col items-center space-y-1">
+          <div className="flex flex-col items-center space-y-2">
             <img 
               src="/lovable-uploads/a3413c4f-0329-4c0f-8e9d-4a6a7447c4dd.png" 
               alt="Couples Financials" 
-              className="h-16 w-16 object-contain"
+              className="h-20 w-20 object-contain"
             />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               {t('dashboard.title')}
             </h1>
+            <p className="text-xl font-semibold text-primary/80 -mt-1">
+              Gestão Financeira para Casais
+            </p>
           </div>
           <p className="text-lg text-muted-foreground">
             {t('dashboard.subtitle')}
