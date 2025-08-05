@@ -4,17 +4,35 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Crown, Settings, Mail, ArrowLeft } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
+  const [displayName, setDisplayName] = useState<string>('');
 
   // Check if user is admin (simplified - in production use proper role system)
   const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email?.includes('admin');
+
+  useEffect(() => {
+    const fetchDisplayName = async () => {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+        
+        setDisplayName(data?.display_name || user.email?.split('@')[0] || 'Usuário');
+      }
+    };
+
+    fetchDisplayName();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,7 +51,7 @@ const AppDashboard = () => {
             )}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
-              <span>{user?.email}</span>
+              <span>{displayName}</span>
             </div>
             <Button 
               variant="outline" 

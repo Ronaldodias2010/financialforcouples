@@ -67,16 +67,14 @@ export default function Auth() {
 
         if (error) throw error;
 
-        if (data.success) {
+        if (data.success && data.session_url) {
           toast({
             title: "Bem-vindo!",
-            description: "Por segurança, você deve criar uma nova senha.",
+            description: "Redirecionando para completar o login...",
           });
           
-          // Redirecionar para página de alteração de senha após um breve delay
-          setTimeout(() => {
-            window.location.href = '/change-password';
-          }, 1500);
+          // Usar o link mágico gerado para fazer login automático
+          window.location.href = data.session_url;
         }
       } else {
         // Login normal com email/senha

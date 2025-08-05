@@ -68,8 +68,20 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create the couple relationship
+    // Create the couple relationship and profile
     if (authData.user) {
+      // First create profile for the new user
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: authData.user.id,
+          display_name: invite.invitee_name
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+      }
+
       const { error: coupleError } = await supabase
         .from('user_couples')
         .insert({
@@ -91,37 +103,38 @@ const handler = async (req: Request): Promise<Response> => {
       if (updateError) {
         console.error('Error updating invite status:', updateError);
       }
+
+      // Generate a proper session token for the user
+      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: email
+      });
+
+      if (sessionError) {
+        console.error('Error generating session:', sessionError);
+        return new Response(
+          JSON.stringify({ error: 'Error generating session' }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        user: authData.user,
+        session_url: sessionData.properties?.action_link,
+        requires_password_change: true
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
     }
 
-    // Generate session for the user
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: email
-    });
-
-    if (sessionError) {
-      console.error('Error generating session:', sessionError);
-      return new Response(
-        JSON.stringify({ error: 'Error generating session' }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    return new Response(JSON.stringify({ 
-      success: true, 
-      user: authData.user,
-      session_url: sessionData.properties?.action_link,
-      requires_password_change: true
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
 
   } catch (error: any) {
     console.error("Error in validate-temp-login function:", error);
