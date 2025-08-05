@@ -60,25 +60,22 @@ resource "aws_lb_listener" "app" {
   port              = "80"
   protocol          = "HTTP"
 
-  # Redirect HTTP to HTTPS se certificado estiver configurado
-  dynamic "default_action" {
-    for_each = var.domain_name != "" ? [1] : []
-    content {
-      type = "redirect"
-      redirect {
+  # Configuração condicional: redirecionar para HTTPS se domínio configurado, senão forward
+  default_action {
+    type = var.domain_name != "" ? "redirect" : "forward"
+    
+    dynamic "redirect" {
+      for_each = var.domain_name != "" ? [1] : []
+      content {
         port        = "443"
         protocol    = "HTTPS"
         status_code = "HTTP_301"
       }
     }
-  }
-
-  # Forward para target group se não houver domínio configurado
-  dynamic "default_action" {
-    for_each = var.domain_name == "" ? [1] : []
-    content {
-      type = "forward"
-      forward {
+    
+    dynamic "forward" {
+      for_each = var.domain_name == "" ? [1] : []
+      content {
         target_group {
           arn = aws_lb_target_group.app.arn
         }

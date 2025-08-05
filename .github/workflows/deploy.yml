@@ -201,6 +201,12 @@ jobs:
         # Import CloudWatch Log Group
         terraform import aws_cloudwatch_log_group.ecs /ecs/couples-financials || true
         
+        # Import ECS Cluster
+        terraform import aws_ecs_cluster.app couples-financials-cluster || true
+        
+        # Import ECS Service
+        terraform import aws_ecs_service.app couples-financials-cluster/couples-financials || true
+        
         # Import IAM Roles
         terraform import aws_iam_role.ecs_execution_role couples-financials-ecs-execution-role || true
         terraform import aws_iam_role.ecs_task_role couples-financials-ecs-task-role || true
