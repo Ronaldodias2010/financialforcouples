@@ -293,17 +293,25 @@ export const FinancialDashboard = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex justify-between items-start mb-4">
+        <div className="text-center space-y-2">
+          <div className="flex justify-between items-start mb-2">
             <div></div>
             <div className="flex gap-2">
               <ThemeSwitcher />
               <LanguageSwitcher />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {t('dashboard.title')}
-          </h1>
+          {/* Logo and title close together */}
+          <div className="flex flex-col items-center space-y-1">
+            <img 
+              src="/lovable-uploads/a3413c4f-0329-4c0f-8e9d-4a6a7447c4dd.png" 
+              alt="Couples Financials" 
+              className="h-16 w-16 object-contain"
+            />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              {t('dashboard.title')}
+            </h1>
+          </div>
           <p className="text-lg text-muted-foreground">
             {t('dashboard.subtitle')}
           </p>

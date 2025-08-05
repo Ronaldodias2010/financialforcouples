@@ -477,6 +477,14 @@ const translations = {
     'admin.tabs.premiumAccess': '⭐ Acesso Premium',
     'error': 'Erro',
     'admin.loading.error': 'Não foi possível carregar os dados do painel',
+    
+    // Invite card
+    'inviteCard': 'Convite Pendente',
+    'inviteSubtext': 'Adicionar parceiro',
+    
+    // Theme switcher
+    'theme.light': 'CLARO',
+    'theme.dark': 'ESCURO',
   },
   en: {
     // Dashboard
@@ -946,6 +954,10 @@ const translations = {
     // Invite card
     'inviteCard': 'Pending Invitation',
     'inviteSubtext': 'Add partner',
+    
+    // Theme switcher
+    'theme.light': 'LIGHT',
+    'theme.dark': 'DARK',
     'admin.tabs.premiumAccess': '⭐ Premium Access',
     'error': 'Error',
     'admin.loading.error': 'Could not load dashboard data',
