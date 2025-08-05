@@ -287,7 +287,7 @@ export const UserExpenseChart = () => {
           <div className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">
-              Análise Financeira por Usuário
+              {t('charts.userAnalysisTitle')}
             </h3>
           </div>
           <div className="flex gap-2">

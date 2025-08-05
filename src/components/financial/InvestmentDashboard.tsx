@@ -198,7 +198,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('nav.back')}
           </Button>
-          <h2 className="text-2xl font-bold">Adicionar Investimento</h2>
+          <h2 className="text-2xl font-bold">{t('investments.addInvestment')}</h2>
         </div>
         <InvestmentForm 
           goals={goals}

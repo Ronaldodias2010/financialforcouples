@@ -11,6 +11,7 @@ import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -295,7 +296,10 @@ export const FinancialDashboard = () => {
         <div className="text-center space-y-4">
           <div className="flex justify-between items-start mb-4">
             <div></div>
-            <LanguageSwitcher />
+            <div className="flex gap-2">
+              <ThemeSwitcher />
+              <LanguageSwitcher />
+            </div>
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             {t('dashboard.title')}

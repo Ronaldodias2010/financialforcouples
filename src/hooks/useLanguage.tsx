@@ -173,6 +173,7 @@ const translations = {
     'chart.noData': 'Nenhum {type} encontrado no período',
     'chart.expense': 'gasto',
     'chart.receipt': 'receita',
+    'charts.userAnalysisTitle': 'Análise Financeira por Usuário',
     
     // User Profile
     'userProfile.title': 'Perfil do Usuário',
@@ -257,6 +258,7 @@ const translations = {
     'investments.deleteSuccess': 'Investimento excluído com sucesso!',
     'investments.deleteError': 'Erro ao excluir investimento',
     'investments.listTitle': 'Lista de Investimentos',
+    'investments.addInvestment': 'Adicionar Investimento',
     
     // Mileage
     'mileage.title': 'Sistema de Milhagem',
@@ -640,6 +642,7 @@ const translations = {
     'chart.noData': 'No {type} found in the period',
     'chart.expense': 'expense',
     'chart.receipt': 'income',
+    'charts.userAnalysisTitle': 'Financial Analysis by User',
     
     // User Profile
     'userProfile.title': 'User Profile',
@@ -724,6 +727,7 @@ const translations = {
     'investments.deleteSuccess': 'Investment deleted successfully!',
     'investments.deleteError': 'Error deleting investment',
     'investments.listTitle': 'Investment List',
+    'investments.addInvestment': 'Add Investment',
     
     // Mileage
     'mileage.title': 'Mileage System',
@@ -938,6 +942,10 @@ const translations = {
     'admin.actions.execute': 'Execute',
     'admin.tabs.users': '👥 Premium Users',
     'admin.tabs.alerts': '🔔 Recent Alerts',
+    
+    // Invite card
+    'inviteCard': 'Pending Invitation',
+    'inviteSubtext': 'Add partner',
     'admin.tabs.premiumAccess': '⭐ Premium Access',
     'error': 'Error',
     'admin.loading.error': 'Could not load dashboard data',

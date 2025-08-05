@@ -49,10 +49,10 @@ export const UserInviteCard = ({ onInviteClick, showCard }: UserInviteCardProps)
           </div>
           <div className="text-xs">
             <div className="font-medium text-primary">
-              Convite Pendente
+              {t('inviteCard')}
             </div>
             <div className="text-muted-foreground">
-              Adicionar parceiro
+              {t('inviteSubtext')}
             </div>
           </div>
         </div>
