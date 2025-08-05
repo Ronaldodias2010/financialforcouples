@@ -16,9 +16,11 @@ import {
   PieChart
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const features = [
     {
@@ -121,18 +123,29 @@ const Landing = () => {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/app')}
-            >
-              Entrar
-            </Button>
-            <Button 
-              onClick={() => navigate('/app')}
-              className="bg-gradient-primary hover:opacity-90"
-            >
-              Começar Gratuitamente
-            </Button>
+            {user ? (
+              <Button 
+                onClick={() => navigate('/app')}
+                className="bg-gradient-primary hover:opacity-90"
+              >
+                Voltar ao App
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => navigate('/app')}
+                >
+                  Entrar
+                </Button>
+                <Button 
+                  onClick={() => navigate('/app')}
+                  className="bg-gradient-primary hover:opacity-90"
+                >
+                  Começar Gratuitamente
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
