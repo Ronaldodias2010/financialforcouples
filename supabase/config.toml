@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.stripe-admin-metrics]
 verify_jwt = true
+
+[functions.send-confirmation-manual]
+verify_jwt = false

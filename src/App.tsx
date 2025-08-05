@@ -11,6 +11,7 @@ import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import EmailTest from "./pages/EmailTest";
 import EmailConfirmation from "./pages/EmailConfirmation";
+import SendConfirmationEmail from "./pages/SendConfirmationEmail";
 import { AdminDashboard } from "./pages/AdminDashboard";
 
 const App = () => (
@@ -38,6 +39,7 @@ const App = () => (
         </ProtectedRoute>
       } />
       <Route path="/email-test" element={<EmailTest />} />
+      <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
       {/* Redirect legacy routes */}
       <Route path="/login" element={<Auth />} />
       <Route path="/dashboard" element={
