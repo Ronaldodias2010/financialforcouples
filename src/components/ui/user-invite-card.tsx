@@ -48,10 +48,10 @@ export const UserInviteCard = ({ onInviteClick, showCard }: UserInviteCardProps)
           </div>
           <div className="text-xs">
             <div className="font-medium text-primary">
-              {t('dashboard.invitePending') || 'Convite Pendente'}
+              Convite Pendente
             </div>
             <div className="text-muted-foreground">
-              {t('dashboard.addPartner') || 'Adicionar parceiro'}
+              Adicionar parceiro
             </div>
           </div>
         </div>

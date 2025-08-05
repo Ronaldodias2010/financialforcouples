@@ -320,22 +320,20 @@ export const FinancialDashboard = () => {
                 >
                   {getUserLabel("user1")}
                 </Button>
-                <div className="flex items-center">
-                  <Button
-                    variant={viewMode === "user2" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("user2")}
-                  >
-                    {getUserLabel("user2")}
-                  </Button>
-                  {getUserLabel("user2") === t('dashboard.user2') && (
-                    <UserInviteCard
-                      showCard={true}
-                      onInviteClick={() => setCurrentPage("profile")}
-                    />
-                  )}
-                </div>
+                <Button
+                  variant={viewMode === "user2" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("user2")}
+                >
+                  {getUserLabel("user2")}
+                </Button>
               </div>
+              {getUserLabel("user2") === t('dashboard.user2') && (
+                <UserInviteCard
+                  showCard={true}
+                  onInviteClick={() => setCurrentPage("profile")}
+                />
+              )}
             </div>
           </div>
         </div>
