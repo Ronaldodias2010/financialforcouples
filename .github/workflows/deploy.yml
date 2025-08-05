@@ -137,14 +137,33 @@ jobs:
       working-directory: terraform
       run: terraform validate
 
-    - name: Terraform Plan
+    - name: Check required secrets
+      run: |
+        if [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+          echo "Error: SUPABASE_ANON_KEY secret not set"
+          exit 1
+        fi
+        if [ -z "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+          echo "Error: SUPABASE_SERVICE_ROLE_KEY secret not set"
+          exit 1
+        fi
+
+    - name: Create terraform.tfvars
       working-directory: terraform
       run: |
-        terraform plan \
-          -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
-          -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
-          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-          -out=tfplan
+        cat > terraform.tfvars << EOF
+        aws_region = "${{ env.AWS_REGION }}"
+        app_name = "couples-financials"
+        environment = "prod"
+        container_image = "${{ needs.build-and-push.outputs.image-uri }}"
+        supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
+        supabase_anon_key = "${{ secrets.SUPABASE_ANON_KEY }}"
+        supabase_service_role_key = "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+        EOF
+
+    - name: Terraform Plan
+      working-directory: terraform
+      run: terraform plan -out=tfplan
 
     - name: Import existing resources
       working-directory: terraform
