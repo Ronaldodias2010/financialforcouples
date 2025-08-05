@@ -47,17 +47,8 @@ export default function Auth() {
     setIsLoading(true);
     try {
       // Primeiro verificar se é um convite com senha temporária
-      const { data: inviteData } = await supabase
-        .from('user_invites')
-        .select('*')
-        .eq('invitee_email', email)
-        .eq('temp_password', password)
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString())
-        .single();
-
-      if (inviteData) {
-        // É um login com senha temporária válida - usar edge function
+      if (isInviteAccess || password.length === 8) { // senhas temporárias têm 8 caracteres
+        // É potencialmente um login com senha temporária - usar edge function
         const { data, error } = await supabase.functions.invoke('validate-temp-login', {
           body: {
             email,
@@ -65,35 +56,51 @@ export default function Auth() {
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error in validate-temp-login:', error);
+          throw new Error(error.message || 'Erro ao validar convite');
+        }
 
-        if (data.success && data.session_url) {
+        if (data?.success && data?.access_token) {
           toast({
             title: "Bem-vindo!",
-            description: "Redirecionando para completar o login...",
+            description: "Login realizado com sucesso! Redirecionando...",
           });
           
-          // Usar o link mágico gerado para fazer login automático
-          window.location.href = data.session_url;
-        }
-      } else {
-        // Login normal com email/senha
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) throw error;
-        
-        if (data.user) {
-          toast({
-            title: "Login realizado com sucesso!",
-            description: "Redirecionando para o dashboard...",
+          // Configurar a sessão automaticamente
+          const { error: setSessionError } = await supabase.auth.setSession({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token
           });
-          window.location.href = '/app';
+          
+          if (setSessionError) {
+            console.error('Error setting session:', setSessionError);
+            throw new Error('Erro ao configurar sessão');
+          }
+          
+          // Redirecionar para mudança de senha obrigatória
+          window.location.href = '/change-password';
+          return;
         }
       }
+      
+      // Se chegou aqui, fazer login normal com email/senha
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Redirecionando para o dashboard...",
+        });
+        window.location.href = '/app';
+      }
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         variant: "destructive",
         title: "Erro no login",

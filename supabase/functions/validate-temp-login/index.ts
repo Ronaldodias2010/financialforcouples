@@ -105,16 +105,16 @@ const handler = async (req: Request): Promise<Response> => {
         console.error('Error updating invite status:', updateError);
       }
 
-      // Generate a proper session token for the user
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: email
+      // Generate a session token for the user using signInWithPassword  
+      const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: securePassword
       });
 
       if (sessionError) {
-        console.error('Error generating session:', sessionError);
+        console.error('Error creating session:', sessionError);
         return new Response(
-          JSON.stringify({ error: 'Error generating session' }),
+          JSON.stringify({ error: 'Error creating session' }),
           {
             status: 500,
             headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -125,7 +125,8 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(JSON.stringify({ 
         success: true, 
         user: authData.user,
-        session_url: sessionData.properties?.action_link,
+        access_token: sessionData.session?.access_token,
+        refresh_token: sessionData.session?.refresh_token,
         requires_password_change: true
       }), {
         status: 200,
