@@ -72,11 +72,8 @@ const AppDashboard = () => {
                 <img 
                   src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png"
                   alt="Financial Management Logo" 
-                  className="h-48 w-48 object-contain -mb-14"
+                  className="h-48 w-48 object-contain"
                 />
-                <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent -mb-10">
-                  {t('dashboard.title')}
-                </h1>
               </div>
             </div>
             <FinancialDashboard />

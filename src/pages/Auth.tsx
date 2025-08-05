@@ -23,7 +23,7 @@ export default function Auth() {
     // Verificar se já está logado
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        window.location.href = '/';
+        window.location.href = '/app';
       }
     });
   }, []);
@@ -80,7 +80,7 @@ export default function Auth() {
             title: "Login realizado com sucesso!",
             description: "Redirecionando para o dashboard...",
           });
-          window.location.href = '/';
+          window.location.href = '/app';
         }
       }
     } catch (error: any) {
@@ -100,7 +100,7 @@ export default function Auth() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/app`
         }
       });
       
@@ -122,7 +122,7 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/app`;
       
       const { data, error } = await supabase.auth.signUp({
         email,
