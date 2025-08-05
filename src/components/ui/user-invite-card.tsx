@@ -13,10 +13,11 @@ export const UserInviteCard = ({ onInviteClick, showCard }: UserInviteCardProps)
   const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(showCard);
   const [isDismissedThisSession, setIsDismissedThisSession] = useState(false);
+  const isPermanentlyDismissed = localStorage.getItem('dismissInvitePermanently') === 'true';
 
   useEffect(() => {
-    setIsVisible(showCard && !isDismissedThisSession);
-  }, [showCard, isDismissedThisSession]);
+    setIsVisible(showCard && !isDismissedThisSession && !isPermanentlyDismissed);
+  }, [showCard, isDismissedThisSession, isPermanentlyDismissed]);
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();

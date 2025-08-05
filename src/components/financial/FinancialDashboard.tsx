@@ -40,6 +40,7 @@ export const FinancialDashboard = () => {
   const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
+  const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
   const [userDisplayName, setUserDisplayName] = useState<string>("");
   const [secondUserName, setSecondUserName] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
@@ -141,7 +142,10 @@ export const FinancialDashboard = () => {
   if (currentPage === "profile") {
     return (
       <div className="container mx-auto p-6">
-        <UserProfilePage onBack={() => setCurrentPage("dashboard")} />
+        <UserProfilePage 
+          onBack={() => setCurrentPage("dashboard")} 
+          activeTab={activeTabForProfile}
+        />
       </div>
     );
   }
@@ -331,7 +335,10 @@ export const FinancialDashboard = () => {
               {getUserLabel("user2") === t('dashboard.user2') && (
                 <UserInviteCard
                   showCard={true}
-                  onInviteClick={() => setCurrentPage("profile")}
+                  onInviteClick={() => {
+                    setActiveTabForProfile("users");
+                    setCurrentPage("profile");
+                  }}
                 />
               )}
             </div>

@@ -5,9 +5,10 @@ import { ArrowLeft } from "lucide-react";
 
 interface UserProfilePageProps {
   onBack: () => void;
+  activeTab?: string;
 }
 
-export const UserProfilePage = ({ onBack }: UserProfilePageProps) => {
+export const UserProfilePage = ({ onBack, activeTab }: UserProfilePageProps) => {
   const { t } = useLanguage();
   
   return (
@@ -19,7 +20,7 @@ export const UserProfilePage = ({ onBack }: UserProfilePageProps) => {
         </Button>
       </div>
 
-      <UserProfileForm />
+      <UserProfileForm activeTab={activeTab} />
     </div>
   );
 };

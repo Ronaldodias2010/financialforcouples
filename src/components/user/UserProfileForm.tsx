@@ -11,7 +11,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User, CreditCard, Lock, DollarSign } from "lucide-react";
 
-export const UserProfileForm = () => {
+interface UserProfileFormProps {
+  onBack?: () => void;
+  activeTab?: string;
+}
+
+export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading: subscriptionLoading } = useSubscription();
@@ -228,6 +233,11 @@ export const UserProfileForm = () => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
+  const dismissInvitePermanently = () => {
+    localStorage.setItem('dismissInvitePermanently', 'true');
+    toast.success("O lembrete de convite não aparecerá mais.");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -235,7 +245,7 @@ export const UserProfileForm = () => {
         <h2 className="text-2xl font-bold">{t('userProfile.title')}</h2>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
+      <Tabs defaultValue={activeTab || "profile"} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">{t('userProfile.profile')}</TabsTrigger>
           <TabsTrigger value="users">{t('userProfile.users')}</TabsTrigger>
@@ -347,6 +357,14 @@ export const UserProfileForm = () => {
                           {loading ? t('userProfile.sending') : t('userProfile.sendInvite')}
                         </Button>
                       )}
+                      <Button
+                        onClick={dismissInvitePermanently}
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                      >
+                        Não mostrar mais lembretes
+                      </Button>
                       {profile.second_user_email && (
                         <Button 
                           onClick={removeIncompleteUser} 
