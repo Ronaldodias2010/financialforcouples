@@ -130,12 +130,15 @@ jobs:
         terraform_version: 1.5.0
 
     - name: Terraform Init
+      working-directory: terraform
       run: terraform init
 
     - name: Terraform Validate
+      working-directory: terraform
       run: terraform validate
 
     - name: Terraform Plan
+      working-directory: terraform
       run: |
         terraform plan \
           -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
@@ -144,8 +147,19 @@ jobs:
           -out=tfplan
 
     - name: Terraform Apply
+      working-directory: terraform
       if: github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve tfplan
+      run: |
+        terraform apply -auto-approve tfplan || \
+        (echo "Apply failed, trying to refresh state and retry..." && \
+         terraform refresh \
+          -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
+          -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
+          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" && \
+         terraform apply -auto-approve \
+          -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
+          -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
+          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}")
 
   # Job de deploy da aplicação no ECS
   deploy-application:

@@ -16,42 +16,6 @@ terraform {
   # }
 }
 
-# Import existing resources to avoid conflicts
-import {
-  to = aws_lb.app
-  id = "arn:aws:elasticloadbalancing:us-east-1:*:loadbalancer/app/couples-financials-alb/*"
-}
-
-import {
-  to = aws_lb_target_group.app
-  id = "arn:aws:elasticloadbalancing:us-east-1:*:targetgroup/couples-financials-tg/*"
-}
-
-import {
-  to = aws_cloudwatch_log_group.ecs
-  id = "/ecs/couples-financials"
-}
-
-import {
-  to = aws_iam_role.ecs_execution_role
-  id = "couples-financials-ecs-execution-role"
-}
-
-import {
-  to = aws_iam_role.ecs_task_role
-  id = "couples-financials-ecs-task-role"
-}
-
-import {
-  to = aws_secretsmanager_secret.supabase_credentials
-  id = "couples-financials-supabase-credentials"
-}
-
-import {
-  to = aws_secretsmanager_secret.app_config
-  id = "couples-financials-app-config"
-}
-
 # Configuração do provedor AWS
 provider "aws" {
   region = var.aws_region
