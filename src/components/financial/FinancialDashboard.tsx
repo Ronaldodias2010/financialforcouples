@@ -306,14 +306,11 @@ export const FinancialDashboard = () => {
             <img 
               src="/lovable-uploads/a3413c4f-0329-4c0f-8e9d-4a6a7447c4dd.png" 
               alt="Couples Financials" 
-              className="h-20 w-20 object-contain"
+              className="h-40 w-40 object-contain"
             />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               {t('dashboard.title')}
             </h1>
-            <p className="text-xl font-semibold text-primary/80 -mt-1">
-              Gestão Financeira para Casais
-            </p>
           </div>
           <p className="text-lg text-muted-foreground">
             {t('dashboard.subtitle')}

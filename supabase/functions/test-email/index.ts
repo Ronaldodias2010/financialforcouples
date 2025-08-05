@@ -37,13 +37,13 @@ const handler = async (req: Request): Promise<Response> => {
       name: language === 'pt' ? "Usuário Teste" : "Test User",
       inviter_name: language === 'pt' ? "Admin Couples Financials" : "Couples Financials Admin",
       temp_password: "TEST2024",
-      login_url: "https://elxttabdtddlavhseipz.supabase.co",
+      login_url: "https://www.couplesfinancials.com/auth",
       start_date: language === 'pt' ? new Date().toLocaleDateString('pt-BR') : new Date().toLocaleDateString('en-US'),
       end_date: language === 'pt' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR') : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US'),
       days_duration: 30,
       userEmail: email,
-      loginUrl: "https://couples-financials.com/auth",
-      resetUrl: "https://couples-financials.com/reset-password"
+      loginUrl: "https://www.couplesfinancials.com/auth",
+      resetUrl: "https://www.couplesfinancials.com/reset-password"
     };
 
     let emailHtml: string;
