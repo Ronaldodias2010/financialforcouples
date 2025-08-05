@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard, Eye, EyeOff } from 'lucide-react';
+import { Loader2, CreditCard, Eye, EyeOff, Mail } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +15,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
+  const [isInviteAccess, setIsInviteAccess] = useState(false);
   
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
@@ -26,6 +28,16 @@ export default function Auth() {
         window.location.href = '/app';
       }
     });
+
+    // Verificar se é acesso via convite através de parâmetros da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteEmail = urlParams.get('email');
+    const fromInvite = urlParams.get('invite') === 'true';
+    
+    if (fromInvite && inviteEmail) {
+      setIsInviteAccess(true);
+      setEmail(inviteEmail);
+    }
   }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -210,10 +222,21 @@ export default function Auth() {
           </div>
         </CardHeader>
         <CardContent>
+          {isInviteAccess && (
+            <Alert className="mb-4 border-primary/20 bg-primary/5">
+              <Mail className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                Você foi convidado para o Couples Financials. Use a senha enviada por e-mail para acessar o sistema.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+              <TabsTrigger value="signup" disabled={isInviteAccess}>
+                Cadastrar
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -245,29 +268,32 @@ export default function Auth() {
                 </form>
               ) : (
                 <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
                  <div className="space-y-2">
-                   <Label htmlFor="signin-password">Senha</Label>
-                   <div className="relative">
-                      <Input
-                        id="signin-password"
-                        type={showSignInPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="pr-10"
-                      />
+                   <Label htmlFor="signin-email">Email</Label>
+                   <Input
+                     id="signin-email"
+                     type="email"
+                     placeholder="seu@email.com"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     required
+                     disabled={isInviteAccess}
+                   />
+                 </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">
+                      {isInviteAccess ? "Senha Temporária" : "Senha"}
+                    </Label>
+                    <div className="relative">
+                       <Input
+                         id="signin-password"
+                         type={showSignInPassword ? "text" : "password"}
+                         placeholder={isInviteAccess ? "Senha enviada por e-mail" : "••••••••"}
+                         value={password}
+                         onChange={(e) => setPassword(e.target.value)}
+                         required
+                         className="pr-10"
+                       />
                      <button
                        type="button"
                        className="absolute inset-y-0 right-0 pr-3 flex items-center"

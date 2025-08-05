@@ -71,8 +71,9 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Error creating invite record');
     }
 
-    // Create the login URL
-    const loginUrl = `${req.headers.get("origin")}/auth`;
+    // Create the login URL with invite parameters
+    const baseUrl = req.headers.get("origin") || "https://couplesfinancials.com";
+    const loginUrl = `${baseUrl}/auth?invite=true&email=${encodeURIComponent(email)}`;
 
     // Render the React email template
     const emailHtml = await renderAsync(
