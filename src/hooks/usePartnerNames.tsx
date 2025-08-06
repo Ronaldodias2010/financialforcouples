@@ -93,11 +93,16 @@ export const usePartnerNames = () => {
                      'Usuário 1';
         }
 
+        // Set names with proper logic for couples vs single users
         setNames({
-          currentUserName: user?.id === couple?.user1_id ? user1Name : (user?.id === couple?.user2_id ? user2Name : user1Name),
-          partnerName: user?.id === couple?.user1_id ? user2Name : user1Name,
-          user1Name,
-          user2Name
+          currentUserName: isPartOfCouple && couple ? 
+            (user?.id === couple.user1_id ? user1Name : user2Name) : 
+            user1Name,
+          partnerName: isPartOfCouple && couple ? 
+            (user?.id === couple.user1_id ? user2Name : user1Name) : 
+            'Usuário 2',
+          user1Name, // Always preserve user1 name
+          user2Name  // Always preserve user2 name
         });
       } catch (error) {
         console.error('Error fetching names:', error);
