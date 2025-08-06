@@ -26,7 +26,7 @@ interface EmailConfirmationProps {
 const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) => (
   <Html>
     <Head />
-    <Preview>🎉 Bem-vindo ao Couples Financials! Sua conta foi confirmada com sucesso</Preview>
+    <Preview>{"🎉 Bem-vindo ao Couples Financials! Sua conta foi confirmada com sucesso"}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -37,7 +37,7 @@ const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) =>
           style={logo}
         />
         
-        <Heading style={h1}>🎉 Conta Confirmada com Sucesso!</Heading>
+        <Heading style={h1}>{"🎉 Conta Confirmada com Sucesso!"}</Heading>
         
         <Text style={text}>
           Olá! Sua conta no <strong>Couples Financials</strong> foi confirmada com sucesso.
@@ -57,15 +57,15 @@ const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) =>
         
         <Hr style={hr} />
         
-        <Text style={subtitle}>✨ O que você pode fazer agora:</Text>
+        <Text style={subtitle}>{"✨ O que você pode fazer agora:"}</Text>
         
         <ul style={list}>
-          <li style={listItem}>💰 Gerenciar suas contas bancárias</li>
-          <li style={listItem}>💳 Controlar gastos com cartões</li>
-          <li style={listItem}>📊 Visualizar relatórios detalhados</li>
-          <li style={listItem}>🎯 Definir metas financeiras</li>
-          <li style={listItem}>✈️ Acompanhar milhas e pontos</li>
-          <li style={listItem}>👥 Convidar seu parceiro(a)</li>
+          <li style={listItem}>{"💰 Gerenciar suas contas bancárias"}</li>
+          <li style={listItem}>{"💳 Controlar gastos com cartões"}</li>
+          <li style={listItem}>{"📊 Visualizar relatórios detalhados"}</li>
+          <li style={listItem}>{"🎯 Definir metas financeiras"}</li>
+          <li style={listItem}>{"✈️ Acompanhar milhas e pontos"}</li>
+          <li style={listItem}>{"👥 Convidar seu parceiro(a)"}</li>
         </ul>
         
         <Hr style={hr} />
