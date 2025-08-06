@@ -23,64 +23,67 @@ interface EmailConfirmationProps {
   loginUrl: string;
 }
 
-const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) => (
-  <Html>
-    <Head />
-    <Preview>Bem-vindo ao Couples Financials! Sua conta foi confirmada com sucesso</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Img
-          src="https://elxttabdtddlavhseipz.supabase.co/storage/v1/object/public/app-assets/couples-financials-logo.png"
-          width="200"
-          height="60"
-          alt="Couples Financials"
-          style={logo}
-        />
+const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) => 
+  React.createElement(Html, null,
+    React.createElement(Head),
+    React.createElement(Preview, null, "Bem-vindo ao Couples Financials! Sua conta foi confirmada com sucesso"),
+    React.createElement(Body, { style: main },
+      React.createElement(Container, { style: container },
+        React.createElement(Img, {
+          src: "https://elxttabdtddlavhseipz.supabase.co/storage/v1/object/public/app-assets/couples-financials-logo.png",
+          width: "200",
+          height: "60",
+          alt: "Couples Financials",
+          style: logo
+        }),
         
-        <Heading style={h1}>Conta Confirmada com Sucesso!</Heading>
+        React.createElement(Heading, { style: h1 }, "Conta Confirmada com Sucesso!"),
         
-        <Text style={text}>
-          Olá! Sua conta no <strong>Couples Financials</strong> foi confirmada com sucesso.
-        </Text>
+        React.createElement(Text, { style: text }, 
+          "Olá! Sua conta no ",
+          React.createElement("strong", null, "Couples Financials"),
+          " foi confirmada com sucesso."
+        ),
         
-        <Text style={text}>
-          Email confirmado: <strong>{userEmail}</strong>
-        </Text>
+        React.createElement(Text, { style: text },
+          "Email confirmado: ",
+          React.createElement("strong", null, userEmail)
+        ),
         
-        <Text style={text}>
-          Agora você pode acessar todas as funcionalidades da nossa plataforma de gestão financeira para casais.
-        </Text>
+        React.createElement(Text, { style: text },
+          "Agora você pode acessar todas as funcionalidades da nossa plataforma de gestão financeira para casais."
+        ),
         
-        <Button style={button} href={loginUrl}>
-          Acessar Minha Conta
-        </Button>
+        React.createElement(Button, { style: button, href: loginUrl },
+          "Acessar Minha Conta"
+        ),
         
-        <Hr style={hr} />
+        React.createElement(Hr, { style: hr }),
         
-        <Text style={subtitle}>O que você pode fazer agora:</Text>
+        React.createElement(Text, { style: subtitle }, "O que você pode fazer agora:"),
         
-        <ul style={list}>
-          <li style={listItem}>Gerenciar suas contas bancárias</li>
-          <li style={listItem}>Controlar gastos com cartões</li>
-          <li style={listItem}>Visualizar relatórios detalhados</li>
-          <li style={listItem}>Definir metas financeiras</li>
-          <li style={listItem}>Acompanhar milhas e pontos</li>
-          <li style={listItem}>Convidar seu parceiro(a)</li>
-        </ul>
+        React.createElement("ul", { style: list },
+          React.createElement("li", { style: listItem }, "Gerenciar suas contas bancárias"),
+          React.createElement("li", { style: listItem }, "Controlar gastos com cartões"),
+          React.createElement("li", { style: listItem }, "Visualizar relatórios detalhados"),
+          React.createElement("li", { style: listItem }, "Definir metas financeiras"),
+          React.createElement("li", { style: listItem }, "Acompanhar milhas e pontos"),
+          React.createElement("li", { style: listItem }, "Convidar seu parceiro(a)")
+        ),
         
-        <Hr style={hr} />
+        React.createElement(Hr, { style: hr }),
         
-        <Text style={footer}>
-          Se você não criou esta conta, pode ignorar este email com segurança.
-        </Text>
+        React.createElement(Text, { style: footer },
+          "Se você não criou esta conta, pode ignorar este email com segurança."
+        ),
         
-        <Text style={footer}>
-          <strong>Couples Financials</strong> - Gestão financeira inteligente para casais
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-);
+        React.createElement(Text, { style: footer },
+          React.createElement("strong", null, "Couples Financials"),
+          " - Gestão financeira inteligente para casais"
+        )
+      )
+    )
+  );
 
 // Styles
 const main = {
