@@ -167,7 +167,7 @@ const AdminDashboardContent = () => {
         }
       }
 
-      // Fetch premium subscribers with their profiles for the main user table
+      // Fetch ONLY premium AND subscribed users with their profiles
       console.log('🔍 Fetching premium users...');
       const { data: profilesWithSubscribers, error: profilesError } = await supabase
         .from('subscribers')
@@ -179,7 +179,7 @@ const AdminDashboardContent = () => {
           subscription_end,
           stripe_customer_id,
           updated_at,
-          profiles!inner(
+          profiles(
             display_name,
             avatar_url
           )
