@@ -45,6 +45,7 @@ export const FinancialDashboard = () => {
   const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
+  const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
@@ -326,6 +327,18 @@ export const FinancialDashboard = () => {
           <div className="flex justify-between items-start mb-2">
             <div className="text-sm text-muted-foreground">
               👤 {user?.email}
+              {/* Debug subscription status */}
+              <div className="text-xs mt-1">
+                📊 Status: {subscribed ? 'Premium' : 'Essential'} | Tier: {subscriptionTier} | Access: {hasAccess('aiMileage') ? '✅' : '❌'}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={checkSubscription}
+                  className="ml-2 text-xs h-6"
+                >
+                  🔄 Atualizar
+                </Button>
+              </div>
             </div>
             <div className="flex gap-2">
               <ThemeSwitcher />
