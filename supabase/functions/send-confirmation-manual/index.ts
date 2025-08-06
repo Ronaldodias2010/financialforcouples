@@ -189,14 +189,16 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email }: ConfirmationEmailRequest = await req.json();
     
-    const loginUrl = "https://elxttabdtddlavhseipz.supabase.co/auth/v1/authorize?provider=email";
+    const loginUrl = "https://elxttabdtddlavhseipz.supabase.co/auth/v1/verify?type=signup&redirect_to=https://your-app-url.com/auth";
 
     const html = await renderAsync(
       React.createElement(EmailConfirmationPT, {
         userEmail: email,
-        loginUrl: "https://your-app-url.com/auth" // Adjust this URL as needed
+        loginUrl: loginUrl
       })
     );
+    
+    console.log("Generated HTML:", html);
 
     const emailResponse = await resend.emails.send({
       from: "Couples Financials <onboarding@resend.dev>",
