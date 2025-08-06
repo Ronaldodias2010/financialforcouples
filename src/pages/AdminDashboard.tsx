@@ -168,6 +168,7 @@ const AdminDashboardContent = () => {
       }
 
       // Fetch premium subscribers with their profiles for the main user table
+      console.log('🔍 Fetching premium users...');
       const { data: profilesWithSubscribers, error: profilesError } = await supabase
         .from('subscribers')
         .select(`
@@ -185,6 +186,8 @@ const AdminDashboardContent = () => {
         `)
         .eq('subscription_tier', 'premium')
         .eq('subscribed', true);
+      
+      console.log('📊 Premium users query result:', { data: profilesWithSubscribers, error: profilesError });
 
       let formattedUsers: SubscriptionUser[] = [];
       
@@ -192,8 +195,13 @@ const AdminDashboardContent = () => {
         console.log('🔍 Premium profiles with subscribers data:', profilesWithSubscribers);
         
         // Transform data for display - only premium/subscribed users
+        console.log('📝 Raw premium subscribers data:', profilesWithSubscribers);
+        
         formattedUsers = profilesWithSubscribers.map(subscriber => {
           const profile = (subscriber as any).profiles;
+          console.log('👤 Individual subscriber:', subscriber);
+          console.log('👤 Profile for this subscriber:', profile);
+          
           const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
           const now = new Date();
           
@@ -206,7 +214,7 @@ const AdminDashboardContent = () => {
             }
           }
 
-          return {
+          const formattedUser = {
             id: subscriber.user_id,
             email: subscriber.email,
             display_name: profile?.display_name || subscriber.email?.split('@')[0] || 'Usuário',
@@ -217,6 +225,9 @@ const AdminDashboardContent = () => {
             last_payment: subscriber.updated_at,
             status
           };
+          
+          console.log('✨ Formatted user:', formattedUser);
+          return formattedUser;
         });
         
         console.log('✅ Formatted premium users with names:', formattedUsers);
