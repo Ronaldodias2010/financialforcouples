@@ -55,6 +55,8 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
     try {
       setLoading(true);
       
+      console.log('🔍 Fetching essential users...');
+      
       // Primeiro buscar usuários essenciais da tabela subscribers
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
@@ -62,25 +64,39 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
         .eq('subscription_tier', 'essential');
 
       if (subscribersError) {
-        console.error('Error fetching subscribers:', subscribersError);
+        console.error('❌ Error fetching subscribers:', subscribersError);
         throw subscribersError;
       }
 
-      console.log('Subscribers data:', subscribersData);
+      console.log('📊 Subscribers data from DB:', subscribersData);
+      console.log('📊 Subscribers count:', subscribersData?.length || 0);
+
+      if (!subscribersData || subscribersData.length === 0) {
+        console.log('⚠️ No essential subscribers found. Trying to fetch all subscribers to debug...');
+        
+        // Debug: buscar todos os subscribers para ver o que tem
+        const { data: allSubs } = await supabase.from('subscribers').select('*');
+        console.log('🔍 All subscribers for debug:', allSubs);
+        
+        setUsers([]);
+        return;
+      }
 
       // Depois buscar os perfis correspondentes
       const userIds = subscribersData?.map(sub => sub.user_id) || [];
+      console.log('👥 User IDs to fetch profiles for:', userIds);
+      
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .in('user_id', userIds);
 
       if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+        console.error('❌ Error fetching profiles:', profilesError);
         throw profilesError;
       }
 
-      console.log('Profiles data:', profilesData);
+      console.log('👤 Profiles data:', profilesData);
 
       // Combinar os dados
       const formattedUsers = subscribersData?.map(subscriber => {
@@ -94,7 +110,7 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
         };
       }) || [];
 
-      console.log('Final formatted users:', formattedUsers);
+      console.log('✅ Final formatted users:', formattedUsers);
       setUsers(formattedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
