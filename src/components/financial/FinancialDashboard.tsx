@@ -3,6 +3,7 @@ import { FinancialCard } from "./FinancialCard";
 import { TransactionForm } from "./TransactionForm";
 import { UserExpenseChart } from "./UserExpenseChart";
 import { MonthlyExpensesView } from "./MonthlyExpensesView";
+import { MonthlyIncomeView } from "./MonthlyIncomeView";
 import { CategoryManager } from "./CategoryManager";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
 import { InvestmentDashboard } from "./InvestmentDashboard";
@@ -277,6 +278,8 @@ export const FinancialDashboard = () => {
         );
       case "transactions":
         return <MonthlyExpensesView viewMode={viewMode} />;
+      case "income":
+        return <MonthlyIncomeView viewMode={viewMode} />;
       case "categories":
         return <CategoryManager />;
       case "recurring":
@@ -409,6 +412,13 @@ export const FinancialDashboard = () => {
             className="pb-2"
           >
             {t('nav.monthlyExpenses')}
+          </Button>
+          <Button
+            variant={activeTab === "income" ? "default" : "ghost"}
+            onClick={() => setActiveTab("income")}
+            className="pb-2"
+          >
+            Receitas Mensais
           </Button>
           <Button
             variant={activeTab === "categories" ? "default" : "ghost"}
