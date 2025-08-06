@@ -338,6 +338,17 @@ export const useFinancialData = () => {
     return { user1Expenses, user2Expenses };
   };
 
+  const refreshData = async () => {
+    if (user) {
+      console.log('🔄 Refreshing financial data...');
+      setLoading(true);
+      await fetchUserPreferredCurrency();
+      await fetchTransactions();
+      setLoading(false);
+      console.log('✅ Financial data refreshed');
+    }
+  };
+
   return {
     transactions,
     userPreferredCurrency,
@@ -346,6 +357,6 @@ export const useFinancialData = () => {
     getFinancialComparison,
     getTransactionsByUser,
     getExpensesByUser,
-    refreshData: fetchTransactions
+    refreshData
   };
 };
