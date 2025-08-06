@@ -58,6 +58,20 @@ export const FutureExpensesView = () => {
       const futureDate = new Date();
       futureDate.setMonth(futureDate.getMonth() + 6); // 6 meses no futuro
 
+      // Check if user is part of a couple to include partner's transactions
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user.id];
+      if (coupleData) {
+        // Include both users' transactions
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
       // Buscar parcelas futuras
       const { data: installments, error: installmentsError } = await supabase
         .from("transactions")
@@ -66,7 +80,7 @@ export const FutureExpensesView = () => {
           categories(name),
           cards(name, owner_user)
         `)
-        .eq("user_id", user.id)
+        .in("user_id", userIds)
         .eq("is_installment", true)
         .gte("transaction_date", now.toISOString().split('T')[0])
         .lte("transaction_date", futureDate.toISOString().split('T')[0])
@@ -81,7 +95,7 @@ export const FutureExpensesView = () => {
           cards(name, owner_user),
           accounts(name)
         `)
-        .eq("user_id", user.id)
+        .in("user_id", userIds)
         .eq("is_active", true)
         .gte("next_due_date", now.toISOString().split('T')[0])
         .lte("next_due_date", futureDate.toISOString().split('T')[0])
@@ -91,7 +105,7 @@ export const FutureExpensesView = () => {
       const { data: cards, error: cardsError } = await supabase
         .from("cards")
         .select("*")
-        .eq("user_id", user.id)
+        .in("user_id", userIds)
         .eq("card_type", "credit")
         .not("due_date", "is", null);
 

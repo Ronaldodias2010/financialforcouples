@@ -102,6 +102,20 @@ export const useFinancialData = () => {
       endOfMonth.setDate(0);
       endOfMonth.setHours(23, 59, 59, 999);
 
+      // Check if user is part of a couple to include partner's transactions
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        // Include both users' transactions
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
       const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -109,7 +123,7 @@ export const useFinancialData = () => {
           categories(name),
           cards(name)
         `)
-        .eq('user_id', user?.id)
+        .in('user_id', userIds)
         .gte('transaction_date', startOfMonth.toISOString().split('T')[0])
         .lte('transaction_date', endOfMonth.toISOString().split('T')[0])
         .order('transaction_date', { ascending: false });
@@ -168,10 +182,24 @@ export const useFinancialData = () => {
       endOfPrevMonth.setDate(0);
       endOfPrevMonth.setHours(23, 59, 59, 999);
 
+      // Check if user is part of a couple to include partner's transactions
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        // Include both users' transactions
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
       const { data: prevTransactions, error } = await supabase
         .from('transactions')
         .select('*')
-        .eq('user_id', user?.id)
+        .in('user_id', userIds)
         .gte('transaction_date', startOfPrevMonth.toISOString().split('T')[0])
         .lte('transaction_date', endOfPrevMonth.toISOString().split('T')[0]);
 

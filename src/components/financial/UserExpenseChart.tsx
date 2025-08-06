@@ -142,11 +142,25 @@ export const UserExpenseChart = () => {
           break;
       }
 
+      // Check if user is part of a couple to include partner's transactions
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        // Include both users' transactions
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
       // Fetch both income and expense transactions
       const { data: transactions, error } = await supabase
         .from('transactions')
         .select('owner_user, amount, transaction_date, type')
-        .eq('user_id', user?.id)
+        .in('user_id', userIds)
         .gte('transaction_date', startDate.toISOString().split('T')[0])
         .lte('transaction_date', endDate.toISOString().split('T')[0]);
 
