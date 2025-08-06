@@ -167,23 +167,24 @@ const AdminDashboardContent = () => {
         }
       }
 
-      // Fetch only PREMIUM user profiles for the main user table
+      // Fetch premium subscribers with their profiles for the main user table
       const { data: profilesWithSubscribers, error: profilesError } = await supabase
-        .from('profiles')
+        .from('subscribers')
         .select(`
           user_id,
-          display_name,
-          avatar_url,
-          subscribers!inner(
-            email,
-            subscribed,
-            subscription_tier,
-            subscription_end,
-            stripe_customer_id,
-            updated_at
+          email,
+          subscribed,
+          subscription_tier,
+          subscription_end,
+          stripe_customer_id,
+          updated_at,
+          profiles!inner(
+            display_name,
+            avatar_url
           )
         `)
-        .or('subscribers.subscribed.eq.true,subscribers.subscription_tier.eq.premium', { foreignTable: 'subscribers' });
+        .eq('subscription_tier', 'premium')
+        .eq('subscribed', true);
 
       let formattedUsers: SubscriptionUser[] = [];
       
@@ -191,8 +192,8 @@ const AdminDashboardContent = () => {
         console.log('🔍 Premium profiles with subscribers data:', profilesWithSubscribers);
         
         // Transform data for display - only premium/subscribed users
-        formattedUsers = profilesWithSubscribers.map(profile => {
-          const subscriber = (profile as any).subscribers;
+        formattedUsers = profilesWithSubscribers.map(subscriber => {
+          const profile = (subscriber as any).profiles;
           const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
           const now = new Date();
           
@@ -206,9 +207,9 @@ const AdminDashboardContent = () => {
           }
 
           return {
-            id: profile.user_id,
+            id: subscriber.user_id,
             email: subscriber.email,
-            display_name: profile.display_name || subscriber.email?.split('@')[0] || 'Usuário',
+            display_name: profile?.display_name || subscriber.email?.split('@')[0] || 'Usuário',
             subscribed: subscriber.subscribed,
             subscription_tier: subscriber.subscription_tier || 'essential',
             subscription_end: subscriber.subscription_end,
