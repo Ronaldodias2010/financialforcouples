@@ -30,9 +30,9 @@ export const useUserNames = () => {
           .eq('user_id', user.id)
           .single();
 
-        // Use display_name or fallback to user metadata or email
-        let user1Name = userProfile?.display_name || 
-                       user.user_metadata?.display_name || 
+        // Prioritize display_name from user metadata (signup form) first
+        let user1Name = user.user_metadata?.display_name ||
+                       userProfile?.display_name || 
                        user.user_metadata?.full_name ||
                        user.user_metadata?.name ||
                        user.email?.split('@')[0] || 

@@ -19,6 +19,7 @@ interface WebhookPayload {
     email: string;
     phone?: string;
     user_metadata?: {
+      display_name?: string;
       full_name?: string;
       name?: string;
     };
@@ -58,8 +59,9 @@ const handler = async (req: Request): Promise<Response> => {
     // Determine user's language (default to Portuguese)
     const language = 'pt'; // You can modify this logic based on user preferences
 
-    // Get user's display name
-    const userName = user.user_metadata?.full_name || 
+    // Get user's display name - prioritize user metadata display_name
+    const userName = user.user_metadata?.display_name ||
+                    user.user_metadata?.full_name || 
                     user.user_metadata?.name || 
                     user.email.split('@')[0];
 
