@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useCouple } from '@/hooks/useCouple';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -8,6 +9,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
+  const { isPartOfCouple, loading: coupleLoading } = useCouple();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,7 +25,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [user, loading]);
 
-  if (loading) {
+  if (loading || coupleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

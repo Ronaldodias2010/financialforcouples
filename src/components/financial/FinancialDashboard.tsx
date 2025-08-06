@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { useFinancialData } from "@/hooks/useFinancialData";
+import { useCouple } from "@/hooks/useCouple";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UserInviteCard } from "@/components/ui/user-invite-card";
@@ -39,6 +40,7 @@ export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
+  const { isPartOfCouple, couple, loading: coupleLoading } = useCouple();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
@@ -64,6 +66,8 @@ export const FinancialDashboard = () => {
 
   const fetchUserProfile = async () => {
     try {
+      console.log('🔍 Fetching user profile for user:', user?.id);
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("display_name")
@@ -72,9 +76,11 @@ export const FinancialDashboard = () => {
 
       if (data?.display_name) {
         setUserDisplayName(data.display_name);
+        console.log('✅ User display name found:', data.display_name);
       }
 
       // Only show second user if there's an active couple relationship
+      console.log('🔍 Checking for couple relationship...');
       const { data: coupleData, error: coupleError } = await supabase
         .from("user_couples")
         .select("user1_id, user2_id")
@@ -82,9 +88,15 @@ export const FinancialDashboard = () => {
         .eq("status", "active")
         .maybeSingle();
 
+      console.log('🔍 Couple query result:', coupleData);
+
       if (coupleData) {
+        console.log('✅ USER IS PART OF A COUPLE! Dashboard should show shared data');
+        console.log('✅ Couple data:', coupleData);
+        
         // Get partner's ID (the other user in the couple)
         const partnerId = coupleData.user1_id === user?.id ? coupleData.user2_id : coupleData.user1_id;
+        console.log('✅ Partner ID:', partnerId);
         
         // Get partner's profile
         const { data: partnerData, error: partnerError } = await supabase
@@ -93,16 +105,21 @@ export const FinancialDashboard = () => {
           .eq("user_id", partnerId)
           .maybeSingle();
 
+        console.log('✅ Partner profile data:', partnerData);
+
         if (partnerData?.display_name) {
           setSecondUserName(partnerData.display_name);
+          console.log('✅ Partner name set to:', partnerData.display_name);
         } else {
           setSecondUserName("");
+          console.log('⚠️ No partner display name found');
         }
       } else {
+        console.log('❌ USER IS NOT PART OF A COUPLE - individual dashboard');
         setSecondUserName("");
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("❌ Error fetching profile:", error);
     }
   };
 
@@ -315,6 +332,27 @@ export const FinancialDashboard = () => {
           <p className="text-lg text-muted-foreground">
             {t('dashboard.subtitle')}
           </p>
+          
+          {/* Couple Status Indicator */}
+          {isPartOfCouple && couple && (
+            <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-3 mx-auto max-w-md">
+              <div className="flex items-center justify-center gap-2 text-green-800 dark:text-green-200">
+                <span className="text-sm font-medium">
+                  💚 Dashboard compartilhado ativo - mostrando dados de ambos os usuários
+                </span>
+              </div>
+            </div>
+          )}
+          
+          {!isPartOfCouple && !coupleLoading && (
+            <div className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-3 mx-auto max-w-md">
+              <div className="flex items-center justify-center gap-2 text-blue-800 dark:text-blue-200">
+                <span className="text-sm font-medium">
+                  👤 Dashboard individual - convide seu parceiro(a) para compartilhar dados
+                </span>
+              </div>
+            </div>
+          )}
           
           {/* User Controls */}
           <div className="flex items-center justify-center gap-4 pt-4">
