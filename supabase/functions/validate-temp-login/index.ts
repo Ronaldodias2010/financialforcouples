@@ -78,16 +78,37 @@ const handler = async (req: Request): Promise<Response> => {
         .eq('user_id', invite.inviter_user_id)
         .single();
 
-      // First create profile for the new user
-      const { error: profileError } = await supabase
+      // Check if profile already exists (trigger might have created it)
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .insert({
-          user_id: authData.user.id,
-          display_name: invite.invitee_name || email.split('@')[0]
-        });
+        .select('id')
+        .eq('user_id', authData.user.id)
+        .single();
 
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
+      // Only create profile if it doesn't exist
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: authData.user.id,
+            display_name: invite.invitee_name || email.split('@')[0]
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      } else {
+        // Update existing profile with display name
+        const { error: updateProfileError } = await supabase
+          .from('profiles')
+          .update({
+            display_name: invite.invitee_name || email.split('@')[0]
+          })
+          .eq('user_id', authData.user.id);
+
+        if (updateProfileError) {
+          console.error('Error updating profile:', updateProfileError);
+        }
       }
 
       // Update inviter's profile with second user name
