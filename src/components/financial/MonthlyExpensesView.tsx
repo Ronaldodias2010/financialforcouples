@@ -3,8 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
+import { useCouple } from "@/hooks/useCouple";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
@@ -20,6 +24,7 @@ interface Transaction {
   payment_method: string;
   card_id?: string;
   user_id: string;
+  owner_user?: string;
   categories?: {
     name: string;
   };
@@ -36,13 +41,17 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedUser, setSelectedUser] = useState<string>("both");
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { names } = usePartnerNames();
+  const { isPartOfCouple, couple } = useCouple();
 
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
-  }, [selectedMonth, selectedCategory]);
+  }, [selectedMonth, selectedCategory, selectedUser]);
 
   const fetchCategories = async () => {
     try {
@@ -67,6 +76,20 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
       const startDate = `${selectedMonth}-01`;
       const endDate = `${selectedMonth}-31`;
 
+      // Check if user is part of a couple to include partner's transactions
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        // Include both users' transactions
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
       let query = supabase
         .from('transactions')
         .select(`
@@ -74,6 +97,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
           categories(name),
           cards(name)
         `)
+        .in('user_id', userIds)
         .gte('transaction_date', startDate)
         .lte('transaction_date', endDate)
         .order('transaction_date', { ascending: false });
@@ -85,7 +109,18 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setTransactions(data || []);
+      
+      let filteredData = data || [];
+      
+      // Apply user filter
+      if (selectedUser !== "both" && isPartOfCouple) {
+        filteredData = filteredData.filter(transaction => {
+          const ownerUser = transaction.owner_user || 'user1';
+          return ownerUser === selectedUser;
+        });
+      }
+      
+      setTransactions(filteredData);
     } catch (error) {
       toast({
         title: "Erro",
@@ -115,6 +150,19 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
     }
   };
 
+  const getUserName = (ownerUser: string) => {
+    if (!isPartOfCouple) return names.currentUserName;
+    
+    switch (ownerUser) {
+      case 'user1':
+        return names.user1Name;
+      case 'user2':
+        return names.user2Name;
+      default:
+        return 'Usuário';
+    }
+  };
+
   const totalExpenses = transactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
@@ -135,7 +183,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Gastos Mensais</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div>
                 <Label>Mês</Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
@@ -174,6 +222,38 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {isPartOfCouple && (
+                <div>
+                  <Label>Modo de Visualização</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      variant={selectedUser === "both" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedUser("both")}
+                      className="flex-1"
+                    >
+                      Ambos
+                    </Button>
+                    <Button
+                      variant={selectedUser === "user1" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedUser("user1")}
+                      className="flex-1"
+                    >
+                      {names.user1Name}
+                    </Button>
+                    <Button
+                      variant={selectedUser === "user2" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedUser("user2")}
+                      className="flex-1"
+                    >
+                      {names.user2Name}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -212,6 +292,13 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
                       </div>
                       
                       <div className="text-sm text-muted-foreground space-y-1">
+                        {isPartOfCouple && (
+                          <p>
+                            <span className="font-medium text-primary">
+                              Realizado por: {getUserName(transaction.owner_user || 'user1')}
+                            </span>
+                          </p>
+                        )}
                         <p>Categoria: {transaction.categories?.name || 'N/A'}</p>
                         {transaction.subcategory && (
                           <p>Subcategoria: {transaction.subcategory}</p>
