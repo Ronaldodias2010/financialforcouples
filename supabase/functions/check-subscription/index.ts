@@ -67,11 +67,40 @@ serve(async (req) => {
       );
     }
 
+    // Check existing subscription data in database
+    const { data: existingSubscriber } = await supabaseClient
+      .from("subscribers")
+      .select('*')
+      .eq('email', user.email)
+      .single();
+
+    logStep("Existing subscriber data", existingSubscriber);
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
-      logStep("No customer found, updating unsubscribed state");
+      logStep("No Stripe customer found, checking local subscription data");
+      
+      // If user has local subscription data (like manual premium), preserve it
+      if (existingSubscriber && existingSubscriber.subscribed) {
+        logStep("Local subscription found, preserving it", { 
+          tier: existingSubscriber.subscription_tier,
+          end: existingSubscriber.subscription_end 
+        });
+        
+        return new Response(JSON.stringify({ 
+          subscribed: existingSubscriber.subscribed,
+          subscription_tier: existingSubscriber.subscription_tier,
+          subscription_end: existingSubscriber.subscription_end
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      
+      // No local subscription, set as essential
+      logStep("No local subscription found, setting as essential");
       await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
