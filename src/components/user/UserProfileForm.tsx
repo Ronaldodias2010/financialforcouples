@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useCouple } from "@/hooks/useCouple";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User, CreditCard, Lock, DollarSign } from "lucide-react";
@@ -20,6 +21,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   const { user } = useAuth();
   const { t } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading: subscriptionLoading } = useSubscription();
+  const { isPartOfCouple } = useCouple();
   const [loading, setLoading] = useState(false);
   const [creatingCheckout, setCreatingCheckout] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
@@ -331,7 +333,13 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                         value={profile.second_user_name}
                         onChange={(e) => setProfile(prev => ({ ...prev, second_user_name: e.target.value }))}
                         placeholder="Nome do segundo usuário (ex: Maria, João, etc.)"
+                        disabled={isPartOfCouple}
                       />
+                      {isPartOfCouple && (
+                        <p className="text-sm text-green-600 mt-1">
+                          ✅ Usuário vinculado com sucesso! Não é possível alterar.
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="user2_email">{t('userProfile.inviteEmail')}</Label>
@@ -341,41 +349,46 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                         value={profile.second_user_email}
                         onChange={(e) => setProfile(prev => ({ ...prev, second_user_email: e.target.value }))}
                         placeholder="email@exemplo.com"
+                        disabled={isPartOfCouple}
                       />
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Email onde o convite será enviado para o segundo usuário se cadastrar
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      {profile.second_user_email && profile.second_user_name && (
-                        <Button 
-                          onClick={sendInvite} 
-                          disabled={loading}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          {loading ? t('userProfile.sending') : t('userProfile.sendInvite')}
-                        </Button>
-                      )}
-                      <Button
-                        onClick={dismissInvitePermanently}
-                        variant="outline"
-                        size="sm"
-                        className="shrink-0 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                      >
-                        Não mostrar mais lembretes
-                      </Button>
-                      {profile.second_user_email && (
-                        <Button 
-                          onClick={removeIncompleteUser} 
-                          disabled={loading}
-                          variant="outline"
-                          className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                        >
-                          {loading ? "Removendo..." : "Remover Usuário"}
-                        </Button>
+                      {!isPartOfCouple && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Email onde o convite será enviado para o segundo usuário se cadastrar
+                        </p>
                       )}
                     </div>
+                    {!isPartOfCouple && (
+                      <div className="flex gap-2">
+                        {profile.second_user_email && profile.second_user_name && (
+                          <Button 
+                            onClick={sendInvite} 
+                            disabled={loading}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            {loading ? t('userProfile.sending') : t('userProfile.sendInvite')}
+                          </Button>
+                        )}
+                        <Button
+                          onClick={dismissInvitePermanently}
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                        >
+                          Não mostrar mais lembretes
+                        </Button>
+                        {profile.second_user_email && (
+                          <Button 
+                            onClick={removeIncompleteUser} 
+                            disabled={loading}
+                            variant="outline"
+                            className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                          >
+                            {loading ? "Removendo..." : "Remover Usuário"}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

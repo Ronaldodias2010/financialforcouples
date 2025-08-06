@@ -382,15 +382,15 @@ export const FinancialDashboard = () => {
                   {getUserLabel("user2")}
                 </Button>
               </div>
-              {getUserLabel("user2") === t('dashboard.user2') && (
-                <UserInviteCard
-                  showCard={true}
-                  onInviteClick={() => {
-                    setActiveTabForProfile("users");
-                    setCurrentPage("profile");
-                  }}
-                />
-              )}
+            {!isPartOfCouple && getUserLabel("user2") === t('dashboard.user2') && (
+              <UserInviteCard
+                showCard={true}
+                onInviteClick={() => {
+                  setActiveTabForProfile("users");
+                  setCurrentPage("profile");
+                }}
+              />
+            )}
             </div>
           </div>
         </div>
