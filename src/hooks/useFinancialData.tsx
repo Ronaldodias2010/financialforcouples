@@ -68,27 +68,50 @@ export const useFinancialData = () => {
       )
       .subscribe();
 
-    // Listen for real-time transaction changes for unified dashboard
-    const transactionChannel = supabase
-      .channel('transaction_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'transactions'
-        },
-        (payload) => {
-          console.log('Transaction changed:', payload);
-          // Refresh transactions when any change occurs
-          fetchTransactions();
+  // Listen for real-time transaction changes for unified dashboard
+  const transactionChannel = supabase
+    .channel('transaction_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'transactions'
+      },
+      (payload) => {
+        console.log('Real-time transaction change detected:', payload);
+        // Refresh transactions when any change occurs to ensure couples see each other's data
+        setTimeout(fetchTransactions, 100); // Small delay to ensure database consistency
+      }
+    )
+    .subscribe();
+
+  // Also listen for couple relationship changes
+  const coupleChannel = supabase
+    .channel('couple_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'user_couples'
+      },
+      (payload) => {
+        console.log('Couple relationship changed:', payload);
+        const data = payload.new || payload.old;
+        if (data && typeof data === 'object' && 'user1_id' in data && 'user2_id' in data) {
+          if (data.user1_id === user.id || data.user2_id === user.id) {
+            setTimeout(fetchTransactions, 100);
+          }
         }
-      )
-      .subscribe();
+      }
+    )
+    .subscribe();
 
     return () => {
       supabase.removeChannel(profileChannel);
       supabase.removeChannel(transactionChannel);
+      supabase.removeChannel(coupleChannel);
     };
   }, [user]);
 
@@ -130,9 +153,15 @@ export const useFinancialData = () => {
         .maybeSingle();
 
       let userIds = [user?.id];
+      let isPartOfCouple = false;
+      
       if (coupleData) {
-        // Include both users' transactions
+        // Include both users' transactions for shared dashboard
         userIds = [coupleData.user1_id, coupleData.user2_id];
+        isPartOfCouple = true;
+        console.log('✅ User is part of a couple - fetching transactions for both users:', userIds);
+      } else {
+        console.log('❌ User is not part of a couple - fetching only own transactions');
       }
 
       const { data, error } = await supabase
@@ -149,7 +178,14 @@ export const useFinancialData = () => {
 
       if (error) throw error;
       
-      console.log('Transactions fetched:', data);
+      console.log(`Transactions fetched for ${isPartOfCouple ? 'couple' : 'individual'}:`, data?.length || 0, 'transactions');
+      console.log('Transaction details:', data?.map(t => ({ 
+        description: t.description, 
+        amount: t.amount, 
+        owner: t.owner_user, 
+        user_id: t.user_id,
+        type: t.type 
+      })));
       setTransactions(data || []);
     } catch (error) {
       console.error('Error fetching transactions:', error);

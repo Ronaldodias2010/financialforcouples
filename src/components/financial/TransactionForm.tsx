@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { useCouple } from "@/hooks/useCouple";
 
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
@@ -71,6 +72,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
+  const { couple, isPartOfCouple } = useCouple();
 
   useEffect(() => {
     fetchCategories();
@@ -199,12 +201,21 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
 
       const transactionAmount = parseFloat(amount);
 
+      // Determine owner_user based on couple relationship
+      let ownerUser = "user1"; // default
+      if (isPartOfCouple && couple) {
+        // If user is part of a couple, determine if they are user1 or user2
+        ownerUser = user.id === couple.user1_id ? "user1" : "user2";
+      }
+
+      console.log('Creating transaction with owner_user:', ownerUser, 'for user:', user.id);
+
       // Inserir transação
       const { error } = await supabase
         .from('transactions')
         .insert({
           user_id: user.id,
-          owner_user: "user1",
+          owner_user: ownerUser,
           type,
           amount: transactionAmount,
           currency: currency,

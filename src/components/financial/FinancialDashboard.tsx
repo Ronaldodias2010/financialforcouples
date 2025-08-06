@@ -110,10 +110,17 @@ export const FinancialDashboard = () => {
 
   const handleAddTransaction = async (transaction: Transaction) => {
     // Transaction is now handled directly in the form component
-    // Refresh data after transaction is added
-    console.log("Transação adicionada:", transaction);
-    await refreshData();
-    await loadFinancialComparison();
+    // Force immediate refresh of all data for couple synchronization
+    console.log("Transação adicionada - refreshing dashboard data:", transaction);
+    
+    // Force refresh couple data and financial data
+    await Promise.all([
+      refreshData(),
+      refreshCoupleData(),
+      loadFinancialComparison()
+    ]);
+    
+    console.log("Dashboard data refreshed after transaction");
   };
 
   const getUserLabel = (userKey: "user1" | "user2") => {
