@@ -35,26 +35,39 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
 
   const checkSubscription = async () => {
+    console.log('🔍 [SUBSCRIPTION] checkSubscription called', { user: user?.email, session: !!session });
+    
     if (!user || !session) {
+      console.log('❌ [SUBSCRIPTION] No user or session, setting loading false');
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
+      console.log('🚀 [SUBSCRIPTION] Invoking check-subscription function');
+      
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
+      console.log('📊 [SUBSCRIPTION] Function response:', { data, error });
+
       if (error) throw error;
 
-      setSubscribed(data.subscribed || false);
-      setSubscriptionTier(data.subscription_tier || 'essential');
-      setSubscriptionEnd(data.subscription_end || null);
+      const subscribed = data.subscribed || false;
+      const tier = data.subscription_tier || 'essential';
+      const end = data.subscription_end || null;
+      
+      console.log('✅ [SUBSCRIPTION] Setting state:', { subscribed, tier, end });
+      
+      setSubscribed(subscribed);
+      setSubscriptionTier(tier);
+      setSubscriptionEnd(end);
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('❌ [SUBSCRIPTION] Error checking subscription:', error);
       setSubscribed(false);
       setSubscriptionTier('essential');
       setSubscriptionEnd(null);
