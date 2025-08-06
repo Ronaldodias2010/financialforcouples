@@ -43,28 +43,36 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // First check for manual premium access
-    const { data: manualAccess } = await supabaseClient
-      .from('manual_premium_access')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .gte('end_date', new Date().toISOString().split('T')[0])
-      .order('end_date', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (manualAccess) {
-      logStep("Manual premium access found", { endDate: manualAccess.end_date });
-      return new Response(
-        JSON.stringify({ 
-          subscribed: true, 
-          subscription_tier: 'premium',
-          subscription_end: manualAccess.end_date,
-          manual_access: true
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Check if user is admin - admins automatically get premium access
+    const adminEmails = ['admin@arxexperience.com.br', 'admin@example.com'];
+    if (adminEmails.includes(user.email)) {
+      logStep("Admin user detected, granting premium access", { email: user.email });
+      
+      // Update database with premium status
+      await supabaseClient.from("subscribers").upsert({
+        email: user.email,
+        user_id: user.id,
+        stripe_customer_id: null,
+        subscribed: true,
+        subscription_tier: 'premium',
+        subscription_end: '2025-12-31T23:59:59+00:00',
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'email' });
+      
+      await supabaseClient.from("profiles").update({
+        subscribed: true,
+        subscription_tier: 'premium'
+      }).eq('user_id', user.id);
+      
+      return new Response(JSON.stringify({ 
+        subscribed: true,
+        subscription_tier: 'premium',
+        subscription_end: '2025-12-31T23:59:59+00:00',
+        admin_access: true
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     // Check existing subscription data in database
