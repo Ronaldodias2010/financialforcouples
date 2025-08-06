@@ -20,9 +20,9 @@ interface NonPremiumUsersListProps {
 
 const text = {
   en: {
-    title: 'All Users List',
+    title: 'Essential Users List',
     loading: 'Loading users...',
-    noUsers: 'No users found',
+    noUsers: 'No essential users found',
     essential: 'Essential',
     premium: 'Premium',
     grantAccess: 'Grant Premium Access',
@@ -32,9 +32,9 @@ const text = {
     error: 'Error updating user access'
   },
   pt: {
-    title: 'Lista de Todos os Usuários',
+    title: 'Lista de Usuários Essential',
     loading: 'Carregando usuários...',
-    noUsers: 'Nenhum usuário encontrado',
+    noUsers: 'Nenhum usuário essencial encontrado',
     essential: 'Essencial',
     premium: 'Premium',
     grantAccess: 'Conceder Acesso Premium',
@@ -55,7 +55,7 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
     try {
       setLoading(true);
       
-      // Get all users from profiles table
+      // Get only essential users from profiles table
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -64,18 +64,20 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
           subscribed,
           subscription_tier
         `)
+        .or('subscription_tier.eq.essential,subscribed.eq.false')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      // Get emails from auth.users - we need to use a different approach since we can't query auth.users directly
+      // Get emails from subscribers table
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
-        .select('email, user_id, subscribed, subscription_tier');
+        .select('email, user_id, subscribed, subscription_tier')
+        .or('subscription_tier.eq.essential,subscribed.eq.false');
 
       if (subscribersError) throw subscribersError;
 
-      // Merge the data
+      // Merge the data - filter only essential users
       const mergedUsers = profilesData?.map(profile => {
         const subscriberData = subscribersData?.find(sub => sub.user_id === profile.user_id);
         return {
@@ -85,7 +87,9 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
           subscribed: profile.subscribed || false,
           subscription_tier: profile.subscription_tier || 'essential'
         };
-      }) || [];
+      }).filter(user => 
+        user.subscription_tier === 'essential' || !user.subscribed
+      ) || [];
 
       setUsers(mergedUsers);
     } catch (error) {
