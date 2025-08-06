@@ -79,7 +79,14 @@ export const usePartnerNames = () => {
           }
         } else {
           // Single user - get current user name
-          user1Name = user.user_metadata?.display_name ||
+          const currentUserProfile = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          user1Name = currentUserProfile?.data?.display_name ||
+                     user.user_metadata?.display_name ||
                      user.user_metadata?.full_name ||
                      user.user_metadata?.name ||
                      user.email?.split('@')[0] ||
