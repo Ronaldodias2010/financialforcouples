@@ -167,7 +167,7 @@ const AdminDashboardContent = () => {
         }
       }
 
-      // Fetch user profiles with subscription data for the user table
+      // Fetch only PREMIUM user profiles for the main user table
       const { data: profilesWithSubscribers, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -182,14 +182,15 @@ const AdminDashboardContent = () => {
             stripe_customer_id,
             updated_at
           )
-        `);
+        `)
+        .or('subscribers.subscribed.eq.true,subscribers.subscription_tier.eq.premium', { foreignTable: 'subscribers' });
 
       let formattedUsers: SubscriptionUser[] = [];
       
       if (!profilesError && profilesWithSubscribers) {
-        console.log('🔍 Profiles with subscribers data:', profilesWithSubscribers);
+        console.log('🔍 Premium profiles with subscribers data:', profilesWithSubscribers);
         
-        // Transform data for display
+        // Transform data for display - only premium/subscribed users
         formattedUsers = profilesWithSubscribers.map(profile => {
           const subscriber = (profile as any).subscribers;
           const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
@@ -217,7 +218,7 @@ const AdminDashboardContent = () => {
           };
         });
         
-        console.log('✅ Formatted users with names:', formattedUsers);
+        console.log('✅ Formatted premium users with names:', formattedUsers);
       } else {
         // Fallback: get users from subscribers table directly
         const { data: subscribers, error: subscribersError } = await supabase
