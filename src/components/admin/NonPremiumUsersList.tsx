@@ -126,10 +126,15 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
 
   const toggleUserAccess = async (userId: string, currentSubscribed: boolean) => {
     try {
+      console.log('🔄 Toggling user access:', { userId, currentSubscribed });
+      
       const newSubscribed = !currentSubscribed;
       const newTier = newSubscribed ? 'premium' : 'essential';
       
+      console.log('📝 Update values:', { newSubscribed, newTier });
+      
       // Update profiles table
+      console.log('📝 Updating profiles table...');
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
@@ -138,9 +143,14 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
         })
         .eq('user_id', userId);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('❌ Profile update error:', profileError);
+        throw profileError;
+      }
+      console.log('✅ Profiles table updated');
 
       // Update subscribers table
+      console.log('📝 Updating subscribers table...');
       const { error: subscriberError } = await supabase
         .from('subscribers')
         .update({ 
@@ -150,16 +160,21 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
         })
         .eq('user_id', userId);
 
-      if (subscriberError) throw subscriberError;
+      if (subscriberError) {
+        console.error('❌ Subscriber update error:', subscriberError);
+        throw subscriberError;
+      }
+      console.log('✅ Subscribers table updated');
 
       toast({
         title: newSubscribed ? t.userGranted : t.userRevoked,
         variant: 'default',
       });
 
+      console.log('🔄 Refreshing user list...');
       fetchUsers(); // Refresh the list
     } catch (error) {
-      console.error('Error updating user access:', error);
+      console.error('❌ Error updating user access:', error);
       toast({
         title: t.error,
         description: String(error),
