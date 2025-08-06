@@ -19,6 +19,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { useCouple } from "@/hooks/useCouple";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UserInviteCard } from "@/components/ui/user-invite-card";
@@ -40,88 +41,37 @@ export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
-  const { isPartOfCouple, couple, loading: coupleLoading } = useCouple();
+  const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
+  const { names, loading: namesLoading } = usePartnerNames();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
-  const [userDisplayName, setUserDisplayName] = useState<string>("");
-  const [secondUserName, setSecondUserName] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [financialComparison, setFinancialComparison] = useState({ incomeChange: 0, expenseChange: 0, balanceChange: 0 });
   const currentUser = "user1"; // Fixed to user1 (logged user)
   
-  const financialSummary = getFinancialSummary();
+  const financialSummary = getFinancialSummary(viewMode);
 
   useEffect(() => {
     if (user) {
-      fetchUserProfile();
       loadFinancialComparison();
     }
-  }, [user, financialSummary.balance, financialSummary.totalIncome, financialSummary.totalExpenses]);
+  }, [user, viewMode]);
+
+  // Auto-refresh couple data periodically to sync status
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshCoupleData();
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [refreshCoupleData]);
 
   const loadFinancialComparison = async () => {
     const comparison = await getFinancialComparison();
     setFinancialComparison(comparison);
   };
 
-  const fetchUserProfile = async () => {
-    try {
-      console.log('🔍 Fetching user profile for user:', user?.id);
-      
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("user_id", user?.id)
-        .maybeSingle();
-
-      if (data?.display_name) {
-        setUserDisplayName(data.display_name);
-        console.log('✅ User display name found:', data.display_name);
-      }
-
-      // Only show second user if there's an active couple relationship
-      console.log('🔍 Checking for couple relationship...');
-      const { data: coupleData, error: coupleError } = await supabase
-        .from("user_couples")
-        .select("user1_id, user2_id")
-        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
-        .eq("status", "active")
-        .maybeSingle();
-
-      console.log('🔍 Couple query result:', coupleData);
-
-      if (coupleData) {
-        console.log('✅ USER IS PART OF A COUPLE! Dashboard should show shared data');
-        console.log('✅ Couple data:', coupleData);
-        
-        // Get partner's ID (the other user in the couple)
-        const partnerId = coupleData.user1_id === user?.id ? coupleData.user2_id : coupleData.user1_id;
-        console.log('✅ Partner ID:', partnerId);
-        
-        // Get partner's profile
-        const { data: partnerData, error: partnerError } = await supabase
-          .from("profiles")
-          .select("display_name")
-          .eq("user_id", partnerId)
-          .maybeSingle();
-
-        console.log('✅ Partner profile data:', partnerData);
-
-        if (partnerData?.display_name) {
-          setSecondUserName(partnerData.display_name);
-          console.log('✅ Partner name set to:', partnerData.display_name);
-        } else {
-          setSecondUserName("");
-          console.log('⚠️ No partner display name found');
-        }
-      } else {
-        console.log('❌ USER IS NOT PART OF A COUPLE - individual dashboard');
-        setSecondUserName("");
-      }
-    } catch (error) {
-      console.error("❌ Error fetching profile:", error);
-    }
-  };
 
   const handleAddTransaction = async (transaction: Transaction) => {
     // Transaction is now handled directly in the form component
@@ -132,11 +82,11 @@ export const FinancialDashboard = () => {
   };
 
   const getUserLabel = (userKey: "user1" | "user2") => {
-    if (userKey === "user1" && userDisplayName) {
-      return userDisplayName;
+    if (userKey === "user1") {
+      return names.currentUserName;
     }
-    if (userKey === "user2" && secondUserName) {
-      return secondUserName;
+    if (userKey === "user2") {
+      return names.partnerName;
     }
     return userKey === "user1" ? t('dashboard.user1') : t('dashboard.user2');
   };
@@ -382,7 +332,7 @@ export const FinancialDashboard = () => {
                   {getUserLabel("user2")}
                 </Button>
               </div>
-            {!isPartOfCouple && getUserLabel("user2") === t('dashboard.user2') && (
+            {!isPartOfCouple && names.partnerName === 'Usuário 2' && (
               <UserInviteCard
                 showCard={true}
                 onInviteClick={() => {

@@ -56,6 +56,28 @@ export const useCouple = () => {
     };
 
     fetchCoupleData();
+
+    // Real-time subscription for couple changes
+    const channel = supabase
+      .channel('couple-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_couples',
+          filter: `user1_id=eq.${user?.id},user2_id=eq.${user?.id}`
+        },
+        () => {
+          console.log('Couple relationship changed, refreshing...');
+          fetchCoupleData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user?.id]);
 
   const getPartnerUserId = () => {

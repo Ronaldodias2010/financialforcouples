@@ -139,11 +139,12 @@ export const useFinancialData = () => {
     }
   };
 
-  const getFinancialSummary = (): FinancialSummary => {
+  const getFinancialSummary = (viewMode: 'both' | 'user1' | 'user2' = 'both'): FinancialSummary => {
+    const filteredTransactions = getTransactionsByUser(viewMode);
     let totalIncome = 0;
     let totalExpenses = 0;
 
-    transactions.forEach((transaction) => {
+    filteredTransactions.forEach((transaction) => {
       const amountInUserCurrency = convertCurrency(
         transaction.amount,
         transaction.currency,
@@ -157,7 +158,12 @@ export const useFinancialData = () => {
       }
     });
 
-    console.log('Financial Summary:', { totalIncome, totalExpenses, transactionsCount: transactions.length });
+    console.log('Financial Summary:', { 
+      totalIncome, 
+      totalExpenses, 
+      transactionsCount: filteredTransactions.length,
+      viewMode 
+    });
     
     return {
       totalIncome,
