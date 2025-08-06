@@ -41,7 +41,6 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedUser, setSelectedUser] = useState<string>("both");
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -51,7 +50,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
-  }, [selectedMonth, selectedCategory, selectedUser]);
+  }, [selectedMonth, selectedCategory, viewMode]);
 
   const fetchCategories = async () => {
     try {
@@ -112,11 +111,11 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
       
       let filteredData = data || [];
       
-      // Apply user filter
-      if (selectedUser !== "both" && isPartOfCouple) {
+      // Apply user filter based on viewMode
+      if (viewMode !== "both" && isPartOfCouple) {
         filteredData = filteredData.filter(transaction => {
           const ownerUser = transaction.owner_user || 'user1';
-          return ownerUser === selectedUser;
+          return ownerUser === viewMode;
         });
       }
       
@@ -183,7 +182,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Gastos Mensais</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label>Mês</Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
@@ -222,38 +221,6 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
                   </SelectContent>
                 </Select>
               </div>
-
-              {isPartOfCouple && (
-                <div>
-                  <Label>Modo de Visualização</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      variant={selectedUser === "both" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedUser("both")}
-                      className="flex-1"
-                    >
-                      Ambos
-                    </Button>
-                    <Button
-                      variant={selectedUser === "user1" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedUser("user1")}
-                      className="flex-1"
-                    >
-                      {names.user1Name}
-                    </Button>
-                    <Button
-                      variant={selectedUser === "user2" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedUser("user2")}
-                      className="flex-1"
-                    >
-                      {names.user2Name}
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
