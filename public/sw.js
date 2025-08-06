@@ -1,12 +1,17 @@
-const CACHE_NAME = 'couples-financials-v1';
-const STATIC_CACHE_NAME = 'couples-financials-static-v1';
+const CACHE_NAME = 'couples-financials-v2';
+const STATIC_CACHE_NAME = 'couples-financials-static-v2';
+const API_CACHE_NAME = 'couples-financials-api-v2';
 
 const urlsToCache = [
   '/',
   '/auth',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/lovable-uploads/7334c1f2-b2ea-42c6-8031-74d75d699133.png'
+  '/app',
+  '/lovable-uploads/7334c1f2-b2ea-42c6-8031-74d75d699133.png',
+  '/lovable-uploads/a3413c4f-0329-4c0f-8e9d-4a6a7447c4dd.png'
+];
+
+const API_URLS = [
+  'https://elxttabdtddlavhseipz.supabase.co'
 ];
 
 // Install service worker
@@ -28,7 +33,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME && cacheName !== API_CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
@@ -39,13 +44,51 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch handler
+// Fetch handler with better caching strategy
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Handle API requests differently
+  if (API_URLS.some(apiUrl => url.href.startsWith(apiUrl))) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Only cache successful responses
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(API_CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Return cached version if network fails
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Handle static assets and pages
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+        if (response) {
+          return response;
+        }
+        
+        return fetch(event.request)
+          .then(response => {
+            // Cache successful responses
+            if (response.status === 200 && event.request.method === 'GET') {
+              const responseClone = response.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, responseClone);
+              });
+            }
+            return response;
+          });
       })
       .catch(() => {
         // Return offline fallback for navigation requests

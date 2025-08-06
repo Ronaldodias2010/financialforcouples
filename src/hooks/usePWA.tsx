@@ -104,12 +104,34 @@ export const usePWA = () => {
     }
   };
 
+  const refreshApp = () => {
+    window.location.reload();
+  };
+
+  const forceRefresh = async () => {
+    try {
+      // Clear cache and reload
+      if ('caches' in window) {
+        const names = await caches.keys();
+        await Promise.all(
+          names.map(name => caches.delete(name))
+        );
+      }
+      window.location.reload();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      window.location.reload();
+    }
+  };
+
   return {
     isInstallable,
     isInstalled,
     updateAvailable,
     installApp,
     updateApp,
-    checkForUpdates
+    checkForUpdates,
+    refreshApp,
+    forceRefresh
   };
 };
