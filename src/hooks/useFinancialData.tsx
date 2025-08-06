@@ -44,11 +44,11 @@ export const useFinancialData = () => {
     }
   }, [userPreferredCurrency]);
 
-  // Listen for profile changes
+  // Listen for profile changes and real-time transaction updates
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
+    const profileChannel = supabase
       .channel('profile_changes')
       .on(
         'postgres_changes',
@@ -68,8 +68,27 @@ export const useFinancialData = () => {
       )
       .subscribe();
 
+    // Listen for real-time transaction changes for unified dashboard
+    const transactionChannel = supabase
+      .channel('transaction_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions'
+        },
+        (payload) => {
+          console.log('Transaction changed:', payload);
+          // Refresh transactions when any change occurs
+          fetchTransactions();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(transactionChannel);
     };
   }, [user]);
 
@@ -263,40 +282,21 @@ export const useFinancialData = () => {
     }
     
     return transactions.filter(transaction => {
-      // Normalizar owner_user: emails e outros valores são tratados como user1
-      let normalizedUser = transaction.owner_user || 'user1';
-      if (normalizedUser !== 'user1' && normalizedUser !== 'user2') {
-        normalizedUser = 'user1';
-      }
-      return normalizedUser === viewMode;
+      // Use owner_user field directly to match the view mode
+      const ownerUser = transaction.owner_user || 'user1';
+      return ownerUser === viewMode;
     });
   };
 
   const getExpensesByUser = (viewMode: 'both' | 'user1' | 'user2') => {
-    const filteredTransactions = getTransactionsByUser(viewMode);
+    const allTransactions = viewMode === 'both' ? transactions : getTransactionsByUser(viewMode);
     
-    const user1Expenses = filteredTransactions
-      .filter(t => {
-        if (t.type !== 'expense') return false;
-        // Normalizar owner_user: emails e outros valores são tratados como user1
-        let normalizedUser = t.owner_user || 'user1';
-        if (normalizedUser !== 'user1' && normalizedUser !== 'user2') {
-          normalizedUser = 'user1';
-        }
-        return normalizedUser === 'user1';
-      })
+    const user1Expenses = allTransactions
+      .filter(t => t.type === 'expense' && (t.owner_user || 'user1') === 'user1')
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
     
-    const user2Expenses = filteredTransactions
-      .filter(t => {
-        if (t.type !== 'expense') return false;
-        // Normalizar owner_user: emails e outros valores são tratados como user1
-        let normalizedUser = t.owner_user || 'user1';
-        if (normalizedUser !== 'user1' && normalizedUser !== 'user2') {
-          normalizedUser = 'user1';
-        }
-        return normalizedUser === 'user2';
-      })
+    const user2Expenses = allTransactions
+      .filter(t => t.type === 'expense' && (t.owner_user || 'user1') === 'user2')
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
 
     return { user1Expenses, user2Expenses };

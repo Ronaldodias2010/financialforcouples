@@ -58,14 +58,49 @@ export const FinancialDashboard = () => {
     }
   }, [user, viewMode]);
 
-  // Auto-refresh couple data periodically to sync status
+  // Real-time synchronization for unified dashboard
   useEffect(() => {
-    const interval = setInterval(() => {
-      refreshCoupleData();
-    }, 5000); // Check every 5 seconds
+    if (!user) return;
 
-    return () => clearInterval(interval);
-  }, [refreshCoupleData]);
+    // Listen for real-time changes that affect dashboard sync
+    const dashboardSyncChannel = supabase
+      .channel('dashboard-sync')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_couples'
+        },
+        (payload) => {
+          console.log('Dashboard sync - couple change detected:', payload);
+          const data = payload.new || payload.old;
+          if (data && 'user1_id' in data && 'user2_id' in data && 
+              (data.user1_id === user.id || data.user2_id === user.id)) {
+            refreshCoupleData();
+            refreshData();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          console.log('Dashboard sync - profile change detected:', payload);
+          // Refresh data when any profile is updated
+          refreshData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(dashboardSyncChannel);
+    };
+  }, [user, refreshCoupleData, refreshData]);
 
   const loadFinancialComparison = async () => {
     const comparison = await getFinancialComparison();
@@ -82,11 +117,12 @@ export const FinancialDashboard = () => {
   };
 
   const getUserLabel = (userKey: "user1" | "user2") => {
+    // Always show consistent names regardless of who is viewing
     if (userKey === "user1") {
-      return names.currentUserName;
+      return names.user1Name;
     }
     if (userKey === "user2") {
-      return names.partnerName;
+      return names.user2Name;
     }
     return userKey === "user1" ? t('dashboard.user1') : t('dashboard.user2');
   };
@@ -332,7 +368,7 @@ export const FinancialDashboard = () => {
                   {getUserLabel("user2")}
                 </Button>
               </div>
-            {!isPartOfCouple && names.partnerName === 'Usuário 2' && (
+            {!isPartOfCouple && names.user2Name === 'Usuário 2' && (
               <UserInviteCard
                 showCard={true}
                 onInviteClick={() => {

@@ -57,7 +57,7 @@ export const useCouple = () => {
 
     fetchCoupleData();
 
-    // Real-time subscription for couple changes
+    // Real-time subscription for couple changes with proper filter
     const channel = supabase
       .channel('couple-changes')
       .on(
@@ -65,12 +65,17 @@ export const useCouple = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'user_couples',
-          filter: `user1_id=eq.${user?.id},user2_id=eq.${user?.id}`
+          table: 'user_couples'
         },
-        () => {
-          console.log('Couple relationship changed, refreshing...');
-          fetchCoupleData();
+        (payload) => {
+          console.log('Couple relationship changed:', payload);
+          // Check if this change affects current user
+          const data = payload.new || payload.old;
+          if (data && 'user1_id' in data && 'user2_id' in data && 
+              (data.user1_id === user?.id || data.user2_id === user?.id)) {
+            console.log('Change affects current user, refreshing couple data...');
+            fetchCoupleData();
+          }
         }
       )
       .subscribe();
