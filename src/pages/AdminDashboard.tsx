@@ -167,41 +167,45 @@ const AdminDashboardContent = () => {
         }
       }
 
-      // Fetch ONLY premium AND subscribed users with their profiles
+      // Fetch ONLY premium AND subscribed users
       console.log('🔍 Fetching premium users...');
-      const { data: profilesWithSubscribers, error: profilesError } = await supabase
+      const { data: premiumSubscribers, error: profilesError } = await supabase
         .from('subscribers')
-        .select(`
-          user_id,
-          email,
-          subscribed,
-          subscription_tier,
-          subscription_end,
-          stripe_customer_id,
-          updated_at,
-          profiles(
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('subscription_tier', 'premium')
         .eq('subscribed', true);
       
-      console.log('📊 Premium users query result:', { data: profilesWithSubscribers, error: profilesError });
+      console.log('📊 Premium subscribers result:', { data: premiumSubscribers, error: profilesError });
 
       let formattedUsers: SubscriptionUser[] = [];
       
-      if (!profilesError && profilesWithSubscribers) {
-        console.log('🔍 Premium profiles with subscribers data:', profilesWithSubscribers);
+      if (!profilesError && premiumSubscribers) {
+        console.log('📝 Raw premium subscribers data:', premiumSubscribers);
         
-        // Transform data for display - only premium/subscribed users
-        console.log('📝 Raw premium subscribers data:', profilesWithSubscribers);
+        // Buscar profiles dos usuários premium
+        const userIds = premiumSubscribers.map(sub => sub.user_id);
+        console.log('👥 User IDs to fetch profiles for:', userIds);
         
-        formattedUsers = profilesWithSubscribers.map(subscriber => {
-          const profile = (subscriber as any).profiles;
-          console.log('👤 Individual subscriber:', subscriber);
-          console.log('👤 Profile for this subscriber:', profile);
-          
+        let profilesData: any[] = [];
+        
+        if (userIds.length > 0) {
+          const { data: fetchedProfiles, error: profilesFetchError } = await supabase
+            .from('profiles')
+            .select('user_id, display_name')
+            .in('user_id', userIds);
+
+          if (profilesFetchError) {
+            console.error('❌ Error fetching profiles:', profilesFetchError);
+          } else {
+            profilesData = fetchedProfiles || [];
+          }
+        }
+        
+        console.log('👤 Profiles data:', profilesData);
+        
+        // Combine data
+        formattedUsers = premiumSubscribers.map(subscriber => {
+          const profile = profilesData.find(p => p.user_id === subscriber.user_id);
           const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
           const now = new Date();
           
@@ -226,7 +230,7 @@ const AdminDashboardContent = () => {
             status
           };
           
-          console.log('✨ Formatted user:', formattedUser);
+          console.log('✨ Formatted premium user:', formattedUser);
           return formattedUser;
         });
         
