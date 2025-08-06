@@ -86,14 +86,21 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
       const userIds = subscribersData?.map(sub => sub.user_id) || [];
       console.log('👥 User IDs to fetch profiles for:', userIds);
       
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('user_id', userIds);
+      let profilesData: any[] = [];
+      
+      if (userIds.length > 0) {
+        const { data: fetchedProfiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, display_name')
+          .in('user_id', userIds);
 
-      if (profilesError) {
-        console.error('❌ Error fetching profiles:', profilesError);
-        throw profilesError;
+        if (profilesError) {
+          console.error('❌ Error fetching profiles:', profilesError);
+          // Don't throw, just continue without profiles
+          console.log('⚠️ Continuing without profiles data...');
+        } else {
+          profilesData = fetchedProfiles || [];
+        }
       }
 
       console.log('👤 Profiles data:', profilesData);
