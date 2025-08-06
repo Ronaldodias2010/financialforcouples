@@ -117,21 +117,14 @@ export const FinancialDashboard = () => {
   };
 
   const getUserLabel = (userKey: "user1" | "user2") => {
-    console.log('getUserLabel called with:', userKey, 'names:', names);
-    console.log('isPartOfCouple:', isPartOfCouple, 'couple:', couple);
-    
     // Always show consistent names regardless of who is viewing
     if (userKey === "user1") {
       // Always show User1 name (the creator of the couple)
-      const user1Label = names.user1Name !== 'Usuário 1' ? names.user1Name : t('dashboard.user1');
-      console.log('User1 label:', user1Label);
-      return user1Label;
+      return names.user1Name !== 'Usuário 1' ? names.user1Name : t('dashboard.user1');
     }
     if (userKey === "user2") {
       // Always show User2 name (the invited user) when available
-      const user2Label = names.user2Name !== 'Usuário 2' ? names.user2Name : t('dashboard.user2');
-      console.log('User2 label:', user2Label);
-      return user2Label;
+      return names.user2Name !== 'Usuário 2' ? names.user2Name : t('dashboard.user2');
     }
     return userKey === "user1" ? t('dashboard.user1') : t('dashboard.user2');
   };
