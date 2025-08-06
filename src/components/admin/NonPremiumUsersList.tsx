@@ -114,9 +114,18 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
       setUsers(formattedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
+      
+      // Extract proper error message
+      let errorMessage = 'Erro ao carregar usuários';
+      if (error && typeof error === 'object') {
+        errorMessage = (error as any).message || (error as any).details || JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
       toast({
         title: t.error,
-        description: String(error),
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -175,9 +184,18 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
       fetchUsers(); // Refresh the list
     } catch (error) {
       console.error('❌ Error updating user access:', error);
+      
+      // Extract proper error message
+      let errorMessage = 'Erro desconhecido';
+      if (error && typeof error === 'object') {
+        errorMessage = (error as any).message || (error as any).details || JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
       toast({
         title: t.error,
-        description: String(error),
+        description: errorMessage,
         variant: 'destructive',
       });
     }
