@@ -33,6 +33,8 @@ export const useUserNames = () => {
         // Use display_name or fallback to user metadata or email
         let user1Name = userProfile?.display_name || 
                        user.user_metadata?.display_name || 
+                       user.user_metadata?.full_name ||
+                       user.user_metadata?.name ||
                        user.email?.split('@')[0] || 
                        'Usuário 1';
         let user2Name = userProfile?.second_user_name || 'Usuário 2';
