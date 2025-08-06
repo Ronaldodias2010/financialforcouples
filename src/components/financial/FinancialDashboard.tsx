@@ -322,24 +322,26 @@ export const FinancialDashboard = () => {
           </p>
           
           {/* Couple Status Indicator */}
-          {isPartOfCouple && couple && (
-            <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-3 mx-auto max-w-md">
-              <div className="flex items-center justify-center gap-2 text-green-800 dark:text-green-200">
-                <span className="text-sm font-medium">
-                  💚 Dashboard compartilhado ativo - mostrando dados de ambos os usuários
-                </span>
-              </div>
-            </div>
-          )}
-          
-          {!isPartOfCouple && !coupleLoading && (
-            <div className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-3 mx-auto max-w-md">
-              <div className="flex items-center justify-center gap-2 text-blue-800 dark:text-blue-200">
-                <span className="text-sm font-medium">
-                  👤 Dashboard individual - convide seu parceiro(a) para compartilhar dados
-                </span>
-              </div>
-            </div>
+          {!coupleLoading && (
+            <>
+              {isPartOfCouple && couple ? (
+                <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-3 mx-auto max-w-md">
+                  <div className="flex items-center justify-center gap-2 text-green-800 dark:text-green-200">
+                    <span className="text-sm font-medium">
+                      💚 Dashboard compartilhado ativo - mostrando dados de ambos os usuários
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-3 mx-auto max-w-md">
+                  <div className="flex items-center justify-center gap-2 text-blue-800 dark:text-blue-200">
+                    <span className="text-sm font-medium">
+                      👤 Dashboard individual - convide seu parceiro(a) para compartilhar dados
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
           )}
           
           {/* User Controls */}
@@ -370,7 +372,7 @@ export const FinancialDashboard = () => {
                   {getUserLabel("user2")}
                 </Button>
               </div>
-            {!isPartOfCouple && names.user2Name === 'Usuário 2' && (
+            {!isPartOfCouple && !coupleLoading && (
               <UserInviteCard
                 showCard={true}
                 onInviteClick={() => {
