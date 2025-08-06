@@ -47,8 +47,8 @@ export default function Auth() {
     setIsLoading(true);
     try {
       // Primeiro verificar se é um convite com senha temporária
-      if (isInviteAccess || password.length === 8) { // senhas temporárias têm 8 caracteres
-        // É potencialmente um login com senha temporária - usar edge function
+      if (isInviteAccess) { // Usar edge function apenas quando vem de um link de convite
+        // É um login com senha temporária - usar edge function
         const { data, error } = await supabase.functions.invoke('validate-temp-login', {
           body: {
             email,
@@ -58,10 +58,9 @@ export default function Auth() {
 
         if (error) {
           console.error('Error in validate-temp-login:', error);
-          throw new Error(error.message || 'Erro ao validar convite');
-        }
-
-        if (data?.success && data?.access_token) {
+          // Se falhou na edge function, tentar login normal como fallback
+          // Isso pode acontecer se o usuário já trocou a senha
+        } else if (data?.success && data?.access_token) {
           toast({
             title: "Bem-vindo!",
             description: "Login realizado com sucesso! Redirecionando...",
