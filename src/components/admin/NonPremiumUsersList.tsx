@@ -105,34 +105,18 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
 
       console.log('👤 Profiles data:', profilesData);
 
-      // Buscar nomes dos usuários diretamente do auth.users como fallback
-      const usersWithNames = await Promise.all(
-        subscribersData?.map(async (subscriber) => {
-          const profile = profilesData?.find(p => p.user_id === subscriber.user_id);
-          let displayName = profile?.display_name;
-          
-          // Se não tiver nome no perfil, buscar do auth.users
-          if (!displayName) {
-            try {
-              const { data: authUser } = await supabase.auth.admin.getUserById(subscriber.user_id);
-              displayName = authUser.user?.user_metadata?.display_name || 
-                          authUser.user?.user_metadata?.full_name ||
-                          authUser.user?.user_metadata?.name ||
-                          authUser.user?.email?.split('@')[0];
-            } catch (error) {
-              console.error('Error fetching auth user:', error);
-            }
-          }
-          
-          return {
-            user_id: subscriber.user_id,
-            display_name: displayName || 'N/A',
-            email: subscriber.email || 'N/A',
-            subscribed: subscriber.subscribed || false,
-            subscription_tier: subscriber.subscription_tier || 'essential'
-          };
-        }) || []
-      );
+      // Combinar dados dos subscribers com profiles
+      const usersWithNames = subscribersData?.map(subscriber => {
+        const profile = profilesData?.find(p => p.user_id === subscriber.user_id);
+        
+        return {
+          user_id: subscriber.user_id,
+          display_name: profile?.display_name || subscriber.email?.split('@')[0] || 'N/A',
+          email: subscriber.email || 'N/A',
+          subscribed: subscriber.subscribed || false,
+          subscription_tier: subscriber.subscription_tier || 'essential'
+        };
+      }) || [];
 
       console.log('✅ Final formatted users:', usersWithNames);
       setUsers(usersWithNames);
