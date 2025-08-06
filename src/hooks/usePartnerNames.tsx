@@ -44,8 +44,8 @@ export const usePartnerNames = () => {
           const user1Profile = profiles?.find(p => p.user_id === couple.user1_id);
           const user2Profile = profiles?.find(p => p.user_id === couple.user2_id);
 
-          user1Name = user1Profile?.display_name || 'Usuário 1';
-          user2Name = user2Profile?.display_name || 'Usuário 2';
+          user1Name = user1Profile?.display_name?.trim() || 'Usuário 1';
+          user2Name = user2Profile?.display_name?.trim() || 'Usuário 2';
 
           // If display_name is not set, try to get from auth metadata
           if (user1Name === 'Usuário 1') {

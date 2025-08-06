@@ -41,12 +41,9 @@ export const useCouple = () => {
         if (coupleData) {
           setCouple(coupleData);
           setIsPartOfCouple(true);
-          console.log('✅ User is part of a couple:', coupleData);
-          console.log('✅ Couple relationship found - should see shared dashboard');
         } else {
           setCouple(null);
           setIsPartOfCouple(false);
-          console.log('❌ User is not part of a couple - will see individual dashboard');
         }
       } catch (error) {
         console.error('Error in fetchCoupleData:', error);
