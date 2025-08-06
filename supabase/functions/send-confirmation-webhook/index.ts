@@ -39,7 +39,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const payload: WebhookPayload = await req.json();
+    // Check if request has body
+    const requestText = await req.text();
+    if (!requestText || requestText.trim() === '') {
+      console.log('Empty request body received');
+      return new Response(JSON.stringify({ error: 'Empty request body' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const payload: WebhookPayload = JSON.parse(requestText);
     console.log('Webhook payload received:', JSON.stringify(payload, null, 2));
 
     const { user, email_data } = payload;
