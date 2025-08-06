@@ -94,6 +94,10 @@ export const usePartnerNames = () => {
         }
 
         // Set names with proper logic for couples vs single users
+        console.log('Setting names - isPartOfCouple:', isPartOfCouple, 'couple:', couple);
+        console.log('User1 name:', user1Name, 'User2 name:', user2Name);
+        console.log('Current user ID:', user?.id, 'User1 ID:', couple?.user1_id, 'User2 ID:', couple?.user2_id);
+        
         setNames({
           currentUserName: isPartOfCouple && couple ? 
             (user?.id === couple.user1_id ? user1Name : user2Name) : 
