@@ -119,10 +119,12 @@ export const FinancialDashboard = () => {
   const getUserLabel = (userKey: "user1" | "user2") => {
     // Always show consistent names regardless of who is viewing
     if (userKey === "user1") {
-      return names.user1Name;
+      // Always show User1 name (the creator of the couple)
+      return names.user1Name !== 'Usuário 1' ? names.user1Name : t('dashboard.user1');
     }
     if (userKey === "user2") {
-      return names.user2Name;
+      // Always show User2 name (the invited user) when available
+      return names.user2Name !== 'Usuário 2' ? names.user2Name : t('dashboard.user2');
     }
     return userKey === "user1" ? t('dashboard.user1') : t('dashboard.user2');
   };

@@ -101,8 +101,8 @@ export const usePartnerNames = () => {
           partnerName: isPartOfCouple && couple ? 
             (user?.id === couple.user1_id ? user2Name : user1Name) : 
             'Usuário 2',
-          user1Name, // Always preserve user1 name
-          user2Name  // Always preserve user2 name
+          user1Name: user1Name, // Always preserve user1 name (the first user who created the couple)
+          user2Name: user2Name  // Always preserve user2 name (the invited user)
         });
       } catch (error) {
         console.error('Error fetching names:', error);
