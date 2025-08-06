@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, Crown } from 'lucide-react';
+import { Loader2, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserData {
@@ -12,6 +12,8 @@ interface UserData {
   subscribed: boolean;
   subscription_tier: string;
   user_id: string;
+  isCoupled?: boolean;
+  partnerName?: string;
 }
 
 interface NonPremiumUsersListProps {
@@ -29,7 +31,15 @@ const text = {
     revokeAccess: 'Revoke Access',
     userGranted: 'Premium access granted successfully',
     userRevoked: 'Premium access revoked successfully',
-    error: 'Error updating user access'
+    error: 'Error updating user access',
+    userName: 'User Name',
+    email: 'Email',
+    status: 'Status',
+    plan: 'Plan',
+    actions: 'Actions',
+    active: 'Active',
+    inactive: 'Inactive',
+    coupled: 'Coupled'
   },
   pt: {
     title: 'Lista de Usuários Essential',
@@ -41,7 +51,15 @@ const text = {
     revokeAccess: 'Revogar Acesso',
     userGranted: 'Acesso premium concedido com sucesso',
     userRevoked: 'Acesso premium revogado com sucesso',
-    error: 'Erro ao atualizar acesso do usuário'
+    error: 'Erro ao atualizar acesso do usuário',
+    userName: 'Nome de Usuário',
+    email: 'Email',
+    status: 'Status',
+    plan: 'Plano',
+    actions: 'Ações',
+    active: 'Ativo',
+    inactive: 'Inativo',
+    coupled: 'Casal'
   }
 };
 
@@ -105,18 +123,47 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
 
       console.log('👤 Profiles data:', profilesData);
 
-      // Combinar dados dos subscribers com profiles
-      const usersWithNames = subscribersData?.map(subscriber => {
+      // Combinar dados dos subscribers com profiles e buscar casais
+      const usersWithNames = await Promise.all(subscribersData?.map(async (subscriber) => {
         const profile = profilesData?.find(p => p.user_id === subscriber.user_id);
+        
+        // Verificar se o usuário tem casal (abordagem simplificada)
+        const { data: coupleData } = await supabase
+          .from('user_couples')
+          .select('user1_id, user2_id')
+          .or(`user1_id.eq.${subscriber.user_id},user2_id.eq.${subscriber.user_id}`)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        let isCoupled = false;
+        let partnerName = '';
+        
+        if (coupleData) {
+          isCoupled = true;
+          // Encontrar o ID do parceiro
+          const partnerId = coupleData.user1_id === subscriber.user_id ? 
+            coupleData.user2_id : coupleData.user1_id;
+          
+          // Buscar o nome do parceiro
+          const { data: partnerProfile } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('user_id', partnerId)
+            .maybeSingle();
+          
+          partnerName = partnerProfile?.display_name || 'Parceiro';
+        }
         
         return {
           user_id: subscriber.user_id,
           display_name: profile?.display_name || subscriber.email?.split('@')[0] || 'N/A',
           email: subscriber.email || 'N/A',
           subscribed: subscriber.subscribed || false,
-          subscription_tier: subscriber.subscription_tier || 'essential'
+          subscription_tier: subscriber.subscription_tier || 'essential',
+          isCoupled,
+          partnerName
         };
-      }) || [];
+      }) || []);
 
       console.log('✅ Final formatted users:', usersWithNames);
       setUsers(usersWithNames);
@@ -250,36 +297,73 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
       </CardHeader>
       <CardContent>
         {users.length === 0 ? (
-          <p className="text-muted-foreground text-center py-4">{t.noUsers}</p>
+          <p className="text-muted-foreground text-center py-8">{t.noUsers}</p>
         ) : (
-          <div className="space-y-4">
-            {users.map((user) => (
-              <div key={user.user_id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{user.display_name}</h3>
-                    <Badge variant={user.subscribed ? "default" : "secondary"}>
-                      {user.subscribed ? (
-                        <div className="flex items-center gap-1">
-                          <Crown className="h-3 w-3" />
-                          {t.premium}
+          <div className="rounded-md border">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    {t.userName}
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    {t.email}
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    {t.status}
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    {t.plan}
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    {t.actions}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.user_id} className="border-b transition-colors hover:bg-muted/50">
+                    <td className="p-4 align-middle">
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">{user.display_name}</div>
+                        {user.isCoupled && (
+                          <Badge variant="outline" className="text-xs">
+                            {t.coupled}
+                          </Badge>
+                        )}
+                      </div>
+                      {user.isCoupled && user.partnerName && (
+                        <div className="text-xs text-muted-foreground">
+                          Parceiro: {user.partnerName}
                         </div>
-                      ) : (
-                        t.essential
                       )}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                </div>
-                <Button
-                  variant={user.subscribed ? "outline" : "default"}
-                  size="sm"
-                  onClick={() => toggleUserAccess(user.user_id, user.subscribed)}
-                >
-                  {user.subscribed ? t.revokeAccess : t.grantAccess}
-                </Button>
-              </div>
-            ))}
+                    </td>
+                    <td className="p-4 align-middle">
+                      <div className="text-sm">{user.email}</div>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <Badge variant={user.subscribed ? "default" : "secondary"}>
+                        {user.subscribed ? t.active : t.inactive}
+                      </Badge>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <Badge variant="outline">
+                        {user.subscribed ? t.premium : t.essential}
+                      </Badge>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <Button
+                        variant={user.subscribed ? "outline" : "default"}
+                        size="sm"
+                        onClick={() => toggleUserAccess(user.user_id, user.subscribed)}
+                      >
+                        {user.subscribed ? t.revokeAccess : t.grantAccess}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </CardContent>

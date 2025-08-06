@@ -34,6 +34,8 @@ interface SubscriptionUser {
   stripe_customer_id: string | null;
   last_payment: string | null;
   status: 'active' | 'overdue' | 'canceled' | 'expired';
+  isCoupled?: boolean;
+  partnerName?: string;
 }
 
 interface RecentAlert {
@@ -203,8 +205,8 @@ const AdminDashboardContent = () => {
         
         console.log('👤 Profiles data:', profilesData);
         
-        // Combine data
-        formattedUsers = premiumSubscribers.map(subscriber => {
+        // Combine data and check for couples
+        formattedUsers = await Promise.all(premiumSubscribers.map(async (subscriber) => {
           const profile = profilesData.find(p => p.user_id === subscriber.user_id);
           const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
           const now = new Date();
@@ -218,21 +220,48 @@ const AdminDashboardContent = () => {
             }
           }
 
+          // Check for couple connection
+          const { data: coupleData } = await supabase
+            .from('user_couples')
+            .select('user1_id, user2_id')
+            .or(`user1_id.eq.${subscriber.user_id},user2_id.eq.${subscriber.user_id}`)
+            .eq('status', 'active')
+            .maybeSingle();
+
+          let isCoupled = false;
+          let partnerName = '';
+          
+          if (coupleData) {
+            isCoupled = true;
+            const partnerId = coupleData.user1_id === subscriber.user_id ? 
+              coupleData.user2_id : coupleData.user1_id;
+            
+            const { data: partnerProfile } = await supabase
+              .from('profiles')
+              .select('display_name')
+              .eq('user_id', partnerId)
+              .maybeSingle();
+            
+            partnerName = partnerProfile?.display_name || 'Parceiro';
+          }
+
           const formattedUser = {
             id: subscriber.user_id,
             email: subscriber.email,
             display_name: profile?.display_name || subscriber.email?.split('@')[0] || 'Usuário',
             subscribed: subscriber.subscribed,
-            subscription_tier: subscriber.subscription_tier || 'essential',
+            subscription_tier: subscriber.subscription_tier || 'premium',
             subscription_end: subscriber.subscription_end,
             stripe_customer_id: subscriber.stripe_customer_id,
             last_payment: subscriber.updated_at,
-            status
+            status,
+            isCoupled,
+            partnerName
           };
           
           console.log('✨ Formatted premium user:', formattedUser);
           return formattedUser;
-        });
+        }));
         
         console.log('✅ Formatted premium users with names:', formattedUsers);
       } else {
@@ -513,8 +542,22 @@ const AdminDashboardContent = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.display_name}</TableCell>
+                       <TableRow key={user.id}>
+                         <TableCell className="font-medium">
+                           <div className="flex items-center gap-2">
+                             <div>{user.display_name}</div>
+                             {user.isCoupled && (
+                               <Badge variant="outline" className="text-xs">
+                                 Casal
+                               </Badge>
+                             )}
+                           </div>
+                           {user.isCoupled && user.partnerName && (
+                             <div className="text-xs text-muted-foreground">
+                               Parceiro: {user.partnerName}
+                             </div>
+                           )}
+                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                           <Badge variant={
