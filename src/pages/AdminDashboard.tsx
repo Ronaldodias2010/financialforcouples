@@ -340,7 +340,7 @@ const AdminDashboardContent = () => {
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+          <Button variant="outline" size="sm" onClick={() => navigate('/app')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('nav.back')}
           </Button>
