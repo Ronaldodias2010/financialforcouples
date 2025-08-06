@@ -55,43 +55,47 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
     try {
       setLoading(true);
       
-      // Get only essential users from profiles table
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          subscribed,
-          subscription_tier
-        `)
-        .or('subscription_tier.eq.essential,subscribed.eq.false')
-        .order('created_at', { ascending: false });
-
-      if (profilesError) throw profilesError;
-
-      // Get emails from subscribers table
+      // Primeiro buscar usuários essenciais da tabela subscribers
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
-        .select('email, user_id, subscribed, subscription_tier')
-        .or('subscription_tier.eq.essential,subscribed.eq.false');
+        .select('*')
+        .eq('subscription_tier', 'essential');
 
-      if (subscribersError) throw subscribersError;
+      if (subscribersError) {
+        console.error('Error fetching subscribers:', subscribersError);
+        throw subscribersError;
+      }
 
-      // Merge the data - filter only essential users
-      const mergedUsers = profilesData?.map(profile => {
-        const subscriberData = subscribersData?.find(sub => sub.user_id === profile.user_id);
+      console.log('Subscribers data:', subscribersData);
+
+      // Depois buscar os perfis correspondentes
+      const userIds = subscribersData?.map(sub => sub.user_id) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('user_id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('Profiles data:', profilesData);
+
+      // Combinar os dados
+      const formattedUsers = subscribersData?.map(subscriber => {
+        const profile = profilesData?.find(p => p.user_id === subscriber.user_id);
         return {
-          user_id: profile.user_id,
-          email: subscriberData?.email || 'N/A',
-          display_name: profile.display_name || 'N/A',
-          subscribed: profile.subscribed || false,
-          subscription_tier: profile.subscription_tier || 'essential'
+          user_id: subscriber.user_id,
+          display_name: profile?.display_name || 'N/A',
+          email: subscriber.email || 'N/A',
+          subscribed: subscriber.subscribed || false,
+          subscription_tier: subscriber.subscription_tier || 'essential'
         };
-      }).filter(user => 
-        user.subscription_tier === 'essential' || !user.subscribed
-      ) || [];
+      }) || [];
 
-      setUsers(mergedUsers);
+      console.log('Final formatted users:', formattedUsers);
+      setUsers(formattedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
