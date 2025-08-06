@@ -118,7 +118,10 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
     try {
       const { data, error } = await supabase
         .from('manual_premium_access')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(display_name)
+        `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 

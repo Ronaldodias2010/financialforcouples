@@ -421,7 +421,7 @@ const AdminDashboardContent = () => {
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList>
           <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
-          <TabsTrigger value="non-premium">Usuários Essencial</TabsTrigger>
+          <TabsTrigger value="non-premium">Todos os Usuários</TabsTrigger>
           <TabsTrigger value="premium">{t('admin.tabs.premiumAccess')}</TabsTrigger>
           <TabsTrigger value="alerts">{t('admin.tabs.alerts')}</TabsTrigger>
         </TabsList>
@@ -542,7 +542,7 @@ const AdminDashboardContent = () => {
         </TabsContent>
 
         <TabsContent value="non-premium">
-          <NonPremiumUsersList />
+          <NonPremiumUsersList language={language} />
         </TabsContent>
 
         <TabsContent value="premium">
