@@ -8,6 +8,8 @@ import Landing from "./pages/Landing";
 import AppDashboard from "./pages/AppDashboard";
 import Auth from "./pages/Auth";
 import ChangePassword from "./pages/ChangePassword";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import EmailTest from "./pages/EmailTest";
 import EmailConfirmation from "./pages/EmailConfirmation";
@@ -38,6 +40,8 @@ const App = () => (
           <AdminDashboard />
         </ProtectedRoute>
       } />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/email-test" element={<EmailTest />} />
       <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
       {/* Redirect legacy routes */}

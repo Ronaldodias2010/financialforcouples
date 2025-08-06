@@ -153,6 +153,16 @@ export default function Auth() {
       });
       
       if (error) throw error;
+
+      // Enviar email de confirmação usando nosso template personalizado
+      if (data.user && !data.session) {
+        await supabase.functions.invoke('send-confirmation', {
+          body: {
+            userEmail: email,
+            language: 'pt'
+          }
+        });
+      }
       
       if (data.user) {
         // Mostrar toast com duração estendida de 20 segundos
@@ -180,26 +190,38 @@ export default function Auth() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Email necessário",
+        description: "Por favor, insira seu email para redefinir a senha.",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+      // Enviar email de redefinição usando nossa edge function
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: {
+          userEmail: email,
+          resetUrl: `${window.location.origin}/reset-password`,
+          language: 'pt'
+        }
       });
-      
+
       if (error) throw error;
-      
+
       toast({
-        title: "Email enviado!",
-        description: "Verifique seu email para redefinir a senha.",
+        title: "Email de redefinição enviado!",
+        description: "Verifique sua caixa de entrada e siga as instruções.",
       });
       setIsResetMode(false);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: error.message || "Erro ao enviar email de recuperação.",
+        title: "Erro ao enviar email",
+        description: error.message,
       });
     } finally {
       setIsLoading(false);

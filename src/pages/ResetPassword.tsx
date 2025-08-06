@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 
-export default function ChangePassword() {
+export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isValidSession, setIsValidSession] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Verificar se há uma sessão de reset válida
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.user_metadata?.password_reset) {
+        setIsValidSession(true);
+      } else {
+        // Redirecionar para login se não há sessão de reset válida
+        window.location.href = '/auth';
+      }
+    };
+    
+    checkSession();
+  }, []);
 
   // Validação de senha em tempo real
   const validatePassword = (password: string) => {
@@ -34,7 +50,7 @@ export default function ChangePassword() {
   const passwordValidation = validatePassword(newPassword);
   const passwordsMatch = newPassword && confirmPassword && newPassword === confirmPassword;
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!passwordValidation.isValid) {
@@ -57,15 +73,15 @@ export default function ChangePassword() {
 
     setIsLoading(true);
     try {
-      // Atualizar a senha do usuário e remover a flag de alteração obrigatória
-      const { error: updateError } = await supabase.auth.updateUser({
+      // Atualizar a senha do usuário
+      const { error } = await supabase.auth.updateUser({
         password: newPassword,
         data: {
-          requires_password_change: false
+          password_reset: false
         }
       });
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
       // Aguardar para garantir que a senha foi atualizada
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -74,8 +90,8 @@ export default function ChangePassword() {
       await supabase.auth.signOut({ scope: 'global' });
 
       toast({
-        title: "Senha alterada com sucesso!",
-        description: "Faça login novamente com sua nova senha.",
+        title: "Senha redefinida com sucesso!",
+        description: "Sua senha foi atualizada. Faça login com a nova senha.",
       });
 
       // Aguardar um pouco para mostrar a mensagem
@@ -86,8 +102,8 @@ export default function ChangePassword() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro ao alterar senha",
-        description: error.message || "Erro ao alterar a senha.",
+        title: "Erro ao redefinir senha",
+        description: error.message || "Erro ao redefinir a senha.",
       });
     } finally {
       setIsLoading(false);
@@ -107,6 +123,10 @@ export default function ChangePassword() {
     </div>
   );
 
+  if (!isValidSession) {
+    return null; // Página será redirecionada
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-primary/20">
@@ -120,15 +140,15 @@ export default function ChangePassword() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Alteração de Senha Obrigatória
+              Redefinir Senha
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-2">
-              Por segurança, você deve criar uma nova senha
+              Crie uma nova senha para sua conta
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
+          <form onSubmit={handlePasswordReset} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="new-password">Nova Senha</Label>
               <div className="relative">
@@ -224,7 +244,7 @@ export default function ChangePassword() {
               disabled={isLoading || !passwordValidation.isValid || !passwordsMatch}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Alterar Senha
+              Redefinir Senha
             </Button>
           </form>
         </CardContent>

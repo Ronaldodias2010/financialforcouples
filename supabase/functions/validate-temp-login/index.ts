@@ -71,16 +71,36 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Create the couple relationship and profile
     if (authData.user) {
+      // Get inviter's profile to update second_user_name
+      const { data: inviterProfile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', invite.inviter_user_id)
+        .single();
+
       // First create profile for the new user
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           user_id: authData.user.id,
-          display_name: invite.invitee_name
+          display_name: invite.invitee_name || email.split('@')[0]
         });
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
+      }
+
+      // Update inviter's profile with second user name
+      const { error: updateInviterError } = await supabase
+        .from('profiles')
+        .update({
+          second_user_name: invite.invitee_name || email.split('@')[0],
+          second_user_email: invite.invitee_email
+        })
+        .eq('user_id', invite.inviter_user_id);
+
+      if (updateInviterError) {
+        console.error('Error updating inviter profile:', updateInviterError);
       }
 
       const { error: coupleError } = await supabase

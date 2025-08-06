@@ -33,23 +33,32 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { userEmail, language = 'pt' }: ConfirmationEmailRequest = await req.json();
 
+    // Get user's display name from the database
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('user_id', (await supabase.auth.admin.getUserByEmail(userEmail)).data.user?.id)
+      .single();
+
+    const userName = userProfile?.display_name || userEmail.split('@')[0];
+
     // Generate login URL
     const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '')}.lovableproject.com/app`;
 
     // Choose template based on language
     const emailHtml = language === 'en' 
-      ? await renderAsync(
-          React.createElement(EmailConfirmationEN, {
-            userEmail,
-            loginUrl
-          })
-        )
-      : await renderAsync(
-          React.createElement(EmailConfirmationPT, {
-            userEmail,
-            loginUrl
-          })
-        );
+        ? await renderAsync(
+            React.createElement(EmailConfirmationEN, {
+              userEmail: userName,
+              loginUrl
+            })
+          )
+        : await renderAsync(
+            React.createElement(EmailConfirmationPT, {
+              userEmail: userName,
+              loginUrl
+            })
+          );
 
     const emailResponse = await resend.emails.send({
       from: "Couples Financials <noreply@couplesfinancials.com>",
