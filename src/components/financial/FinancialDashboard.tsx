@@ -14,6 +14,7 @@ import { UserProfilePage } from "@/pages/UserProfilePage";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -254,7 +255,20 @@ export const FinancialDashboard = () => {
                 <span>{t('nav.investments')}</span>
               </Button>
               <div className="w-full">
-                <PremiumFeatureGuard feature="aiMileage">
+                <PremiumFeatureGuard 
+                  feature="aiMileage"
+                  fallback={
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex flex-col gap-2 w-full opacity-50 cursor-not-allowed"
+                      disabled
+                    >
+                      <Plane className="h-6 w-6" />
+                      <span>{t('nav.mileage')}</span>
+                      <Badge variant="outline" className="absolute top-2 right-2 text-xs">Premium</Badge>
+                    </Button>
+                  }
+                >
                   <Button 
                     variant="outline" 
                     className="h-20 flex flex-col gap-2 w-full"
