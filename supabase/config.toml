@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.send-confirmation-manual]
 verify_jwt = false
+
+[functions.send-confirmation-webhook]
+verify_jwt = false
