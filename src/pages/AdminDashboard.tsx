@@ -168,18 +168,29 @@ const AdminDashboardContent = () => {
       }
 
       // Fetch user profiles with subscription data for the user table
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: profilesWithSubscribers, error: profilesError } = await supabase
         .from('profiles')
         .select(`
-          *,
-          subscribers!inner(*)
+          user_id,
+          display_name,
+          avatar_url,
+          subscribers!inner(
+            email,
+            subscribed,
+            subscription_tier,
+            subscription_end,
+            stripe_customer_id,
+            updated_at
+          )
         `);
 
       let formattedUsers: SubscriptionUser[] = [];
       
-      if (!profilesError && profiles) {
+      if (!profilesError && profilesWithSubscribers) {
+        console.log('🔍 Profiles with subscribers data:', profilesWithSubscribers);
+        
         // Transform data for display
-        formattedUsers = profiles.map(profile => {
+        formattedUsers = profilesWithSubscribers.map(profile => {
           const subscriber = (profile as any).subscribers;
           const subscriptionEnd = subscriber.subscription_end ? new Date(subscriber.subscription_end) : null;
           const now = new Date();
@@ -196,7 +207,7 @@ const AdminDashboardContent = () => {
           return {
             id: profile.user_id,
             email: subscriber.email,
-            display_name: profile.display_name || 'Usuário',
+            display_name: profile.display_name || subscriber.email?.split('@')[0] || 'Usuário',
             subscribed: subscriber.subscribed,
             subscription_tier: subscriber.subscription_tier || 'essential',
             subscription_end: subscriber.subscription_end,
@@ -205,6 +216,8 @@ const AdminDashboardContent = () => {
             status
           };
         });
+        
+        console.log('✅ Formatted users with names:', formattedUsers);
       } else {
         // Fallback: get users from subscribers table directly
         const { data: subscribers, error: subscribersError } = await supabase
