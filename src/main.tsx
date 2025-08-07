@@ -1,4 +1,4 @@
-import React, { StrictMode } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -25,13 +25,13 @@ try {
   console.log("🔄 Renderizando aplicação completa...");
   
   reactRoot.render(
-    <React.StrictMode>
+    <StrictMode>
       <BrowserRouter>
         <AuthProvider>
           <App />
         </AuthProvider>
       </BrowserRouter>
-    </React.StrictMode>
+    </StrictMode>
   );
   
   console.log("✅ SUCESSO! Aplicação completa renderizada!");
