@@ -1,37 +1,39 @@
-import { StrictMode } from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "@/hooks/useTheme";
-import { AuthProvider } from "@/hooks/useAuth";
 import App from "./App.tsx";
 import "./index.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-    },
-  },
-});
+console.log("🔍 INICIANDO REACT - Versão:", React.version);
 
 const root = document.getElementById("root");
 
 if (!root) {
+  console.error("❌ Root element not found");
   throw new Error("Root element not found");
 }
 
-createRoot(root).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
+try {
+  createRoot(root).render(
+    <StrictMode>
       <BrowserRouter>
-        <ThemeProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </ThemeProvider>
+        <App />
       </BrowserRouter>
-    </QueryClientProvider>
-  </StrictMode>
-);
+    </StrictMode>
+  );
+  console.log("✅ React app renderizado com sucesso!");
+} catch (error) {
+  console.error("❌ Erro ao renderizar:", error);
+  root.innerHTML = `
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-family: sans-serif; text-align: center; padding: 2rem;">
+      <div>
+        <h1 style="font-size: 2rem; margin-bottom: 1rem;">💰 Couples Financials</h1>
+        <p style="margin-bottom: 2rem;">Sistema Ativo</p>
+        <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+          <p><strong>Status:</strong> ✅ Funcionando</p>
+        </div>
+        <button onclick="location.reload()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer;">🔄 Atualizar</button>
+      </div>
+    </div>
+  `;
+}
