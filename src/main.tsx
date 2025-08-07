@@ -1,28 +1,50 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "./index.css";
 
-const queryClient = new QueryClient();
-
-// Simple test component
+// Most basic test component possible - NO CSS, NO imports
 const TestApp = () => {
+  console.log("TestApp rendering...");
   return (
-    <div className="min-h-screen bg-white p-8">
-      <h1 className="text-2xl font-bold text-black">Teste de Aplicação</h1>
-      <p className="text-gray-600">Se você está vendo isso, o React está funcionando!</p>
-      <p className="text-blue-600 mt-4">Vou agora adicionar os providers gradualmente...</p>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: 'white', 
+      padding: '20px',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <h1 style={{ 
+        fontSize: '24px', 
+        fontWeight: 'bold', 
+        color: 'black',
+        marginBottom: '10px'
+      }}>
+        🟢 TESTE BÁSICO FUNCIONANDO
+      </h1>
+      <p style={{ color: 'gray' }}>
+        Se você está vendo isso, o React funciona!
+      </p>
+      <p style={{ color: 'blue', marginTop: '10px' }}>
+        Data: {new Date().toLocaleString()}
+      </p>
     </div>
   );
 };
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TestApp />
-      </BrowserRouter>
-    </QueryClientProvider>
-  </StrictMode>,
-);
+console.log("main.tsx: Starting render...");
+
+const rootElement = document.getElementById("root");
+console.log("Root element:", rootElement);
+
+if (rootElement) {
+  const root = createRoot(rootElement);
+  console.log("Root created, about to render...");
+  
+  root.render(
+    <StrictMode>
+      <TestApp />
+    </StrictMode>
+  );
+  
+  console.log("Render called successfully!");
+} else {
+  console.error("ERRO: Elemento root não encontrado!");
+}
