@@ -39,28 +39,28 @@ const App = () => {
         <AuthProvider>
           <LanguageProvider>
             <TooltipProvider>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/login" element={<Auth />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/email-confirmation" element={<EmailConfirmation />} />
-              <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
-              <Route path="/email-test" element={<EmailTest />} />
-              
-              {/* Protected Routes */}
-              <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
-              <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
-              <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
-              <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={() => window.history.back()} /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={() => window.history.back()} /></ProtectedRoute>} />
-              <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={() => window.history.back()} /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/email-confirmation" element={<EmailConfirmation />} />
+                <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
+                <Route path="/email-test" element={<EmailTest />} />
+                
+                {/* Protected Routes */}
+                <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
+                <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
               <Toaster />
               <Sonner />
               <PWAPrompt />
