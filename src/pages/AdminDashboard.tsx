@@ -408,24 +408,24 @@ const AdminDashboardContent = () => {
             <p className="text-muted-foreground">{t('admin.subtitle')}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <LanguageSwitcher />
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            {t('admin.export')}
-          </Button>
-          <Button 
-            onClick={fetchDashboardData} 
-            variant="outline"
-            disabled={loading}
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            {t('admin.refresh')}
-          </Button>
-          <Button onClick={signOut} variant="outline">
-            <LogOut className="h-4 w-4 mr-2" />
-            {t('nav.logout')}
-          </Button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-muted-foreground">{user?.email}</span>
+            <Badge variant="default" className="bg-green-600">
+              Status: Premium
+            </Badge>
+          </div>
+          <div className="flex gap-2">
+            <LanguageSwitcher />
+            <Button onClick={exportToCSV} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              {t('admin.export')}
+            </Button>
+            <Button onClick={signOut} variant="outline">
+              <LogOut className="h-4 w-4 mr-2" />
+              {t('nav.logout')}
+            </Button>
+          </div>
         </div>
       </div>
 
