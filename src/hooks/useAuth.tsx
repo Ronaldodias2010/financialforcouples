@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,14 +12,27 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  console.log("🔄 AuthProvider: Iniciando...");
+  
+  // Verificação de segurança do React
+  if (!React || !useState) {
+    console.error("❌ AuthProvider: React ou useState não disponível");
+    return <div>React não carregado corretamente</div>;
+  }
+  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log("✅ AuthProvider: Estados inicializados");
+
   useEffect(() => {
+    console.log("🔄 AuthProvider: Configurando listeners...");
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("🔄 AuthProvider: Auth state changed", event);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -28,10 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("🔄 AuthProvider: Session obtida", !!session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
+
+    console.log("✅ AuthProvider: Configuração completa");
 
     return () => subscription.unsubscribe();
   }, []);
@@ -51,6 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signOut,
   };
+
+  console.log("✅ AuthProvider: Renderizando com value", { user: !!user, session: !!session, loading });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
