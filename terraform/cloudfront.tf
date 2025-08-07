@@ -1,7 +1,11 @@
-# CloudFront Origin Access Identity para acesso seguro ao S3
-resource "aws_cloudfront_origin_access_identity" "app" {
+# CloudFront Origin Access Control para acesso seguro ao S3 (substitui OAI)
+resource "aws_cloudfront_origin_access_control" "app" {
   count = var.enable_cloudfront ? 1 : 0
-  comment = "OAI for ${var.app_name}"
+  name  = "${var.app_name}-oac"
+  description = "OAC for ${var.app_name}"
+  origin_access_control_origin_type = "s3"
+  signing_behavior = "always"
+  signing_protocol = "sigv4"
 }
 
 # Distribuição CloudFront
@@ -25,10 +29,7 @@ resource "aws_cloudfront_distribution" "app" {
   origin {
     domain_name = aws_s3_bucket.app_static.bucket_regional_domain_name
     origin_id   = "S3-${var.app_name}-static"
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.app[0].cloudfront_access_identity_path
-    }
+    origin_access_control_id = aws_cloudfront_origin_access_control.app[0].id
   }
 
   enabled             = true

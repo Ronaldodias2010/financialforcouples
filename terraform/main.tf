@@ -46,6 +46,9 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+# Dados da conta AWS atual
+data "aws_caller_identity" "current" {}
+
 # Security Group para ECS
 resource "aws_security_group" "ecs_sg" {
   name_prefix = "${var.app_name}-ecs-"

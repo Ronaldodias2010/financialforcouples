@@ -59,13 +59,18 @@ resource "aws_s3_bucket_policy" "app_static" {
         Resource  = "${aws_s3_bucket.app_static.arn}/public/*"
       },
       {
-        Sid    = "CloudFrontOriginAccessIdentity"
+        Sid    = "CloudFrontOriginAccessControl"
         Effect = "Allow"
         Principal = {
-          AWS = var.enable_cloudfront ? aws_cloudfront_origin_access_identity.app[0].iam_arn : "*"
+          Service = "cloudfront.amazonaws.com"
         }
         Action   = "s3:GetObject"
         Resource = "${aws_s3_bucket.app_static.arn}/*"
+        Condition = var.enable_cloudfront ? {
+          StringEquals = {
+            "AWS:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.app[0].id}"
+          }
+        } : {}
       }
     ]
   })
