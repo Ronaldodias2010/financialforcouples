@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import Landing from "./pages/Landing";
+import LandingSimple from "./pages/LandingSimple";
 import "./index.css";
 
 console.log("🚀 TESTE ISOLADO - LANDING PAGE");
@@ -14,7 +14,7 @@ function MinimalApp() {
   return (
     <TooltipProvider>
       <Toaster />
-      <Landing />
+      <LandingSimple />
     </TooltipProvider>
   );
 }
@@ -31,7 +31,7 @@ if (!root) {
     const reactRoot = createRoot(root);
     console.log("✅ React root criado");
     
-    console.log("🔄 Testando Landing isolada...");
+    console.log("🔄 Testando Landing simplificada...");
     reactRoot.render(
       <StrictMode>
         <BrowserRouter>
@@ -41,7 +41,7 @@ if (!root) {
         </BrowserRouter>
       </StrictMode>
     );
-    console.log("✅ SUCESSO! Landing isolada carregada!");
+    console.log("✅ Landing simplificada carregada!");
     
   } catch (error) {
     console.error("❌ ERRO na segunda fase:", error);
