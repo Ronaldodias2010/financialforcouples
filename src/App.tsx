@@ -11,6 +11,7 @@ import { SafeTooltipProvider } from "./components/system/SafeTooltipProvider";
 import { GlobalErrorBoundary } from "./components/system/GlobalErrorBoundary";
 import { ClientOnly } from "./components/system/ClientOnly";
 import { GlobalErrorLogger } from "./components/system/GlobalErrorLogger";
+import { PerformanceMonitor } from "./components/system/PerformanceMonitor";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 const Landing = lazy(() => import("./pages/Landing"));
 import LandingSimple from "./pages/LandingSimple";
@@ -78,6 +79,7 @@ const App = () => {
                   <Toaster />
                   <Sonner />
                   <GlobalErrorLogger />
+                  <PerformanceMonitor />
                 </SubscriptionProvider>
               </SafeTooltipProvider>
             </ClientOnly>
