@@ -11,6 +11,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  console.log('🎨 ThemeProvider: Initializing');
   const [theme, setTheme] = useState<Theme>('system');
   const [mounted, setMounted] = useState(false);
 

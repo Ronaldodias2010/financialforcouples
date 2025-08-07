@@ -16,7 +16,9 @@ import EmailConfirmation from "./pages/EmailConfirmation";
 import SendConfirmationEmail from "./pages/SendConfirmationEmail";
 import { AdminDashboard } from "./pages/AdminDashboard";
 
-const App = () => (
+const App = () => {
+  console.log('📱 App component: Initializing');
+  return (
   <TooltipProvider>
     <Toaster />
     <Sonner />
@@ -55,6 +57,7 @@ const App = () => (
       <Route path="*" element={<NotFound />} />
     </Routes>
   </TooltipProvider>
-);
+  );
+};
 
 export default App;

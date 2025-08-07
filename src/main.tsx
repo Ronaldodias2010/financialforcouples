@@ -12,6 +12,8 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
+console.log('🚀 Main.tsx: Starting app render');
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -30,3 +32,5 @@ createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+console.log('✅ Main.tsx: App render completed');

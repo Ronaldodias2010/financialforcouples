@@ -965,6 +965,7 @@ const translations = {
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  console.log('🌍 LanguageProvider: Initializing');
   const [language, setLanguage] = useState<'pt' | 'en'>(() => {
     // Persist language preference in localStorage
     const saved = localStorage.getItem('language');

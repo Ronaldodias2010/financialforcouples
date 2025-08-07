@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -27,7 +27,8 @@ const premiumFeatures = [
   'prioritySupport'
 ];
 
-export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('💳 SubscriptionProvider: Initializing');
   const { user, session } = useAuth();
   const [subscribed, setSubscribed] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>('essential');
@@ -145,7 +146,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       {children}
     </SubscriptionContext.Provider>
   );
-}
+};
 
 export function useSubscription() {
   const context = useContext(SubscriptionContext);
