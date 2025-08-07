@@ -12,7 +12,7 @@ import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
-import { ThemeSwitcher } from "@/components/ui/theme-switcher";
+// TEMPORARIAMENTE REMOVIDO: import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane } from "lucide-react";
@@ -341,7 +341,7 @@ export const FinancialDashboard = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <ThemeSwitcher />
+              {/* TEMPORARIAMENTE REMOVIDO: <ThemeSwitcher /> */}
               <LanguageSwitcher />
             </div>
           </div>

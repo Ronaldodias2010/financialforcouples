@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -19,7 +18,7 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 const App = () => (
   <TooltipProvider>
     <Toaster />
-    <Sonner />
+    {/* TEMPORARIAMENTE REMOVIDO: <Sonner /> */}
     {/* <PWAPrompt /> */}
     <Routes>
       <Route path="/" element={<Landing />} />
