@@ -29,7 +29,7 @@ import SendConfirmationEmail from "./pages/SendConfirmationEmail";
 import NotFound from "./pages/NotFound";
 import EmailTest from "./pages/EmailTest";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { PWAPrompt } from "./components/PWAPrompt";
+// PWAPrompt temporarily disabled to stabilize app
 
 const queryClient = new QueryClient();
 
@@ -73,7 +73,6 @@ const App = () => {
                 </GlobalErrorBoundary>
                 <Toaster />
                 <Sonner />
-                <PWAPrompt />
                 <GlobalErrorLogger />
               </SafeTooltipProvider>
             </ClientOnly>
