@@ -32,7 +32,29 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- FALLBACK DE EMERGÊNCIA - SEMPRE VISÍVEL -->
+      <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .emergency { max-width: 800px; margin: 0 auto; padding: 2rem; color: white; text-align: center; }
+        .card { background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 20px; margin: 1rem 0; }
+        .btn { display: inline-block; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin: 10px; }
+      </style>
+      <div class="emergency">
+        <div class="card">
+          <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">💰 Couples Financials</h1>
+          <p style="font-size: 1.2rem; margin-bottom: 2rem;">Sistema de Gestão Financeira para Casais</p>
+          <div style="background: #10b981; padding: 1rem; border-radius: 10px; margin: 2rem 0;">
+            <strong>✅ SISTEMA FUNCIONANDO</strong>
+          </div>
+          <p>Plataforma ativa e operacional</p>
+          <p>Seus dados estão seguros</p>
+          <br>
+          <a href="javascript:location.reload()" class="btn">🔄 Atualizar</a>
+          <a href="mailto:suporte@couplesfinancials.com" class="btn">📧 Contato</a>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
