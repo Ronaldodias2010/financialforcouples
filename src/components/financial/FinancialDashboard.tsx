@@ -326,19 +326,7 @@ export const FinancialDashboard = () => {
         <div className="text-center space-y-2">
           <div className="flex justify-between items-start mb-2">
             <div className="text-sm text-muted-foreground">
-              👤 {user?.email}
-              {/* Debug subscription status */}
-              <div className="text-xs mt-1">
-                📊 Status: {subscribed ? 'Premium' : 'Essential'} | Tier: {subscriptionTier} | Access: {hasAccess('aiMileage') ? '✅' : '❌'}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={checkSubscription}
-                  className="ml-2 text-xs h-6"
-                >
-                  🔄 Atualizar
-                </Button>
-              </div>
+              👤 {user?.email} | Status: {subscribed ? 'Premium' : 'Essential'}
             </div>
             <div className="flex gap-2">
               {/* TEMPORARIAMENTE REMOVIDO: <ThemeSwitcher /> */}
