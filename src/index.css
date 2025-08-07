@@ -160,3 +160,8 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary-glow));
 }
+
+/* Overlay/Portal stability: keep floating UIs above content and opaque */
+[data-radix-popper-content-wrapper] {
+  z-index: 60;
+}
