@@ -1,25 +1,27 @@
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import "./index.css";
 
-console.log("🚀 TESTE COM CSS E ROUTING - INICIALIZANDO");
+console.log("🚀 TESTE COM AUTH PROVIDER - INICIALIZANDO");
 
-// Componente de teste com CSS
-function TestApp() {
+// Componente de teste com AuthProvider
+function TestAppWithAuth() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 text-white flex items-center justify-center p-8">
       <div className="max-w-2xl text-center">
         <h1 className="text-4xl font-bold mb-4">💰 Couples Financials</h1>
-        <p className="text-xl mb-6 opacity-90">CSS + React + Router funcionando!</p>
+        <p className="text-xl mb-6 opacity-90">React + CSS + Router + Auth funcionando!</p>
         
         <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl mb-6">
           <div className="bg-green-500 p-3 rounded-lg mb-4">
-            <strong className="text-lg">✅ TUDO FUNCIONANDO</strong>
+            <strong className="text-lg">✅ TUDO FUNCIONANDO COM AUTH</strong>
           </div>
           <p className="mb-2"><strong>React:</strong> ✅ OK</p>
           <p className="mb-2"><strong>CSS/Tailwind:</strong> ✅ OK</p>
-          <p><strong>Router:</strong> ✅ OK</p>
+          <p className="mb-2"><strong>Router:</strong> ✅ OK</p>
+          <p><strong>AuthProvider:</strong> ✅ OK</p>
         </div>
         
         <button 
@@ -45,15 +47,17 @@ if (!root) {
     const reactRoot = createRoot(root);
     console.log("✅ React root criado");
     
-    console.log("🔄 Testando com CSS e Router...");
+    console.log("🔄 Testando com AuthProvider...");
     reactRoot.render(
       <StrictMode>
         <BrowserRouter>
-          <TestApp />
+          <AuthProvider>
+            <TestAppWithAuth />
+          </AuthProvider>
         </BrowserRouter>
       </StrictMode>
     );
-    console.log("✅ SUCESSO! CSS + Router funcionando!");
+    console.log("✅ SUCESSO! AuthProvider funcionando!");
     
   } catch (error) {
     console.error("❌ ERRO na segunda fase:", error);
