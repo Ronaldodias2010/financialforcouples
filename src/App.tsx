@@ -18,7 +18,7 @@ import SendConfirmationEmail from "./pages/SendConfirmationEmail";
 import { AdminDashboard } from "./pages/AdminDashboard";
 
 const App = () => (
-  <TooltipProvider>
+  <>
     <Toaster />
     <PWAPrompt />
     <Routes>
@@ -54,7 +54,7 @@ const App = () => (
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
-  </TooltipProvider>
+  </>
 );
 
 export default App;
