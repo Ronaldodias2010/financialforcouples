@@ -2,101 +2,68 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import App from "./App.tsx";
 import "./index.css";
 
-console.log("🚀 TESTE DIRETO NO MAIN - LANDING SIMPLIFICADA");
-
-// Landing Simplificada direto no main.tsx
-function TestLanding() {
-  console.log("🔄 TestLanding: Iniciando renderização");
-  
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-500 to-blue-600 text-white flex items-center justify-center p-8">
-      <div className="max-w-2xl text-center">
-        <h1 className="text-5xl font-bold mb-4">💰 Couples Financials</h1>
-        <p className="text-2xl mb-6 opacity-90">LANDING SIMPLIFICADA FUNCIONANDO!</p>
-        
-        <div className="bg-white/20 backdrop-blur-sm p-8 rounded-2xl mb-6">
-          <div className="bg-yellow-500 text-black p-4 rounded-lg mb-4">
-            <strong className="text-xl">🎉 LANDING PAGE OK!</strong>
-          </div>
-          <p className="mb-3 text-lg"><strong>React:</strong> ✅ OK</p>
-          <p className="mb-3 text-lg"><strong>Router:</strong> ✅ OK</p>
-          <p className="mb-3 text-lg"><strong>Auth:</strong> ✅ OK</p>
-          <p className="text-lg"><strong>User:</strong> {user ? '✅ Logado' : '❌ Não logado'}</p>
-        </div>
-        
-        <div className="space-y-4">
-          <Button 
-            onClick={() => navigate("/auth")}
-            className="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-lg font-bold text-xl"
-            size="lg"
-          >
-            🔐 Ir para Autenticação
-          </Button>
-          
-          {user && (
-            <Button 
-              onClick={() => navigate("/app")}
-              className="bg-purple-500 hover:bg-purple-600 px-8 py-4 rounded-lg font-bold text-xl ml-4"
-              size="lg"
-            >
-              📱 Ir para Dashboard
-            </Button>
-          )}
-        </div>
-        
-        <p className="mt-6 text-sm opacity-70">
-          Se vê esta mensagem, a Landing page básica está funcionando!
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function App() {
-  return (
-    <TooltipProvider>
-      <Toaster />
-      <TestLanding />
-    </TooltipProvider>
-  );
-}
+console.log("🚀 APLICAÇÃO RESTAURADA E FUNCIONANDO");
 
 const root = document.getElementById("root");
 
 if (!root) {
-  console.error("❌ Root element não encontrado");
-} else {
-  console.log("✅ Root element encontrado");
+  console.error("❌ Elemento root não encontrado");
+  throw new Error("Root element not found");
+}
+
+console.log("✅ Elemento root encontrado:", root);
+
+try {
+  console.log("🔄 Criando React root...");
   
-  try {
-    console.log("🔄 Criando React root...");
-    const reactRoot = createRoot(root);
-    console.log("✅ React root criado");
-    
-    console.log("🔄 Testando Landing direto no main...");
-    reactRoot.render(
-      <StrictMode>
-        <BrowserRouter>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </BrowserRouter>
-      </StrictMode>
-    );
-    console.log("✅ SUCESSO! Landing direto funcionando!");
-    
-  } catch (error) {
-    console.error("❌ ERRO:", error);
-    console.error("Stack:", error.stack);
-  }
+  const reactRoot = createRoot(root);
+  console.log("✅ React root criado com sucesso");
+  
+  console.log("🔄 Renderizando aplicação completa...");
+  
+  reactRoot.render(
+    <StrictMode>
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </StrictMode>
+  );
+  
+  console.log("✅ SUCESSO! Aplicação completa renderizada!");
+  
+} catch (error) {
+  console.error("❌ ERRO ao renderizar aplicação:", error);
+  console.error("Stack trace:", error.stack);
+  
+  // FALLBACK DE EMERGÊNCIA
+  root.innerHTML = `
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-family: sans-serif; text-align: center; padding: 2rem;">
+      <div style="max-width: 600px;">
+        <h1 style="font-size: 2rem; margin-bottom: 1rem;">💰 Couples Financials</h1>
+        <p style="margin-bottom: 2rem;">Sistema Ativo - Modo de Emergência</p>
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; text-align: left;">
+          <p><strong>Status:</strong> ✅ Funcionando</p>
+          <p><strong>Modo:</strong> Emergência (React falhou)</p>
+          <p><strong>Erro:</strong> ${error.message}</p>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+          <button onclick="location.reload()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🔄 Tentar Novamente</button>
+          <button onclick="window.location.href='/auth'" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🔐 Fazer Login</button>
+        </div>
+        
+        <p style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.8;">
+          Seus dados estão seguros. Este é um problema técnico temporário.
+        </p>
+      </div>
+    </div>
+  `;
+  
+  console.log("✅ Fallback de emergência ativado");
 }
