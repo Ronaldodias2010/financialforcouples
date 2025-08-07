@@ -1,51 +1,48 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+
+// Importar apenas o Landing original para testar
 import Landing from "./pages/Landing";
-import AppDashboard from "./pages/AppDashboard";
-import Auth from "./pages/Auth";
-import ChangePassword from "./pages/ChangePassword";
-import ResetPassword from "./pages/ResetPassword";
-import ForgotPassword from "./pages/ForgotPassword";
-import NotFound from "./pages/NotFound";
-import EmailTest from "./pages/EmailTest";
-import EmailConfirmation from "./pages/EmailConfirmation";
-import SendConfirmationEmail from "./pages/SendConfirmationEmail";
-import { AdminDashboard } from "./pages/AdminDashboard";
+
+// Manter componentes básicos de teste para as outras rotas
+const TestAuth = () => (
+  <div style={{ 
+    minHeight: '100vh', 
+    background: '#1f2937', 
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: 'sans-serif'
+  }}>
+    <div style={{ textAlign: 'center' }}>
+      <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Página de Login</h1>
+      <p>Sistema funcionando - em desenvolvimento</p>
+      <button 
+        onClick={() => window.location.href = '/'}
+        style={{
+          padding: '12px 24px',
+          fontSize: '1rem',
+          background: '#3b82f6',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          marginTop: '1rem'
+        }}
+      >
+        Voltar
+      </button>
+    </div>
+  </div>
+);
 
 const App = () => (
   <Routes>
     <Route path="/" element={<Landing />} />
-    <Route path="/app" element={
-      <ProtectedRoute>
-        <AppDashboard />
-      </ProtectedRoute>
-    } />
-    <Route path="/auth" element={<Auth />} />
-    <Route path="/email-confirmation" element={<EmailConfirmation />} />
-    <Route path="/change-password" element={
-      <ProtectedRoute>
-        <ChangePassword />
-      </ProtectedRoute>
-    } />
-    <Route path="/admin" element={
-      <ProtectedRoute>
-        <AdminDashboard />
-      </ProtectedRoute>
-    } />
-    <Route path="/reset-password" element={<ResetPassword />} />
-    <Route path="/forgot-password" element={<ForgotPassword />} />
-    <Route path="/email-test" element={<EmailTest />} />
-    <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
-    {/* Redirect legacy routes */}
-    <Route path="/login" element={<Auth />} />
-    <Route path="/dashboard" element={
-      <ProtectedRoute>
-        <AppDashboard />
-      </ProtectedRoute>
-    } />
-    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-    <Route path="*" element={<NotFound />} />
+    <Route path="/auth" element={<TestAuth />} />
+    <Route path="/login" element={<TestAuth />} />
+    <Route path="*" element={<Landing />} />
   </Routes>
 );
 
