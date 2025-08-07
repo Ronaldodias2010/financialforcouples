@@ -1,59 +1,32 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import "./index.css";
 
-console.log("🚀 TESTE BÁSICO - INICIALIZANDO");
+console.log("🚀 TESTE COM CSS E ROUTING - INICIALIZANDO");
 
-// Componente mais simples possível
-function SimpleApp() {
+// Componente de teste com CSS
+function TestApp() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white',
-      fontFamily: 'Arial, sans-serif',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center',
-      padding: '2rem'
-    }}>
-      <div style={{ maxWidth: '600px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 'bold' }}>
-          💰 Couples Financials
-        </h1>
-        <p style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9 }}>
-          React funcionando!
-        </p>
-        <div style={{
-          background: 'rgba(255,255,255,0.1)',
-          padding: '1.5rem',
-          borderRadius: '15px',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
-            background: '#10b981',
-            padding: '1rem',
-            borderRadius: '10px',
-            marginBottom: '1rem'
-          }}>
-            <strong style={{ fontSize: '1.1rem' }}>✅ REACT CARREGADO COM SUCESSO</strong>
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 text-white flex items-center justify-center p-8">
+      <div className="max-w-2xl text-center">
+        <h1 className="text-4xl font-bold mb-4">💰 Couples Financials</h1>
+        <p className="text-xl mb-6 opacity-90">CSS + React + Router funcionando!</p>
+        
+        <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl mb-6">
+          <div className="bg-green-500 p-3 rounded-lg mb-4">
+            <strong className="text-lg">✅ TUDO FUNCIONANDO</strong>
           </div>
-          <p><strong>Status:</strong> Teste básico funcionando</p>
+          <p className="mb-2"><strong>React:</strong> ✅ OK</p>
+          <p className="mb-2"><strong>CSS/Tailwind:</strong> ✅ OK</p>
+          <p><strong>Router:</strong> ✅ OK</p>
         </div>
+        
         <button 
           onClick={() => window.location.href = '/auth'}
-          style={{
-            padding: '12px 24px',
-            background: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '1rem'
-          }}
+          className="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-lg font-bold text-lg transition-colors"
         >
-          🔐 Continuar para Login
+          🔐 Ir para Login
         </button>
       </div>
     </div>
@@ -72,12 +45,18 @@ if (!root) {
     const reactRoot = createRoot(root);
     console.log("✅ React root criado");
     
-    console.log("🔄 Renderizando componente simples...");
-    reactRoot.render(<SimpleApp />);
-    console.log("✅ SUCESSO! Componente renderizado!");
+    console.log("🔄 Testando com CSS e Router...");
+    reactRoot.render(
+      <StrictMode>
+        <BrowserRouter>
+          <TestApp />
+        </BrowserRouter>
+      </StrictMode>
+    );
+    console.log("✅ SUCESSO! CSS + Router funcionando!");
     
   } catch (error) {
-    console.error("❌ ERRO:", error);
+    console.error("❌ ERRO na segunda fase:", error);
     console.error("Stack:", error.stack);
   }
 }
