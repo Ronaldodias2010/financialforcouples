@@ -1,13 +1,11 @@
 import React from 'react';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { GlobalErrorBoundary } from './GlobalErrorBoundary';
 
 export const SafeTooltipProvider = ({ children }: { children: React.ReactNode }) => {
+  // Temporarily render children without TooltipProvider to avoid hook crash
   return (
     <GlobalErrorBoundary>
-      <TooltipProvider>
-        {children}
-      </TooltipProvider>
+      {children}
     </GlobalErrorBoundary>
   );
 };

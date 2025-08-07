@@ -129,7 +129,7 @@ const SidebarProvider = React.forwardRef<
 
     return (
       <SidebarContext.Provider value={contextValue}>
-        <TooltipProvider delayDuration={0}>
+        <React.Fragment>
           <div
             style={
               {
@@ -147,7 +147,7 @@ const SidebarProvider = React.forwardRef<
           >
             {children}
           </div>
-        </TooltipProvider>
+        </React.Fragment>
       </SidebarContext.Provider>
     )
   }
