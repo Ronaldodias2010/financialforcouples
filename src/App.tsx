@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { AuthProvider } from "@/hooks/useAuth";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import AppDashboard from "./pages/AppDashboard";
@@ -36,8 +37,9 @@ const App = () => {
         enableSystem
         disableTransitionOnChange
       >
-        <LanguageProvider>
-          <TooltipProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <TooltipProvider>
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
@@ -60,11 +62,12 @@ const App = () => {
               
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <Toaster />
-            <Sonner />
-            <PWAPrompt />
-          </TooltipProvider>
-        </LanguageProvider>
+              <Toaster />
+              <Sonner />
+              <PWAPrompt />
+            </TooltipProvider>
+          </LanguageProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
