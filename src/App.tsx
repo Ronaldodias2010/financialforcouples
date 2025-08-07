@@ -13,6 +13,7 @@ import { ClientOnly } from "./components/system/ClientOnly";
 import { GlobalErrorLogger } from "./components/system/GlobalErrorLogger";
 import { PerformanceMonitor } from "./components/system/PerformanceMonitor";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
+import { RouteSEO } from "./components/seo/RouteSEO";
 const Landing = lazy(() => import("./pages/Landing"));
 import LandingSimple from "./pages/LandingSimple";
 import Auth from "./pages/Auth";
@@ -80,6 +81,7 @@ const App = () => {
                   <Sonner />
                   <GlobalErrorLogger />
                   <PerformanceMonitor />
+                  <RouteSEO />
                 </SubscriptionProvider>
               </SafeTooltipProvider>
             </ClientOnly>
