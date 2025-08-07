@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface LanguageContextType {
   language: 'pt' | 'en';
@@ -964,8 +964,7 @@ const translations = {
   },
 };
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  console.log('🌍 LanguageProvider: Initializing');
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<'pt' | 'en'>(() => {
     // Persist language preference in localStorage
     const saved = localStorage.getItem('language');

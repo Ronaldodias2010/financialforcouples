@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
-import { ThemeProvider } from "@/hooks/useThemeSimple";
+import { ThemeProvider } from "@/hooks/useTheme";
 import { Toaster } from "@/components/ui/toaster";
 import App from "./App.tsx";
 import "./index.css";
@@ -28,5 +28,5 @@ createRoot(document.getElementById("root")!).render(
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
-  </StrictMode>
+  </StrictMode>,
 );

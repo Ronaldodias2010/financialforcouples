@@ -1,6 +1,6 @@
-import React from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'dark' | 'light';
 
 interface ThemeContextType {
   theme: Theme;
@@ -8,34 +8,29 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-const ThemeContext = React.createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  console.log('🎨 ThemeProvider: Initializing');
-  const [theme, setTheme] = React.useState<Theme>('system');
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check localStorage first, then system preference
     const saved = localStorage.getItem('theme') as Theme;
-    if (saved && (saved === 'dark' || saved === 'light' || saved === 'system')) {
-      setTheme(saved);
-    }
-  }, []);
+    if (saved) return saved;
+    
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
 
-  React.useEffect(() => {
-    if (!mounted) return;
-    
+  useEffect(() => {
     const root = window.document.documentElement;
-    const resolvedTheme = theme === 'system' 
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : theme;
     
+    // Remove previous theme classes
     root.classList.remove('light', 'dark');
-    root.classList.add(resolvedTheme);
     
+    // Add current theme class
+    root.classList.add(theme);
+    
+    // Store in localStorage
     localStorage.setItem('theme', theme);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -49,7 +44,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useTheme = () => {
-  const context = React.useContext(ThemeContext);
+  const context = useContext(ThemeContext);
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
