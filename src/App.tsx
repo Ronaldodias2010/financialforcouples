@@ -1,6 +1,5 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
 
 // Lazy import para evitar problemas de carregamento
 const Landing = React.lazy(() => import("./pages/Landing"));
@@ -18,7 +17,6 @@ const App = () => {
         </div>
       </div>
     }>
-      <Toaster />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Auth />} />
