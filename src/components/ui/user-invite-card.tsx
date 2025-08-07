@@ -13,7 +13,14 @@ export const UserInviteCard = ({ onInviteClick, showCard }: UserInviteCardProps)
   const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(showCard);
   const [isDismissedThisSession, setIsDismissedThisSession] = useState(false);
-  const isPermanentlyDismissed = localStorage.getItem('dismissInvitePermanently') === 'true';
+  const [isPermanentlyDismissed, setIsPermanentlyDismissed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const val = localStorage.getItem('dismissInvitePermanently') === 'true';
+      setIsPermanentlyDismissed(val);
+    }
+  }, []);
 
   useEffect(() => {
     setIsVisible(showCard && !isDismissedThisSession && !isPermanentlyDismissed);
