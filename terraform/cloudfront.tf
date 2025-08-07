@@ -2,7 +2,7 @@
 # Atualizado para resolver erro de quota de OAI
 resource "aws_cloudfront_origin_access_control" "app" {
   count = var.enable_cloudfront ? 1 : 0
-  name  = "${var.app_name}-oac"
+  name  = "${var.app_name}-oac-${random_string.bucket_suffix.result}"
   description = "OAC for ${var.app_name}"
   origin_access_control_origin_type = "s3"
   signing_behavior = "always"
