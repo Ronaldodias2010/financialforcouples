@@ -1,26 +1,72 @@
-console.log("TESTE BÁSICO - Se aparece no console, React está carregando");
+// Teste de emergência sem React Router
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
 
-const root = document.getElementById("root");
-if (root) {
-  root.innerHTML = `
-    <div style="min-height: 100vh; background: white; padding: 2rem; font-family: system-ui;">
-      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-        <h1 style="color: #059669; font-size: 2.5rem; margin-bottom: 1rem;">
+// Componente simples sem hooks
+const EmergencyApp = () => {
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "white",
+      padding: "2rem",
+      fontFamily: "system-ui",
+      color: "#111"
+    }}>
+      <div style={{
+        maxWidth: "800px",
+        margin: "0 auto",
+        textAlign: "center"
+      }}>
+        <h1 style={{
+          color: "#059669",
+          fontSize: "2.5rem",
+          marginBottom: "1rem"
+        }}>
           Couples Financials
         </h1>
-        <p style="font-size: 1.25rem; margin-bottom: 2rem; color: #374151;">
-          Sistema Funcionando ✅
+        <p style={{
+          fontSize: "1.25rem",
+          marginBottom: "2rem",
+          color: "#374151"
+        }}>
+          ✅ Sistema Funcionando - React Carregado
         </p>
-        <div style="background: #d1fae5; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
-          <p style="color: #065f46; font-size: 1.125rem;">
-            🚀 Sistema restaurado com sucesso!
+        <div style={{
+          background: "#d1fae5",
+          padding: "1.5rem",
+          borderRadius: "8px",
+          marginBottom: "2rem"
+        }}>
+          <p style={{
+            color: "#065f46",
+            fontSize: "1.125rem"
+          }}>
+            🚀 Teste de React bem-sucedido!
           </p>
         </div>
-        <button onclick="window.location.href='/app'" 
-                style="background: #059669; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer;">
-          Acessar Dashboard
-        </button>
       </div>
     </div>
-  `;
+  );
+};
+
+// Tentar renderizar sem StrictMode primeiro
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  try {
+    const root = createRoot(rootElement);
+    root.render(<EmergencyApp />);
+    console.log("✅ React renderizado com sucesso!");
+  } catch (error) {
+    console.error("❌ Erro ao renderizar React:", error);
+    // Fallback para HTML puro
+    rootElement.innerHTML = `
+      <div style="min-height: 100vh; background: white; padding: 2rem; font-family: system-ui; text-align: center;">
+        <h1 style="color: #dc2626; font-size: 2rem;">FALLBACK ATIVO</h1>
+        <p>React falhou, usando HTML puro</p>
+      </div>
+    `;
+  }
+} else {
+  console.error("❌ Elemento root não encontrado!");
 }
