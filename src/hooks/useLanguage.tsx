@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface LanguageContextType {
   language: 'pt' | 'en';
@@ -965,15 +965,23 @@ const translations = {
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<'pt' | 'en'>(() => {
-    // Persist language preference in localStorage
-    const saved = localStorage.getItem('language');
-    return (saved as 'pt' | 'en') || 'pt';
-  });
+  const [language, setLanguage] = useState<'pt' | 'en'>('pt');
+
+  // Load language preference from localStorage after component mounts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('language');
+      if (saved && (saved === 'pt' || saved === 'en')) {
+        setLanguage(saved);
+      }
+    }
+  }, []);
 
   const handleSetLanguage = (lang: 'pt' | 'en') => {
     setLanguage(lang);
-    localStorage.setItem('language', lang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('language', lang);
+    }
   };
 
   const t = (key: string): string => {
