@@ -15,23 +15,8 @@ if (!root) {
 
 console.log("✅ Elemento root encontrado:", root);
 
-// Ensure no stale service workers/cache keep old bundles causing crashes
-if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then((regs) => {
-    regs.forEach((reg) => {
-      console.log('[SW] Unregistering service worker', reg.scope)
-      reg.unregister();
-    });
-  });
-}
-if (typeof caches !== 'undefined') {
-  caches.keys().then((keys) => {
-    keys.forEach((k) => {
-      console.log('[Cache] Deleting cache', k);
-      caches.delete(k);
-    });
-  });
-}
+// Service worker and caches are managed by the PWA layer (usePWA + sw.js)
+// Avoid unregistering or clearing caches here to prevent white screens from stale assets during updates.
 
 try {
   console.log("🔄 Criando React root...");

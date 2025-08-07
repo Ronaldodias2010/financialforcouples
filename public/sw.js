@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v2';
-const STATIC_CACHE_NAME = 'couples-financials-static-v2';
-const API_CACHE_NAME = 'couples-financials-api-v2';
+const CACHE_NAME = 'couples-financials-v3';
+const STATIC_CACHE_NAME = 'couples-financials-static-v3';
+const API_CACHE_NAME = 'couples-financials-api-v3';
 
 const urlsToCache = [
   '/',
@@ -50,23 +50,33 @@ self.addEventListener('fetch', (event) => {
   
   // Handle API requests differently
   if (API_URLS.some(apiUrl => url.href.startsWith(apiUrl))) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Only cache successful responses
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(API_CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Return cached version if network fails
-          return caches.match(event.request);
-        })
-    );
+    const isGet = event.request.method === 'GET';
+    const hasAuth = event.request.headers && event.request.headers.has('Authorization');
+
+    if (isGet && !hasAuth) {
+      event.respondWith(
+        fetch(event.request)
+          .then(response => {
+            // Only cache successful GET responses without auth
+            if (response.status === 200) {
+              const responseClone = response.clone();
+              caches.open(API_CACHE_NAME).then(cache => {
+                cache.put(event.request, responseClone);
+              });
+            }
+            return response;
+          })
+          .catch(() => {
+            // Return cached version if network fails
+            return caches.match(event.request);
+          })
+      );
+    } else {
+      // For authenticated or non-GET API requests, don't cache
+      event.respondWith(
+        fetch(event.request).catch(() => new Response(null, { status: 503 }))
+      );
+    }
     return;
   }
 
