@@ -1,60 +1,34 @@
 import React from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { toast } from "sonner";
 import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { PWAPrompt } from "@/components/PWAPrompt";
-import Landing from "./pages/Landing";
-import AppDashboard from "./pages/AppDashboard";
-import Auth from "./pages/Auth";
-import ChangePassword from "./pages/ChangePassword";
-import ResetPassword from "./pages/ResetPassword";
-import ForgotPassword from "./pages/ForgotPassword";
-import NotFound from "./pages/NotFound";
-import EmailTest from "./pages/EmailTest";
-import EmailConfirmation from "./pages/EmailConfirmation";
-import SendConfirmationEmail from "./pages/SendConfirmationEmail";
-import { AdminDashboard } from "./pages/AdminDashboard";
+import { Toaster } from "@/components/ui/toaster";
 
-const App = () => (
-  <>
-    <Toaster />
-    <PWAPrompt />
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/app" element={
-        <ProtectedRoute>
-          <AppDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/email-confirmation" element={<EmailConfirmation />} />
-      <Route path="/change-password" element={
-        <ProtectedRoute>
-          <ChangePassword />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin" element={
-        <ProtectedRoute>
-          <AdminDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/email-test" element={<EmailTest />} />
-      <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
-      {/* Redirect legacy routes */}
-      <Route path="/login" element={<Auth />} />
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <AppDashboard />
-        </ProtectedRoute>
-      } />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  </>
-);
+// Lazy import para evitar problemas de carregamento
+const Landing = React.lazy(() => import("./pages/Landing"));
+const Auth = React.lazy(() => import("./pages/Auth"));
+const AppDashboard = React.lazy(() => import("./pages/AppDashboard"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+
+const App = () => {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="text-2xl font-bold mb-4">💰 Couples Financials</div>
+          <div className="animate-pulse">Carregando...</div>
+        </div>
+      </div>
+    }>
+      <Toaster />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/app" element={<AppDashboard />} />
+        <Route path="/login" element={<Auth />} />
+        <Route path="/dashboard" element={<AppDashboard />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </React.Suspense>
+  );
+};
 
 export default App;
