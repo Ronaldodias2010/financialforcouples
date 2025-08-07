@@ -12,19 +12,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  console.log("🔄 AuthProvider: Iniciando...");
-  
-  // Verificação de segurança do React
-  if (!React || !useState) {
-    console.error("❌ AuthProvider: React ou useState não disponível");
-    return <div>React não carregado corretamente</div>;
-  }
-  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-
-  console.log("✅ AuthProvider: Estados inicializados");
 
   useEffect(() => {
     console.log("🔄 AuthProvider: Configurando listeners...");
