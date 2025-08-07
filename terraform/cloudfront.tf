@@ -1,4 +1,5 @@
 # CloudFront Origin Access Control para acesso seguro ao S3 (substitui OAI)
+# Atualizado para resolver erro de quota de OAI
 resource "aws_cloudfront_origin_access_control" "app" {
   count = var.enable_cloudfront ? 1 : 0
   name  = "${var.app_name}-oac"
