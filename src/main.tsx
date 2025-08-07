@@ -25,13 +25,13 @@ try {
   console.log("🔄 Renderizando aplicação completa...");
   
   reactRoot.render(
-    <StrictMode>
+    <React.StrictMode>
       <BrowserRouter>
         <AuthProvider>
           <App />
         </AuthProvider>
       </BrowserRouter>
-    </StrictMode>
+    </React.StrictMode>
   );
   
   console.log("✅ SUCESSO! Aplicação completa renderizada!");
