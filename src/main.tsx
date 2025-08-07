@@ -2,10 +2,22 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import App from "./App.tsx";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
+import Landing from "./pages/Landing";
 import "./index.css";
 
-console.log("🚀 TESTE COM APP REAL - INICIALIZANDO");
+console.log("🚀 TESTE ISOLADO - LANDING PAGE");
+
+// App mínimo só com Landing
+function MinimalApp() {
+  return (
+    <TooltipProvider>
+      <Toaster />
+      <Landing />
+    </TooltipProvider>
+  );
+}
 
 const root = document.getElementById("root");
 
@@ -19,17 +31,17 @@ if (!root) {
     const reactRoot = createRoot(root);
     console.log("✅ React root criado");
     
-    console.log("🔄 Testando com App completo...");
+    console.log("🔄 Testando Landing isolada...");
     reactRoot.render(
       <StrictMode>
         <BrowserRouter>
           <AuthProvider>
-            <App />
+            <MinimalApp />
           </AuthProvider>
         </BrowserRouter>
       </StrictMode>
     );
-    console.log("✅ SUCESSO! App completo funcionando!");
+    console.log("✅ SUCESSO! Landing isolada carregada!");
     
   } catch (error) {
     console.error("❌ ERRO na segunda fase:", error);
