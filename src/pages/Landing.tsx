@@ -22,7 +22,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+// Accordion removido temporariamente devido a erro de hook
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -296,7 +296,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {/* FAQ Section - Versão simplificada */}
       <section className="py-24 bg-slate-900 text-white">
         <div className="container px-4 md:px-6">
           <div className="text-center space-y-4 mb-16">
@@ -308,23 +308,20 @@ const Landing = () => {
             </p>
           </div>
           
-          <div className="max-w-3xl mx-auto">
-            <Accordion type="single" collapsible className="space-y-4">
-              {faqItems.map((item, index) => (
-                <AccordionItem 
-                  key={index} 
-                  value={`item-${index}`}
-                  className="border border-slate-700 rounded-lg px-6 bg-slate-800/50"
-                >
-                  <AccordionTrigger className="text-left hover:no-underline py-6">
-                    <span className="font-semibold">{item.question}</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 text-slate-300">
-                    {item.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+          <div className="max-w-3xl mx-auto space-y-4">
+            {faqItems.map((item, index) => (
+              <details 
+                key={index} 
+                className="border border-slate-700 rounded-lg px-6 bg-slate-800/50 hover:bg-slate-800/70 transition-colors"
+              >
+                <summary className="py-6 cursor-pointer font-semibold text-left hover:text-green-400 transition-colors">
+                  {item.question}
+                </summary>
+                <div className="pb-6 text-slate-300 pl-0">
+                  {item.answer}
+                </div>
+              </details>
+            ))}
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
 
 // Componente básico de teste
 const TestLanding = () => (
@@ -71,10 +72,10 @@ const TestAuth = () => (
 const App = () => {
   return (
     <Routes>
-      <Route path="/" element={<TestLanding />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<TestAuth />} />
       <Route path="/login" element={<TestAuth />} />
-      <Route path="*" element={<TestLanding />} />
+      <Route path="*" element={<Landing />} />
     </Routes>
   );
 };
