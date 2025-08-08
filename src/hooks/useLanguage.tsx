@@ -21,6 +21,8 @@ const translations = {
     'dashboard.both': 'Ambos',
     'dashboard.user1': 'Usuário 1',
     'dashboard.user2': 'Usuário 2',
+    'dashboard.sharedActiveBanner': 'Dashboard compartilhado ativo - mostrando dados de ambos os usuários',
+    'dashboard.individualInviteBanner': 'Dashboard individual - convide seu parceiro(a) para compartilhar dados',
     
     // Navigation
     'nav.dashboard': 'Dashboard',
@@ -506,6 +508,8 @@ const translations = {
     'dashboard.both': 'Both',
     'dashboard.user1': 'User 1',
     'dashboard.user2': 'User 2',
+    'dashboard.sharedActiveBanner': 'Shared dashboard active - showing data from both users',
+    'dashboard.individualInviteBanner': 'Individual dashboard - invite your partner to share data',
     
     // Navigation
     'nav.dashboard': 'Dashboard',
