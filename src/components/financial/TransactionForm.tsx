@@ -49,6 +49,7 @@ interface Card {
   closing_date?: number;
   due_date?: number;
 }
+const CREDIT_CARD_PAYMENT_CATEGORY_NAME = "Pagamento de Cartão de Crédito";
 interface Account {
   id: string;
   name: string;
@@ -120,6 +121,9 @@ const getOwnerName = (ownerUser?: string) => {
 
   const fetchCategories = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, category_type')
@@ -127,7 +131,26 @@ const getOwnerName = (ownerUser?: string) => {
         .order('name');
 
       if (error) throw error;
-      setCategories(data || []);
+
+      let result = (data || []).map((c) => ({ id: c.id as string, name: c.name as string }));
+
+      const hasPaymentCat = result.some((c) => c.name === CREDIT_CARD_PAYMENT_CATEGORY_NAME);
+      if (type === 'expense' && !hasPaymentCat) {
+        const { data: inserted, error: insertErr } = await supabase
+          .from('categories')
+          .insert({
+            name: CREDIT_CARD_PAYMENT_CATEGORY_NAME,
+            category_type: 'expense',
+            user_id: user.id,
+          })
+          .select('id, name, category_type')
+          .single();
+        if (!insertErr && inserted) {
+          result = [...result, { id: inserted.id as string, name: inserted.name as string }];
+        }
+      }
+
+      setCategories(result);
     } catch (error) {
       toast({
         title: "Erro",
@@ -173,6 +196,8 @@ const getOwnerName = (ownerUser?: string) => {
     }
   };
 
+  const selectedCategory = categories.find((c) => c.id === categoryId);
+  const isCreditCardPaymentCategory = selectedCategory?.name === CREDIT_CARD_PAYMENT_CATEGORY_NAME;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,6 +243,16 @@ const getOwnerName = (ownerUser?: string) => {
       });
       return;
     }
+  }
+
+  // Validar seleção de cartão quando a categoria for Pagamento de Cartão de Crédito
+  if (type === "expense" && isCreditCardPaymentCategory && !cardId) {
+    toast({
+      title: "Erro",
+      description: "Selecione o cartão cuja fatura está sendo paga",
+      variant: "destructive",
+    });
+    return;
   }
 
     try {
@@ -362,6 +397,26 @@ const getOwnerName = (ownerUser?: string) => {
 
           if (updateError) {
             console.error('Erro ao atualizar saldo da conta:', updateError);
+          }
+        }
+      }
+
+      // Repor limite do cartão quando a categoria for Pagamento de Cartão de Crédito
+      if (type === "expense" && isCreditCardPaymentCategory && cardId) {
+        const { data: cardData, error: cardErr } = await supabase
+          .from('cards')
+          .select('current_balance')
+          .eq('id', cardId)
+          .single();
+        if (!cardErr && cardData) {
+          const currentBalance = Number(cardData.current_balance || 0);
+          const newBalance = Math.max(0, currentBalance - transactionAmount);
+          const { error: updateCardErr } = await supabase
+            .from('cards')
+            .update({ current_balance: newBalance })
+            .eq('id', cardId);
+          if (updateCardErr) {
+            console.error('Erro ao atualizar limite do cartão:', updateCardErr);
           }
         }
       }
@@ -678,6 +733,30 @@ const getOwnerName = (ownerUser?: string) => {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Seleção de Cartão para categoria: Pagamento de Cartão de Crédito */}
+          {type === "expense" && isCreditCardPaymentCategory && (
+            <div>
+              <Label htmlFor="card">Selecione o cartão para pagamento da fatura</Label>
+              <Select value={cardId} onValueChange={setCardId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('transactionForm.selectCardPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {cards.map((card) => (
+                    <SelectItem key={card.id} value={card.id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{card.name}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {card.card_type} • {getOwnerName(card.owner_user)}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Subcategory */}
           <div>
