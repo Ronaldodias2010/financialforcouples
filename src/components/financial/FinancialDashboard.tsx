@@ -25,7 +25,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UserInviteCard } from "@/components/ui/user-invite-card";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface Transaction {
   id: string;
   type: "income" | "expense";
@@ -463,20 +463,23 @@ export const FinancialDashboard = () => {
         {onboardingStep > 0 && currentPage === "dashboard" && activeTab === "dashboard" && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
             <Card className="max-w-lg border-destructive">
-              <CardContent className="pt-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{t('onboarding.manualTitle')}</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
                 <p className="text-sm">
                   {onboardingStep === 1
-                    ? 'O seu primeiro passo deve ser acionar o botão "Contas" e preencher com suas informações.'
-                    : 'O seu segundo passo deve ser acionar o botão "Cartões" e preencher com suas informações para dar início à utilização da aplicação.'}
+                    ? t('onboarding.step1')
+                    : t('onboarding.step2')}
                 </p>
                 <div className="mt-4 flex justify-end gap-2">
                   <Button variant="ghost" onClick={() => { localStorage.setItem('onboarding_v1_done', 'true'); setOnboardingStep(0); }}>
-                    Pular
+                    {t('onboarding.skip')}
                   </Button>
                   {onboardingStep === 1 ? (
-                    <Button onClick={() => setOnboardingStep(2)}>Próximo</Button>
+                    <Button onClick={() => setOnboardingStep(2)}>{t('onboarding.next')}</Button>
                   ) : (
-                    <Button onClick={() => { localStorage.setItem('onboarding_v1_done', 'true'); setOnboardingStep(0); }}>Concluir</Button>
+                    <Button onClick={() => { localStorage.setItem('onboarding_v1_done', 'true'); setOnboardingStep(0); }}>{t('onboarding.finish')}</Button>
                   )}
                 </div>
               </CardContent>

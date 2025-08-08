@@ -485,6 +485,14 @@ const translations = {
     // Theme switcher
     'theme.light': 'CLARO',
     'theme.dark': 'ESCURO',
+
+    // Onboarding
+    'onboarding.manualTitle': 'Manual de Uso',
+    'onboarding.step1': 'O seu primeiro passo deve ser acionar o botão "Contas" e preencher com suas informações.',
+    'onboarding.step2': 'O seu segundo passo deve ser acionar o botão "Cartões" e preencher com suas informações para dar início à utilização da aplicação.',
+    'onboarding.skip': 'Pular',
+    'onboarding.next': 'Próximo',
+    'onboarding.finish': 'Concluir',
   },
   en: {
     // Dashboard
