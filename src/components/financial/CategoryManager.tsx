@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Plus, Trash2, Edit } from "lucide-react";
 
 interface Category {
@@ -26,10 +27,21 @@ export const CategoryManager = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
   useEffect(() => {
-    fetchCategories();
-  }, [filterType]);
+    const init = async () => {
+      await ensureDefaultCategories();
+    };
+    init();
+  }, [language]);
+
+  useEffect(() => {
+    if (hasEnsuredDefaults) {
+      fetchCategories();
+    }
+  }, [filterType, hasEnsuredDefaults]);
 
   const fetchCategories = async () => {
     try {
@@ -52,6 +64,86 @@ export const CategoryManager = () => {
         description: "Não foi possível carregar as categorias",
         variant: "destructive",
       });
+    }
+  };
+
+  const ensureDefaultCategories = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setHasEnsuredDefaults(true);
+        return;
+      }
+
+      const { count, error: countError } = await supabase
+        .from('categories')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (countError) throw countError;
+      if ((count ?? 0) > 0) {
+        setHasEnsuredDefaults(true);
+        return;
+      }
+
+      const expensePt = [
+        'Alimentação',
+        'Combustível',
+        'Saúde',
+        'Educação',
+        'Vestuário',
+        'Viagem',
+        'Transporte',
+        'Moradia',
+      ];
+      const incomePt = ['Salário', 'Comissão', 'Renda Extra'];
+
+      const expenseEn = [
+        'Food',
+        'Fuel',
+        'Health',
+        'Education',
+        'Clothing',
+        'Travel',
+        'Transport',
+        'Housing',
+      ];
+      const incomeEn = ['Salary', 'Commission', 'Extra Income'];
+
+      const expense = language === 'en' ? expenseEn : expensePt;
+      const income = language === 'en' ? incomeEn : incomePt;
+
+      const payload = [
+        ...expense.map((name) => ({
+          name,
+          color: '#6366f1',
+          category_type: 'expense',
+          owner_user: 'user1',
+          user_id: user.id,
+        })),
+        ...income.map((name) => ({
+          name,
+          color: '#6366f1',
+          category_type: 'income',
+          owner_user: 'user1',
+          user_id: user.id,
+        })),
+      ];
+
+      const { error: insertError } = await supabase.from('categories').insert(payload);
+      if (insertError) throw insertError;
+
+      toast({
+        title: language === 'en' ? 'Categories added' : 'Categorias adicionadas',
+        description:
+          language === 'en'
+            ? 'Default categories were created for you.'
+            : 'Categorias padrão foram criadas para você.',
+      });
+    } catch (error) {
+      // Silent failure to avoid blocking UI; categories can still be created manually
+    } finally {
+      setHasEnsuredDefaults(true);
     }
   };
 
