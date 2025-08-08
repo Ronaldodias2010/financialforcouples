@@ -13,7 +13,7 @@ import { Plus, Trash2, Edit, CalendarIcon, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-
+import { useUserNames } from "@/hooks/useUserNames";
 interface RecurringExpense {
   id: string;
   name: string;
@@ -35,8 +35,8 @@ interface Card {
   id: string;
   name: string;
   card_type: string;
+  owner_user?: string;
 }
-
 export const RecurringExpensesManager = () => {
   const [expenses, setExpenses] = useState<RecurringExpense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -52,8 +52,9 @@ export const RecurringExpensesManager = () => {
   const [frequencyDays, setFrequencyDays] = useState("30");
   const [nextDueDate, setNextDueDate] = useState<Date>(new Date());
   
-  const { toast } = useToast();
-
+const { toast } = useToast();
+const { userNames } = useUserNames();
+const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : userNames.user1;
   useEffect(() => {
     fetchRecurringExpenses();
     fetchCategories();
@@ -99,7 +100,7 @@ export const RecurringExpensesManager = () => {
     try {
       const { data, error } = await supabase
         .from('cards')
-        .select('id, name, card_type')
+        .select('id, name, card_type, owner_user')
         .order('name');
 
       if (error) throw error;
@@ -317,7 +318,7 @@ export const RecurringExpensesManager = () => {
                   <SelectContent>
                     {cards.map((card) => (
                       <SelectItem key={card.id} value={card.id}>
-                        {card.name} ({card.card_type})
+                        {card.name} ({card.card_type}) • {getOwnerName(card.owner_user)}
                       </SelectItem>
                     ))}
                   </SelectContent>
