@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -20,16 +21,21 @@ interface Transaction {
   description: string;
   category_id: string;
   subcategory?: string;
-  transaction_date: string;
+  transaction_date: string; // para cartão, representa o vencimento
   payment_method: string;
   card_id?: string;
   user_id: string;
   owner_user?: string;
+  is_installment?: boolean;
+  total_installments?: number | null;
+  installment_number?: number | null;
   categories?: {
     name: string;
   };
   cards?: {
     name: string;
+    owner_user?: string;
+    due_date?: number;
   };
 }
 
@@ -95,7 +101,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
         .select(`
           *,
           categories(name),
-          cards(name)
+          cards(name, owner_user, due_date)
         `)
         .in('user_id', userIds)
         .gte('transaction_date', startDate)
@@ -163,13 +169,15 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
         return 'Usuário';
     }
   };
+  
+  const getCardOwnerName = (ownerUser?: string) => {
+    if (!ownerUser) return undefined;
+    if (!isPartOfCouple) return names.currentUserName;
+    return ownerUser === 'user1' ? names.user1Name : ownerUser === 'user2' ? names.user2Name : ownerUser;
+  };
 
   const totalExpenses = transactions
     .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalIncome = transactions
-    .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (
@@ -252,6 +260,11 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
                           transaction.type === 'income' ? 'bg-green-500' : 'bg-red-500'
                         }`} />
                         <span className="font-medium">{transaction.description}</span>
+                        {transaction.is_installment && transaction.installment_number && transaction.total_installments ? (
+                          <Badge variant="outline" className="ml-2">
+                            {transaction.installment_number}/{transaction.total_installments}
+                          </Badge>
+                        ) : null}
                       </div>
                       
                       <div className="text-sm text-muted-foreground space-y-1">
@@ -270,7 +283,10 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
                         {transaction.cards?.name && (
                           <p>Cartão: {transaction.cards.name}</p>
                         )}
-                        <p>Data: {formatDate(transaction.transaction_date)}</p>
+                        {transaction.cards?.owner_user && (
+                          <p>Proprietário do cartão: {getCardOwnerName(transaction.cards.owner_user)}</p>
+                        )}
+                        <p>{transaction.payment_method === 'credit_card' ? 'Vencimento' : 'Data'}: {formatDate(transaction.transaction_date)}</p>
                       </div>
                     </div>
                     
