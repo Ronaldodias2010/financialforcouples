@@ -167,7 +167,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
     }
   };
 
-  const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0) + accountsIncome;
 
   return (
     <div className="space-y-6">
@@ -230,7 +230,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                <span className="font-medium">Saldo de contas pessoais <span className="text-muted-foreground">(1 saldo adicionado na conta)</span></span>
+                <span className="font-medium">1º Saldo</span>
               </div>
             </div>
             <div className="text-right">
