@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -69,6 +70,11 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
+  const [paymentPlan, setPaymentPlan] = useState<"avista" | "parcelado">("avista");
+  const [totalInstallments, setTotalInstallments] = useState<number>(2);
+  const installmentValue = paymentPlan === "parcelado" && amount && Number(totalInstallments) > 0
+    ? parseFloat(amount) / Number(totalInstallments)
+    : 0;
   const { toast } = useToast();
   const { t } = useLanguage();
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
@@ -190,15 +196,27 @@ const getOwnerName = (ownerUser?: string) => {
       return;
     }
 
-    // Validar conta para despesas com cartão de débito
-    if (type === "expense" && paymentMethod === "debit_card" && !accountId) {
+  // Validar conta para despesas com cartão de débito
+  if (type === "expense" && paymentMethod === "debit_card" && !accountId) {
+    toast({
+      title: "Erro",
+      description: "Selecione uma conta para o cartão de débito",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Validar parcelas para cartão de crédito parcelado
+  if (type === "expense" && paymentMethod === "credit_card" && paymentPlan === "parcelado") {
+    if (!totalInstallments || totalInstallments < 2) {
       toast({
         title: "Erro",
-        description: "Selecione uma conta para o cartão de débito",
+        description: "Informe a quantidade de parcelas (mínimo 2).",
         variant: "destructive",
       });
       return;
     }
+  }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -232,7 +250,7 @@ const getOwnerName = (ownerUser?: string) => {
           card_id: cardId || null,
           account_id: accountId || null,
           is_installment: false,
-          total_installments: null,
+          total_installments: paymentMethod === "credit_card" && paymentPlan === "parcelado" ? totalInstallments : null,
           installment_number: null
         });
 
@@ -479,25 +497,68 @@ const getOwnerName = (ownerUser?: string) => {
 
           {/* Card Selection for Expenses with Credit Card */}
           {type === "expense" && paymentMethod === "credit_card" && (
-            <div>
-              <Label htmlFor="card">{t('transactionForm.selectCard')}</Label>
-              <Select value={cardId} onValueChange={setCardId} required>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('transactionForm.selectCardPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {cards.map((card) => (
-                    <SelectItem key={card.id} value={card.id}>
-                      <div className="flex items-center justify-between w-full">
-                        <span>{card.name}</span>
-                        <span className="text-muted-foreground ml-2">
-                          {card.card_type} • {getOwnerName(card.owner_user)}
-                        </span>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="card">{t('transactionForm.selectCard')}</Label>
+                <Select value={cardId} onValueChange={setCardId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('transactionForm.selectCardPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cards.map((card) => (
+                      <SelectItem key={card.id} value={card.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{card.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {card.card_type} • {getOwnerName(card.owner_user)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Forma de pagamento: À vista ou Parcelado */}
+              <div className="space-y-3">
+                <Label>Forma de pagamento</Label>
+                <RadioGroup
+                  value={paymentPlan}
+                  onValueChange={(v) => setPaymentPlan(v as "avista" | "parcelado")}
+                  className="flex gap-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem id="avista" value="avista" />
+                    <Label htmlFor="avista">À vista</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem id="parcelado" value="parcelado" />
+                    <Label htmlFor="parcelado">Parcelado</Label>
+                  </div>
+                </RadioGroup>
+
+                {paymentPlan === "parcelado" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="installments">Quantidade de Parcelas</Label>
+                      <Input
+                        id="installments"
+                        type="number"
+                        min={2}
+                        step={1}
+                        value={totalInstallments}
+                        onChange={(e) => setTotalInstallments(Math.max(2, parseInt(e.target.value || "2", 10)))}
+                      />
+                    </div>
+                    <div className="self-end">
+                      <div className="text-sm text-muted-foreground">Valor por Parcela</div>
+                      <div className="text-base font-medium">
+                        {formatCurrency(isFinite(installmentValue) ? installmentValue : 0, currency)}
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
