@@ -1,0 +1,4 @@
+CI: trigger deploy
+
+Reason: user requested manual deploy trigger via main branch.
+Timestamp: 2025-08-08
