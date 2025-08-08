@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useFinancialData } from "@/hooks/useFinancialData";
 
@@ -36,6 +36,21 @@ interface MonthlyIncomeViewProps {
   viewMode: "both" | "user1" | "user2";
 }
 
+const normalizeCategory = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const INCOME_CATEGORY_TRANSLATIONS: Record<string, string> = {
+  'comissao': 'Commission',
+  'comiisao': 'Commission',
+  'renda extra': 'Extra Income',
+  'salario': 'Salary',
+};
+const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
+  if (lang === 'en') {
+    const key = normalizeCategory(name);
+    return INCOME_CATEGORY_TRANSLATIONS[key] ?? name;
+  }
+  return name;
+};
+
 export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
@@ -45,7 +60,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
   const { user } = useAuth();
   const { names } = usePartnerNames();
   const { isPartOfCouple, couple } = useCouple();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { getAccountsIncome } = useFinancialData();
   const accountsIncome = getAccountsIncome(viewMode);
 
@@ -146,10 +161,10 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
 
   const getPaymentMethodText = (method: string) => {
     switch (method) {
-      case 'cash': return 'Dinheiro';
-      case 'bank_transfer': return 'Transferência Bancária';
+      case 'cash': return t('transactionForm.cash');
+      case 'bank_transfer': return t('transactionForm.transfer');
       case 'pix': return 'PIX';
-      case 'check': return 'Cheque';
+      case 'check': return t('transactionForm.check');
       default: return method;
     }
   };
@@ -176,17 +191,22 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <Label>Mês</Label>
+            <Label>{t('monthlyIncome.monthLabel')}</Label>
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o mês" />
+                <SelectValue placeholder={t('monthlyIncome.selectMonth')} />
               </SelectTrigger>
               <SelectContent>
                 {Array.from({ length: 12 }, (_, i) => {
                   const date = new Date();
                   date.setMonth(date.getMonth() - i);
                   const value = format(date, "yyyy-MM");
-                  const label = format(date, "MMMM 'de' yyyy", { locale: ptBR });
+                  const locale = language === 'en' ? enUS : ptBR;
+                  const label = format(
+                    date,
+                    language === 'en' ? "MMMM yyyy" : "MMMM 'de' yyyy",
+                    { locale }
+                  );
                   return (
                     <SelectItem key={value} value={value}>
                       {label}
@@ -198,16 +218,16 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
           </div>
 
           <div>
-            <Label>Categoria</Label>
+            <Label>{t('monthlyIncome.categoryLabel')}</Label>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger>
-                <SelectValue placeholder="Todas as categorias" />
+                <SelectValue placeholder={t('monthlyIncome.allCategories')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas as categorias</SelectItem>
+                <SelectItem value="all">{t('monthlyIncome.allCategories')}</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
+                    {translateCategoryName(cat.name, language as 'pt' | 'en')}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -216,7 +236,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
         </div>
 
         <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg mb-6">
-          <p className="text-sm text-green-600 dark:text-green-400">Total de Receitas</p>
+          <p className="text-sm text-green-600 dark:text-green-400">{t('monthlyIncome.totalIncome')}</p>
           <p className="text-2xl font-bold text-green-700 dark:text-green-300">
             {formatCurrency(totalIncome)}
           </p>
@@ -224,13 +244,13 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
       </Card>
 
       <Card className="p-6">
-        <h4 className="text-md font-semibold mb-4">Receitas do Período</h4>
+        <h4 className="text-md font-semibold mb-4">{t('monthlyIncome.periodIncome')}</h4>
         {accountsIncome > 0 && (
           <div className="flex items-center justify-between p-4 border rounded-lg mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                <span className="font-medium">1º Saldo</span>
+                <span className="font-medium">{t('monthlyIncome.firstBalance')}</span>
               </div>
             </div>
             <div className="text-right">
@@ -240,7 +260,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
         )}
         {transactions.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
-            Nenhuma receita encontrada para o período selecionado.
+            {t('monthlyIncome.noneFound')}
           </p>
         ) : (
           <div className="space-y-4">
@@ -256,16 +276,16 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
                     {isPartOfCouple && (
                       <p>
                         <span className="font-medium text-primary">
-                          Recebido por: {getUserName(transaction.owner_user || 'user1')}
+                          {t('monthlyIncome.receivedBy')}: {getUserName(transaction.owner_user || 'user1')}
                         </span>
                       </p>
                     )}
-                    <p>Categoria: {transaction.categories?.name || 'N/A'}</p>
+                    <p>{t('monthlyIncome.categoryLabel')}: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
                     {transaction.subcategory && (
-                      <p>Subcategoria: {transaction.subcategory}</p>
+                      <p>{t('monthlyIncome.subcategoryLabel')}: {transaction.subcategory}</p>
                     )}
-                    <p>Forma de recebimento: {getPaymentMethodText(transaction.payment_method)}</p>
-                    <p>Data: {formatDate(transaction.transaction_date)}</p>
+                    <p>{t('monthlyIncome.receiptMethod')}: {getPaymentMethodText(transaction.payment_method)}</p>
+                    <p>{t('monthlyIncome.date')}: {formatDate(transaction.transaction_date)}</p>
                   </div>
                 </div>
                 
