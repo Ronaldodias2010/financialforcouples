@@ -46,6 +46,8 @@ interface Card {
   name: string;
   card_type: string;
   owner_user?: string;
+  closing_date?: number;
+  due_date?: number;
 }
 interface Account {
   id: string;
@@ -157,7 +159,7 @@ const getOwnerName = (ownerUser?: string) => {
     try {
       const { data, error } = await supabase
         .from('cards')
-        .select('id, name, card_type, owner_user')
+        .select('id, name, card_type, owner_user, closing_date, due_date')
         .order('name');
 
       if (error) throw error;
@@ -233,28 +235,102 @@ const getOwnerName = (ownerUser?: string) => {
 
       console.log('Creating transaction with owner_user:', ownerUser, 'for user:', user.id);
 
-      // Inserir transação
-      const { error } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user.id,
-          owner_user: ownerUser,
-          type,
-          amount: transactionAmount,
-          currency: currency,
-          description,
-          category_id: categoryId,
-          subcategory: subcategory || null,
-          transaction_date: transactionDate.toISOString().split('T')[0],
-          payment_method: paymentMethod,
-          card_id: cardId || null,
-          account_id: accountId || null,
-          is_installment: false,
-          total_installments: paymentMethod === "credit_card" && paymentPlan === "parcelado" ? totalInstallments : null,
-          installment_number: null
-        });
+// Inserir transação (regras para cartão de crédito)
+      if (type === "expense" && paymentMethod === "credit_card") {
+        const selectedCard = cards.find(c => c.id === cardId);
+        if (!selectedCard) {
+          throw new Error("Cartão não encontrado.");
+        }
+        const closingDay = Number(selectedCard.closing_date);
+        const dueDay = Number(selectedCard.due_date);
+        if (!closingDay || !dueDay) {
+          throw new Error("Defina fechamento e vencimento do cartão antes de lançar.");
+        }
 
-      if (error) throw error;
+        const purchaseDate = transactionDate;
+        const purchaseDay = purchaseDate.getDate();
+        // No dia OU após a data de fechamento => próximo mês
+        const firstOffset = purchaseDay < closingDay ? 0 : 1;
+        const makeDueDate = (base: Date, monthOffset: number) => {
+          const d = new Date(base.getFullYear(), base.getMonth() + monthOffset, 1);
+          return new Date(d.getFullYear(), d.getMonth(), dueDay);
+        };
+
+        if (paymentPlan === "parcelado") {
+          const total = Math.round(transactionAmount * 100);
+          const per = Math.floor(total / totalInstallments);
+
+          const rows = Array.from({ length: totalInstallments }, (_, i) => {
+            const isLast = i === totalInstallments - 1;
+            const amountCents = isLast ? total - per * (totalInstallments - 1) : per;
+            const dueDate = makeDueDate(purchaseDate, firstOffset + i);
+            return {
+              user_id: user.id,
+              owner_user: ownerUser,
+              type: "expense" as const,
+              amount: amountCents / 100,
+              currency,
+              description,
+              category_id: categoryId,
+              subcategory: subcategory || null,
+              transaction_date: dueDate.toISOString().split("T")[0],
+              payment_method: "credit_card" as const,
+              card_id: cardId,
+              account_id: null,
+              is_installment: true,
+              total_installments: totalInstallments,
+              installment_number: i + 1,
+            };
+          });
+
+          const { error: insertErr } = await supabase.from("transactions").insert(rows);
+          if (insertErr) throw insertErr;
+        } else {
+          // À vista => 1/1 respeitando corte
+          const dueDate = makeDueDate(purchaseDate, firstOffset);
+          const { error: insertErr } = await supabase.from("transactions").insert({
+            user_id: user.id,
+            owner_user: ownerUser,
+            type: "expense",
+            amount: transactionAmount,
+            currency,
+            description,
+            category_id: categoryId,
+            subcategory: subcategory || null,
+            transaction_date: dueDate.toISOString().split("T")[0],
+            payment_method: "credit_card",
+            card_id: cardId,
+            account_id: null,
+            is_installment: true,
+            total_installments: 1,
+            installment_number: 1,
+          });
+          if (insertErr) throw insertErr;
+        }
+      } else {
+        // Inserção padrão (dinheiro, depósito, transferência, débito ou receitas)
+        const { error } = await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            owner_user: ownerUser,
+            type,
+            amount: transactionAmount,
+            currency: currency,
+            description,
+            category_id: categoryId,
+            subcategory: subcategory || null,
+            transaction_date: transactionDate.toISOString().split('T')[0],
+            payment_method: paymentMethod,
+            card_id: cardId || null,
+            account_id: accountId || null,
+            is_installment: false,
+            total_installments: null,
+            installment_number: null
+          });
+
+        if (error) throw error;
+      }
 
       // Atualizar saldo da conta para receitas com depósito ou transferência
       if (type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer") && accountId) {
