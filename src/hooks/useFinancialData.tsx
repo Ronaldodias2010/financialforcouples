@@ -16,6 +16,15 @@ interface Transaction {
   cards?: { name: string };
 }
 
+interface Account {
+  id: string;
+  user_id: string;
+  balance: number;
+  currency: CurrencyCode;
+  account_model?: string;
+  owner_user?: string;
+}
+
 interface FinancialSummary {
   totalIncome: number;
   totalExpenses: number;
@@ -27,6 +36,7 @@ export const useFinancialData = () => {
   const { user } = useAuth();
   const { convertCurrency } = useCurrencyConverter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>('BRL');
   const [loading, setLoading] = useState(true);
 
@@ -34,6 +44,7 @@ export const useFinancialData = () => {
     if (user) {
       fetchUserPreferredCurrency();
       fetchTransactions();
+      fetchAccounts();
     }
   }, [user]);
 
@@ -86,6 +97,23 @@ export const useFinancialData = () => {
     )
     .subscribe();
 
+  // Listen for real-time account changes to reflect balances immediately
+  const accountChannel = supabase
+    .channel('account_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'accounts'
+      },
+      (payload) => {
+        console.log('Real-time account change detected:', payload);
+        setTimeout(fetchAccounts, 100);
+      }
+    )
+    .subscribe();
+
   // Also listen for couple relationship changes
   const coupleChannel = supabase
     .channel('couple_changes')
@@ -101,7 +129,10 @@ export const useFinancialData = () => {
         const data = payload.new || payload.old;
         if (data && typeof data === 'object' && 'user1_id' in data && 'user2_id' in data) {
           if (data.user1_id === user.id || data.user2_id === user.id) {
-            setTimeout(fetchTransactions, 100);
+            setTimeout(() => {
+              fetchTransactions();
+              fetchAccounts();
+            }, 100);
           }
         }
       }
@@ -111,6 +142,7 @@ export const useFinancialData = () => {
     return () => {
       supabase.removeChannel(profileChannel);
       supabase.removeChannel(transactionChannel);
+      supabase.removeChannel(accountChannel);
       supabase.removeChannel(coupleChannel);
     };
   }, [user]);
@@ -194,6 +226,35 @@ export const useFinancialData = () => {
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      // Determine if in a couple to fetch both users' accounts
+      const { data: coupleData } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('id, user_id, balance, currency, account_model, owner_user')
+        .in('user_id', userIds)
+        .eq('account_model', 'personal');
+
+      if (error) throw error;
+      setAccounts(data || []);
+      console.log('Accounts fetched:', data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+    }
+  };
+
   const getFinancialSummary = (viewMode: 'both' | 'user1' | 'user2' = 'both'): FinancialSummary => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     let totalIncome = 0;
@@ -213,18 +274,30 @@ export const useFinancialData = () => {
       }
     });
 
-    console.log('Financial Summary:', { 
-      totalIncome, 
-      totalExpenses, 
+    // Include balances from personal accounts as income
+    const filteredAccounts = getAccountsByUser(viewMode).filter(
+      (acc) => (acc.account_model || 'personal') === 'personal'
+    );
+    const accountsIncome = filteredAccounts.reduce((sum, acc) => {
+      return sum + convertCurrency(acc.balance || 0, acc.currency as CurrencyCode, userPreferredCurrency);
+    }, 0);
+
+    const totalIncomeWithAccounts = totalIncome + accountsIncome;
+
+    console.log('Financial Summary (with accounts):', {
+      totalIncome: totalIncomeWithAccounts,
+      totalExpenses,
+      accountsIncome,
       transactionsCount: filteredTransactions.length,
-      viewMode 
+      accountsCount: filteredAccounts.length,
+      viewMode,
     });
     
     return {
-      totalIncome,
+      totalIncome: totalIncomeWithAccounts,
       totalExpenses,
-      balance: totalIncome - totalExpenses,
-      currency: userPreferredCurrency
+      balance: totalIncomeWithAccounts - totalExpenses,
+      currency: userPreferredCurrency,
     };
   };
 
@@ -312,6 +385,11 @@ export const useFinancialData = () => {
     }
   };
 
+  const getAccountsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
+    if (viewMode === 'both') return accounts;
+    return accounts.filter((acc) => (acc.owner_user || 'user1') === viewMode);
+  };
+
   const getTransactionsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
     if (viewMode === 'both') {
       return transactions;
@@ -344,6 +422,7 @@ export const useFinancialData = () => {
       setLoading(true);
       await fetchUserPreferredCurrency();
       await fetchTransactions();
+      await fetchAccounts();
       setLoading(false);
       console.log('✅ Financial data refreshed');
     }
