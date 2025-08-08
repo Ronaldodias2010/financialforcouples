@@ -33,6 +33,22 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
     e.preventDefault();
     if (!user) return;
 
+    // Validate required fields for credit cards
+    if (cardData.card_type === "credit") {
+      if (!cardData.credit_limit) {
+        toast.error('Informe o limite total do cartão.');
+        return;
+      }
+      if (!cardData.current_balance) {
+        toast.error('Informe o limite disponível inicial.');
+        return;
+      }
+      if (!cardData.due_date) {
+        toast.error('Informe a data de vencimento.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
         const { error } = await supabase
@@ -131,6 +147,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
                   value={cardData.credit_limit}
                   onChange={(e) => setCardData(prev => ({ ...prev, credit_limit: e.target.value }))}
                   placeholder="0.00"
+                  required={cardData.card_type === "credit"}
                 />
               </div>
               
@@ -175,7 +192,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
           )}
 
           <div>
-            <Label htmlFor="current_balance">Saldo Inicial</Label>
+            <Label htmlFor="current_balance">Limite Disponível</Label>
             <Input
               id="current_balance"
               type="number"
@@ -183,6 +200,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
               value={cardData.current_balance}
               onChange={(e) => setCardData(prev => ({ ...prev, current_balance: e.target.value }))}
               placeholder="0.00"
+              required={cardData.card_type === "credit"}
             />
           </div>
 
