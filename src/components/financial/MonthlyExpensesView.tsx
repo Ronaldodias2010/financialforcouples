@@ -57,6 +57,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
       const { data, error } = await supabase
         .from('categories')
         .select('id, name')
+        .eq('category_type', 'expense')
         .order('name');
 
       if (error) throw error;
@@ -99,6 +100,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
         .in('user_id', userIds)
         .gte('transaction_date', startDate)
         .lte('transaction_date', endDate)
+        .eq('type', 'expense')
         .order('transaction_date', { ascending: false });
 
       if (selectedCategory !== "all") {
