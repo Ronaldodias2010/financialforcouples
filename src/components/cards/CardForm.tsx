@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ interface CardFormProps {
 
 export const CardForm = ({ onCardAdded }: CardFormProps) => {
   const { user } = useAuth();
+  const { couple, isPartOfCouple } = useCouple();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [cardData, setCardData] = useState({
@@ -51,11 +53,17 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
 
     setLoading(true);
     try {
+        // Determinar o dono com base no relacionamento do casal
+        let ownerUser: "user1" | "user2" = "user1";
+        if (isPartOfCouple && couple) {
+          ownerUser = user.id === couple.user1_id ? "user1" : "user2";
+        }
+
         const { error } = await supabase
           .from("cards")
           .insert({
             user_id: user.id,
-            owner_user: "user1",
+            owner_user: ownerUser,
             name: cardData.name,
             card_type: cardData.card_type as "credit" | "debit",
             last_four_digits: cardData.last_four_digits,

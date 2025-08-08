@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useCouple } from "@/hooks/useCouple";
+import { useUserNames } from "@/hooks/useUserNames";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface CardData {
   id: string;
+  user_id: string;
   name: string;
   card_type: string;
   last_four_digits: string;
@@ -27,6 +30,8 @@ interface CardListProps {
 
 export const CardList = ({ refreshTrigger }: CardListProps) => {
   const { user } = useAuth();
+  const { couple, isPartOfCouple } = useCouple();
+  const { userNames } = useUserNames();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -97,13 +102,13 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
     }).format(value);
   };
 
-  const getOwnerName = (ownerUser: string) => {
-    if (ownerUser === 'user1') {
-      return userProfile?.display_name || 'Usuário Principal';
-    } else if (ownerUser === 'user2') {
-      return userProfile?.second_user_name || 'Usuário 2';
+  const getOwnerNameForCard = (card: CardData) => {
+    if (isPartOfCouple && couple) {
+      return card.user_id === couple.user1_id
+        ? (userNames.user1 || 'Usuário 1')
+        : (userNames.user2 || 'Usuário 2');
     }
-    return ownerUser;
+    return userNames.user1 || 'Usuário Principal';
   };
 
   if (loading) {
@@ -132,7 +137,7 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
                       {card.card_type} • ****{card.last_four_digits}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {getOwnerName(card.owner_user)}
+                      {getOwnerNameForCard(card)}
                     </p>
                     <p className="text-sm">
                       Limite Disponível: {formatCurrency(card.initial_balance_original || 0, card.currency)}

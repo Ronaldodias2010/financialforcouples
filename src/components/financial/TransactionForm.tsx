@@ -43,6 +43,7 @@ interface Category {
 
 interface Card {
   id: string;
+  user_id: string;
   name: string;
   card_type: string;
   owner_user?: string;
@@ -110,6 +111,12 @@ const { userNames } = useUserNames();
 
 const getOwnerName = (ownerUser?: string) => {
   if (ownerUser === 'user2') return userNames.user2;
+  return userNames.user1;
+};
+const getCardOwnerName = (card: Card) => {
+  if (isPartOfCouple && couple) {
+    return card.user_id === couple.user1_id ? userNames.user1 : userNames.user2;
+  }
   return userNames.user1;
 };
   useEffect(() => {
@@ -208,7 +215,7 @@ const getOwnerName = (ownerUser?: string) => {
     try {
       const { data, error } = await supabase
         .from('cards')
-        .select('id, name, card_type, owner_user, closing_date, due_date')
+        .select('id, user_id, name, card_type, owner_user, closing_date, due_date')
         .order('name');
 
       if (error) throw error;
@@ -668,7 +675,7 @@ const getOwnerName = (ownerUser?: string) => {
                         <div className="flex items-center justify-between w-full">
                           <span>{card.name}</span>
                           <span className="text-muted-foreground ml-2">
-                            {card.card_type} • {getOwnerName(card.owner_user)}
+                            {card.card_type} • {getCardOwnerName(card)}
                           </span>
                         </div>
                       </SelectItem>
@@ -775,7 +782,7 @@ const getOwnerName = (ownerUser?: string) => {
                       <div className="flex items-center justify-between w-full">
                         <span>{card.name}</span>
                         <span className="text-muted-foreground ml-2">
-                          {card.card_type} • {getOwnerName(card.owner_user)}
+                          {card.card_type} • {getCardOwnerName(card)}
                         </span>
                       </div>
                     </SelectItem>
