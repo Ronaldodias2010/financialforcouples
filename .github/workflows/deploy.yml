@@ -8,6 +8,10 @@ on:
       - production
   workflow_dispatch:
 
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: couples-financials
@@ -163,7 +167,7 @@ jobs:
 
     - name: Terraform Plan
       working-directory: terraform
-      run: terraform plan -out=tfplan
+      run: terraform plan -lock=true -lock-timeout=10m -out=tfplan
 
     - name: Import existing resources
       working-directory: terraform
@@ -228,7 +232,7 @@ jobs:
       working-directory: terraform
       if: github.ref == 'refs/heads/main'
       run: |
-        terraform apply -auto-approve \
+        terraform apply -lock=true -lock-timeout=10m -auto-approve \
           -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
           -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
           -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
