@@ -45,9 +45,11 @@ export const usePWA = () => {
 
     // Register service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker.register('/sw.js?v=4')
         .then((reg) => {
           setRegistration(reg);
+          // Proactively check for updates
+          reg.update();
           
           // Check for updates
           reg.addEventListener('updatefound', () => {

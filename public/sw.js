@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v3';
-const STATIC_CACHE_NAME = 'couples-financials-static-v3';
-const API_CACHE_NAME = 'couples-financials-api-v3';
+const CACHE_NAME = 'couples-financials-v4';
+const STATIC_CACHE_NAME = 'couples-financials-static-v4';
+const API_CACHE_NAME = 'couples-financials-api-v4';
 
 const urlsToCache = [
   '/',
@@ -18,12 +18,8 @@ const API_URLS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        return self.skipWaiting();
-      })
+      .then((cache) => cache.addAll(urlsToCache))
+      .then(() => self.skipWaiting())
   );
 });
 
