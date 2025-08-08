@@ -440,7 +440,7 @@ export const FinancialDashboard = () => {
             onClick={() => setActiveTab("income")}
             className="pb-2"
           >
-            Receitas Mensais
+            {t('nav.monthlyIncome')}
           </Button>
           <Button
             variant={activeTab === "categories" ? "default" : "ghost"}

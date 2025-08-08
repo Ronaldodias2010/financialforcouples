@@ -27,7 +27,7 @@ export const CategoryManager = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
   useEffect(() => {
@@ -250,22 +250,22 @@ export const CategoryManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Gerenciar Categorias</h2>
+        <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
         <Select value={filterType} onValueChange={(value) => setFilterType(value as "all" | "income" | "expense")}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas as Categorias</SelectItem>
-            <SelectItem value="income">Categorias de Entrada</SelectItem>
-            <SelectItem value="expense">Categorias de Saída</SelectItem>
+            <SelectItem value="all">{t('categories.filter.all')}</SelectItem>
+            <SelectItem value="income">{t('categories.filter.income')}</SelectItem>
+            <SelectItem value="expense">{t('categories.filter.expense')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold">Categorias</h3>
+          <h3 className="text-lg font-semibold">{t('categories.heading')}</h3>
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
@@ -273,29 +273,29 @@ export const CategoryManager = () => {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Nova Categoria
+                {t('categories.add')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingCategory ? "Editar Categoria" : "Nova Categoria"}
+                  {editingCategory ? t('categories.edit') : t('categories.add')}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="categoryName">Nome da Categoria</Label>
+                  <Label htmlFor="categoryName">{t('categories.name')}</Label>
                   <Input
                     id="categoryName"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="Ex: Alimentação, Transporte..."
+                    placeholder={t('categories.placeholder')}
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="categoryColor">Cor</Label>
+                  <Label htmlFor="categoryColor">{t('categories.color')}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="categoryColor"
@@ -315,28 +315,28 @@ export const CategoryManager = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="category-type">Tipo</Label>
+                  <Label htmlFor="category-type">{t('categories.type')}</Label>
                   <Select value={newCategoryType} onValueChange={(value) => setNewCategoryType(value as "income" | "expense")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="expense">Saída</SelectItem>
-                      <SelectItem value="income">Entrada</SelectItem>
+                      <SelectItem value="expense">{t('categories.type.expense')}</SelectItem>
+                      <SelectItem value="income">{t('categories.type.income')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="flex gap-2">
                   <Button type="submit" className="flex-1">
-                    {editingCategory ? "Atualizar" : "Criar"} Categoria
+                    {editingCategory ? t('categories.update') : t('categories.create')}
                   </Button>
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => setIsDialogOpen(false)}
                   >
-                    Cancelar
+                    {t('common.cancel')}
                   </Button>
                 </div>
               </form>
@@ -347,7 +347,7 @@ export const CategoryManager = () => {
         <div className="space-y-3">
           {categories.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              Nenhuma categoria cadastrada. Crie sua primeira categoria!
+              {t('categories.none')}
             </p>
           ) : (
             categories.map((category) => (

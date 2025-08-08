@@ -9,6 +9,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Transaction {
   id: string;
@@ -43,6 +44,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
   const { user } = useAuth();
   const { names } = usePartnerNames();
   const { isPartOfCouple, couple } = useCouple();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchTransactions();
@@ -167,7 +169,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Receitas Mensais</h3>
+        <h3 className="text-lg font-semibold mb-4">{t('nav.monthlyIncome')}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
