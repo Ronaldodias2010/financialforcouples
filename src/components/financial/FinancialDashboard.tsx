@@ -229,20 +229,6 @@ export const FinancialDashboard = () => {
               />
             </div>
 
-            {/* Receita - Detalhes */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Receita - Detalhes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Saldo de contas pessoais (incluído)</span>
-                    <span className="font-medium">{formatCurrency(accountsIncome)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
 
             {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

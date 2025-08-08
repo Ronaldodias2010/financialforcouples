@@ -230,12 +230,6 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
                   {formatCurrency(totalExpenses)}
                 </p>
               </div>
-              <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                <p className="text-sm text-green-600 dark:text-green-400">Total de Receitas</p>
-                <p className="text-2xl font-bold text-green-700 dark:text-green-300">
-                  {formatCurrency(totalIncome)}
-                </p>
-              </div>
             </div>
           </Card>
 
