@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useCouple } from "@/hooks/useCouple";
-
+import { useUserNames } from "@/hooks/useUserNames";
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
 }
@@ -44,16 +44,16 @@ interface Card {
   id: string;
   name: string;
   card_type: string;
+  owner_user?: string;
 }
-
 interface Account {
   id: string;
   name: string;
   account_type: string;
   balance: number;
   currency: string;
+  owner_user?: string;
 }
-
 export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
@@ -72,8 +72,13 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
-  const { couple, isPartOfCouple } = useCouple();
+const { couple, isPartOfCouple } = useCouple();
+const { userNames } = useUserNames();
 
+const getOwnerName = (ownerUser?: string) => {
+  if (ownerUser === 'user2') return userNames.user2;
+  return userNames.user1;
+};
   useEffect(() => {
     fetchCategories();
     fetchUserPreferredCurrency();
@@ -128,7 +133,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     try {
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, name, account_type, balance, currency')
+        .select('id, name, account_type, balance, currency, owner_user')
         .order('name');
 
       if (error) throw error;
@@ -146,7 +151,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     try {
       const { data, error } = await supabase
         .from('cards')
-        .select('id, name, card_type')
+        .select('id, name, card_type, owner_user')
         .order('name');
 
       if (error) throw error;
@@ -462,7 +467,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                       <div className="flex items-center justify-between w-full">
                         <span>{account.name}</span>
                         <span className="text-muted-foreground ml-2">
-                          {account.currency} {account.balance.toFixed(2)}
+                          {account.currency} {account.balance.toFixed(2)} • {getOwnerName(account.owner_user)}
                         </span>
                       </div>
                     </SelectItem>
@@ -486,7 +491,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                       <div className="flex items-center justify-between w-full">
                         <span>{card.name}</span>
                         <span className="text-muted-foreground ml-2">
-                          {card.card_type}
+                          {card.card_type} • {getOwnerName(card.owner_user)}
                         </span>
                       </div>
                     </SelectItem>
@@ -510,7 +515,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
                       <div className="flex items-center justify-between w-full">
                         <span>{account.name}</span>
                         <span className="text-muted-foreground ml-2">
-                          {account.currency} {account.balance.toFixed(2)}
+                          {account.currency} {account.balance.toFixed(2)} • {getOwnerName(account.owner_user)}
                         </span>
                       </div>
                     </SelectItem>
