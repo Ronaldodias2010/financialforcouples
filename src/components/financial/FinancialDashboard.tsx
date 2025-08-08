@@ -25,7 +25,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UserInviteCard } from "@/components/ui/user-invite-card";
-
+import { Card, CardContent } from "@/components/ui/card";
 interface Transaction {
   id: string;
   type: "income" | "expense";
@@ -109,7 +109,12 @@ export const FinancialDashboard = () => {
     const comparison = await getFinancialComparison();
     setFinancialComparison(comparison);
   };
+  const [onboardingStep, setOnboardingStep] = useState<0 | 1 | 2>(0);
 
+  useEffect(() => {
+    const done = typeof window !== 'undefined' && localStorage.getItem('onboarding_v1_done') === 'true';
+    if (!done) setOnboardingStep(1);
+  }, []);
 
   const handleAddTransaction = async (transaction: Transaction) => {
     // Transaction is now handled directly in the form component
@@ -232,16 +237,18 @@ export const FinancialDashboard = () => {
             {/* Quick Actions */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Button 
+                id="onboarding-accounts-btn"
                 variant="outline" 
-                className="h-20 flex flex-col gap-2 w-full"
+                className={`h-20 flex flex-col gap-2 w-full ${onboardingStep === 1 ? 'ring-4 ring-destructive ring-offset-2 ring-offset-background animate-pulse' : ''}`}
                 onClick={() => setCurrentPage("accounts")}
               >
                 <Wallet className="h-6 w-6" />
                 <span>{t('nav.accounts')}</span>
               </Button>
               <Button 
+                id="onboarding-cards-btn"
                 variant="outline" 
-                className="h-20 flex flex-col gap-2 w-full"
+                className={`h-20 flex flex-col gap-2 w-full ${onboardingStep === 2 ? 'ring-4 ring-destructive ring-offset-2 ring-offset-background animate-pulse' : ''}`}
                 onClick={() => setCurrentPage("cards")}
               >
                 <CreditCard className="h-6 w-6" />
@@ -452,6 +459,30 @@ export const FinancialDashboard = () => {
         </div>
 
         {renderTabContent()}
+
+        {onboardingStep > 0 && currentPage === "dashboard" && activeTab === "dashboard" && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+            <Card className="max-w-lg border-destructive">
+              <CardContent className="pt-6">
+                <p className="text-sm">
+                  {onboardingStep === 1
+                    ? 'O seu primeiro passo deve ser acionar o botão "Contas" e preencher com suas informações.'
+                    : 'O seu segundo passo deve ser acionar o botão "Cartões" e preencher com suas informações para dar início à utilização da aplicação.'}
+                </p>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="ghost" onClick={() => { localStorage.setItem('onboarding_v1_done', 'true'); setOnboardingStep(0); }}>
+                    Pular
+                  </Button>
+                  {onboardingStep === 1 ? (
+                    <Button onClick={() => setOnboardingStep(2)}>Próximo</Button>
+                  ) : (
+                    <Button onClick={() => { localStorage.setItem('onboarding_v1_done', 'true'); setOnboardingStep(0); }}>Concluir</Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
       </div>
     </div>
