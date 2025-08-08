@@ -58,6 +58,30 @@ interface Account {
   currency: string;
   owner_user?: string;
 }
+
+const normalizeCategory = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const CATEGORY_TRANSLATIONS: Record<string, string> = {
+  'alimentacao': 'Food',
+  'combustivel': 'Fuel',
+  'saude': 'Health',
+  'educacao': 'Education',
+  'vestuario': 'Clothing',
+  'viagem': 'Travel',
+  'transporte': 'Transport',
+  'moradia': 'Housing',
+  'salario': 'Salary',
+  'comissao': 'Commission',
+  'renda extra': 'Extra Income',
+  'pagamento de cartao de credito': 'Credit Card Payment',
+};
+const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
+  if (lang === 'en') {
+    const key = normalizeCategory(name);
+    return CATEGORY_TRANSLATIONS[key] ?? name;
+  }
+  return name;
+};
+
 export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
@@ -730,7 +754,7 @@ const getOwnerName = (ownerUser?: string) => {
               <SelectContent>
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
+                    {translateCategoryName(cat.name, language as 'pt' | 'en')}
                   </SelectItem>
                 ))}
               </SelectContent>
