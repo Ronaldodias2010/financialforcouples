@@ -14,6 +14,7 @@ interface CardData {
   credit_limit: number | null;
   current_balance: number;
   initial_balance: number | null;
+  initial_balance_original: number | null;
   currency: string;
   due_date: number | null;
   closing_date: number | null;
@@ -134,7 +135,7 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
                       {getOwnerName(card.owner_user)}
                     </p>
                     <p className="text-sm">
-                      Limite Disponível: {formatCurrency(card.initial_balance || 0, card.currency)}
+                      Limite Disponível: {formatCurrency(card.initial_balance_original || 0, card.currency)}
                     </p>
                     {card.credit_limit && (
                       <p className="text-sm text-muted-foreground">
