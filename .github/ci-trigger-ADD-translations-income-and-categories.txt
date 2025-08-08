@@ -1,0 +1,4 @@
+CI: trigger deploy - ADD translations for Monthly Income and Categories
+
+Reason: apply PT/EN translations for Monthly Income tab and Category card labels/list
+Timestamp: 2025-08-08
