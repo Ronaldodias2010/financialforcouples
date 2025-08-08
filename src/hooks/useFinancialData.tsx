@@ -428,6 +428,21 @@ export const useFinancialData = () => {
     }
   };
 
+  // Returns the sum of balances from personal accounts as income (converted)
+  const getAccountsIncome = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
+    const filteredAccounts = getAccountsByUser(viewMode).filter(
+      (acc) => (acc.account_model || 'personal') === 'personal'
+    );
+    const accountsIncome = filteredAccounts.reduce((sum, acc) => {
+      return sum + convertCurrency(
+        acc.balance || 0,
+        acc.currency as CurrencyCode,
+        userPreferredCurrency
+      );
+    }, 0);
+    return accountsIncome;
+  };
+
   return {
     transactions,
     userPreferredCurrency,
@@ -436,6 +451,7 @@ export const useFinancialData = () => {
     getFinancialComparison,
     getTransactionsByUser,
     getExpensesByUser,
+    getAccountsIncome,
     refreshData
   };
 };

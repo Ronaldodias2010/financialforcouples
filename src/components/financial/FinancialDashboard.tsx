@@ -42,7 +42,7 @@ interface Transaction {
 export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData } = useFinancialData();
+  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsIncome } = useFinancialData();
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
   const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
@@ -54,6 +54,14 @@ export const FinancialDashboard = () => {
   const currentUser = "user1"; // Fixed to user1 (logged user)
   
   const financialSummary = getFinancialSummary(viewMode);
+  const accountsIncome = getAccountsIncome(viewMode);
+  const formatCurrency = (value: number) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: 'currency', currency: financialSummary.currency }).format(value);
+    } catch {
+      return value.toFixed(2);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -219,6 +227,21 @@ export const FinancialDashboard = () => {
                 type="expense"
                 change={financialComparison.expenseChange}
               />
+            </div>
+
+            {/* Receita - Detalhes */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Receita - Detalhes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Saldo de contas pessoais (incluído)</span>
+                    <span className="font-medium">{formatCurrency(accountsIncome)}</span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Main Content */}
