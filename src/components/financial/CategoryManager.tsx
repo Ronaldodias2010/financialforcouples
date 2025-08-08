@@ -30,6 +30,30 @@ export const CategoryManager = () => {
   const { language, t } = useLanguage();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
+  const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  const categoryTranslations: Record<string, string> = {
+    'alimentacao': 'Food',
+    'combustivel': 'Fuel',
+    'saude': 'Health',
+    'educacao': 'Education',
+    'vestuario': 'Clothing',
+    'viagem': 'Travel',
+    'transporte': 'Transport',
+    'moradia': 'Housing',
+    'salario': 'Salary',
+    'comissao': 'Commission',
+    'renda extra': 'Extra Income',
+  };
+
+  const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
+    if (lang === 'en') {
+      const key = normalize(name);
+      return categoryTranslations[key] ?? name;
+    }
+    return name;
+  };
+
   useEffect(() => {
     const init = async () => {
       await ensureDefaultCategories();
@@ -360,9 +384,9 @@ export const CategoryManager = () => {
                     className="w-4 h-4 rounded-full border"
                     style={{ backgroundColor: category.color || "#6366f1" }}
                   />
-                  <span className="font-medium">{category.name}</span>
+                  <span className="font-medium">{translateCategoryName(category.name, language)}</span>
                   <span className="text-xs px-2 py-1 rounded-full bg-muted">
-                    {category.category_type === 'income' ? 'Entrada' : 'Saída'}
+                    {category.category_type === 'income' ? t('categories.type.income') : t('categories.type.expense')}
                   </span>
                   {category.icon && <span className="text-lg">{category.icon}</span>}
                 </div>
