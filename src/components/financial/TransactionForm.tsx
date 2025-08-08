@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useCouple } from "@/hooks/useCouple";
-import { useUserNames } from "@/hooks/useUserNames";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
 }
@@ -107,17 +107,17 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const { t, language } = useLanguage();
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
 const { couple, isPartOfCouple } = useCouple();
-const { userNames } = useUserNames();
+const { names } = usePartnerNames();
 
 const getOwnerName = (ownerUser?: string) => {
-  if (ownerUser === 'user2') return userNames.user2;
-  return userNames.user1;
+  if (ownerUser === 'user2') return names.user2Name;
+  return names.user1Name;
 };
 const getCardOwnerName = (card: Card) => {
   if (isPartOfCouple && couple) {
-    return card.user_id === couple.user1_id ? userNames.user1 : userNames.user2;
+    return card.user_id === couple.user1_id ? names.user1Name : names.user2Name;
   }
-  return userNames.user1;
+  return names.currentUserName;
 };
   useEffect(() => {
     fetchCategories();

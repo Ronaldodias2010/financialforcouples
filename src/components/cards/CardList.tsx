@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
-import { useUserNames } from "@/hooks/useUserNames";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -31,7 +31,7 @@ interface CardListProps {
 export const CardList = ({ refreshTrigger }: CardListProps) => {
   const { user } = useAuth();
   const { couple, isPartOfCouple } = useCouple();
-  const { userNames } = useUserNames();
+  const { names } = usePartnerNames();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -102,14 +102,14 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
     }).format(value);
   };
 
-  const getOwnerNameForCard = (card: CardData) => {
-    if (isPartOfCouple && couple) {
-      return card.user_id === couple.user1_id
-        ? (userNames.user1 || 'Usuário 1')
-        : (userNames.user2 || 'Usuário 2');
-    }
-    return userNames.user1 || 'Usuário Principal';
-  };
+const getOwnerNameForCard = (card: CardData) => {
+  if (isPartOfCouple && couple) {
+    return card.user_id === couple.user1_id
+      ? (names.user1Name || 'Usuário 1')
+      : (names.user2Name || 'Usuário 2');
+  }
+  return names.currentUserName || 'Usuário Principal';
+};
 
   if (loading) {
     return <div>Carregando cartões...</div>;
