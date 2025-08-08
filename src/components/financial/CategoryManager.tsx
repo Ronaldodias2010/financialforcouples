@@ -44,6 +44,7 @@ export const CategoryManager = () => {
     'salario': 'Salary',
     'comissao': 'Commission',
     'renda extra': 'Extra Income',
+    'pagamento de cartao de credito': 'Credit Card Payment',
   };
 
   const translateCategoryName = (name: string, lang: 'pt' | 'en') => {

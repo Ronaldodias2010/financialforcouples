@@ -49,7 +49,7 @@ interface Card {
   closing_date?: number;
   due_date?: number;
 }
-const CREDIT_CARD_PAYMENT_CATEGORY_NAME = "Pagamento de Cartão de Crédito";
+const CREDIT_CARD_PAYMENT_NAMES = { pt: "Pagamento de Cartão de Crédito", en: "Credit Card Payment" } as const;
 interface Account {
   id: string;
   name: string;
@@ -79,7 +79,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
     ? parseFloat(amount) / Number(totalInstallments)
     : 0;
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
 const { couple, isPartOfCouple } = useCouple();
 const { userNames } = useUserNames();
@@ -134,12 +134,14 @@ const getOwnerName = (ownerUser?: string) => {
 
       let result = (data || []).map((c) => ({ id: c.id as string, name: c.name as string }));
 
-      const hasPaymentCat = result.some((c) => c.name === CREDIT_CARD_PAYMENT_CATEGORY_NAME);
+      const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
+      const hasPaymentCat = result.some((c) => paymentNames.includes(c.name));
       if (type === 'expense' && !hasPaymentCat) {
+        const targetName = CREDIT_CARD_PAYMENT_NAMES[language as 'pt' | 'en'] || CREDIT_CARD_PAYMENT_NAMES.en;
         const { data: inserted, error: insertErr } = await supabase
           .from('categories')
           .insert({
-            name: CREDIT_CARD_PAYMENT_CATEGORY_NAME,
+            name: targetName,
             category_type: 'expense',
             user_id: user.id,
           })
@@ -197,7 +199,8 @@ const getOwnerName = (ownerUser?: string) => {
   };
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
-  const isCreditCardPaymentCategory = selectedCategory?.name === CREDIT_CARD_PAYMENT_CATEGORY_NAME;
+  const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
+  const isCreditCardPaymentCategory = selectedCategory ? paymentNames.includes(selectedCategory.name) : false;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -737,7 +740,7 @@ const getOwnerName = (ownerUser?: string) => {
           {/* Seleção de Cartão para categoria: Pagamento de Cartão de Crédito */}
           {type === "expense" && isCreditCardPaymentCategory && (
             <div>
-              <Label htmlFor="card">Selecione o cartão para pagamento da fatura</Label>
+              <Label htmlFor="card">{language === 'pt' ? 'Selecione o cartão para pagamento da fatura' : 'Select the credit card to pay the invoice'}</Label>
               <Select value={cardId} onValueChange={setCardId} required>
                 <SelectTrigger>
                   <SelectValue placeholder={t('transactionForm.selectCardPlaceholder')} />
