@@ -23,6 +23,7 @@ interface RecurringExpense {
   frequency_days: number;
   next_due_date: Date;
   is_active: boolean;
+  owner_user?: string;
 }
 
 interface Category {
@@ -406,7 +407,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)}
+                    R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)} • {getOwnerName(expense.owner_user)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Próximo: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
