@@ -226,7 +226,7 @@ jobs:
         terraform import aws_secretsmanager_secret.app_config couples-financials-app-config || true
         
         # Import CloudFront Function
-        terraform import 'aws_cloudfront_function.spa_routing[0]' couples-financials-spa-routing || true
+        # Skipping CloudFront Function import to prevent function association limit issues
 
     - name: Terraform Apply
       working-directory: terraform
