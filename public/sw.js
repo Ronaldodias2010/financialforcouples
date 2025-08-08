@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v4';
-const STATIC_CACHE_NAME = 'couples-financials-static-v4';
-const API_CACHE_NAME = 'couples-financials-api-v4';
+const CACHE_NAME = 'couples-financials-v5';
+const STATIC_CACHE_NAME = 'couples-financials-static-v5';
+const API_CACHE_NAME = 'couples-financials-api-v5';
 
 const urlsToCache = [
   '/',
@@ -40,9 +40,10 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch handler with better caching strategy
+// Fetch handler with improved strategy to avoid stale HTML
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  const acceptHeader = event.request.headers.get('accept') || '';
   
   // Handle API requests differently
   if (API_URLS.some(apiUrl => url.href.startsWith(apiUrl))) {
@@ -76,14 +77,28 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle static assets and pages
+  // For navigations and HTML, use network-first to prevent serving stale index.html
+  if (event.request.mode === 'navigate' || acceptHeader.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => response)
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) return cached;
+          return caches.match('/');
+        })
+    );
+    return;
+  }
+
+  // Handle static assets - cache-first
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
         if (response) {
           return response;
         }
-        
+
         return fetch(event.request)
           .then(response => {
             // Cache successful responses
@@ -95,12 +110,6 @@ self.addEventListener('fetch', (event) => {
             }
             return response;
           });
-      })
-      .catch(() => {
-        // Return offline fallback for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
       })
   );
 });
