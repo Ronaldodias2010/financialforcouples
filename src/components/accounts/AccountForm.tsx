@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Wallet, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface AccountFormProps {
   onAccountAdded: () => void;
@@ -39,7 +39,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           owner_user: "user1",
           name: accountData.name,
           account_type: accountData.account_type as "checking" | "savings" | "investment",
-          account_model: accountData.account_model as "personal" | "business",
+          account_model: 'personal' as "personal",
           balance: parseFloat(accountData.balance) || 0,
           currency: accountData.currency as "BRL" | "USD" | "EUR"
         });
@@ -102,18 +102,9 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
           <div>
             <Label htmlFor="account_model">Modelo da Conta</Label>
-            <Select 
-              value={accountData.account_model} 
-              onValueChange={(value) => setAccountData(prev => ({ ...prev, account_model: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o modelo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="personal">{t('accounts.models.personal') || 'Pessoal'}</SelectItem>
-                <SelectItem value="business">{t('accounts.models.business') || 'Empresarial'}</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button type="button" variant="secondary" className="mt-2" disabled>
+              {t('accounts.models.personal') || 'Pessoal'}
+            </Button>
           </div>
 
           <div>
