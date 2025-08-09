@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AccountForm } from "@/components/accounts/AccountForm";
 import { AccountList } from "@/components/accounts/AccountList";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { useLanguage } from "@/hooks/useLanguage";
 import { ArrowLeft, Wallet } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
@@ -32,8 +32,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
 
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [accountsData, setAccountsData] = useState<AccountRow[]>([]);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-  const displayCurrency: CurrencyCode = "BRL";
+const displayCurrency: CurrencyCode = "BRL";
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -57,50 +56,33 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
     fetchAccounts();
   }, [refreshTrigger]);
 
-  const filteredAccounts = useMemo(() => {
-    return viewMode === "both"
-      ? accountsData
-      : accountsData.filter((a) => (a.owner_user ?? "user1") === viewMode);
-  }, [accountsData, viewMode]);
 
-  useEffect(() => {
-    if (accountsData.length && !selectedAccountId) {
-      setSelectedAccountId(accountsData[0].id);
+
+const computeSuasContasTotal = (accounts: AccountRow[]) => {
+  const total = accounts.reduce((sum, a) => {
+    const bal = Number(a.balance ?? 0);
+    const limit = Number(a.overdraft_limit ?? 0);
+    const from = (a.currency ?? "BRL") as CurrencyCode;
+    if (bal >= 0) {
+      return sum + convertCurrency(bal, from, displayCurrency);
+    } else {
+      const used = Math.min(limit, Math.abs(bal));
+      const remaining = Math.max(0, limit - used);
+      return sum + convertCurrency(remaining, from, displayCurrency);
     }
-  }, [accountsData, selectedAccountId]);
+  }, 0);
+  return Number(total.toFixed(2));
+};
 
-  useEffect(() => {
-    if (filteredAccounts.length && !filteredAccounts.some(a => a.id === selectedAccountId)) {
-      setSelectedAccountId(filteredAccounts[0].id);
-    }
-  }, [viewMode, accountsData]);
+const user1Total = useMemo(() => {
+  const acc = accountsData.filter(a => (a.owner_user ?? "user1") === "user1");
+  return computeSuasContasTotal(acc);
+}, [accountsData, convertCurrency]);
 
-  const totalSaldoMaisLimite = useMemo(() => {
-    if (!filteredAccounts.length) return 0;
-
-    const selected = filteredAccounts.find(a => a.id === selectedAccountId) || filteredAccounts[0];
-
-    // Saldo positivo apenas da conta selecionada
-    const selBal = Number(selected.balance ?? 0);
-    const selFrom = (selected.currency ?? "BRL") as CurrencyCode;
-    const selectedPositive = convertCurrency(Math.max(selBal, 0), selFrom, displayCurrency);
-
-    // Somar o limite disponível apenas das contas negativas
-    const availableFromNegatives = filteredAccounts.reduce((sum, a) => {
-      const limit = Number(a.overdraft_limit ?? 0);
-      const bal = Number(a.balance ?? 0);
-      if (bal < 0) {
-        const used = Math.min(limit, Math.abs(bal));
-        const remaining = Math.max(0, limit - used);
-        const from = (a.currency ?? "BRL") as CurrencyCode;
-        return sum + convertCurrency(remaining, from, displayCurrency);
-      }
-      return sum;
-    }, 0);
-
-    const total = selectedPositive + availableFromNegatives;
-    return Number(total.toFixed(2));
-  }, [filteredAccounts, selectedAccountId, convertCurrency]);
+const user2Total = useMemo(() => {
+  const acc = accountsData.filter(a => (a.owner_user ?? "user1") === "user2");
+  return computeSuasContasTotal(acc);
+}, [accountsData, convertCurrency]);
 
   const handleAccountAdded = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -135,28 +117,32 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
             </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{t('transactionForm.selectAccount')}:</span>
-          <Select value={selectedAccountId ?? undefined} onValueChange={(v) => setSelectedAccountId(v)}>
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              {filteredAccounts.map((acc) => (
-                <SelectItem key={acc.id} value={acc.id}>
-                  {(acc.name || 'Conta')} — {acc.currency} {Number(acc.balance ?? 0).toFixed(2)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <FinancialCard
-          title="Saldo + Limite disponível (Contas)"
-          amount={totalSaldoMaisLimite}
-          currency={displayCurrency}
-          icon={Wallet}
-          type="balance"
-        />
+{viewMode === 'both' ? (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FinancialCard
+      title={`Suas Contas — ${getUserLabel('user1')}`}
+      amount={user1Total}
+      currency={displayCurrency}
+      icon={Wallet}
+      type="balance"
+    />
+    <FinancialCard
+      title={`Suas Contas — ${getUserLabel('user2')}`}
+      amount={user2Total}
+      currency={displayCurrency}
+      icon={Wallet}
+      type="balance"
+    />
+  </div>
+) : (
+  <FinancialCard
+    title={`Suas Contas — ${getUserLabel(viewMode)}`}
+    amount={viewMode === 'user1' ? user1Total : user2Total}
+    currency={displayCurrency}
+    icon={Wallet}
+    type="balance"
+  />
+)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
