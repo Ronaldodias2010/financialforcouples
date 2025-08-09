@@ -24,6 +24,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
     account_type: "",
     account_model: "personal",
     balance: "",
+    overdraft_limit: "",
     currency: "BRL"
   });
 
@@ -42,6 +43,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           account_type: accountData.account_type as "checking" | "savings" | "investment",
           account_model: 'personal' as "personal",
           balance: parseFloat(accountData.balance) || 0,
+          overdraft_limit: parseFloat(accountData.overdraft_limit) || 0,
           currency: accountData.currency as "BRL" | "USD" | "EUR"
         });
 
@@ -53,6 +55,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
         account_type: "",
         account_model: "personal",
         balance: "",
+        overdraft_limit: "",
         currency: "BRL"
       });
       onAccountAdded();
@@ -120,6 +123,18 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
               onChange={(e) => setAccountData(prev => ({ ...prev, balance: e.target.value }))}
               placeholder="0.00"
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="overdraft_limit">Limite</Label>
+            <Input
+              id="overdraft_limit"
+              type="number"
+              step="0.01"
+              value={accountData.overdraft_limit}
+              onChange={(e) => setAccountData(prev => ({ ...prev, overdraft_limit: e.target.value }))}
+              placeholder="0.00"
             />
           </div>
 

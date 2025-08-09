@@ -58,6 +58,7 @@ interface Account {
   balance: number;
   currency: string;
   owner_user?: string;
+  overdraft_limit?: number;
 }
 
 const normalizeCategory = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -197,7 +198,7 @@ const getCardOwnerName = (card: Card) => {
     try {
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, name, account_type, balance, currency, owner_user')
+        .select('id, name, account_type, balance, currency, owner_user, overdraft_limit')
         .order('name');
 
       if (error) throw error;
@@ -378,6 +379,20 @@ const getCardOwnerName = (card: Card) => {
         }
       } else {
         // Inserção padrão (dinheiro, depósito, transferência, débito ou receitas)
+        // Validar limite (overdraft) para despesas com cartão de débito
+        if (type === "expense" && paymentMethod === "debit_card" && accountId) {
+          const selectedAccount = accounts.find(acc => acc.id === accountId);
+          const limit = Number(selectedAccount?.overdraft_limit ?? 0);
+          const proposed = (selectedAccount?.balance ?? 0) - transactionAmount;
+          if (proposed < -limit) {
+            toast({
+              title: "Limite excedido",
+              description: "Esta despesa ultrapassa o limite negativo permitido da conta.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
         const { error } = await supabase
           .from('transactions')
           .insert({

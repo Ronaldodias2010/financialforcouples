@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Trash2 } from "lucide-react";
+import { Wallet, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface AccountData {
@@ -130,8 +130,14 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                         )
                       )}
                     </p>
-                    <p className="text-lg font-bold text-primary">
-                      {formatCurrency(account.balance, account.currency)}
+                    <p className="text-lg font-bold">
+                      {account.balance < 0 ? (
+                        <span className="text-destructive inline-flex items-center gap-1">
+                          <AlertTriangle className="h-4 w-4" /> {formatCurrency(account.balance, account.currency)}
+                        </span>
+                      ) : (
+                        <span className="text-primary">{formatCurrency(account.balance, account.currency)}</span>
+                      )}
                     </p>
                   </div>
                 </div>

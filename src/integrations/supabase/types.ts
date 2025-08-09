@@ -23,6 +23,7 @@ export type Database = {
           currency: Database["public"]["Enums"]["currency_type"]
           id: string
           name: string
+          overdraft_limit: number
           owner_user: string | null
           updated_at: string
           user_id: string
@@ -35,6 +36,7 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           id?: string
           name: string
+          overdraft_limit?: number
           owner_user?: string | null
           updated_at?: string
           user_id: string
@@ -47,6 +49,7 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           id?: string
           name?: string
+          overdraft_limit?: number
           owner_user?: string | null
           updated_at?: string
           user_id?: string
