@@ -102,6 +102,50 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
     }).format(value);
   };
 
+// Logos de bancos para cartões
+const bankLogos: Record<string, string> = {
+  nubank: "/banks/nubank.svg",
+  itau: "/banks/itau.svg",
+  bradesco: "/banks/bradesco.svg",
+  bancodobrasil: "/banks/banco-do-brasil.svg",
+  santander: "/banks/santander.svg",
+  inter: "/banks/inter.svg",
+  c6: "/banks/c6bank.svg",
+  caixa: "/banks/caixa.svg",
+  sicredi: "/banks/sicredi.png",
+  bankofamerica: "/banks/bank-of-america.svg",
+  mercadopago: "/lovable-uploads/b5dc9fff-ca93-4a0b-89a9-43e807cb1f7c.png",
+  chase: "/banks/chase.svg",
+  wellsfargo: "/banks/wells-fargo.svg",
+  avenue: "/banks/avenue.svg",
+  capitalone: "/banks/capital-one.svg",
+};
+
+const detectBankKey = (name: string): keyof typeof bankLogos | null => {
+  const n = name.toLowerCase();
+  if (n.includes("nubank") || n.includes("nu ") || n.includes("nuconta") || n.includes("nu conta")) return "nubank";
+  if (n.includes("itaú") || n.includes("itau")) return "itau";
+  if (n.includes("bradesco")) return "bradesco";
+  if (n.includes("banco do brasil") || n === "bb" || n.includes("bb ")) return "bancodobrasil";
+  if (n.includes("santander")) return "santander";
+  if (n.includes("inter")) return "inter";
+  if (n.includes("c6")) return "c6";
+  if (n.includes("caixa") || n.includes("cef")) return "caixa";
+  if (n.includes("sicredi")) return "sicredi";
+  if (n.includes("bank of america") || n.includes("bofa")) return "bankofamerica";
+  if (n.includes("mercado pago") || n.includes("mercadopago")) return "mercadopago";
+  if (n.includes("chase")) return "chase";
+  if (n.includes("wells fargo") || n.includes("weels fargo") || n.includes("wells")) return "wellsfargo";
+  if (n.includes("avenue")) return "avenue";
+  if (n.includes("capital one") || n.includes("capitalone")) return "capitalone";
+  return null;
+};
+
+const getBankLogo = (name: string): string | null => {
+  const key = detectBankKey(name);
+  return key ? bankLogos[key] : null;
+};
+
 const getOwnerNameForCard = (card: CardData) => {
   if (isPartOfCouple && couple) {
     return card.user_id === couple.user1_id
@@ -130,7 +174,14 @@ const getOwnerNameForCard = (card: CardData) => {
             <Card key={card.id} className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <CreditCard className="h-8 w-8 text-primary" />
+{(() => {
+                    const logo = getBankLogo(card.name);
+                    return logo ? (
+                      <img src={logo} alt={`Logo do ${card.name}`} className="h-8 w-8 rounded-sm object-contain" loading="lazy" />
+                    ) : (
+                      <CreditCard className="h-8 w-8 text-primary" />
+                    );
+                  })()}
                   <div>
                     <h4 className="font-semibold">{card.name}</h4>
                     <p className="text-sm text-muted-foreground">
