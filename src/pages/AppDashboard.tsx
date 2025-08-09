@@ -7,6 +7,7 @@ import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
@@ -86,6 +87,7 @@ const AppDashboard = () => {
                 </Button>
               </>
             )}
+            <ThemeSwitcher />
             <Button 
               variant="outline" 
               size="sm" 
