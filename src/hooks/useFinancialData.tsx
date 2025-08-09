@@ -443,6 +443,16 @@ export const useFinancialData = () => {
     return accountsIncome;
   };
 
+  // Returns the sum of transaction-based incomes only (no accounts)
+  const getTransactionsIncome = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
+    const filteredTransactions = getTransactionsByUser(viewMode);
+    const incomeOnly = filteredTransactions.filter(t => t.type === 'income');
+    const total = incomeOnly.reduce((sum, t) => {
+      return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
+    }, 0);
+    return total;
+  };
+
   return {
     transactions,
     userPreferredCurrency,
@@ -452,6 +462,7 @@ export const useFinancialData = () => {
     getTransactionsByUser,
     getExpensesByUser,
     getAccountsIncome,
+    getTransactionsIncome,
     refreshData
   };
 };

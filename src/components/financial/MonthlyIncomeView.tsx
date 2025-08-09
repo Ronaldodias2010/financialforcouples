@@ -10,7 +10,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { format } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useFinancialData } from "@/hooks/useFinancialData";
+
 
 interface Transaction {
   id: string;
@@ -61,13 +61,29 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
   const { names } = usePartnerNames();
   const { isPartOfCouple, couple } = useCouple();
   const { t, language } = useLanguage();
-  const { getAccountsIncome } = useFinancialData();
-  const accountsIncome = getAccountsIncome(viewMode);
 
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
   }, [selectedMonth, selectedCategory, viewMode]);
+
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('monthly-income-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          setTimeout(fetchTransactions, 100);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, selectedMonth, selectedCategory, viewMode]);
 
   const fetchCategories = async () => {
     try {
@@ -182,7 +198,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
     }
   };
 
-  const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0) + accountsIncome;
+  const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -245,19 +261,6 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
 
       <Card className="p-6">
         <h4 className="text-md font-semibold mb-4">{t('monthlyIncome.periodIncome')}</h4>
-        {accountsIncome > 0 && (
-          <div className="flex items-center justify-between p-4 border rounded-lg mb-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                <span className="font-medium">{t('monthlyIncome.firstBalance')}</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-lg font-semibold text-green-600">+{formatCurrency(accountsIncome)}</p>
-            </div>
-          </div>
-        )}
         {transactions.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             {t('monthlyIncome.noneFound')}

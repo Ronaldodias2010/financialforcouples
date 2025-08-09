@@ -42,7 +42,7 @@ interface Transaction {
 export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsIncome } = useFinancialData();
+  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsIncome, getTransactionsIncome } = useFinancialData();
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
   const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
@@ -213,7 +213,7 @@ export const FinancialDashboard = () => {
               />
               <FinancialCard
                 title={t('dashboard.income')}
-                amount={financialSummary.totalIncome}
+                amount={getTransactionsIncome(viewMode)}
                 currency={financialSummary.currency}
                 icon={TrendingUp}
                 type="income"
