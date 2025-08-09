@@ -183,13 +183,25 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div className="rounded-md bg-muted/30 p-3 text-sm">
-            <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
-            {(() => {
-              const limit = parseFloat(accountData.overdraft_limit) || 0;
-              const signed = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
-              const used = signed < 0 ? Math.min(limit, Math.abs(signed)) : 0;
-              return formatCurrency(used, accountData.currency);
-            })()}
+            <div>
+              <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
+              {(() => {
+                const limit = parseFloat(accountData.overdraft_limit) || 0;
+                const available = Math.abs(parseFloat(accountData.balance) || 0);
+                const used = isNegative ? Math.min(limit, Math.max(0, limit - available)) : 0;
+                return formatCurrency(used, accountData.currency);
+              })()}
+            </div>
+            <div className="mt-1 text-muted-foreground">
+              <span className="font-medium">{tr('accounts.remainingLimit', 'Saldo disponível do limite')}: </span>
+              {(() => {
+                const limit = parseFloat(accountData.overdraft_limit) || 0;
+                const available = Math.abs(parseFloat(accountData.balance) || 0);
+                const used = isNegative ? Math.min(limit, Math.max(0, limit - available)) : 0;
+                const remaining = Math.max(0, limit - used);
+                return formatCurrency(remaining, accountData.currency);
+              })()}
+            </div>
           </div>
 
           <Button type="submit" className="w-full mt-2" disabled={loading}>

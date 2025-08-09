@@ -112,11 +112,18 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     return models[model as keyof typeof models] || model;
   };
 
-  const getAvailableBalance = (acc: AccountData) => {
+  const getUsedLimit = (acc: AccountData) => {
     const limit = Number(acc.overdraft_limit || 0);
     const bal = Number(acc.balance || 0);
-    const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
+    // Se o saldo é positivo, limite utilizado = 0; se negativo, usado = min(limite, |saldo|)
+    const used = bal >= 0 ? 0 : Math.min(limit, Math.abs(bal));
     return used;
+  };
+
+  const getRemainingLimit = (acc: AccountData) => {
+    const limit = Number(acc.overdraft_limit || 0);
+    const used = getUsedLimit(acc);
+    return Math.max(0, limit - used);
   };
 
   const tr = (key: string, def: string) => {
@@ -171,7 +178,11 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                     </p>
                     <p className="text-sm mt-1">
                       <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
-                      {formatCurrency(getAvailableBalance(account), account.currency)}
+                      {formatCurrency(getUsedLimit(account), account.currency)}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">{tr('accounts.remainingLimit', 'Saldo disponível do limite')}: </span>
+                      {formatCurrency(getRemainingLimit(account), account.currency)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {tr('accounts.limit', 'Limite') + ': '} {formatCurrency(account.overdraft_limit || 0, account.currency)}
