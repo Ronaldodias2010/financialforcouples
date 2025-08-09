@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
 
 // Cores para diferenciação visual
@@ -40,11 +41,10 @@ export const UserExpenseChart = () => {
   const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyExpense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userProfiles, setUserProfiles] = useState({ user1: 'Usuário 1', user2: 'Usuário 2' });
+  const { names } = usePartnerNames();
 
   useEffect(() => {
     if (user) {
-      fetchUserProfiles();
       fetchFinancialData();
       
       // Set up realtime listener for transactions
@@ -70,55 +70,6 @@ export const UserExpenseChart = () => {
     }
   }, [user, period]);
 
-  const fetchUserProfiles = async () => {
-    try {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) throw error;
-
-      let secondUserName = t('chart.user2');
-
-      // Only show second user if there's an active couple relationship
-      const { data: coupleData, error: coupleError } = await supabase
-        .from("user_couples")
-        .select("user1_id, user2_id")
-        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
-        .eq("status", "active")
-        .maybeSingle();
-
-      if (coupleData) {
-        // Get partner's ID (the other user in the couple)
-        const partnerId = coupleData.user1_id === user?.id ? coupleData.user2_id : coupleData.user1_id;
-        
-        // Get partner's profile
-        const { data: partnerData, error: partnerError } = await supabase
-          .from("profiles")
-          .select("display_name")
-          .eq("user_id", partnerId)
-          .maybeSingle();
-
-        if (partnerData?.display_name) {
-          secondUserName = partnerData.display_name;
-        }
-      }
-
-      console.log('Profiles fetched:', profiles);
-      setUserProfiles({
-        user1: profiles?.display_name || t('chart.user1'),
-        user2: secondUserName
-      });
-    } catch (error) {
-      console.error('Erro ao buscar perfis:', error);
-      setUserProfiles({
-        user1: t('chart.user1'),
-        user2: t('chart.user2')
-      });
-    }
-  };
 
   const fetchFinancialData = async () => {
     try {
@@ -260,7 +211,7 @@ export const UserExpenseChart = () => {
           <p className="font-medium">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
-              {entry.dataKey === 'user1' ? userProfiles.user1 : userProfiles.user2}: {formatCurrency(entry.value)}
+              {entry.dataKey === 'user1' ? names.user1Name : names.user2Name}: {formatCurrency(entry.value)}
             </p>
           ))}
         </div>
@@ -372,14 +323,14 @@ export const UserExpenseChart = () => {
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: CHART_COLORS.income.user1 }}
                     ></div>
-                    <span>{userProfiles.user1}</span>
+                     <span>{names.user1Name}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: CHART_COLORS.income.user2 }}
                     ></div>
-                    <span>{userProfiles.user2}</span>
+                     <span>{names.user2Name}</span>
                   </div>
                 </div>
               </div>
@@ -395,14 +346,14 @@ export const UserExpenseChart = () => {
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: CHART_COLORS.expense.user1 }}
                     ></div>
-                    <span>{userProfiles.user1}</span>
+                    <span>{names.user1Name}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: CHART_COLORS.expense.user2 }}
                     ></div>
-                    <span>{userProfiles.user2}</span>
+                    <span>{names.user2Name}</span>
                   </div>
                 </div>
               </div>
