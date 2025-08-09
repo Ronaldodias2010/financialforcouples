@@ -126,11 +126,39 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     return Math.max(0, limit - used);
   };
 
+  const bankLogos: Record<string, string> = {
+    nubank: "/banks/nubank.svg",
+    itau: "/banks/itau.svg",
+    bradesco: "/banks/bradesco.svg",
+    bancodobrasil: "/banks/banco-do-brasil.svg",
+    santander: "/banks/santander.svg",
+    inter: "/banks/inter.svg",
+    c6: "/banks/c6bank.svg",
+    caixa: "/banks/caixa.svg",
+  };
+
+  const detectBankKey = (name: string): keyof typeof bankLogos | null => {
+    const n = name.toLowerCase();
+    if (n.includes("nubank") || n.includes("nu ") || n.includes("nuconta") || n.includes("nu conta")) return "nubank";
+    if (n.includes("itaú") || n.includes("itau")) return "itau";
+    if (n.includes("bradesco")) return "bradesco";
+    if (n.includes("banco do brasil") || n === "bb" || n.includes("bb ")) return "bancodobrasil";
+    if (n.includes("santander")) return "santander";
+    if (n.includes("inter")) return "inter";
+    if (n.includes("c6")) return "c6";
+    if (n.includes("caixa") || n.includes("cef")) return "caixa";
+    return null;
+  };
+
+  const getBankLogo = (name: string): string | null => {
+    const key = detectBankKey(name);
+    return key ? bankLogos[key] : null;
+  };
+
   const tr = (key: string, def: string) => {
     const value = t(key);
     return value && value !== key ? value : def;
   };
-
   if (loading) {
     return <div>{t('common.loading') || "Carregando contas..."}</div>;
   }
@@ -150,7 +178,14 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
             <Card key={account.id} className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Wallet className="h-8 w-8 text-primary" />
+                  {(() => {
+                    const logo = getBankLogo(account.name);
+                    return logo ? (
+                      <img src={logo} alt={`${account.name} logo`} className="h-8 w-8 rounded-sm object-contain" loading="lazy" />
+                    ) : (
+                      <Wallet className="h-8 w-8 text-primary" />
+                    );
+                  })()}
                   <div>
                     <h4 className="font-semibold">{account.name}</h4>
                     <div className="text-sm text-muted-foreground">
