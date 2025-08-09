@@ -42,13 +42,13 @@ const displayCurrency: CurrencyCode = "BRL";
       if (!error && data) {
         setAccountsData(
           data.map((a) => ({
-            id: (a as any).id as string,
-            owner_user: (a as any).owner_user ?? "user1",
-            currency: ((a as any).currency as CurrencyCode) ?? "BRL",
-            balance: Number((a as any).balance ?? 0),
-            overdraft_limit: Number((a as any).overdraft_limit ?? 0),
-            account_model: (a as any).account_model ?? 'personal',
-            name: (a as any).name ?? null,
+id: (a as any).id as string,
+owner_user: (a as any).owner_user as ("user1" | "user2" | null),
+currency: ((a as any).currency as CurrencyCode) ?? "BRL",
+balance: Number((a as any).balance ?? 0),
+overdraft_limit: Number((a as any).overdraft_limit ?? 0),
+account_model: (a as any).account_model ?? 'personal',
+name: (a as any).name ?? null,
           }))
         );
       }
@@ -75,12 +75,12 @@ const computeSuasContasTotal = (accounts: AccountRow[]) => {
 };
 
 const user1Total = useMemo(() => {
-  const acc = accountsData.filter(a => (a.owner_user ?? "user1") === "user1");
+const acc = accountsData.filter(a => a.owner_user === "user1");
   return computeSuasContasTotal(acc);
 }, [accountsData, convertCurrency]);
 
 const user2Total = useMemo(() => {
-  const acc = accountsData.filter(a => (a.owner_user ?? "user1") === "user2");
+  const acc = accountsData.filter(a => a.owner_user === "user2");
   return computeSuasContasTotal(acc);
 }, [accountsData, convertCurrency]);
 
