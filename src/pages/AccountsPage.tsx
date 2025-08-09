@@ -18,6 +18,8 @@ interface AccountRow {
   currency: CurrencyCode | null;
   balance: number | null;
   overdraft_limit: number | null;
+  account_model: string | null;
+  name?: string | null;
 }
 
 export const AccountsPage = ({ onBack }: AccountsPageProps) => {
@@ -34,7 +36,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
     const fetchAccounts = async () => {
       const { data, error } = await supabase
         .from("accounts")
-        .select("owner_user, currency, balance, overdraft_limit");
+        .select("owner_user, currency, balance, overdraft_limit, account_model, name");
       if (!error && data) {
         setAccountsData(
           data.map((a) => ({
@@ -42,6 +44,8 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
             currency: ((a as any).currency as CurrencyCode) ?? "BRL",
             balance: Number((a as any).balance ?? 0),
             overdraft_limit: Number((a as any).overdraft_limit ?? 0),
+            account_model: (a as any).account_model ?? 'personal',
+            name: (a as any).name ?? null,
           }))
         );
       }
