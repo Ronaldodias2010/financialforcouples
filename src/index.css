@@ -65,6 +65,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(45 93% 47%), hsl(45 100% 65%));
     --gradient-secondary: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 84% 24%));
     --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(45 93% 55%), hsl(142 71% 70%));
   }
 
   .dark {
@@ -129,6 +130,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(45 93% 47%), hsl(45 100% 65%));
     --gradient-secondary: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 84% 24%));
     --gradient-background: linear-gradient(180deg, hsl(240 10% 3.9%), hsl(240 10% 7%));
+    --gradient-hero: linear-gradient(135deg, hsl(45 93% 55%), hsl(142 71% 35%));
   }
 }
 
