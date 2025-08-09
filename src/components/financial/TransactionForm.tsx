@@ -49,6 +49,7 @@ interface Card {
   owner_user?: string;
   closing_date?: number;
   due_date?: number;
+  currency?: CurrencyCode;
 }
 const CREDIT_CARD_PAYMENT_NAMES = { pt: "Pagamento de Cartão de Crédito", en: "Credit Card Payment" } as const;
 interface Account {
@@ -223,7 +224,7 @@ const getAccountOwnerName = (account: Account) => {
     try {
       const { data, error } = await supabase
         .from('cards')
-        .select('id, user_id, name, card_type, owner_user, closing_date, due_date')
+        .select('id, user_id, name, card_type, owner_user, closing_date, due_date, currency')
         .order('name');
 
       if (error) throw error;
@@ -385,12 +386,13 @@ const getAccountOwnerName = (account: Account) => {
           if (insertErr) throw insertErr;
         }
       } else {
-        // Inserção padrão (dinheiro, depósito, transferência, débito ou receitas)
-        // Validar limite (overdraft) para despesas com cartão de débito
+        // Validar limite (overdraft) para despesas com cartão de débito (com conversão de moeda)
         if (type === "expense" && paymentMethod === "debit_card" && accountId) {
           const selectedAccount = accounts.find(acc => acc.id === accountId);
           const limit = Number(selectedAccount?.overdraft_limit ?? 0);
-          const proposed = (selectedAccount?.balance ?? 0) - transactionAmount;
+          const accCurrency = (selectedAccount?.currency || "BRL") as CurrencyCode;
+          const txnInAccCurrency = convertCurrency(transactionAmount, currency, accCurrency);
+          const proposed = (Number(selectedAccount?.balance ?? 0)) - txnInAccCurrency;
           if (proposed < -limit) {
             toast({
               title: "Limite excedido",
@@ -427,7 +429,9 @@ const getAccountOwnerName = (account: Account) => {
       if (type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer") && accountId) {
         const selectedAccount = accounts.find(acc => acc.id === accountId);
         if (selectedAccount) {
-          const newBalance = selectedAccount.balance + transactionAmount;
+          const accCurrency = (selectedAccount.currency || "BRL") as CurrencyCode;
+          const amtInAcc = convertCurrency(transactionAmount, currency, accCurrency);
+          const newBalance = Number(selectedAccount.balance) + amtInAcc;
           
           const { error: updateError } = await supabase
             .from('accounts')
@@ -444,7 +448,9 @@ const getAccountOwnerName = (account: Account) => {
       if (type === "expense" && paymentMethod === "debit_card" && accountId) {
         const selectedAccount = accounts.find(acc => acc.id === accountId);
         if (selectedAccount) {
-          const newBalance = selectedAccount.balance - transactionAmount;
+          const accCurrency = (selectedAccount.currency || "BRL") as CurrencyCode;
+          const amtInAcc = convertCurrency(transactionAmount, currency, accCurrency);
+          const newBalance = Number(selectedAccount.balance) - amtInAcc;
           
           const { error: updateError } = await supabase
             .from('accounts')
@@ -457,16 +463,18 @@ const getAccountOwnerName = (account: Account) => {
         }
       }
 
-      // Repor limite do cartão quando a categoria for Pagamento de Cartão de Crédito
+      // Repor limite/saldo do cartão quando a categoria for Pagamento de Cartão de Crédito
       if (type === "expense" && isCreditCardPaymentCategory && cardId) {
         const { data: cardData, error: cardErr } = await supabase
           .from('cards')
-          .select('current_balance')
+          .select('current_balance, currency')
           .eq('id', cardId)
           .single();
         if (!cardErr && cardData) {
-          const currentBalance = Number(cardData.current_balance || 0);
-          const newBalance = Math.max(0, currentBalance - transactionAmount);
+          const currentBalance = Number((cardData as any).current_balance || 0);
+          const cardCurrency = ((cardData as any).currency || "BRL") as CurrencyCode;
+          const amountInCardCurrency = convertCurrency(transactionAmount, currency, cardCurrency);
+          const newBalance = currentBalance - amountInCardCurrency; // permite saldo positivo no cartão após pagamento superior
           const { error: updateCardErr } = await supabase
             .from('cards')
             .update({ current_balance: newBalance })
@@ -859,6 +867,12 @@ const getAccountOwnerName = (account: Account) => {
                 if (!acc) return false;
                 const limit = Number(acc.overdraft_limit || 0);
                 const bal = Number(acc.balance || 0);
+                if (amount) {
+                  const amtNum = parseFloat(amount || "0");
+                  const amtInAcc = convertCurrency(amtNum, currency, (acc.currency || "BRL") as CurrencyCode);
+                  const proposed = bal - amtInAcc;
+                  return proposed < -limit;
+                }
                 const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
                 return limit > 0 && used >= limit;
               })()
