@@ -184,10 +184,6 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                       <span className="font-medium">{tr('accounts.remainingLimit', 'Limite Disponível')}: </span>
                       {formatCurrency(getRemainingLimit(account), account.currency)}
                     </p>
-                    <p className="text-sm">
-                      <span className="font-medium">{tr('accounts.missingToZero', 'Falta para zerar o limite')}: </span>
-                      {formatCurrency(getUsedLimit(account), account.currency)}
-                    </p>
                     <p className="text-xs text-muted-foreground">
                       {tr('accounts.limit', 'Limite') + ': '} {formatCurrency(account.overdraft_limit || 0, account.currency)}
                     </p>
