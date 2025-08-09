@@ -137,7 +137,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     caixa: "/banks/caixa.svg",
     sicredi: "/banks/sicredi.png",
     bankofamerica: "/banks/bank-of-america.svg",
-    mercadopago: "/banks/mercado-pago.png",
+    mercadopago: "/lovable-uploads/b5dc9fff-ca93-4a0b-89a9-43e807cb1f7c.png",
     chase: "/banks/chase.svg",
     wellsfargo: "/banks/wells-fargo.svg",
     avenue: "/banks/avenue.svg",
