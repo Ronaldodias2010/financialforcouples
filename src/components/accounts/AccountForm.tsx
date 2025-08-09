@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 
 interface AccountFormProps {
   onAccountAdded: () => void;
@@ -142,17 +142,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="balance">{t('accounts.balance') || 'Saldo Atual'}</Label>
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <span className="font-medium">{isNegative ? tr('accounts.negative', 'Negativo') : tr('accounts.positive', 'Positivo')}</span>
-                <Switch
-                  checked={isNegative}
-                  onCheckedChange={setIsNegative}
-                  aria-label={tr('accounts.balanceSign', 'Sinal do saldo')}
-                />
-              </div>
-            </div>
+            <Label htmlFor="balance">{tr('accounts.availableBalance', 'Saldo Disponível')}</Label>
             <Input
               id="balance"
               type="number"
@@ -161,7 +151,18 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
               onChange={(e) => setAccountData(prev => ({ ...prev, balance: e.target.value }))}
               placeholder="0.00"
               required
+              className={isNegative ? "text-destructive" : undefined}
             />
+            <div className="mt-2 flex gap-2">
+              <Button type="button" size="sm" variant={!isNegative ? "default" : "outline"} onClick={() => setIsNegative(false)}>
+                <Plus className="h-4 w-4 mr-1" />
+                {tr('accounts.positive', 'Positivo')}
+              </Button>
+              <Button type="button" size="sm" variant={isNegative ? "default" : "outline"} onClick={() => setIsNegative(true)}>
+                <Minus className="h-4 w-4 mr-1" />
+                {tr('accounts.negative', 'Negativo')}
+              </Button>
+            </div>
           </div>
 
           <div>
@@ -182,8 +183,13 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div className="rounded-md bg-muted/30 p-3 text-sm">
-            <span className="font-medium">{tr('accounts.availableBalance', 'Saldo Disponível')}: </span>
-            {formatCurrency(((parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1)) + (parseFloat(accountData.overdraft_limit) || 0), accountData.currency)}
+            <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
+            {(() => {
+              const limit = parseFloat(accountData.overdraft_limit) || 0;
+              const signed = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
+              const remaining = signed < 0 ? Math.max(0, limit - Math.abs(signed)) : limit;
+              return formatCurrency(remaining, accountData.currency);
+            })()}
           </div>
 
           <Button type="submit" className="w-full mt-2" disabled={loading}>

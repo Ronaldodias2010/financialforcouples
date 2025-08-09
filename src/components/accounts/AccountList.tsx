@@ -52,6 +52,23 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     }
   };
 
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel("accounts-listener")
+      .on("postgres_changes", { event: "*", schema: "public", table: "accounts", filter: `user_id=eq.${user.id}` }, () => {
+        fetchAccounts();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${user.id}` }, () => {
+        fetchAccounts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const deleteAccount = async (accountId: string) => {
     try {
       const { error } = await supabase
@@ -97,7 +114,9 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
 
   const getAvailableBalance = (acc: AccountData) => {
     const limit = Number(acc.overdraft_limit || 0);
-    return Number(acc.balance || 0) + limit;
+    const bal = Number(acc.balance || 0);
+    const remaining = bal < 0 ? Math.max(0, limit - Math.abs(bal)) : limit;
+    return remaining;
   };
 
   const tr = (key: string, def: string) => {
@@ -151,7 +170,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                       )}
                     </p>
                     <p className="text-sm mt-1">
-                      <span className="font-medium">{tr('accounts.availableBalance', 'Saldo Disponível')}: </span>
+                      <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
                       {formatCurrency(getAvailableBalance(account), account.currency)}
                     </p>
                     <p className="text-xs text-muted-foreground">
