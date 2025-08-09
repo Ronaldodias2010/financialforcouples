@@ -182,27 +182,34 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
             </Select>
           </div>
 
-          <div className="rounded-md bg-muted/30 p-3 text-sm">
-            <div>
-              <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
-              {(() => {
-                const limit = parseFloat(accountData.overdraft_limit) || 0;
-                const available = Math.abs(parseFloat(accountData.balance) || 0);
-                const used = isNegative ? Math.min(limit, Math.max(0, limit - available)) : 0;
-                return formatCurrency(used, accountData.currency);
-              })()}
-            </div>
-            <div className="mt-1 text-muted-foreground">
-              <span className="font-medium">{tr('accounts.remainingLimit', 'Saldo disponível do limite')}: </span>
-              {(() => {
-                const limit = parseFloat(accountData.overdraft_limit) || 0;
-                const available = Math.abs(parseFloat(accountData.balance) || 0);
-                const used = isNegative ? Math.min(limit, Math.max(0, limit - available)) : 0;
-                const remaining = Math.max(0, limit - used);
-                return formatCurrency(remaining, accountData.currency);
-              })()}
-            </div>
-          </div>
+      <div className="rounded-md bg-muted/30 p-3 text-sm">
+        <div>
+          <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
+          {(() => {
+            const limit = parseFloat(accountData.overdraft_limit) || 0;
+            const bal = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
+            const used = Math.min(limit, Math.max(0, -bal));
+            return formatCurrency(used, accountData.currency);
+          })()}
+        </div>
+        <div className="mt-1 text-muted-foreground">
+          <span className="font-medium">{tr('accounts.remainingLimit', 'Limite Disponível')}: </span>
+          {(() => {
+            const limit = parseFloat(accountData.overdraft_limit) || 0;
+            const bal = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
+            const used = Math.min(limit, Math.max(0, -bal));
+            const remaining = Math.max(0, limit - used);
+            return formatCurrency(remaining, accountData.currency);
+          })()}
+        </div>
+        <div className="mt-1">
+          <span className="font-medium">{tr('accounts.limit', 'Limite')}: </span>
+          {(() => {
+            const limit = parseFloat(accountData.overdraft_limit) || 0;
+            return formatCurrency(limit, accountData.currency);
+          })()}
+        </div>
+      </div>
 
           <Button type="submit" className="w-full mt-2" disabled={loading}>
             {loading ? (t('accounts.adding') || "Adicionando...") : (t('accounts.addAccount') || "Adicionar Conta")}
