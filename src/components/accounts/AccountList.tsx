@@ -100,6 +100,11 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     return Number(acc.balance || 0) + limit;
   };
 
+  const tr = (key: string, def: string) => {
+    const value = t(key);
+    return value && value !== key ? value : def;
+  };
+
   if (loading) {
     return <div>{t('common.loading') || "Carregando contas..."}</div>;
   }
@@ -146,11 +151,11 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                       )}
                     </p>
                     <p className="text-sm mt-1">
-                      <span className="font-medium">{t('accounts.availableBalance') || 'Saldo Disponível'}: </span>
+                      <span className="font-medium">{tr('accounts.availableBalance', 'Saldo Disponível')}: </span>
                       {formatCurrency(getAvailableBalance(account), account.currency)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {(t('accounts.limit') || 'Limite') + ': '} {formatCurrency(account.overdraft_limit || 0, account.currency)}
+                      {tr('accounts.limit', 'Limite') + ': '} {formatCurrency(account.overdraft_limit || 0, account.currency)}
                     </p>
                   </div>
                 </div>

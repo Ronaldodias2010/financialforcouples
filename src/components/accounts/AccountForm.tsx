@@ -35,6 +35,11 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
     }).format(value);
   };
 
+  const tr = (key: string, def: string) => {
+    const value = t(key);
+    return value && value !== key ? value : def;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -163,7 +168,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div className="rounded-md bg-muted/30 p-3 text-sm">
-            <span className="font-medium">{t('accounts.availableBalance') || 'Saldo Disponível'}: </span>
+            <span className="font-medium">{tr('accounts.availableBalance', 'Saldo Disponível')}: </span>
             {formatCurrency((parseFloat(accountData.balance) || 0) + (parseFloat(accountData.overdraft_limit) || 0), accountData.currency)}
           </div>
 
