@@ -135,6 +135,8 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     inter: "/banks/inter.svg",
     c6: "/banks/c6bank.svg",
     caixa: "/banks/caixa.svg",
+    sicredi: "/banks/sicredi.png",
+    bankofamerica: "/banks/bank-of-america.svg",
   };
 
   const detectBankKey = (name: string): keyof typeof bankLogos | null => {
@@ -147,6 +149,8 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     if (n.includes("inter")) return "inter";
     if (n.includes("c6")) return "c6";
     if (n.includes("caixa") || n.includes("cef")) return "caixa";
+    if (n.includes("sicredi")) return "sicredi";
+    if (n.includes("bank of america") || n.includes("bofa")) return "bankofamerica";
     return null;
   };
 
