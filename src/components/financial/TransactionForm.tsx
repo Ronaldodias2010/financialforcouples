@@ -53,6 +53,7 @@ interface Card {
 const CREDIT_CARD_PAYMENT_NAMES = { pt: "Pagamento de Cartão de Crédito", en: "Credit Card Payment" } as const;
 interface Account {
   id: string;
+  user_id: string;
   name: string;
   account_type: string;
   balance: number;
@@ -117,6 +118,12 @@ const getOwnerName = (ownerUser?: string) => {
 const getCardOwnerName = (card: Card) => {
   if (isPartOfCouple && couple) {
     return card.user_id === couple.user1_id ? names.user1Name : names.user2Name;
+  }
+  return names.currentUserName;
+};
+const getAccountOwnerName = (account: Account) => {
+  if (isPartOfCouple && couple) {
+    return account.user_id === couple.user1_id ? names.user1Name : names.user2Name;
   }
   return names.currentUserName;
 };
@@ -198,7 +205,7 @@ const getCardOwnerName = (card: Card) => {
     try {
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, name, account_type, balance, currency, owner_user, overdraft_limit')
+        .select('id, user_id, name, account_type, balance, currency, owner_user, overdraft_limit')
         .order('name');
 
       if (error) throw error;
@@ -665,7 +672,7 @@ const getCardOwnerName = (card: Card) => {
                       <div className="flex items-center justify-between w-full">
                         <span>{account.name}</span>
                         <span className="text-muted-foreground ml-2">
-                          {account.currency} {account.balance.toFixed(2)} • {getOwnerName(account.owner_user)}
+                          {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                         </span>
                       </div>
                     </SelectItem>
@@ -761,7 +768,7 @@ const getCardOwnerName = (card: Card) => {
                         <div className="flex items-center justify-between w-full">
                           <span>{account.name}</span>
                           <span className="text-muted-foreground ml-2">
-                            {account.currency} {account.balance.toFixed(2)} • {getOwnerName(account.owner_user)}
+                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                             {exhausted && <span className="ml-2 text-destructive">• Limite esgotado</span>}
                           </span>
                         </div>

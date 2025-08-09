@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCouple } from "@/hooks/useCouple";
 import { Plus, Minus } from "lucide-react";
 
 interface AccountFormProps {
@@ -19,6 +20,7 @@ interface AccountFormProps {
 export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { couple, isPartOfCouple } = useCouple();
   const [loading, setLoading] = useState(false);
   const [accountData, setAccountData] = useState({
     name: "",
@@ -51,11 +53,17 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
       const limit = parseFloat(accountData.overdraft_limit) || 0;
       const raw = parseFloat(accountData.balance) || 0;
       const signedBalance = raw * (isNegative ? -1 : 1);
+
+      // Determine owner_user based on couple relationship
+      const ownerUser = (isPartOfCouple && couple)
+        ? (user.id === couple.user1_id ? 'user1' : 'user2')
+        : 'user1';
+
       const { error } = await supabase
         .from("accounts")
         .insert({
           user_id: user.id,
-          owner_user: "user1",
+          owner_user: ownerUser,
           name: accountData.name,
           account_type: accountData.account_type as "checking" | "savings" | "investment",
           account_model: 'personal' as "personal",
