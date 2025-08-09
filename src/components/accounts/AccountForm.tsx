@@ -29,6 +29,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
     currency: "BRL"
   });
   const [isNegative, setIsNegative] = useState(false);
+  const [inputAsAvailable, setInputAsAvailable] = useState(true);
 
   const formatCurrency = (value: number, currency: string) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -48,7 +49,9 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
     setLoading(true);
     try {
-      const signedBalance = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
+      const limit = parseFloat(accountData.overdraft_limit) || 0;
+      const raw = parseFloat(accountData.balance) || 0;
+      const signedBalance = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
       const { error } = await supabase
         .from("accounts")
         .insert({
@@ -142,7 +145,15 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="balance">{tr('accounts.availableBalance', 'Saldo Disponível')}</Label>
+            <div className="mb-2 flex gap-2">
+              <Button type="button" size="sm" variant={inputAsAvailable ? "default" : "outline"} onClick={() => setInputAsAvailable(true)}>
+                {tr('accounts.availableBalance', 'Saldo Disponível')}
+              </Button>
+              <Button type="button" size="sm" variant={!inputAsAvailable ? "default" : "outline"} onClick={() => setInputAsAvailable(false)}>
+                {tr('accounts.currentBalance', 'Saldo Atual')}
+              </Button>
+            </div>
+            <Label htmlFor="balance">{tr(inputAsAvailable ? 'accounts.availableBalance' : 'accounts.currentBalance', inputAsAvailable ? 'Saldo Disponível' : 'Saldo Atual')}</Label>
             <Input
               id="balance"
               type="number"
@@ -151,18 +162,20 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
               onChange={(e) => setAccountData(prev => ({ ...prev, balance: e.target.value }))}
               placeholder="0.00"
               required
-              className={isNegative ? "text-destructive" : undefined}
+              className={!inputAsAvailable && isNegative ? "text-destructive" : undefined}
             />
-            <div className="mt-2 flex gap-2">
-              <Button type="button" size="sm" variant={!isNegative ? "default" : "outline"} onClick={() => setIsNegative(false)}>
-                <Plus className="h-4 w-4 mr-1" />
-                {tr('accounts.positive', 'Positivo')}
-              </Button>
-              <Button type="button" size="sm" variant={isNegative ? "default" : "outline"} onClick={() => setIsNegative(true)}>
-                <Minus className="h-4 w-4 mr-1" />
-                {tr('accounts.negative', 'Negativo')}
-              </Button>
-            </div>
+            {!inputAsAvailable && (
+              <div className="mt-2 flex gap-2">
+                <Button type="button" size="sm" variant={!isNegative ? "default" : "outline"} onClick={() => setIsNegative(false)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  {tr('accounts.positive', 'Positivo')}
+                </Button>
+                <Button type="button" size="sm" variant={isNegative ? "default" : "outline"} onClick={() => setIsNegative(true)}>
+                  <Minus className="h-4 w-4 mr-1" />
+                  {tr('accounts.negative', 'Negativo')}
+                </Button>
+              </div>
+            )}
           </div>
 
           <div>
@@ -187,7 +200,8 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
           {(() => {
             const limit = parseFloat(accountData.overdraft_limit) || 0;
-            const bal = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
+            const raw = parseFloat(accountData.balance) || 0;
+            const bal = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
             const used = Math.min(limit, Math.max(0, -bal));
             return formatCurrency(used, accountData.currency);
           })()}
@@ -196,10 +210,21 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           <span className="font-medium">{tr('accounts.remainingLimit', 'Limite Disponível')}: </span>
           {(() => {
             const limit = parseFloat(accountData.overdraft_limit) || 0;
-            const bal = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
+            const raw = parseFloat(accountData.balance) || 0;
+            const bal = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
             const used = Math.min(limit, Math.max(0, -bal));
             const remaining = Math.max(0, limit - used);
             return formatCurrency(remaining, accountData.currency);
+          })()}
+        </div>
+        <div className="mt-1">
+          <span className="font-medium">{tr('accounts.missingToZero', 'Falta para zerar o limite')}: </span>
+          {(() => {
+            const limit = parseFloat(accountData.overdraft_limit) || 0;
+            const raw = parseFloat(accountData.balance) || 0;
+            const bal = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
+            const used = Math.min(limit, Math.max(0, -bal));
+            return formatCurrency(used, accountData.currency);
           })()}
         </div>
         <div className="mt-1">

@@ -153,8 +153,8 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                   <Wallet className="h-8 w-8 text-primary" />
                   <div>
                     <h4 className="font-semibold">{account.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {getAccountTypeLabel(account.account_type)}
+                    <div className="text-sm text-muted-foreground">
+                      <span>{getAccountTypeLabel(account.account_type)}</span>
                       {account.account_model && (
                         account.account_model === 'personal' ? (
                           <Badge variant="successSegmentFlatLeft" className="ml-2">
@@ -166,7 +166,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                           </Badge>
                         )
                       )}
-                    </p>
+                    </div>
                     <p className="text-lg font-bold">
                       {account.balance < 0 ? (
                         <span className="text-destructive inline-flex items-center gap-1">
@@ -183,6 +183,10 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                     <p className="text-sm">
                       <span className="font-medium">{tr('accounts.remainingLimit', 'Limite Disponível')}: </span>
                       {formatCurrency(getRemainingLimit(account), account.currency)}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">{tr('accounts.missingToZero', 'Falta para zerar o limite')}: </span>
+                      {formatCurrency(getUsedLimit(account), account.currency)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {tr('accounts.limit', 'Limite') + ': '} {formatCurrency(account.overdraft_limit || 0, account.currency)}
