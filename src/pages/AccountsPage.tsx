@@ -9,6 +9,8 @@ import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { useAuth } from "@/hooks/useAuth";
+import { useCouple } from "@/hooks/useCouple";
 
 interface AccountsPageProps {
   onBack: () => void;
@@ -16,6 +18,7 @@ interface AccountsPageProps {
 
 interface AccountRow {
   id: string;
+  user_id: string;
   owner_user: "user1" | "user2" | null;
   currency: CurrencyCode | null;
   balance: number | null;
@@ -34,15 +37,20 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
   const [accountsData, setAccountsData] = useState<AccountRow[]>([]);
 const displayCurrency: CurrencyCode = "BRL";
 
+const { user } = useAuth();
+const { getPartnerUserId, isUserOne } = useCouple();
+const partnerId = getPartnerUserId();
+
   useEffect(() => {
     const fetchAccounts = async () => {
       const { data, error } = await supabase
         .from("accounts")
-        .select("id, owner_user, currency, balance, overdraft_limit, account_model, name");
+        .select("id, user_id, owner_user, currency, balance, overdraft_limit, account_model, name");
       if (!error && data) {
         setAccountsData(
           data.map((a) => ({
 id: (a as any).id as string,
+user_id: (a as any).user_id as string,
 owner_user: (a as any).owner_user as ("user1" | "user2" | null),
 currency: ((a as any).currency as CurrencyCode) ?? "BRL",
 balance: Number((a as any).balance ?? 0),
@@ -74,15 +82,20 @@ const computeSuasContasTotal = (accounts: AccountRow[]) => {
   return Number(total.toFixed(2));
 };
 
-const user1Total = useMemo(() => {
-const acc = accountsData.filter(a => a.owner_user === "user1");
+const currentUserTotal = useMemo(() => {
+  if (!user?.id) return 0;
+  const acc = accountsData.filter(a => a.user_id === user.id);
   return computeSuasContasTotal(acc);
-}, [accountsData, convertCurrency]);
+}, [accountsData, user?.id, convertCurrency]);
 
-const user2Total = useMemo(() => {
-  const acc = accountsData.filter(a => a.owner_user === "user2");
+const partnerTotal = useMemo(() => {
+  if (!partnerId) return 0;
+  const acc = accountsData.filter(a => a.user_id === partnerId);
   return computeSuasContasTotal(acc);
-}, [accountsData, convertCurrency]);
+}, [accountsData, partnerId, convertCurrency]);
+
+const user1Total = isUserOne() ? currentUserTotal : partnerTotal;
+const user2Total = isUserOne() ? partnerTotal : currentUserTotal;
 
   const handleAccountAdded = () => {
     setRefreshTrigger((prev) => prev + 1);
