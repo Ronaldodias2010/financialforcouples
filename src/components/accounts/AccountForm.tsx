@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -27,6 +28,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
     overdraft_limit: "",
     currency: "BRL"
   });
+  const [isNegative, setIsNegative] = useState(false);
 
   const formatCurrency = (value: number, currency: string) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -46,6 +48,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
     setLoading(true);
     try {
+      const signedBalance = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
       const { error } = await supabase
         .from("accounts")
         .insert({
@@ -54,7 +57,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           name: accountData.name,
           account_type: accountData.account_type as "checking" | "savings" | "investment",
           account_model: 'personal' as "personal",
-          balance: parseFloat(accountData.balance) || 0,
+          balance: signedBalance,
           overdraft_limit: parseFloat(accountData.overdraft_limit) || 0,
           currency: accountData.currency as "BRL" | "USD" | "EUR"
         });
@@ -70,6 +73,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
         overdraft_limit: "",
         currency: "BRL"
       });
+      setIsNegative(false);
       onAccountAdded();
     } catch (error) {
       console.error("Error adding account:", error);
@@ -126,19 +130,6 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="balance">{t('accounts.balance') || 'Saldo Atual'}</Label>
-            <Input
-              id="balance"
-              type="number"
-              step="0.01"
-              value={accountData.balance}
-              onChange={(e) => setAccountData(prev => ({ ...prev, balance: e.target.value }))}
-              placeholder="0.00"
-              required
-            />
-          </div>
-
-          <div>
             <Label htmlFor="overdraft_limit">Limite</Label>
             <Input
               id="overdraft_limit"
@@ -147,6 +138,29 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
               value={accountData.overdraft_limit}
               onChange={(e) => setAccountData(prev => ({ ...prev, overdraft_limit: e.target.value }))}
               placeholder="0.00"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="balance">{t('accounts.balance') || 'Saldo Atual'}</Label>
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <span className="font-medium">{isNegative ? tr('accounts.negative', 'Negativo') : tr('accounts.positive', 'Positivo')}</span>
+                <Switch
+                  checked={isNegative}
+                  onCheckedChange={setIsNegative}
+                  aria-label={tr('accounts.balanceSign', 'Sinal do saldo')}
+                />
+              </div>
+            </div>
+            <Input
+              id="balance"
+              type="number"
+              step="0.01"
+              value={accountData.balance}
+              onChange={(e) => setAccountData(prev => ({ ...prev, balance: e.target.value }))}
+              placeholder="0.00"
+              required
             />
           </div>
 
@@ -169,7 +183,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
           <div className="rounded-md bg-muted/30 p-3 text-sm">
             <span className="font-medium">{tr('accounts.availableBalance', 'Saldo Disponível')}: </span>
-            {formatCurrency((parseFloat(accountData.balance) || 0) + (parseFloat(accountData.overdraft_limit) || 0), accountData.currency)}
+            {formatCurrency(((parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1)) + (parseFloat(accountData.overdraft_limit) || 0), accountData.currency)}
           </div>
 
           <Button type="submit" className="w-full mt-2" disabled={loading}>
