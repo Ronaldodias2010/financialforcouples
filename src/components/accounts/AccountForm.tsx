@@ -102,7 +102,13 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
           <div>
             <Label htmlFor="account_model">Modelo da Conta</Label>
-            <Button type="button" variant="secondary" className="mt-2" disabled>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-2 rounded-full bg-success text-success-foreground border border-success/50 px-3 py-1 shadow-md cursor-default hover:bg-success/90"
+              disabled
+            >
               {t('accounts.models.personal') || 'Pessoal'}
             </Button>
           </div>
