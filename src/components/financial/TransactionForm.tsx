@@ -751,18 +751,40 @@ const getCardOwnerName = (card: Card) => {
                   <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center justify-between w-full">
-                        <span>{account.name}</span>
-                        <span className="text-muted-foreground ml-2">
-                          {account.currency} {account.balance.toFixed(2)} • {getOwnerName(account.owner_user)}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {accounts.map((account) => {
+                    const limit = Number(account.overdraft_limit || 0);
+                    const bal = Number(account.balance || 0);
+                    const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
+                    const exhausted = limit > 0 && used >= limit;
+                    return (
+                      <SelectItem key={account.id} value={account.id} disabled={exhausted}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{account.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {account.currency} {account.balance.toFixed(2)} • {getOwnerName(account.owner_user)}
+                            {exhausted && <span className="ml-2 text-destructive">• Limite esgotado</span>}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
+
+              {/* Warning when selected account has exhausted overdraft */}
+              {accountId && (() => {
+                const acc = accounts.find(a => a.id === accountId);
+                if (!acc) return null;
+                const limit = Number(acc.overdraft_limit || 0);
+                const bal = Number(acc.balance || 0);
+                const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
+                const exhausted = limit > 0 && used >= limit;
+                return exhausted ? (
+                  <div className="mt-2 text-sm text-destructive">
+                    Limite utilizado igual ao limite desta conta. Despesa via débito bloqueada.
+                  </div>
+                ) : null;
+              })()}
             </div>
           )}
 
@@ -819,7 +841,25 @@ const getCardOwnerName = (card: Card) => {
           </div>
 
 
-          <Button type="submit" className="w-full">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={
+              type === "expense" &&
+              paymentMethod === "debit_card" &&
+              (() => {
+                const acc = accounts.find(a => a.id === accountId);
+                if (!acc) return false;
+                const limit = Number(acc.overdraft_limit || 0);
+                const bal = Number(acc.balance || 0);
+                const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
+                return limit > 0 && used >= limit;
+              })()
+            }
+            title={
+              type === "expense" && paymentMethod === "debit_card" ? "Bloqueado: limite esgotado para esta conta" : undefined
+            }
+          >
             {t('transactionForm.addTransaction')}
           </Button>
         </form>
