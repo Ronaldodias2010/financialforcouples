@@ -199,18 +199,20 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
             </>
           )}
 
-          <div>
-            <Label htmlFor="current_balance">Limite Disponível</Label>
-            <Input
-              id="current_balance"
-              type="number"
-              step="0.01"
-              value={cardData.current_balance}
-              onChange={(e) => setCardData(prev => ({ ...prev, current_balance: e.target.value }))}
-              placeholder="0.00"
-              required={cardData.card_type === "credit"}
-            />
-          </div>
+          {cardData.card_type === "credit" && (
+            <div>
+              <Label htmlFor="current_balance">Limite Disponível</Label>
+              <Input
+                id="current_balance"
+                type="number"
+                step="0.01"
+                value={cardData.current_balance}
+                onChange={(e) => setCardData(prev => ({ ...prev, current_balance: e.target.value }))}
+                placeholder="0.00"
+                required
+              />
+            </div>
+          )}
 
           <div>
             <Label htmlFor="currency">{t('cards.currency')}</Label>
