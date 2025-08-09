@@ -187,8 +187,8 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
             {(() => {
               const limit = parseFloat(accountData.overdraft_limit) || 0;
               const signed = (parseFloat(accountData.balance) || 0) * (isNegative ? -1 : 1);
-              const remaining = signed < 0 ? Math.max(0, limit - Math.abs(signed)) : limit;
-              return formatCurrency(remaining, accountData.currency);
+              const used = signed < 0 ? Math.min(limit, Math.abs(signed)) : 0;
+              return formatCurrency(used, accountData.currency);
             })()}
           </div>
 

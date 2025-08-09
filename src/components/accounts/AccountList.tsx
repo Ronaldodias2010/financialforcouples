@@ -115,8 +115,8 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
   const getAvailableBalance = (acc: AccountData) => {
     const limit = Number(acc.overdraft_limit || 0);
     const bal = Number(acc.balance || 0);
-    const remaining = bal < 0 ? Math.max(0, limit - Math.abs(bal)) : limit;
-    return remaining;
+    const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
+    return used;
   };
 
   const tr = (key: string, def: string) => {
