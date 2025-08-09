@@ -3,7 +3,7 @@ import { AccountForm } from "@/components/accounts/AccountForm";
 import { AccountList } from "@/components/accounts/AccountList";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
-import { ArrowLeft, CreditCard } from "lucide-react";
+import { ArrowLeft, Wallet } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
@@ -13,11 +13,11 @@ interface AccountsPageProps {
   onBack: () => void;
 }
 
-interface CardRow {
+interface AccountRow {
   owner_user: "user1" | "user2" | null;
   currency: CurrencyCode | null;
-  current_balance: number | null;
-  initial_balance: number | null;
+  balance: number | null;
+  overdraft_limit: number | null;
 }
 
 export const AccountsPage = ({ onBack }: AccountsPageProps) => {
@@ -27,40 +27,42 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
   const { convertCurrency } = useCurrencyConverter();
 
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
-  const [cardsData, setCardsData] = useState<CardRow[]>([]);
+  const [accountsData, setAccountsData] = useState<AccountRow[]>([]);
   const displayCurrency: CurrencyCode = "BRL";
 
   useEffect(() => {
-    const fetchCards = async () => {
+    const fetchAccounts = async () => {
       const { data, error } = await supabase
-        .from("cards")
-        .select("owner_user, currency, current_balance, initial_balance");
+        .from("accounts")
+        .select("owner_user, currency, balance, overdraft_limit");
       if (!error && data) {
-        setCardsData(
-          data.map((c) => ({
-            owner_user: (c as any).owner_user ?? "user1",
-            currency: ((c as any).currency as CurrencyCode) ?? "BRL",
-            current_balance: Number((c as any).current_balance ?? 0),
-            initial_balance: Number((c as any).initial_balance ?? 0),
+        setAccountsData(
+          data.map((a) => ({
+            owner_user: (a as any).owner_user ?? "user1",
+            currency: ((a as any).currency as CurrencyCode) ?? "BRL",
+            balance: Number((a as any).balance ?? 0),
+            overdraft_limit: Number((a as any).overdraft_limit ?? 0),
           }))
         );
       }
     };
-    fetchCards();
+    fetchAccounts();
   }, [refreshTrigger]);
 
-  const totalSaldoMaisLimite = useMemo(() => {
+  const totalAvailableLimit = useMemo(() => {
     const filtered = viewMode === "both"
-      ? cardsData
-      : cardsData.filter((c) => (c.owner_user ?? "user1") === viewMode);
+      ? accountsData
+      : accountsData.filter((a) => (a.owner_user ?? "user1") === viewMode);
 
-    return filtered.reduce((sum, c) => {
-      const from = (c.currency ?? "BRL") as CurrencyCode;
-      const saldo = convertCurrency(c.current_balance ?? 0, from, displayCurrency);
-      const limite = convertCurrency(c.initial_balance ?? 0, from, displayCurrency);
-      return sum + saldo + limite;
+    return filtered.reduce((sum, a) => {
+      const limit = Number(a.overdraft_limit ?? 0);
+      const bal = Number(a.balance ?? 0);
+      const used = bal >= 0 ? 0 : Math.min(limit, Math.abs(bal));
+      const remaining = Math.max(0, limit - used);
+      const from = (a.currency ?? "BRL") as CurrencyCode;
+      return sum + convertCurrency(remaining, from, displayCurrency);
     }, 0);
-  }, [cardsData, viewMode, convertCurrency]);
+  }, [accountsData, viewMode, convertCurrency]);
 
   const handleAccountAdded = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -79,7 +81,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
         <h1 className="text-3xl font-bold">{t('accounts.manage')}</h1>
       </div>
 
-      {/* View selector + summary card (Saldo + Limite dos Cartões) */}
+      {/* Seletor de visualização + Card de Limite disponível das Contas */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
@@ -96,10 +98,10 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
           </div>
         </div>
         <FinancialCard
-          title="Saldo + Limite (Cartões)"
-          amount={totalSaldoMaisLimite}
+          title="Limite disponível (Contas)"
+          amount={totalAvailableLimit}
           currency={displayCurrency}
-          icon={CreditCard}
+          icon={Wallet}
           type="balance"
         />
       </div>
