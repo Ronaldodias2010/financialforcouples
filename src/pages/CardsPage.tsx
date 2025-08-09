@@ -8,16 +8,22 @@ import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { useAuth } from "@/hooks/useAuth";
+import { useCouple } from "@/hooks/useCouple";
 
 interface CardsPageProps {
   onBack: () => void;
 }
 
 interface CardRow {
+  id?: string;
+  user_id: string;
   owner_user: "user1" | "user2" | null;
+  card_type: "credit" | "debit" | null;
   currency: CurrencyCode | null;
+  credit_limit: number | null;
   current_balance: number | null;
-  initial_balance: number | null;
+  initial_balance_original: number | null;
 }
 
 export const CardsPage = ({ onBack }: CardsPageProps) => {
@@ -30,18 +36,33 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const [cardsData, setCardsData] = useState<CardRow[]>([]);
   const displayCurrency: CurrencyCode = "BRL";
 
+  const { user } = useAuth();
+  const { getPartnerUserId, isUserOne } = useCouple();
+  const partnerId = getPartnerUserId();
+
+  const computeAvailable = (c: CardRow) => {
+    if (c.card_type !== "credit") return 0;
+    const from = (c.currency ?? "BRL") as CurrencyCode;
+    const base = c.initial_balance_original != null
+      ? c.initial_balance_original
+      : (c.credit_limit != null ? Math.max(0, c.credit_limit - (c.current_balance ?? 0)) : 0);
+    return convertCurrency(base, from, displayCurrency);
+  };
   useEffect(() => {
     const fetchCards = async () => {
       const { data, error } = await supabase
         .from("cards")
-        .select("owner_user, currency, current_balance, initial_balance");
+        .select("user_id, owner_user, card_type, credit_limit, currency, current_balance, initial_balance_original");
       if (!error && data) {
         setCardsData(
           data.map((c) => ({
-            owner_user: (c as any).owner_user ?? "user1",
+            user_id: (c as any).user_id as string,
+            owner_user: (c as any).owner_user as ("user1" | "user2" | null),
+            card_type: (c as any).card_type as ("credit" | "debit" | null),
             currency: ((c as any).currency as CurrencyCode) ?? "BRL",
+            credit_limit: (c as any).credit_limit !== null ? Number((c as any).credit_limit) : null,
             current_balance: Number((c as any).current_balance ?? 0),
-            initial_balance: Number((c as any).initial_balance ?? 0),
+            initial_balance_original: (c as any).initial_balance_original !== null ? Number((c as any).initial_balance_original) : null,
           }))
         );
       }
@@ -49,17 +70,22 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
     fetchCards();
   }, [refreshTrigger]);
 
-  const totalLimiteDisponivel = useMemo(() => {
-    const filtered = viewMode === "both"
-      ? cardsData
-      : cardsData.filter((c) => (c.owner_user ?? "user1") === viewMode);
+  const currentUserTotal = useMemo(() => {
+    if (!user?.id) return 0;
+    const mine = cardsData.filter(c => c.user_id === user.id);
+    return mine.reduce((sum, c) => sum + computeAvailable(c), 0);
+  }, [cardsData, user?.id, convertCurrency]);
 
-    return filtered.reduce((sum, c) => {
-      const from = (c.currency ?? "BRL") as CurrencyCode;
-      const limite = convertCurrency(c.initial_balance ?? 0, from, displayCurrency);
-      return sum + limite;
-    }, 0);
-  }, [cardsData, viewMode, convertCurrency]);
+  const partnerTotal = useMemo(() => {
+    if (!partnerId) return 0;
+    const theirs = cardsData.filter(c => c.user_id === partnerId);
+    return theirs.reduce((sum, c) => sum + computeAvailable(c), 0);
+  }, [cardsData, partnerId, convertCurrency]);
+
+  const bothTotal = useMemo(() => currentUserTotal + partnerTotal, [currentUserTotal, partnerTotal]);
+
+  const user1Total = isUserOne() ? currentUserTotal : partnerTotal;
+  const user2Total = isUserOne() ? partnerTotal : currentUserTotal;
 
   const handleCardAdded = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -94,13 +120,42 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
             </Button>
           </div>
         </div>
-        <FinancialCard
-          title="Limite disponível (Cartões)"
-          amount={totalLimiteDisponivel}
-          currency={displayCurrency}
-          icon={CreditCard}
-          type="balance"
-        />
+        {viewMode === 'both' ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FinancialCard
+                title={`Seus Cartões — ${getUserLabel('user1')}`}
+                amount={user1Total}
+                currency={displayCurrency}
+                icon={CreditCard}
+                type="balance"
+              />
+              <FinancialCard
+                title={`Seus Cartões — ${getUserLabel('user2')}`}
+                amount={user2Total}
+                currency={displayCurrency}
+                icon={CreditCard}
+                type="balance"
+              />
+            </div>
+            <FinancialCard
+              title="Seus Cartões — Ambos"
+              amount={bothTotal}
+              currency={displayCurrency}
+              icon={CreditCard}
+              type="balance"
+            />
+          </>
+        ) : (
+          <FinancialCard
+            title={`Seus Cartões — ${getUserLabel(viewMode)}`}
+            amount={viewMode === 'user1' ? user1Total : user2Total}
+            currency={displayCurrency}
+            icon={CreditCard}
+            type="balance"
+          />
+        )}
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
