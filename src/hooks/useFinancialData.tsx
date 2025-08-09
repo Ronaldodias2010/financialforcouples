@@ -358,17 +358,27 @@ export const useFinancialData = () => {
       });
 
       const prevBalance = prevTotalIncome - prevTotalExpenses;
-      const currentSummary = getFinancialSummary();
+
+      // Compute current month totals from current transactions state (transactions only)
+      const currentIncome = transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
+
+      const currentExpenses = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
+
+      const currentBalance = currentIncome - currentExpenses;
 
       // Calculate percentage changes
       const incomeChange = prevTotalIncome === 0 ? 0 : 
-        ((currentSummary.totalIncome - prevTotalIncome) / prevTotalIncome) * 100;
+        ((currentIncome - prevTotalIncome) / prevTotalIncome) * 100;
       
       const expenseChange = prevTotalExpenses === 0 ? 0 : 
-        ((currentSummary.totalExpenses - prevTotalExpenses) / prevTotalExpenses) * 100;
+        ((currentExpenses - prevTotalExpenses) / prevTotalExpenses) * 100;
       
       const balanceChange = prevBalance === 0 ? 0 : 
-        ((currentSummary.balance - prevBalance) / Math.abs(prevBalance)) * 100;
+        ((currentBalance - prevBalance) / Math.abs(prevBalance)) * 100;
 
       return {
         incomeChange: Number(incomeChange.toFixed(1)),
@@ -453,6 +463,16 @@ export const useFinancialData = () => {
     return total;
   };
 
+  // Returns the sum of transaction-based expenses only (no accounts)
+  const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
+    const filteredTransactions = getTransactionsByUser(viewMode);
+    const expenseOnly = filteredTransactions.filter(t => t.type === 'expense');
+    const total = expenseOnly.reduce((sum, t) => {
+      return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
+    }, 0);
+    return total;
+  };
+
   return {
     transactions,
     userPreferredCurrency,
@@ -463,6 +483,7 @@ export const useFinancialData = () => {
     getExpensesByUser,
     getAccountsIncome,
     getTransactionsIncome,
+    getTransactionsExpenses,
     refreshData
   };
 };
