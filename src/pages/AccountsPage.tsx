@@ -64,7 +64,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
       const bal = Number(a.balance ?? 0);
       const used = bal >= 0 ? 0 : Math.min(limit, Math.abs(bal));
       const remaining = Math.max(0, limit - used);
-      const perAccount = remaining + bal;
+      const perAccount = remaining + Math.max(bal, 0); // soma apenas saldo positivo + limite disponível
       const from = (a.currency ?? "BRL") as CurrencyCode;
       const converted = convertCurrency(perAccount, from, displayCurrency);
       console.log("· Conta:", a.name ?? "(sem nome)", { bal, limit, used, remaining, perAccount, from, converted });
