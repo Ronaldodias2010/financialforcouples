@@ -51,7 +51,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
     try {
       const limit = parseFloat(accountData.overdraft_limit) || 0;
       const raw = parseFloat(accountData.balance) || 0;
-      const signedBalance = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
+      const signedBalance = inputAsAvailable ? (Math.abs(raw) - limit) : (raw * (isNegative ? -1 : 1));
       const { error } = await supabase
         .from("accounts")
         .insert({
@@ -201,7 +201,8 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           {(() => {
             const limit = parseFloat(accountData.overdraft_limit) || 0;
             const raw = parseFloat(accountData.balance) || 0;
-            const bal = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
+            const av = inputAsAvailable ? Math.abs(raw) : raw;
+            const bal = inputAsAvailable ? (av - limit) : (av * (isNegative ? -1 : 1));
             const used = Math.min(limit, Math.max(0, -bal));
             return formatCurrency(used, accountData.currency);
           })()}
@@ -211,7 +212,8 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           {(() => {
             const limit = parseFloat(accountData.overdraft_limit) || 0;
             const raw = parseFloat(accountData.balance) || 0;
-            const bal = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
+            const av = inputAsAvailable ? Math.abs(raw) : raw;
+            const bal = inputAsAvailable ? (av - limit) : (av * (isNegative ? -1 : 1));
             const used = Math.min(limit, Math.max(0, -bal));
             const remaining = Math.max(0, limit - used);
             return formatCurrency(remaining, accountData.currency);
@@ -222,7 +224,8 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           {(() => {
             const limit = parseFloat(accountData.overdraft_limit) || 0;
             const raw = parseFloat(accountData.balance) || 0;
-            const bal = inputAsAvailable ? (raw - limit) : (raw * (isNegative ? -1 : 1));
+            const av = inputAsAvailable ? Math.abs(raw) : raw;
+            const bal = inputAsAvailable ? (av - limit) : (av * (isNegative ? -1 : 1));
             const used = Math.min(limit, Math.max(0, -bal));
             return formatCurrency(used, accountData.currency);
           })()}
