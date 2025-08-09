@@ -121,31 +121,13 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
           </div>
         </div>
         {viewMode === 'both' ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FinancialCard
-                title={`Seus Cartões — ${getUserLabel('user1')}`}
-                amount={user1Total}
-                currency={displayCurrency}
-                icon={CreditCard}
-                type="balance"
-              />
-              <FinancialCard
-                title={`Seus Cartões — ${getUserLabel('user2')}`}
-                amount={user2Total}
-                currency={displayCurrency}
-                icon={CreditCard}
-                type="balance"
-              />
-            </div>
-            <FinancialCard
-              title="Seus Cartões — Ambos"
-              amount={bothTotal}
-              currency={displayCurrency}
-              icon={CreditCard}
-              type="balance"
-            />
-          </>
+          <FinancialCard
+            title="Seus Cartões — Ambos"
+            amount={bothTotal}
+            currency={displayCurrency}
+            icon={CreditCard}
+            type="balance"
+          />
         ) : (
           <FinancialCard
             title={`Seus Cartões — ${getUserLabel(viewMode)}`}

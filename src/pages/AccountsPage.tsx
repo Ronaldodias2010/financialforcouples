@@ -131,22 +131,13 @@ const user2Total = isUserOne() ? partnerTotal : currentUserTotal;
           </div>
         </div>
 {viewMode === 'both' ? (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <FinancialCard
-      title={`Suas Contas — ${getUserLabel('user1')}`}
-      amount={user1Total}
-      currency={displayCurrency}
-      icon={Wallet}
-      type="balance"
-    />
-    <FinancialCard
-      title={`Suas Contas — ${getUserLabel('user2')}`}
-      amount={user2Total}
-      currency={displayCurrency}
-      icon={Wallet}
-      type="balance"
-    />
-  </div>
+  <FinancialCard
+    title="Suas Contas — Ambos"
+    amount={user1Total + user2Total}
+    currency={displayCurrency}
+    icon={Wallet}
+    type="balance"
+  />
 ) : (
   <FinancialCard
     title={`Suas Contas — ${getUserLabel(viewMode)}`}
