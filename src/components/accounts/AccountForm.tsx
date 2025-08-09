@@ -28,6 +28,13 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
     currency: "BRL"
   });
 
+  const formatCurrency = (value: number, currency: string) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency,
+    }).format(value);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -155,7 +162,12 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
             </Select>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <div className="rounded-md bg-muted/30 p-3 text-sm">
+            <span className="font-medium">{t('accounts.availableBalance') || 'Saldo Disponível'}: </span>
+            {formatCurrency((parseFloat(accountData.balance) || 0) + (parseFloat(accountData.overdraft_limit) || 0), accountData.currency)}
+          </div>
+
+          <Button type="submit" className="w-full mt-2" disabled={loading}>
             {loading ? (t('accounts.adding') || "Adicionando...") : (t('accounts.addAccount') || "Adicionar Conta")}
           </Button>
         </form>

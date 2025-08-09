@@ -15,6 +15,7 @@ interface AccountData {
   account_model: string | null;
   balance: number;
   currency: string;
+  overdraft_limit: number;
 }
 
 interface AccountListProps {
@@ -94,6 +95,11 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     return models[model as keyof typeof models] || model;
   };
 
+  const getAvailableBalance = (acc: AccountData) => {
+    const limit = Number(acc.overdraft_limit || 0);
+    return Number(acc.balance || 0) + limit;
+  };
+
   if (loading) {
     return <div>{t('common.loading') || "Carregando contas..."}</div>;
   }
@@ -138,6 +144,13 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                       ) : (
                         <span className="text-primary">{formatCurrency(account.balance, account.currency)}</span>
                       )}
+                    </p>
+                    <p className="text-sm mt-1">
+                      <span className="font-medium">{t('accounts.availableBalance') || 'Saldo Disponível'}: </span>
+                      {formatCurrency(getAvailableBalance(account), account.currency)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {(t('accounts.limit') || 'Limite') + ': '} {formatCurrency(account.overdraft_limit || 0, account.currency)}
                     </p>
                   </div>
                 </div>
