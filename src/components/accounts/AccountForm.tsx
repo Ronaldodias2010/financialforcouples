@@ -77,9 +77,14 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
       });
       setIsNegative(false);
       onAccountAdded();
-    } catch (error) {
-      console.error("Error adding account:", error);
-      toast.error(t('messages.accountError') || "Erro ao adicionar conta");
+    } catch (err: any) {
+      console.error("Error adding account:", err);
+      const msg = typeof err?.hint === 'string'
+        ? err.hint
+        : (typeof err?.message === 'string' && err.message.includes('duplicate_account_name')
+            ? (t('messages.duplicateAccountName') || 'Já existe uma conta com este nome. Altere e tente novamente.')
+            : (t('messages.accountError') || 'Erro ao adicionar conta'));
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
