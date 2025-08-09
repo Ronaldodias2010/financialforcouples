@@ -58,14 +58,22 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
       ? accountsData
       : accountsData.filter((a) => (a.owner_user ?? "user1") === viewMode);
 
-    return filtered.reduce((sum, a) => {
+    console.groupCollapsed("AccountsPage: cálculo Saldo + Limite", viewMode);
+    const total = filtered.reduce((sum, a) => {
       const limit = Number(a.overdraft_limit ?? 0);
       const bal = Number(a.balance ?? 0);
       const used = bal >= 0 ? 0 : Math.min(limit, Math.abs(bal));
       const remaining = Math.max(0, limit - used);
+      const perAccount = remaining + bal;
       const from = (a.currency ?? "BRL") as CurrencyCode;
-      return sum + convertCurrency(remaining + bal, from, displayCurrency);
+      const converted = convertCurrency(perAccount, from, displayCurrency);
+      console.log("· Conta:", a.name ?? "(sem nome)", { bal, limit, used, remaining, perAccount, from, converted });
+      return sum + converted;
     }, 0);
+    const rounded = Number(total.toFixed(2));
+    console.info("= Total (", viewMode, "):", { total, rounded, currency: displayCurrency });
+    console.groupEnd();
+    return rounded;
   }, [accountsData, viewMode, convertCurrency]);
 
   const handleAccountAdded = () => {
