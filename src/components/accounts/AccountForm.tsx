@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -102,15 +103,11 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
           <div>
             <Label htmlFor="account_model">Modelo da Conta</Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2 rounded-full bg-success text-success-foreground border border-success/50 px-3 py-1 shadow-md cursor-default hover:bg-success/90"
-              disabled
-            >
-              {t('accounts.models.personal') || 'Pessoal'}
-            </Button>
+            <div className="mt-2 inline-flex">
+              <Badge variant="successSegmentFlatLeft" className="px-3 py-1">
+                {t('accounts.models.personal') || 'Pessoal'}
+              </Badge>
+            </div>
           </div>
 
           <div>

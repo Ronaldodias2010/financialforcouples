@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -118,9 +119,15 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                     <p className="text-sm text-muted-foreground">
                       {getAccountTypeLabel(account.account_type)}
                       {account.account_model && (
-                        <span className="ml-2 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs">
-                          {getAccountModelLabel(account.account_model)}
-                        </span>
+                        account.account_model === 'personal' ? (
+                          <Badge variant="successSegmentFlatLeft" className="ml-2">
+                            {getAccountModelLabel(account.account_model)}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="ml-2">
+                            {getAccountModelLabel(account.account_model)}
+                          </Badge>
+                        )
                       )}
                     </p>
                     <p className="text-lg font-bold text-primary">
