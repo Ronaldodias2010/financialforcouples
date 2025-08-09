@@ -49,7 +49,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
     fetchAccounts();
   }, [refreshTrigger]);
 
-  const totalAvailableLimit = useMemo(() => {
+  const totalSaldoMaisLimite = useMemo(() => {
     const filtered = viewMode === "both"
       ? accountsData
       : accountsData.filter((a) => (a.owner_user ?? "user1") === viewMode);
@@ -60,7 +60,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
       const used = bal >= 0 ? 0 : Math.min(limit, Math.abs(bal));
       const remaining = Math.max(0, limit - used);
       const from = (a.currency ?? "BRL") as CurrencyCode;
-      return sum + convertCurrency(remaining, from, displayCurrency);
+      return sum + convertCurrency(remaining + bal, from, displayCurrency);
     }, 0);
   }, [accountsData, viewMode, convertCurrency]);
 
@@ -98,8 +98,8 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
           </div>
         </div>
         <FinancialCard
-          title="Limite disponível (Contas)"
-          amount={totalAvailableLimit}
+          title="Saldo + Limite disponível (Contas)"
+          amount={totalSaldoMaisLimite}
           currency={displayCurrency}
           icon={Wallet}
           type="balance"
