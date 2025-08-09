@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AccountForm } from "@/components/accounts/AccountForm";
 import { AccountList } from "@/components/accounts/AccountList";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/hooks/useLanguage";
 import { ArrowLeft, Wallet } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
@@ -14,6 +15,7 @@ interface AccountsPageProps {
 }
 
 interface AccountRow {
+  id: string;
   owner_user: "user1" | "user2" | null;
   currency: CurrencyCode | null;
   balance: number | null;
@@ -30,16 +32,18 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
 
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [accountsData, setAccountsData] = useState<AccountRow[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const displayCurrency: CurrencyCode = "BRL";
 
   useEffect(() => {
     const fetchAccounts = async () => {
       const { data, error } = await supabase
         .from("accounts")
-        .select("owner_user, currency, balance, overdraft_limit, account_model, name");
+        .select("id, owner_user, currency, balance, overdraft_limit, account_model, name");
       if (!error && data) {
         setAccountsData(
           data.map((a) => ({
+            id: (a as any).id as string,
             owner_user: (a as any).owner_user ?? "user1",
             currency: ((a as any).currency as CurrencyCode) ?? "BRL",
             balance: Number((a as any).balance ?? 0),
@@ -53,28 +57,50 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
     fetchAccounts();
   }, [refreshTrigger]);
 
-  const totalSaldoMaisLimite = useMemo(() => {
-    const filtered = viewMode === "both"
+  const filteredAccounts = useMemo(() => {
+    return viewMode === "both"
       ? accountsData
       : accountsData.filter((a) => (a.owner_user ?? "user1") === viewMode);
+  }, [accountsData, viewMode]);
 
-    console.groupCollapsed("AccountsPage: cálculo Saldo + Limite", viewMode);
-    const total = filtered.reduce((sum, a) => {
+  useEffect(() => {
+    if (accountsData.length && !selectedAccountId) {
+      setSelectedAccountId(accountsData[0].id);
+    }
+  }, [accountsData, selectedAccountId]);
+
+  useEffect(() => {
+    if (filteredAccounts.length && !filteredAccounts.some(a => a.id === selectedAccountId)) {
+      setSelectedAccountId(filteredAccounts[0].id);
+    }
+  }, [viewMode, accountsData]);
+
+  const totalSaldoMaisLimite = useMemo(() => {
+    if (!filteredAccounts.length) return 0;
+
+    const selected = filteredAccounts.find(a => a.id === selectedAccountId) || filteredAccounts[0];
+
+    // Saldo positivo apenas da conta selecionada
+    const selBal = Number(selected.balance ?? 0);
+    const selFrom = (selected.currency ?? "BRL") as CurrencyCode;
+    const selectedPositive = convertCurrency(Math.max(selBal, 0), selFrom, displayCurrency);
+
+    // Somar o limite disponível apenas das contas negativas
+    const availableFromNegatives = filteredAccounts.reduce((sum, a) => {
       const limit = Number(a.overdraft_limit ?? 0);
       const bal = Number(a.balance ?? 0);
-      const used = bal >= 0 ? 0 : Math.min(limit, Math.abs(bal));
-      const remaining = Math.max(0, limit - used);
-      const perAccount = remaining + Math.max(bal, 0); // soma apenas saldo positivo + limite disponível
-      const from = (a.currency ?? "BRL") as CurrencyCode;
-      const converted = convertCurrency(perAccount, from, displayCurrency);
-      console.log("· Conta:", a.name ?? "(sem nome)", { bal, limit, used, remaining, perAccount, from, converted });
-      return sum + converted;
+      if (bal < 0) {
+        const used = Math.min(limit, Math.abs(bal));
+        const remaining = Math.max(0, limit - used);
+        const from = (a.currency ?? "BRL") as CurrencyCode;
+        return sum + convertCurrency(remaining, from, displayCurrency);
+      }
+      return sum;
     }, 0);
-    const rounded = Number(total.toFixed(2));
-    console.info("= Total (", viewMode, "):", { total, rounded, currency: displayCurrency });
-    console.groupEnd();
-    return rounded;
-  }, [accountsData, viewMode, convertCurrency]);
+
+    const total = selectedPositive + availableFromNegatives;
+    return Number(total.toFixed(2));
+  }, [filteredAccounts, selectedAccountId, convertCurrency]);
 
   const handleAccountAdded = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -108,6 +134,21 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
               {getUserLabel('user2')}
             </Button>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{t('transactionForm.selectAccount')}:</span>
+          <Select value={selectedAccountId ?? undefined} onValueChange={(v) => setSelectedAccountId(v)}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              {filteredAccounts.map((acc) => (
+                <SelectItem key={acc.id} value={acc.id}>
+                  {(acc.name || 'Conta')} — {acc.currency} {Number(acc.balance ?? 0).toFixed(2)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <FinancialCard
           title="Saldo + Limite disponível (Contas)"
