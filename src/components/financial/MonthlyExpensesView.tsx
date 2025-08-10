@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
+import { useLanguage } from "@/hooks/useLanguage";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
@@ -52,6 +53,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   const { user } = useAuth();
   const { names } = usePartnerNames();
   const { isPartOfCouple, couple } = useCouple();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     fetchTransactions();
@@ -181,10 +183,14 @@ if (selectedCategory !== "all") {
 
   const getPaymentMethodText = (method: string) => {
     switch (method) {
-      case 'cash': return 'Dinheiro';
-      case 'credit_card': return 'Cartão de Crédito';
-      case 'debit_card': return 'Cartão de Débito';
-      case 'payment_transfer': return 'Transferência para Pagamento';
+      case 'cash': return t('transactionForm.cash');
+      case 'credit_card': return t('transactionForm.creditCard');
+      case 'debit_card': return t('transactionForm.debitCard');
+      case 'payment_transfer': return t('transactionForm.paymentTransfer');
+      case 'deposit': return t('transactionForm.deposit');
+      case 'transfer': return t('transactionForm.receivedTransfer');
+      case 'account_transfer': return t('transactionForm.accountTransfer');
+      case 'account_investment': return t('transactionForm.accountInvestmentTransfer');
       default: return method;
     }
   };

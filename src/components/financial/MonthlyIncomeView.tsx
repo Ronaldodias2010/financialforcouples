@@ -215,7 +215,14 @@ if (selectedCategory !== "all") {
   const getPaymentMethodText = (method: string) => {
     switch (method) {
       case 'cash': return t('transactionForm.cash');
-      case 'bank_transfer': return t('transactionForm.transfer');
+      case 'deposit': return t('transactionForm.deposit');
+      case 'transfer': return t('transactionForm.receivedTransfer');
+      case 'account_transfer': return t('transactionForm.accountTransfer');
+      case 'account_investment': return t('transactionForm.accountInvestmentTransfer');
+      case 'debit_card': return t('transactionForm.debitCard');
+      case 'credit_card': return t('transactionForm.creditCard');
+      case 'payment_transfer': return t('transactionForm.paymentTransfer');
+      case 'bank_transfer': return t('transactionForm.transfer'); // legacy mapping
       case 'pix': return 'PIX';
       case 'check': return t('transactionForm.check');
       default: return method;
