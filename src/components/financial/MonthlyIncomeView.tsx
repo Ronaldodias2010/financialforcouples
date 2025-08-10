@@ -48,6 +48,7 @@ const INCOME_CATEGORY_TRANSLATIONS: Record<string, string> = {
   'comiisao': 'Commission',
   'renda extra': 'Extra Income',
   'salario': 'Salary',
+  'transferencia': 'Transfer',
 };
 const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
   if (lang === 'en') {

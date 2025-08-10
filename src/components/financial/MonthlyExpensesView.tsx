@@ -44,6 +44,25 @@ interface MonthlyExpensesViewProps {
   viewMode: "both" | "user1" | "user2";
 }
 
+const normalizeCategory = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, string> = {
+  'pagamento de cartao de credito': 'Credit Card Payment',
+  'transferencia': 'Transfer',
+};
+const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
+  if (lang === 'en') {
+    const key = normalizeCategory(name);
+    return EXPENSE_CATEGORY_TRANSLATIONS[key] ?? name;
+  }
+  return name;
+};
+
 export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
@@ -313,7 +332,7 @@ if (selectedCategory !== "all") {
                             </span>
                           </p>
                         )}
-                        <p>Categoria: {transaction.categories?.name || 'N/A'}</p>
+                        <p>Categoria: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
                         {transaction.subcategory && (
                           <p>Subcategoria: {transaction.subcategory}</p>
                         )}

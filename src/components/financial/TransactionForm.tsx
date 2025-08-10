@@ -84,6 +84,7 @@ const CATEGORY_TRANSLATIONS: Record<string, string> = {
   'comissao': 'Commission',
   'renda extra': 'Extra Income',
   'pagamento de cartao de credito': 'Credit Card Payment',
+  'transferencia': 'Transfer',
 };
 const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
   if (lang === 'en') {
