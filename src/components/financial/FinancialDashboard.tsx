@@ -282,7 +282,7 @@ export const FinancialDashboard = () => {
                     >
                       <Plane className="h-6 w-6" />
                       <span>{t('nav.mileage')}</span>
-                      <Badge variant="outline" className="absolute top-2 right-2 text-xs">Premium</Badge>
+                      
                     </Button>
                   }
                 >
@@ -342,7 +342,7 @@ export const FinancialDashboard = () => {
         <div className="text-center space-y-2">
           <div className="flex justify-between items-start mb-2">
             <div className="text-sm text-muted-foreground">
-              👤 {user?.email} | Status: {subscribed ? 'Premium' : 'Essential'}
+              👤 {user?.email}
             </div>
             <div className="flex gap-2">
               {/* TEMPORARIAMENTE REMOVIDO: <ThemeSwitcher /> */}
