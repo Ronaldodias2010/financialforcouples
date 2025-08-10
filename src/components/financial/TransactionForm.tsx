@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, Enums } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
@@ -414,18 +415,18 @@ const getAccountOwnerName = (account: Account) => {
         // Registra duas transações (saída e entrada)
         const transferDescOut = description || 'Transferência entre contas - saída';
         const transferDescIn = description || 'Transferência entre contas - entrada';
-        const insertRes = await supabase.from('transactions').insert([
+const transferInserts: TablesInsert<'transactions'>[] = [
           {
             user_id: user.id,
             owner_user: ownerUser,
             type: 'expense',
             amount: amtFrom,
-            currency: (fromAcc.currency || 'BRL'),
+            currency: (fromAcc.currency || 'BRL') as Enums<'currency_type'>,
             description: transferDescOut,
             category_id: categoryId || null,
             subcategory: subcategory || null,
             transaction_date: transactionDate.toISOString().split('T')[0],
-            payment_method: 'account_transfer',
+            payment_method: 'account_transfer' as any,
             card_id: null,
             account_id: fromAcc.id,
             is_installment: false,
@@ -437,19 +438,20 @@ const getAccountOwnerName = (account: Account) => {
             owner_user: ownerUser,
             type: 'income',
             amount: amtTo,
-            currency: (toAcc.currency || 'BRL'),
+            currency: (toAcc.currency || 'BRL') as Enums<'currency_type'>,
             description: transferDescIn,
             category_id: categoryId || null,
             subcategory: subcategory || null,
             transaction_date: transactionDate.toISOString().split('T')[0],
-            payment_method: 'account_transfer',
+            payment_method: 'account_transfer' as any,
             card_id: null,
             account_id: toAcc.id,
             is_installment: false,
             total_installments: null,
             installment_number: null
           }
-        ]);
+        ];
+        const insertRes = await supabase.from('transactions').insert(transferInserts);
         if (insertRes.error) throw insertRes.error;
 
         toast({ title: 'Sucesso', description: 'Transferência entre contas registrada!' });
@@ -469,23 +471,24 @@ const getAccountOwnerName = (account: Account) => {
 
         // Registra transação de saída da conta para investimento
         const transferDesc = description || 'Transferência para investimento';
-        const { error: invErr } = await supabase.from('transactions').insert({
+const invTxn: TablesInsert<'transactions'> = {
           user_id: user.id,
           owner_user: ownerUser,
           type: 'expense',
           amount: amtFrom,
-          currency: (fromAcc.currency || 'BRL'),
+          currency: (fromAcc.currency || 'BRL') as Enums<'currency_type'>,
           description: transferDesc,
           category_id: categoryId || null,
           subcategory: subcategory || null,
           transaction_date: transactionDate.toISOString().split('T')[0],
-          payment_method: 'account_investment',
+          payment_method: 'account_investment' as any,
           card_id: null,
           account_id: fromAcc.id,
           is_installment: false,
           total_installments: null,
           installment_number: null
-        });
+        };
+        const { error: invErr } = await supabase.from('transactions').insert(invTxn);
         if (invErr) throw invErr;
 
         toast({ title: 'Sucesso', description: 'Transferência para investimento registrada!' });
