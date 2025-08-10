@@ -51,11 +51,23 @@ serve(async (req) => {
       logStep("Created new customer", { customerId });
     }
 
+    // Determine which price to use (defaults to monthly)
+    let selectedPrice = "price_1RsLL5FOhUY5r0H1WIXv7yuP";
+    try {
+      const body = await req.json();
+      if (body?.priceId && typeof body.priceId === 'string') {
+        selectedPrice = body.priceId;
+      }
+    } catch (_) {
+      // No body provided; keep default price
+    }
+    logStep("Using price", { priceId: selectedPrice });
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
-          price: "price_1RsLL5FOhUY5r0H1WIXv7yuP", // Stripe Price ID for Premium Plan
+          price: selectedPrice,
           quantity: 1,
         },
       ],

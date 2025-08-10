@@ -17,10 +17,10 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
   const [creatingSession, setCreatingSession] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (priceId: string) => {
     try {
       setCreatingSession(true);
-      await createCheckoutSession();
+      await createCheckoutSession(priceId);
       toast.success(t('subscription.redirectingToPayment'));
     } catch (error) {
       console.error('Error upgrading:', error);
@@ -180,13 +180,23 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
             </div>
             
             {subscriptionTier !== 'premium' && (
-              <Button 
-                onClick={handleUpgrade} 
-                disabled={creatingSession || loading}
-                className="w-full bg-primary hover:bg-primary/90"
-              >
-                {creatingSession ? t('subscription.loading') : t('subscription.upgradeToPremium')}
-              </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button 
+                  onClick={() => handleUpgrade('price_1RsLL5FOhUY5r0H1WIXv7yuP')} 
+                  disabled={creatingSession || loading}
+                  className="w-full bg-primary hover:bg-primary/90"
+                >
+                  {creatingSession ? t('subscription.loading') : t('subscription.subscribeMonthly')}
+                </Button>
+                <Button 
+                  onClick={() => handleUpgrade('price_1Ruie7FOhUY5r0H1qXXFouNn')} 
+                  disabled={creatingSession || loading}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {creatingSession ? t('subscription.loading') : t('subscription.subscribeAnnually')}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>

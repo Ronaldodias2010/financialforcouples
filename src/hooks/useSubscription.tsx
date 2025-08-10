@@ -11,7 +11,7 @@ export interface SubscriptionContextType {
   loading: boolean;
   checkSubscription: () => Promise<void>;
   hasAccess: (feature: string) => boolean;
-  createCheckoutSession: () => Promise<void>;
+  createCheckoutSession: (priceId?: string) => Promise<void>;
   openCustomerPortal: () => Promise<void>;
 }
 
@@ -81,7 +81,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return subscriptionTier === 'premium' && subscribed;
   };
 
-  const createCheckoutSession = async () => {
+  const createCheckoutSession = async (priceId?: string) => {
     if (!session) throw new Error('User not authenticated');
 
     try {
@@ -89,6 +89,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
+        ...(priceId ? { body: { priceId } } : {}),
       });
 
       if (error) throw error;
