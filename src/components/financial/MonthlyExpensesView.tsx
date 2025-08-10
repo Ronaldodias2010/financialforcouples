@@ -68,7 +68,13 @@ const fetchCategories = async () => {
 
       if (error) throw error;
       const items = (data || []) as { id: string; name: string }[];
-      const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const normalize = (s: string) =>
+        s
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/\s+/g, ' ')
+          .trim();
       const map = new Map<string, { key: string; name: string; ids: string[] }>();
       for (const it of items) {
         const key = normalize(it.name);

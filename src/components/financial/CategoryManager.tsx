@@ -30,7 +30,13 @@ export const CategoryManager = () => {
   const { language, t } = useLanguage();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
-  const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const normalize = (s: string) =>
+    s
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
 
   const categoryTranslations: Record<string, string> = {
     'alimentacao': 'Food',
@@ -70,9 +76,16 @@ export const CategoryManager = () => {
 
   const fetchCategories = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setCategories([]);
+        return;
+      }
+
       let query = supabase
         .from('categories')
-        .select('*')
+        .select('id, name, color, icon, category_type, user_id')
+        .eq('user_id', user.id)
         .order('name');
       
       if (filterType !== 'all') {
@@ -82,7 +95,13 @@ export const CategoryManager = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setCategories((data || []) as Category[]);
+      const items = (data || []) as Category[];
+      const map = new Map<string, Category>();
+      for (const it of items) {
+        const key = `${normalize(it.name)}|${it.category_type}`;
+        if (!map.has(key)) map.set(key, it);
+      }
+      setCategories(Array.from(map.values()));
     } catch (error) {
       toast({
         title: "Erro",
@@ -174,18 +193,36 @@ export const CategoryManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCategoryName.trim()) return;
+    const trimmedName = newCategoryName.replace(/\s+/g, ' ').trim();
+    if (!trimmedName) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
+
+      // Load existing categories for duplicate check (same user and type)
+      const { data: existingList } = await supabase
+        .from('categories')
+        .select('id, name, category_type')
+        .eq('user_id', user.id)
+        .eq('category_type', newCategoryType);
+
+      const exists = (existingList || []).some((c) => normalize(c.name) === normalize(trimmedName) && (!editingCategory || c.id !== editingCategory.id));
+      if (exists) {
+        toast({
+          title: "Atenção",
+          description: "Já existe uma categoria com este nome.",
+          variant: "default",
+        });
+        return;
+      }
 
       if (editingCategory) {
         // Update existing category
         const { error } = await supabase
           .from('categories')
           .update({
-            name: newCategoryName,
+            name: trimmedName,
             color: newCategoryColor,
             category_type: newCategoryType,
           })
@@ -198,15 +235,14 @@ export const CategoryManager = () => {
           description: "Categoria atualizada com sucesso!",
         });
       } else {
-        // Create new category
+        // Create new category (owner_user left default; categories are per user)
         const { error } = await supabase
           .from('categories')
           .insert({
-            name: newCategoryName,
+            name: trimmedName,
             color: newCategoryColor,
             category_type: newCategoryType,
-            owner_user: "user1",
-            user_id: user.id
+            user_id: user.id,
           });
 
         if (error) throw error;
