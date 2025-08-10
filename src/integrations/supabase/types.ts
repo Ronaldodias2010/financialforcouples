@@ -848,6 +848,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      normalize_text_simple: {
+        Args: { input: string }
+        Returns: string
+      }
     }
     Enums: {
       account_type: "checking" | "savings" | "investment"
