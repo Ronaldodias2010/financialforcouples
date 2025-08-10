@@ -85,13 +85,41 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
 
   const fetchCategories = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Scope to couple and deduplicate by normalized name (prefer current user's id)
+      const { data: coupleData } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      const userIds = coupleData ? [coupleData.user1_id, coupleData.user2_id] : [user.id];
+
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, category_type')
+        .select('id, name, category_type, user_id')
+        .eq('category_type', 'expense')
+        .in('user_id', userIds)
         .order('name');
 
       if (error) throw error;
-      setCategories(data || []);
+
+      const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+      const map = new Map<string, { id: string; name: string }>();
+      (data || []).forEach((c: any) => {
+        const key = normalize(c.name);
+        const current = map.get(key);
+        if (!current) {
+          map.set(key, { id: c.user_id === user.id ? c.id : c.id, name: c.name });
+        } else if (c.user_id === user.id) {
+          map.set(key, { id: c.id, name: current.name });
+        }
+      });
+
+      setCategories(Array.from(map.values()) as any);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }

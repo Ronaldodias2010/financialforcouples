@@ -164,35 +164,65 @@ const getAccountOwnerName = (account: Account) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Get couple user IDs (if any) to scope categories and deduplicate across partners
+      const { data: coupleData } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      const userIds = coupleData ? [coupleData.user1_id, coupleData.user2_id] : [user.id];
+
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, category_type')
+        .select('id, name, category_type, user_id')
         .eq('category_type', type)
+        .in('user_id', userIds)
         .order('name');
 
       if (error) throw error;
 
-      let result = (data || []).map((c) => ({ id: c.id as string, name: c.name as string }));
+      // Deduplicate by normalized name, prefer current user's category id
+      const normalize = (s: string) =>
+        s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+      const map = new Map<string, { name: string; id: string }>();
+      (data || []).forEach((c: any) => {
+        const key = normalize(c.name);
+        const preferred = map.get(key);
+        if (!preferred) {
+          map.set(key, { name: c.name, id: c.user_id === user.id ? c.id : c.id });
+        } else if (c.user_id === user.id) {
+          // Replace with current user's id if we previously stored partner's id
+          map.set(key, { name: preferred.name, id: c.id });
+        }
+      });
 
-      const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
-      const hasPaymentCat = result.some((c) => paymentNames.includes(c.name));
-      if (type === 'expense' && !hasPaymentCat) {
+      // Ensure "Credit Card Payment" category exists for the current user (expense type only)
+      if (type === 'expense') {
+        const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
         const targetName = CREDIT_CARD_PAYMENT_NAMES[language as 'pt' | 'en'] || CREDIT_CARD_PAYMENT_NAMES.en;
-        const { data: inserted, error: insertErr } = await supabase
-          .from('categories')
-          .insert({
-            name: targetName,
-            category_type: 'expense',
-            user_id: user.id,
-          })
-          .select('id, name, category_type')
-          .single();
-        if (!insertErr && inserted) {
-          result = [...result, { id: inserted.id as string, name: inserted.name as string }];
+        const hasAnyPaymentCat = Array.from(map.values()).some((c) => paymentNames.includes(c.name));
+
+        // Insert for current user if none exists under current user specifically
+        const existsForCurrentUser = (data || []).some(
+          (c: any) => paymentNames.includes(c.name) && c.user_id === user.id
+        );
+
+        if (!hasAnyPaymentCat || !existsForCurrentUser) {
+          const { data: inserted, error: insertErr } = await supabase
+            .from('categories')
+            .insert({ name: targetName, category_type: 'expense', user_id: user.id })
+            .select('id, name, category_type, user_id')
+            .single();
+          if (!insertErr && inserted) {
+            map.set(normalize(inserted.name), { name: inserted.name, id: inserted.id });
+          }
         }
       }
 
-      setCategories(result);
+      const result = Array.from(map.values());
+      setCategories(result as { id: string; name: string }[]);
     } catch (error) {
       toast({
         title: "Erro",
