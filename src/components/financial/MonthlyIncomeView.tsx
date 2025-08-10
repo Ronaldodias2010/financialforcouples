@@ -55,7 +55,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: string; ids: string[] }[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { names } = usePartnerNames();
@@ -85,7 +85,7 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
     };
   }, [user, selectedMonth, selectedCategory, viewMode]);
 
-  const fetchCategories = async () => {
+const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
         .from('categories')
@@ -94,7 +94,15 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
         .order('name');
 
       if (error) throw error;
-      setCategories(data || []);
+      const items = (data || []) as { id: string; name: string }[];
+      const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const map = new Map<string, { key: string; name: string; ids: string[] }>();
+      for (const it of items) {
+        const key = normalize(it.name);
+        if (!map.has(key)) map.set(key, { key, name: translateCategoryName(it.name, language as 'pt' | 'en'), ids: [it.id] });
+        else map.get(key)!.ids.push(it.id);
+      }
+      setCategoryOptions(Array.from(map.values()));
     } catch (error) {
       toast({
         title: "Erro",
@@ -136,8 +144,11 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
         .lte('transaction_date', endDate)
         .order('transaction_date', { ascending: false });
 
-      if (selectedCategory !== "all") {
-        query = query.eq('category_id', selectedCategory);
+if (selectedCategory !== "all") {
+        const opt = categoryOptions.find(o => o.key === selectedCategory);
+        if (opt && opt.ids.length) {
+          query = query.in('category_id', opt.ids);
+        }
       }
 
       const { data, error } = await query;
@@ -240,10 +251,10 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
                 <SelectValue placeholder={t('monthlyIncome.allCategories')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('monthlyIncome.allCategories')}</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {translateCategoryName(cat.name, language as 'pt' | 'en')}
+<SelectItem value="all">{t('monthlyIncome.allCategories')}</SelectItem>
+                {categoryOptions.map((opt) => (
+                  <SelectItem key={opt.key} value={opt.key}>
+                    {opt.name}
                   </SelectItem>
                 ))}
               </SelectContent>
