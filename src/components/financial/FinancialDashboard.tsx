@@ -342,7 +342,7 @@ export const FinancialDashboard = () => {
         <div className="text-center space-y-2">
           <div className="flex justify-between items-start mb-2">
             <div className="text-sm text-muted-foreground">
-              👤 {user?.email}
+              👤 {user?.email} | Status: {subscribed ? 'Premium' : 'Essential'}
             </div>
             <div className="flex gap-2">
               {/* TEMPORARIAMENTE REMOVIDO: <ThemeSwitcher /> */}
