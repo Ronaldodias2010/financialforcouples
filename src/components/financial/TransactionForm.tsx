@@ -63,6 +63,12 @@ interface Account {
   overdraft_limit?: number;
 }
 
+interface Investment {
+  id: string;
+  name: string;
+  broker?: string;
+}
+
 const normalizeCategory = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const CATEGORY_TRANSLATIONS: Record<string, string> = {
   'alimentacao': 'Food',
@@ -93,10 +99,23 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [categoryId, setCategoryId] = useState("");
   const [subcategory, setSubcategory] = useState("");
   const [transactionDate, setTransactionDate] = useState<Date>(new Date());
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "deposit" | "transfer" | "debit_card" | "credit_card" | "payment_transfer">("cash");
-  const [accountId, setAccountId] = useState("");
-  const [cardId, setCardId] = useState("");
-  const [currency, setCurrency] = useState<CurrencyCode>("BRL");
+const [paymentMethod, setPaymentMethod] = useState<
+  | "cash"
+  | "deposit"
+  | "transfer"
+  | "debit_card"
+  | "credit_card"
+  | "payment_transfer"
+  | "account_transfer"
+  | "account_investment"
+>("cash");
+const [accountId, setAccountId] = useState("");
+const [fromAccountId, setFromAccountId] = useState("");
+const [toAccountId, setToAccountId] = useState("");
+const [investmentId, setInvestmentId] = useState("");
+const [investments, setInvestments] = useState<Investment[]>([]);
+const [cardId, setCardId] = useState("");
+const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>("BRL");
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -133,6 +152,7 @@ const getAccountOwnerName = (account: Account) => {
     fetchUserPreferredCurrency();
     if (type === "income") {
       fetchAccounts();
+      fetchInvestments();
     } else {
       fetchCards();
       fetchAccounts(); // Buscar contas também para despesas (cartão de débito)
@@ -268,6 +288,23 @@ const getAccountOwnerName = (account: Account) => {
     }
   };
 
+  const fetchInvestments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('investments')
+        .select('id, name, broker')
+        .order('name');
+      if (error) throw error;
+      setInvestments((data as any) || []);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os investimentos",
+        variant: "destructive",
+      });
+    }
+  };
+
   const selectedCategory = categories.find((c) => c.id === categoryId);
   const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
   const isCreditCardPaymentCategory = selectedCategory ? paymentNames.includes(selectedCategory.name) : false;
@@ -328,6 +365,25 @@ const getAccountOwnerName = (account: Account) => {
     return;
   }
 
+  // Validar transferência entre contas
+  if (type === "income" && paymentMethod === "account_transfer") {
+    if (!fromAccountId || !toAccountId) {
+      toast({ title: "Erro", description: "Selecione as contas de origem e destino", variant: "destructive" });
+      return;
+    }
+    if (fromAccountId === toAccountId) {
+      toast({ title: "Erro", description: "As contas de origem e destino devem ser diferentes", variant: "destructive" });
+      return;
+    }
+  }
+  // Validar transferência entre conta e investimento
+  if (type === "income" && paymentMethod === "account_investment") {
+    if (!fromAccountId || !investmentId) {
+      toast({ title: "Erro", description: "Selecione a conta de saída e o investimento", variant: "destructive" });
+      return;
+    }
+  }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
@@ -342,6 +398,102 @@ const getAccountOwnerName = (account: Account) => {
       }
 
       console.log('Creating transaction with owner_user:', ownerUser, 'for user:', user.id);
+
+// Inserir transação (regras para fluxo especial de receitas)
+      if (type === "income" && paymentMethod === "account_transfer") {
+        const fromAcc = accounts.find(a => a.id === fromAccountId);
+        const toAcc = accounts.find(a => a.id === toAccountId);
+        if (!fromAcc || !toAcc) throw new Error("Contas inválidas");
+        const amtFrom = convertCurrency(transactionAmount, currency, (fromAcc.currency || "BRL") as CurrencyCode);
+        const amtTo = convertCurrency(transactionAmount, currency, (toAcc.currency || "BRL") as CurrencyCode);
+
+        // Atualiza saldos
+        await supabase.from('accounts').update({ balance: Number(fromAcc.balance) - amtFrom }).eq('id', fromAcc.id);
+        await supabase.from('accounts').update({ balance: Number(toAcc.balance) + amtTo }).eq('id', toAcc.id);
+
+        // Registra duas transações (saída e entrada)
+        const transferDescOut = description || 'Transferência entre contas - saída';
+        const transferDescIn = description || 'Transferência entre contas - entrada';
+        const insertRes = await supabase.from('transactions').insert([
+          {
+            user_id: user.id,
+            owner_user: ownerUser,
+            type: 'expense',
+            amount: amtFrom,
+            currency: (fromAcc.currency || 'BRL'),
+            description: transferDescOut,
+            category_id: categoryId || null,
+            subcategory: subcategory || null,
+            transaction_date: transactionDate.toISOString().split('T')[0],
+            payment_method: 'account_transfer',
+            card_id: null,
+            account_id: fromAcc.id,
+            is_installment: false,
+            total_installments: null,
+            installment_number: null
+          },
+          {
+            user_id: user.id,
+            owner_user: ownerUser,
+            type: 'income',
+            amount: amtTo,
+            currency: (toAcc.currency || 'BRL'),
+            description: transferDescIn,
+            category_id: categoryId || null,
+            subcategory: subcategory || null,
+            transaction_date: transactionDate.toISOString().split('T')[0],
+            payment_method: 'account_transfer',
+            card_id: null,
+            account_id: toAcc.id,
+            is_installment: false,
+            total_installments: null,
+            installment_number: null
+          }
+        ]);
+        if (insertRes.error) throw insertRes.error;
+
+        toast({ title: 'Sucesso', description: 'Transferência entre contas registrada!' });
+        // Reset
+        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(new Date());
+        setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
+        return;
+      }
+
+      if (type === "income" && paymentMethod === "account_investment") {
+        const fromAcc = accounts.find(a => a.id === fromAccountId);
+        if (!fromAcc) throw new Error("Conta de saída inválida");
+        const amtFrom = convertCurrency(transactionAmount, currency, (fromAcc.currency || "BRL") as CurrencyCode);
+
+        // Atualiza saldo da conta de saída
+        await supabase.from('accounts').update({ balance: Number(fromAcc.balance) - amtFrom }).eq('id', fromAcc.id);
+
+        // Registra transação de saída da conta para investimento
+        const transferDesc = description || 'Transferência para investimento';
+        const { error: invErr } = await supabase.from('transactions').insert({
+          user_id: user.id,
+          owner_user: ownerUser,
+          type: 'expense',
+          amount: amtFrom,
+          currency: (fromAcc.currency || 'BRL'),
+          description: transferDesc,
+          category_id: categoryId || null,
+          subcategory: subcategory || null,
+          transaction_date: transactionDate.toISOString().split('T')[0],
+          payment_method: 'account_investment',
+          card_id: null,
+          account_id: fromAcc.id,
+          is_installment: false,
+          total_installments: null,
+          installment_number: null
+        });
+        if (invErr) throw invErr;
+
+        toast({ title: 'Sucesso', description: 'Transferência para investimento registrada!' });
+        // Reset
+        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(new Date());
+        setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setCardId(""); setCurrency(userPreferredCurrency);
+        return;
+      }
 
 // Inserir transação (regras para cartão de crédito)
       if (type === "expense" && paymentMethod === "credit_card") {
@@ -675,7 +827,7 @@ const getAccountOwnerName = (account: Account) => {
           {/* Payment Method */}
           <div>
             <Label>{type === "income" ? t('transactionForm.receiptMethod') : t('transactionForm.paymentMethod')}</Label>
-            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "deposit" | "transfer" | "debit_card" | "credit_card" | "payment_transfer")}>
+            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as any)}>
               <SelectTrigger>
                 <SelectValue placeholder={t('transactionForm.selectPaymentMethod')} />
               </SelectTrigger>
@@ -684,7 +836,9 @@ const getAccountOwnerName = (account: Account) => {
                 {type === "income" ? (
                   <>
                     <SelectItem value="deposit">{t('transactionForm.deposit')}</SelectItem>
-                    <SelectItem value="transfer">{t('transactionForm.transfer')}</SelectItem>
+                    <SelectItem value="transfer">{t('transactionForm.receivedTransfer')}</SelectItem>
+                    <SelectItem value="account_transfer">{t('transactionForm.accountTransfer')}</SelectItem>
+                    <SelectItem value="account_investment">{t('transactionForm.accountInvestmentTransfer')}</SelectItem>
                   </>
                 ) : (
                   <>
@@ -718,6 +872,98 @@ const getAccountOwnerName = (account: Account) => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Account Selection for Income with Account-to-Account Transfer */}
+          {type === "income" && paymentMethod === "account_transfer" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fromAccount">{t('transactionForm.selectSourceAccount')}</Label>
+                <Select value={fromAccountId} onValueChange={setFromAccountId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{account.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="toAccount">{t('transactionForm.selectDestinationAccount')}</Label>
+                <Select value={toAccountId} onValueChange={setToAccountId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{account.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {/* Account to Investment Transfer */}
+          {type === "income" && paymentMethod === "account_investment" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fromAccount">{t('transactionForm.selectSourceAccount')}</Label>
+                <Select value={fromAccountId} onValueChange={setFromAccountId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{account.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="investment">{t('transactionForm.selectInvestment')}</Label>
+                <Select value={investmentId} onValueChange={setInvestmentId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('transactionForm.selectInvestment')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {investments.map((inv) => (
+                      <SelectItem key={inv.id} value={inv.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{inv.name}</span>
+                          {inv.broker && (
+                            <span className="text-muted-foreground ml-2">{inv.broker}</span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 
