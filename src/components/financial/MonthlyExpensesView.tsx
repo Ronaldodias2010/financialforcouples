@@ -184,6 +184,7 @@ if (selectedCategory !== "all") {
       case 'cash': return 'Dinheiro';
       case 'credit_card': return 'Cartão de Crédito';
       case 'debit_card': return 'Cartão de Débito';
+      case 'payment_transfer': return 'Transferência para Pagamento';
       default: return method;
     }
   };

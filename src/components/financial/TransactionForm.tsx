@@ -30,7 +30,7 @@ interface Transaction {
   category_id: string;
   subcategory?: string;
   transaction_date: Date;
-  payment_method: "cash" | "deposit" | "transfer" | "debit_card" | "credit_card";
+  payment_method: "cash" | "deposit" | "transfer" | "debit_card" | "credit_card" | "payment_transfer";
   card_id?: string;
   user_id: string;
   currency: CurrencyCode;
@@ -93,7 +93,7 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [categoryId, setCategoryId] = useState("");
   const [subcategory, setSubcategory] = useState("");
   const [transactionDate, setTransactionDate] = useState<Date>(new Date());
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "deposit" | "transfer" | "debit_card" | "credit_card">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "deposit" | "transfer" | "debit_card" | "credit_card" | "payment_transfer">("cash");
   const [accountId, setAccountId] = useState("");
   const [cardId, setCardId] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>("BRL");
@@ -296,11 +296,11 @@ const getAccountOwnerName = (account: Account) => {
       return;
     }
 
-  // Validar conta para despesas com cartão de débito
-  if (type === "expense" && paymentMethod === "debit_card" && !accountId) {
+  // Validar conta para despesas com débito/transferência de pagamento
+  if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && !accountId) {
     toast({
       title: "Erro",
-      description: "Selecione uma conta para o cartão de débito",
+      description: "Selecione uma conta para pagamento",
       variant: "destructive",
     });
     return;
@@ -416,8 +416,8 @@ const getAccountOwnerName = (account: Account) => {
           if (insertErr) throw insertErr;
         }
       } else {
-        // Validar limite (overdraft) para despesas com cartão de débito (com conversão de moeda)
-        if (type === "expense" && paymentMethod === "debit_card" && accountId) {
+        // Validar limite (overdraft) para despesas com débito/transferência de pagamento (com conversão de moeda)
+        if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && accountId) {
           const selectedAccount = accounts.find(acc => acc.id === accountId);
           const limit = Number(selectedAccount?.overdraft_limit ?? 0);
           const accCurrency = (selectedAccount?.currency || "BRL") as CurrencyCode;
@@ -474,8 +474,8 @@ const getAccountOwnerName = (account: Account) => {
         }
       }
 
-      // Atualizar saldo da conta para despesas com cartão de débito
-      if (type === "expense" && paymentMethod === "debit_card" && accountId) {
+      // Atualizar saldo da conta para despesas com débito/transferência de pagamento
+      if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && accountId) {
         const selectedAccount = accounts.find(acc => acc.id === accountId);
         if (selectedAccount) {
           const accCurrency = (selectedAccount.currency || "BRL") as CurrencyCode;
@@ -675,7 +675,7 @@ const getAccountOwnerName = (account: Account) => {
           {/* Payment Method */}
           <div>
             <Label>{type === "income" ? t('transactionForm.receiptMethod') : t('transactionForm.paymentMethod')}</Label>
-            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "deposit" | "transfer" | "debit_card" | "credit_card")}>
+            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "cash" | "deposit" | "transfer" | "debit_card" | "credit_card" | "payment_transfer")}>
               <SelectTrigger>
                 <SelectValue placeholder={t('transactionForm.selectPaymentMethod')} />
               </SelectTrigger>
@@ -689,6 +689,7 @@ const getAccountOwnerName = (account: Account) => {
                 ) : (
                   <>
                     <SelectItem value="debit_card">{t('transactionForm.debitCard')}</SelectItem>
+                    <SelectItem value="payment_transfer">{t('transactionForm.paymentTransfer')}</SelectItem>
                     <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
                   </>
                 )}
@@ -788,7 +789,7 @@ const getAccountOwnerName = (account: Account) => {
           )}
 
           {/* Account Selection for Expenses with Debit Card */}
-          {type === "expense" && paymentMethod === "debit_card" && (
+          {type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && (
             <div>
               <Label htmlFor="account">{t('transactionForm.selectAccount')}</Label>
               <Select value={accountId} onValueChange={setAccountId} required>
@@ -891,7 +892,7 @@ const getAccountOwnerName = (account: Account) => {
             className="w-full"
             disabled={
               type === "expense" &&
-              paymentMethod === "debit_card" &&
+              (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") &&
               (() => {
                 const acc = accounts.find(a => a.id === accountId);
                 if (!acc) return false;
@@ -908,7 +909,7 @@ const getAccountOwnerName = (account: Account) => {
               })()
             }
             title={
-              type === "expense" && paymentMethod === "debit_card" ? "Bloqueado: limite esgotado para esta conta" : undefined
+              type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") ? "Bloqueado: limite esgotado para esta conta" : undefined
             }
           >
             {t('transactionForm.addTransaction')}
