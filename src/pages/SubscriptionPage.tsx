@@ -160,6 +160,12 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
             <div className="text-3xl font-bold text-primary">
               R$ 19,90<span className="text-sm font-normal text-muted-foreground">/{t('subscription.month')}</span>
             </div>
+            <div className="text-lg font-semibold text-primary">
+              R$ 179,80<span className="text-sm font-normal text-muted-foreground">/{t('subscription.year')}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('subscription.annualDiscount')}
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
