@@ -60,10 +60,24 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
 
 const fetchCategories = async () => {
     try {
+      // Scope categories to the current user and partner (if any)
+      const { data: coupleData } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name')
+        .select('id, name, user_id')
         .eq('category_type', 'expense')
+        .in('user_id', userIds)
         .order('name');
 
       if (error) throw error;
