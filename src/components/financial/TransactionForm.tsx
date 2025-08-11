@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { enUS, ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesInsert, Enums } from "@/integrations/supabase/types";
@@ -129,6 +129,7 @@ const [currency, setCurrency] = useState<CurrencyCode>("BRL");
     : 0;
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const dateLocale = language === 'pt' ? ptBR : enUS;
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
 const { couple, isPartOfCouple } = useCouple();
 const { names } = usePartnerNames();
@@ -739,7 +740,7 @@ const invTxn: TablesInsert<'transactions'> = {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {transactionDate ? format(transactionDate, "PPP", { locale: ptBR }) : <span>{t('transactionForm.selectDate')}</span>}
+                  {transactionDate ? format(transactionDate, "PPP", { locale: dateLocale }) : <span>{t('transactionForm.selectDate')}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-card border border-border" align="start">
@@ -747,6 +748,7 @@ const invTxn: TablesInsert<'transactions'> = {
                   mode="single"
                   selected={transactionDate}
                   onSelect={(date) => date && setTransactionDate(date)}
+                  locale={dateLocale}
                   initialFocus
                   className="p-3 pointer-events-auto"
                 />
