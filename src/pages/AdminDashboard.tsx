@@ -646,9 +646,8 @@ const AdminDashboardContent = () => {
         </TabsContent>
 
         <TabsContent value="premium">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             <ManualPremiumAccess language={language} />
-            <PremiumUsersList language={language} />
           </div>
         </TabsContent>
 
