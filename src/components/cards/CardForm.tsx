@@ -70,7 +70,9 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
             credit_limit: cardData.card_type === "credit" && cardData.credit_limit ? parseFloat(cardData.credit_limit) : null,
             current_balance: 0, // Saldo de fatura atual (não usado para o "limite disponível")
             initial_balance: parseFloat(cardData.current_balance) || 0, // Limite disponível inicial informado pelo usuário
-            initial_balance_original: 0, // Não utilizado no cálculo atual
+            initial_balance_original: cardData.card_type === "credit"
+              ? Math.max(0, (parseFloat(cardData.credit_limit || '0') || 0) - (parseFloat(cardData.current_balance || '0') || 0))
+              : 0, // Garante que qualquer trigger de recálculo resulte exatamente no disponível informado
             currency: cardData.currency as "BRL" | "USD" | "EUR",
             due_date: cardData.card_type === "credit" && cardData.due_date ? parseInt(cardData.due_date) : null
           });
