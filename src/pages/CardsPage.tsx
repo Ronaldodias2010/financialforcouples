@@ -7,7 +7,7 @@ import { ArrowLeft, CreditCard } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
-import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
 
@@ -31,7 +31,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { t } = useLanguage();
   const { names } = usePartnerNames();
-  const { convertCurrency } = useCurrencyConverter();
+  
 
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [cardsData, setCardsData] = useState<CardRow[]>([]);
@@ -43,9 +43,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
 
   const computeAvailable = (c: CardRow) => {
     if (c.card_type !== "credit") return 0;
-    const from = (c.currency ?? "BRL") as CurrencyCode;
-    const base = Number(c.initial_balance ?? 0);
-    return convertCurrency(base, from, displayCurrency);
+    return Number(c.initial_balance ?? 0);
   };
   useEffect(() => {
     const fetchCards = async () => {
@@ -74,13 +72,13 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
     if (!user?.id) return 0;
     const mine = cardsData.filter(c => c.user_id === user.id);
     return mine.reduce((sum, c) => sum + computeAvailable(c), 0);
-  }, [cardsData, user?.id, convertCurrency]);
+  }, [cardsData, user?.id]);
 
   const partnerTotal = useMemo(() => {
     if (!partnerId) return 0;
     const theirs = cardsData.filter(c => c.user_id === partnerId);
     return theirs.reduce((sum, c) => sum + computeAvailable(c), 0);
-  }, [cardsData, partnerId, convertCurrency]);
+  }, [cardsData, partnerId]);
 
   const bothTotal = useMemo(() => currentUserTotal + partnerTotal, [currentUserTotal, partnerTotal]);
 
