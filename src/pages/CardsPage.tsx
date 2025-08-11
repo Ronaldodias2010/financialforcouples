@@ -24,6 +24,7 @@ interface CardRow {
   credit_limit: number | null;
   current_balance: number | null;
   initial_balance_original: number | null;
+  initial_balance: number | null;
 }
 
 export const CardsPage = ({ onBack }: CardsPageProps) => {
@@ -43,16 +44,19 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const computeAvailable = (c: CardRow) => {
     if (c.card_type !== "credit") return 0;
     const from = (c.currency ?? "BRL") as CurrencyCode;
-    const base = c.initial_balance_original != null
-      ? c.initial_balance_original
-      : (c.credit_limit != null ? Math.max(0, c.credit_limit - (c.current_balance ?? 0)) : 0);
+    const base =
+      c.initial_balance != null
+        ? c.initial_balance
+        : (c.credit_limit != null
+            ? Math.max(0, (c.credit_limit ?? 0) - (c.initial_balance_original ?? 0) - (c.current_balance ?? 0))
+            : 0);
     return convertCurrency(base, from, displayCurrency);
   };
   useEffect(() => {
     const fetchCards = async () => {
       const { data, error } = await supabase
         .from("cards")
-        .select("user_id, owner_user, card_type, credit_limit, currency, current_balance, initial_balance_original");
+        .select("user_id, owner_user, card_type, credit_limit, currency, current_balance, initial_balance_original, initial_balance");
       if (!error && data) {
         setCardsData(
           data.map((c) => ({
@@ -63,6 +67,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
             credit_limit: (c as any).credit_limit !== null ? Number((c as any).credit_limit) : null,
             current_balance: Number((c as any).current_balance ?? 0),
             initial_balance_original: (c as any).initial_balance_original !== null ? Number((c as any).initial_balance_original) : null,
+            initial_balance: (c as any).initial_balance !== null && (c as any).initial_balance !== undefined ? Number((c as any).initial_balance) : null,
           }))
         );
       }
