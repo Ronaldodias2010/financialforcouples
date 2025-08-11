@@ -18,6 +18,7 @@ export default function Auth() {
   const [isResetMode, setIsResetMode] = useState(false);
   const [isInviteAccess, setIsInviteAccess] = useState(false);
   
+  const [defaultTab, setDefaultTab] = useState<'signin' | 'signup'>('signin');
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const { toast } = useToast();
@@ -35,6 +36,14 @@ export default function Auth() {
     const urlParams = new URLSearchParams(window.location.search);
     const inviteEmail = urlParams.get('email');
     const fromInvite = urlParams.get('invite') === 'true';
+    const tabParam = urlParams.get('tab');
+
+    // Definir aba padrão com base no parâmetro de URL, evitando signup quando for convite
+    if (tabParam === 'signup' && !fromInvite) {
+      setDefaultTab('signup');
+    } else {
+      setDefaultTab('signin');
+    }
     
     if (fromInvite && inviteEmail) {
       setIsInviteAccess(true);
@@ -265,7 +274,7 @@ export default function Auth() {
             </Alert>
           )}
           
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
               <TabsTrigger value="signup" disabled={isInviteAccess}>

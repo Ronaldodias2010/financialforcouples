@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Check, Sparkles, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import useInView from "@/hooks/use-in-view";
-
+import { Link } from "react-router-dom";
 const PricingSection = () => {
   const { t, language, inBrazil } = useLanguage();
   const isUSD = language !== 'pt' || !inBrazil;
@@ -127,23 +127,28 @@ const PricingSection = () => {
                 ))}
               </ul>
               
-              <Button 
-                variant={plan.buttonVariant} 
-                size="lg" 
-                className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
-              >
-                {plan.popular ? (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    {plan.buttonText}
-                  </>
-                ) : (
-                  <>
+              {!plan.popular ? (
+                <Button 
+                  asChild
+                  variant={plan.buttonVariant} 
+                  size="lg" 
+                  className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
+                >
+                  <Link to="/auth?tab=signup">
                     <Download className="w-4 h-4" />
                     {plan.buttonText}
-                  </>
-                )}
-              </Button>
+                  </Link>
+                </Button>
+              ) : (
+                <Button 
+                  variant={plan.buttonVariant} 
+                  size="lg" 
+                  className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {plan.buttonText}
+                </Button>
+              )}
             </Card>
           ))}
         </div>
