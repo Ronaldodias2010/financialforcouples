@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { usePWA } from "@/hooks/usePWA";
 const HeroSection = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const { installApp } = usePWA();
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     toast({
@@ -95,7 +97,7 @@ const HeroSection = () => {
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" variant="secondary" className="group">
+              <Button size="lg" variant="secondary" className="group" onClick={installApp}>
                 <Download className="w-5 h-5 group-hover:animate-bounce" />
                 {t('hero.cta.free')}
               </Button>
