@@ -8,20 +8,23 @@ import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
 import Footer from "@/components/landing/Footer";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import "@/styles/landing-theme.css";
 
 const Landing = () => {
   return (
     <LanguageProvider>
-    <main className="min-h-screen">
-      <HeroSection />
-      <BenefitsSection />
-      <AppDemoSection />
-      <PricingSection />
-      <WhatsAppSection />
-      <FinalCTASection />
-      <FAQSection />
-      <Footer />
-    </main>
+      <div className="landing-theme">
+        <main className="min-h-screen">
+          <HeroSection />
+          <BenefitsSection />
+          <AppDemoSection />
+          <PricingSection />
+          <WhatsAppSection />
+          <FinalCTASection />
+          <FAQSection />
+          <Footer />
+        </main>
+      </div>
     </LanguageProvider>
   );
 };

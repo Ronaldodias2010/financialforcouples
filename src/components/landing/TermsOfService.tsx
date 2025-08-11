@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, ArrowLeft, FileText, CheckCircle, Shield, RotateCcw, MessageCircle, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
-import LanguageSelector from "@/components/LanguageSelector";
+import LanguageSelector from "@/components/landing/LanguageSelector";
 
 const TermsOfService = () => {
   const { language } = useLanguage();
