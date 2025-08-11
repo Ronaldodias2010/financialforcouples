@@ -23,6 +23,7 @@ interface SubscriptionMetrics {
   canceledSubscriptions: number;
   failedPayments: number;
   monthlyRevenue: number;
+  annualRevenue: number;
 }
 
 interface SubscriptionUser {
@@ -49,7 +50,7 @@ interface RecentAlert {
 }
 
 const AdminDashboardContent = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, session } = useAuth();
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { convertCurrency } = useCurrencyConverter();
@@ -57,7 +58,8 @@ const AdminDashboardContent = () => {
     activeUsers: 0,
     canceledSubscriptions: 0,
     failedPayments: 0,
-    monthlyRevenue: 0
+    monthlyRevenue: 0,
+    annualRevenue: 0,
   });
   const [users, setUsers] = useState<SubscriptionUser[]>([]);
   const [alerts, setAlerts] = useState<RecentAlert[]>([]);
@@ -96,17 +98,20 @@ const AdminDashboardContent = () => {
         if (hoursDiff < 1) {
           shouldRefreshFromStripe = false;
           
-          // Calculate monthly revenue in appropriate currency
-          let monthlyRevenue = cachedMetrics[0].monthly_revenue_brl;
+          // Calculate monthly/annual revenue in appropriate currency
+          let monthlyRevenue = cachedMetrics[0].monthly_revenue_brl || 0;
+          let annualRevenue = cachedMetrics[0].annual_revenue_brl || 0;
           if (language === 'en') {
             monthlyRevenue = await convertCurrency(monthlyRevenue, 'BRL', 'USD');
+            annualRevenue = await convertCurrency(annualRevenue, 'BRL', 'USD');
           }
           
           setMetrics({
             activeUsers: cachedMetrics[0].active_users,
             canceledSubscriptions: cachedMetrics[0].canceled_subscriptions,
             failedPayments: cachedMetrics[0].failed_payments,
-            monthlyRevenue
+            monthlyRevenue,
+            annualRevenue,
           });
           
           console.log('Using cached metrics:', cachedMetrics[0]);
@@ -117,7 +122,9 @@ const AdminDashboardContent = () => {
       if (shouldRefreshFromStripe) {
         try {
           console.log('Fetching fresh metrics from Stripe...');
-          const { data: stripeMetrics, error: stripeError } = await supabase.functions.invoke('stripe-admin-metrics');
+          const { data: stripeMetrics, error: stripeError } = await supabase.functions.invoke('stripe-admin-metrics', {
+            headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+          });
           
           if (stripeError) {
             console.error('Error fetching Stripe metrics:', stripeError);
@@ -125,17 +132,20 @@ const AdminDashboardContent = () => {
           }
           
           if (stripeMetrics) {
-            // Calculate monthly revenue in appropriate currency
-            let monthlyRevenue = stripeMetrics.monthlyRevenueBRL;
+            // Calculate monthly/annual revenue in appropriate currency
+            let monthlyRevenue = stripeMetrics.monthlyRevenueBRL || 0;
+            let annualRevenue = stripeMetrics.annualRevenueBRL || 0;
             if (language === 'en') {
               monthlyRevenue = await convertCurrency(monthlyRevenue, 'BRL', 'USD');
+              annualRevenue = await convertCurrency(annualRevenue, 'BRL', 'USD');
             }
             
             setMetrics({
               activeUsers: stripeMetrics.activeUsers,
               canceledSubscriptions: stripeMetrics.canceledSubscriptions,
               failedPayments: stripeMetrics.failedPayments,
-              monthlyRevenue
+              monthlyRevenue,
+              annualRevenue,
             });
             
             console.log('Updated with fresh Stripe metrics:', stripeMetrics);
@@ -164,7 +174,8 @@ const AdminDashboardContent = () => {
               activeUsers,
               canceledSubscriptions,
               failedPayments: Math.floor(Math.random() * 100), // Mock data as fallback
-              monthlyRevenue
+              monthlyRevenue,
+              annualRevenue: 0,
             });
           }
         }
@@ -472,6 +483,21 @@ const AdminDashboardContent = () => {
               {language === 'en' 
                 ? `$ ${metrics.monthlyRevenue.toFixed(2)}` 
                 : `R$ ${metrics.monthlyRevenue.toFixed(2)}`
+              }
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{language === 'en' ? 'Annual Revenue' : 'Receita Anual'}</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {language === 'en' 
+                ? `$ ${metrics.annualRevenue.toFixed(2)}` 
+                : `R$ ${metrics.annualRevenue.toFixed(2)}`
               }
             </div>
           </CardContent>

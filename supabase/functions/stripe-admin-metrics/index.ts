@@ -56,6 +56,7 @@ serve(async (req) => {
     let activeUsers = 0;
     let canceledSubscriptions = 0;
     let monthlyRevenueBRL = 0;
+    let annualRevenueBRL = 0;
 
     // Check subscriptions for each customer
     for (const customer of customers.data) {
@@ -67,10 +68,15 @@ serve(async (req) => {
       for (const subscription of subscriptions.data) {
         if (subscription.status === 'active') {
           activeUsers++;
-          // Calculate revenue in BRL (assuming base price is in cents)
-          const amount = subscription.items.data[0]?.price?.unit_amount || 0;
-          monthlyRevenueBRL += amount / 100; // Convert from cents to reais
-        } else if (['canceled', 'past_due', 'unpaid'].includes(subscription.status)) {
+          const item = subscription.items.data[0];
+          const amount = item?.price?.unit_amount || 0; // in cents
+          const interval = item?.price?.recurring?.interval;
+          if (interval === 'month') {
+            monthlyRevenueBRL += amount / 100; // Convert to BRL
+          } else if (interval === 'year') {
+            annualRevenueBRL += amount / 100; // Yearly charge amount
+          }
+        } else if (subscription.status === 'canceled') {
           canceledSubscriptions++;
         }
       }
@@ -114,7 +120,8 @@ serve(async (req) => {
       activeUsers,
       canceledSubscriptions,
       failedPayments,
-      monthlyRevenueBRL
+      monthlyRevenueBRL,
+      annualRevenueBRL
     });
 
     // Update or insert metrics in cache table
@@ -125,6 +132,7 @@ serve(async (req) => {
         canceled_subscriptions: canceledSubscriptions,
         failed_payments: failedPayments,
         monthly_revenue_brl: monthlyRevenueBRL,
+        annual_revenue_brl: annualRevenueBRL,
         last_updated: new Date().toISOString()
       });
 
@@ -139,6 +147,7 @@ serve(async (req) => {
       canceledSubscriptions,
       failedPayments,
       monthlyRevenueBRL,
+      annualRevenueBRL,
       lastUpdated: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

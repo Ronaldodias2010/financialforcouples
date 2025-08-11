@@ -48,7 +48,7 @@ serve(async (req) => {
     if (adminEmails.includes(user.email)) {
       logStep("Admin user detected, granting premium access", { email: user.email });
       
-      // Update database with premium status
+      // Update database with premium status for the admin
       await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
@@ -63,6 +63,39 @@ serve(async (req) => {
         subscribed: true,
         subscription_tier: 'premium'
       }).eq('user_id', user.id);
+
+      // Also grant premium to active partner, if any
+      const { data: couple } = await supabaseClient
+        .from('user_couples')
+        .select('user1_id, user2_id, status')
+        .eq('status', 'active')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .maybeSingle();
+
+      if (couple) {
+        const partnerId = couple.user1_id === user.id ? couple.user2_id : couple.user1_id;
+        if (partnerId) {
+          const { data: partnerUser } = await supabaseClient.auth.admin.getUserById(partnerId);
+          const partnerEmail = partnerUser?.user?.email || null;
+
+          if (partnerEmail) {
+            await supabaseClient.from('subscribers').upsert({
+              email: partnerEmail,
+              user_id: partnerId,
+              stripe_customer_id: null,
+              subscribed: true,
+              subscription_tier: 'premium',
+              subscription_end: '2025-12-31T23:59:59+00:00',
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'email' });
+          }
+
+          await supabaseClient.from('profiles').update({
+            subscribed: true,
+            subscription_tier: 'premium',
+          }).eq('user_id', partnerId);
+        }
+      }
       
       return new Response(JSON.stringify({ 
         subscribed: true,
@@ -244,7 +277,7 @@ serve(async (req) => {
       subscription_tier: subscriptionTier
     }).eq('user_id', user.id);
 
-    // If the user has an active subscription, grant shared access to partner profile
+    // If the user has an active subscription, grant shared access to partner as well
     if (hasActiveSub) {
       const { data: couple } = await supabaseClient
         .from('user_couples')
@@ -255,6 +288,21 @@ serve(async (req) => {
       if (couple) {
         const partnerId = couple.user1_id === user.id ? couple.user2_id : couple.user1_id;
         if (partnerId) {
+          const { data: partnerUser } = await supabaseClient.auth.admin.getUserById(partnerId);
+          const partnerEmail = partnerUser?.user?.email || null;
+
+          if (partnerEmail) {
+            await supabaseClient.from('subscribers').upsert({
+              email: partnerEmail,
+              user_id: partnerId,
+              stripe_customer_id: null,
+              subscribed: true,
+              subscription_tier: 'premium',
+              subscription_end: subscriptionEnd,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'email' });
+          }
+
           await supabaseClient.from('profiles').update({
             subscribed: true,
             subscription_tier: 'premium',

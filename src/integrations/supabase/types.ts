@@ -595,6 +595,7 @@ export type Database = {
       stripe_metrics_cache: {
         Row: {
           active_users: number
+          annual_revenue_brl: number
           canceled_subscriptions: number
           created_at: string
           failed_payments: number
@@ -604,6 +605,7 @@ export type Database = {
         }
         Insert: {
           active_users?: number
+          annual_revenue_brl?: number
           canceled_subscriptions?: number
           created_at?: string
           failed_payments?: number
@@ -613,6 +615,7 @@ export type Database = {
         }
         Update: {
           active_users?: number
+          annual_revenue_brl?: number
           canceled_subscriptions?: number
           created_at?: string
           failed_payments?: number
