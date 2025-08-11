@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CreditCard, Eye, EyeOff, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +21,7 @@ export default function Auth() {
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const { toast } = useToast();
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     // Verificar se já está logado
@@ -62,8 +64,8 @@ export default function Auth() {
           // Isso pode acontecer se o usuário já trocou a senha
         } else if (data?.success && data?.access_token) {
           toast({
-            title: "Bem-vindo!",
-            description: "Login realizado com sucesso! Redirecionando...",
+            title: t('auth.loginSuccessTitle'),
+            description: t('auth.loginSuccessDesc'),
           });
           
           // Configurar a sessão automaticamente
@@ -93,8 +95,8 @@ export default function Auth() {
       
       if (data.user) {
         toast({
-          title: "Login realizado com sucesso!",
-          description: "Redirecionando para o dashboard...",
+          title: t('auth.loginSuccessTitle'),
+          description: t('auth.loginSuccessDesc'),
         });
         window.location.href = '/app';
       }
@@ -102,8 +104,8 @@ export default function Auth() {
       console.error('Login error:', error);
       toast({
         variant: "destructive",
-        title: "Erro no login",
-        description: error.message || "Erro ao fazer login. Verifique suas credenciais.",
+        title: t('auth.loginErrorTitle'),
+        description: error.message || t('auth.loginErrorDesc'),
       });
     } finally {
       setIsLoading(false);
@@ -125,8 +127,8 @@ export default function Auth() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro no login com Google",
-        description: error.message || "Erro ao fazer login com Google.",
+        title: t('auth.googleErrorTitle'),
+        description: error.message || t('auth.loginErrorDesc'),
       });
       setIsLoading(false);
     }
@@ -158,7 +160,7 @@ export default function Auth() {
         await supabase.functions.invoke('send-confirmation', {
           body: {
             userEmail: email,
-            language: 'pt'
+            language: language
           }
         });
       }
@@ -166,8 +168,8 @@ export default function Auth() {
       if (data.user) {
         // Mostrar toast com duração estendida de 20 segundos
         toast({
-          title: "✅ Conta criada com sucesso!",
-          description: "📧 Um email de confirmação foi enviado para sua caixa de entrada. Clique no link do email para ativar sua conta.",
+          title: `✅ ${t('auth.signupSuccessTitle')}`,
+          description: `📧 ${t('auth.signupSuccessDesc')}`,
           duration: 20000, // 20 segundos
         });
         
@@ -179,8 +181,8 @@ export default function Auth() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro no cadastro",
-        description: error.message || "Erro ao criar conta.",
+        title: t('auth.signupErrorTitle'),
+        description: error.message || t('auth.signupErrorDesc'),
       });
     } finally {
       setIsLoading(false);
@@ -192,8 +194,8 @@ export default function Auth() {
     if (!email) {
       toast({
         variant: "destructive",
-        title: "Email necessário",
-        description: "Por favor, insira seu email para redefinir a senha.",
+        title: t('auth.emailRequiredTitle'),
+        description: t('auth.emailRequiredDesc'),
       });
       return;
     }
@@ -205,22 +207,22 @@ export default function Auth() {
         body: {
           userEmail: email,
           resetUrl: `${window.location.origin}/reset-password`,
-          language: 'pt'
+          language: language
         }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Email de redefinição enviado!",
-        description: "Verifique sua caixa de entrada e siga as instruções.",
+        title: t('auth.resetEmailTitle'),
+        description: t('auth.resetEmailDesc'),
       });
       setIsResetMode(false);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro ao enviar email",
-        description: error.message,
+        title: t('auth.resetEmailErrorTitle'),
+        description: error.message || t('auth.resetEmailErrorDesc'),
       });
     } finally {
       setIsLoading(false);
@@ -231,6 +233,12 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-primary/20">
         <CardHeader className="text-center space-y-4">
+          <div className="flex justify-end">
+            <div className="inline-flex gap-2">
+              <Button variant={language === 'pt' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('pt')}>PT</Button>
+              <Button variant={language === 'en' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('en')}>EN</Button>
+            </div>
+          </div>
           <div className="flex justify-center">
             <img 
               src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png" 
@@ -240,10 +248,10 @@ export default function Auth() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Financial App
+              {t('auth.appName')}
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-2">
-              Gerencie suas finanças em casal
+              {t('auth.tagline')}
             </CardDescription>
           </div>
         </CardHeader>
@@ -252,16 +260,16 @@ export default function Auth() {
             <Alert className="mb-4 border-primary/20 bg-primary/5">
               <Mail className="h-4 w-4" />
               <AlertDescription className="text-sm">
-                Você foi convidado para o Couples Financials. Use a senha enviada por e-mail para acessar o sistema.
+                {t('auth.inviteBanner')}
               </AlertDescription>
             </Alert>
           )}
           
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Entrar</TabsTrigger>
+              <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
               <TabsTrigger value="signup" disabled={isInviteAccess}>
-                Cadastrar
+                {t('auth.signUp')}
               </TabsTrigger>
             </TabsList>
             
@@ -269,11 +277,11 @@ export default function Auth() {
               {isResetMode ? (
                 <form onSubmit={handlePasswordReset} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="reset-email">Email</Label>
+                    <Label htmlFor="reset-email">{t('auth.email')}</Label>
                     <Input
                       id="reset-email"
                       type="email"
-                      placeholder="seu@email.com"
+                      placeholder={t('auth.emailPlaceholder')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -281,7 +289,7 @@ export default function Auth() {
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Enviar Email de Recuperação
+                    {t('auth.resetEmailSend')}
                   </Button>
                   <Button 
                     type="button" 
@@ -289,32 +297,32 @@ export default function Auth() {
                     className="w-full"
                     onClick={() => setIsResetMode(false)}
                   >
-                    Voltar ao Login
+                    {t('auth.backToLogin')}
                   </Button>
                 </form>
               ) : (
                 <form onSubmit={handleSignIn} className="space-y-4">
-                 <div className="space-y-2">
-                   <Label htmlFor="signin-email">Email</Label>
-                   <Input
-                     id="signin-email"
-                     type="email"
-                     placeholder="seu@email.com"
-                     value={email}
-                     onChange={(e) => setEmail(e.target.value)}
-                     required
-                     disabled={isInviteAccess}
-                   />
-                 </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="signin-email">{t('auth.email')}</Label>
+                     <Input
+                       id="signin-email"
+                       type="email"
+                       placeholder={t('auth.emailPlaceholder')}
+                       value={email}
+                       onChange={(e) => setEmail(e.target.value)}
+                       required
+                       disabled={isInviteAccess}
+                     />
+                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-password">
-                      {isInviteAccess ? "Senha Temporária" : "Senha"}
+                      {isInviteAccess ? t('auth.tempPassword') : t('auth.password')}
                     </Label>
                     <div className="relative">
                        <Input
                          id="signin-password"
                          type={showSignInPassword ? "text" : "password"}
-                         placeholder={isInviteAccess ? "Senha enviada por e-mail" : "••••••••"}
+                         placeholder={isInviteAccess ? t('auth.tempPasswordPlaceholder') : "••••••••"}
                          value={password}
                          onChange={(e) => setPassword(e.target.value)}
                          required
@@ -339,7 +347,7 @@ export default function Auth() {
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Entrar
+                  {t('auth.signIn')}
                 </Button>
                 <Button 
                   type="button" 
@@ -355,7 +363,7 @@ export default function Auth() {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Continuar com Google
+                  {t('auth.continueWithGoogle')}
                 </Button>
                 <Button 
                   type="button" 
@@ -363,7 +371,7 @@ export default function Auth() {
                   className="w-full text-sm"
                   onClick={() => setIsResetMode(true)}
                 >
-                  Esqueci minha senha
+                  {t('auth.forgotPassword')}
                 </Button>
               </form>
               )}
@@ -372,58 +380,58 @@ export default function Auth() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Nome</Label>
+                  <Label htmlFor="signup-name">{t('auth.name')}</Label>
                   <Input
                     id="signup-name"
                     type="text"
-                    placeholder="Seu nome"
+                    placeholder={t('auth.yourName')}
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t('auth.email')}</Label>
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder={t('auth.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
-                 <div className="space-y-2">
-                   <Label htmlFor="signup-password">Senha</Label>
-                   <div className="relative">
-                     <Input
-                       id="signup-password"
-                       type={showSignUpPassword ? "text" : "password"}
-                       placeholder="••••••••"
-                       value={password}
-                       onChange={(e) => setPassword(e.target.value)}
-                       required
-                       className="pr-10"
-                     />
-                     <button
-                       type="button"
-                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                       onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                     >
-                       {showSignUpPassword ? (
-                         <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                       ) : (
-                         <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                       )}
-                     </button>
-                   </div>
+               <div className="space-y-2">
+                 <Label htmlFor="signup-password">{t('auth.password')}</Label>
+                 <div className="relative">
+                   <Input
+                     id="signup-password"
+                     type={showSignUpPassword ? "text" : "password"}
+                     placeholder={"••••••••"}
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+                     required
+                     className="pr-10"
+                   />
+                   <button
+                     type="button"
+                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                     onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                   >
+                     {showSignUpPassword ? (
+                       <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                     ) : (
+                       <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                     )}
+                   </button>
                  </div>
+               </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Criar Conta
+                  {t('auth.createAccount')}
                 </Button>
                 <Button 
                   type="button" 
@@ -439,7 +447,7 @@ export default function Auth() {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Continuar com Google
+                  {t('auth.continueWithGoogle')}
                 </Button>
               </form>
             </TabsContent>
