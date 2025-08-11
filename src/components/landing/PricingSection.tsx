@@ -51,6 +51,7 @@ const PricingSection = () => {
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
+        <div className="mx-auto max-w-6xl bg-card rounded-3xl shadow-elegant p-6 md:p-12">
         {/* Header */}
         <div ref={headerRef as unknown as React.RefObject<HTMLDivElement> as any} className={`text-center mb-16 ${headerIn ? 'animate-fade-in' : 'opacity-0'}`}>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
@@ -136,6 +137,7 @@ const PricingSection = () => {
           <p className="text-muted-foreground">
             {t('pricing.note')}
           </p>
+        </div>
         </div>
       </div>
     </section>
