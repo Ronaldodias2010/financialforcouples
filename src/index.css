@@ -14,12 +14,14 @@
     --card-border: 240 4% 88%;
 
     /* Financial primary colors - Gold theme */
-    --primary: 45 93% 47%;  /* Rich gold */
+    --primary: 45 93% 47%;
+    /* Rich gold */
     --primary-foreground: 0 0% 100%;
     --primary-glow: 45 100% 65%;
 
     /* Financial secondary - Emerald */
-    --secondary: 142 71% 45%;  /* Emerald green */
+    --secondary: 142 71% 45%;
+    /* Emerald green */
     --secondary-foreground: 0 0% 100%;
 
     /* Accent colors */
@@ -29,8 +31,10 @@
     /* Status indicators */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    --expense: 0 84% 60%;  /* Red for expenses */
-    --income: 142 71% 45%;  /* Green for income */
+    --expense: 0 84% 60%;
+    /* Red for expenses */
+    --income: 142 71% 45%;
+    /* Green for income */
 
     /* Text and borders */
     --muted: 240 4.9% 83.9%;
@@ -79,12 +83,14 @@
     --card-border: 240 6% 12%;
 
     /* Financial primary colors - Gold theme */
-    --primary: 45 93% 47%;  /* Rich gold */
+    --primary: 45 93% 47%;
+    /* Rich gold */
     --primary-foreground: 240 10% 3.9%;
     --primary-glow: 45 100% 65%;
 
     /* Financial secondary - Emerald */
-    --secondary: 142 71% 45%;  /* Emerald green */
+    --secondary: 142 71% 45%;
+    /* Emerald green */
     --secondary-foreground: 0 0% 98%;
 
     /* Accent colors */
@@ -94,8 +100,10 @@
     /* Status indicators */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 98%;
-    --expense: 0 84% 60%;  /* Red for expenses */
-    --income: 142 71% 45%;  /* Green for income */
+    --expense: 0 84% 60%;
+    /* Red for expenses */
+    --income: 142 71% 45%;
+    /* Green for income */
 
     /* Text and borders */
     --muted: 240 3.7% 15.9%;
@@ -122,6 +130,34 @@
     --sidebar-border: 240 6% 12%;
     --sidebar-ring: 45 93% 47%;
 
+    /* Custom design tokens for Couples Financials */
+    --cherry-light: 8 85% 72%;
+    --blue-soft: 205 95% 90%;
+    --hero-gradient: linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--blue-soft)), hsl(45 98% 55%), hsl(158 85% 35%));
+    --hero-gradient-dark: linear-gradient(135deg, hsl(8 70% 58%), hsl(205 80% 72%), hsl(45 85% 45%), hsl(158 75% 25%));
+    --card-gradient: linear-gradient(145deg, hsl(var(--cherry-light) / 0.06), hsl(var(--blue-soft) / 0.05), hsl(0 0% 100% / 0.04));
+    --glow-yellow: 0 0 40px hsl(45 98% 55% / 0.25);
+    --glow-green: 0 0 40px hsl(158 85% 35% / 0.25);
+    --glow-cherry: 0 0 30px hsl(var(--cherry-light) / 0.25);
+    --shadow-elegant: 0 20px 60px -10px hsl(208 50% 50% / 0.2);
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+
     /* Custom shadows */
     --shadow-gold: 0 10px 30px -10px hsl(45 93% 47% / 0.3);
     --shadow-card: 0 4px 6px -1px hsl(240 10% 3.9% / 0.1), 0 2px 4px -1px hsl(240 10% 3.9% / 0.06);
@@ -138,6 +174,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     background: var(--gradient-background);
