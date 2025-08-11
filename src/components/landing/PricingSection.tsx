@@ -41,7 +41,7 @@ const PricingSection = () => {
         t('pricing.premium.feature8'),
       ],
       buttonText: t('pricing.premium.button'),
-      buttonVariant: "secondary" as const,
+      buttonVariant: "premium" as const,
       popular: true,
     },
 ];
