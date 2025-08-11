@@ -72,7 +72,7 @@ const PricingSection = () => {
               className={`relative p-8 hover:shadow-elegant transition-all duration-300 flex flex-col ${
                 plan.popular 
                   ? 'border-2 border-primary shadow-glow-green scale-105' 
-                  : 'hover:-translate-y-2 border-2 border-card-border'
+                  : 'hover:-translate-y-2 border-2 border-black'
               }`}
             >
               {plan.popular && (
@@ -113,7 +113,7 @@ const PricingSection = () => {
               <Button 
                 variant={plan.buttonVariant} 
                 size="lg" 
-                className={`w-full mt-auto ${!plan.popular ? 'border-2 border-card-border' : ''}`}
+                className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
               >
                 {plan.popular ? (
                   <>
