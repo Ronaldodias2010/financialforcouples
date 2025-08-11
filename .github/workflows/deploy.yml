@@ -163,7 +163,13 @@ jobs:
         supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
         supabase_anon_key = "${{ secrets.SUPABASE_ANON_KEY }}"
         supabase_service_role_key = "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+        cloudfront_oac_id = "${{ secrets.CLOUDFRONT_OAC_ID }}"
         EOF
+        if [ -z "${{ secrets.CLOUDFRONT_OAC_ID }}" ]; then
+          echo "Note: CLOUDFRONT_OAC_ID not set; Terraform will attempt to create a new OAC."
+        else
+          echo "Using existing CloudFront OAC ID from secret."
+        fi
 
     - name: Terraform Plan
       working-directory: terraform
@@ -235,7 +241,8 @@ jobs:
         terraform apply -lock=true -lock-timeout=10m -auto-approve \
           -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
           -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
-          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}"
 
   # Job de deploy da aplicação no ECS
   deploy-application:
