@@ -23,7 +23,7 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
   const annualDisplay = isEnglish ? '$ 67.10' : 'R$ 179,80';
   // NOTE: Using the provided USD price ID for both monthly and annual until an annual ID is provided
   const monthlyPriceId = isEnglish ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP';
-  const annualPriceId = isEnglish ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1Ruie7FOhUY5r0H1qXXFouNn';
+  const annualPriceId = isEnglish ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn';
   const handleUpgrade = async (priceId: string) => {
     try {
       setCreatingSession(true);
