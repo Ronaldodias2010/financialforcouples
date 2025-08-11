@@ -11,7 +11,7 @@ import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t, tFor, inBrazil } = useLanguage();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
   const [displayName, setDisplayName] = useState<string>('');
@@ -65,7 +65,7 @@ const AppDashboard = () => {
               onClick={() => setCurrentPage('subscription')}
             >
               <Crown className="h-4 w-4 mr-2" />
-              {t('nav.subscription')}
+              {!inBrazil ? tFor('en','nav.subscription') : t('nav.subscription')}
             </Button>
             {isAdmin && (
               <>
