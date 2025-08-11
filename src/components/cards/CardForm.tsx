@@ -68,11 +68,11 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
             card_type: cardData.card_type as "credit" | "debit",
             last_four_digits: cardData.last_four_digits,
             credit_limit: cardData.card_type === "credit" && cardData.credit_limit ? parseFloat(cardData.credit_limit) : null,
-            current_balance: 0, // Será calculado pelo trigger baseado nas transações
-            initial_balance_original: parseFloat(cardData.current_balance) || 0, // Valor inicial já utilizado
+            current_balance: 0, // Saldo de fatura atual (não usado para o "limite disponível")
+            initial_balance: parseFloat(cardData.current_balance) || 0, // Limite disponível inicial informado pelo usuário
+            initial_balance_original: 0, // Não utilizado no cálculo atual
             currency: cardData.currency as "BRL" | "USD" | "EUR",
-            due_date: cardData.card_type === "credit" && cardData.due_date ? parseInt(cardData.due_date) : null,
-            closing_date: cardData.card_type === "credit" && cardData.closing_date ? parseInt(cardData.closing_date) : null
+            due_date: cardData.card_type === "credit" && cardData.due_date ? parseInt(cardData.due_date) : null
           });
 
       if (error) throw error;

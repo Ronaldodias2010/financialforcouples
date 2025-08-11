@@ -191,7 +191,7 @@ const getOwnerNameForCard = (card: CardData) => {
                       {getOwnerNameForCard(card)}
                     </p>
                     <p className="text-sm">
-                      Limite Disponível: {formatCurrency((card.initial_balance ?? Math.max(0, (card.credit_limit || 0) - (card.initial_balance_original || 0) - (card.current_balance || 0))), card.currency)}
+                      Limite Disponível: {formatCurrency(Number(card.initial_balance ?? 0), card.currency)}
                     </p>
                     {card.credit_limit && (
                       <p className="text-sm text-muted-foreground">

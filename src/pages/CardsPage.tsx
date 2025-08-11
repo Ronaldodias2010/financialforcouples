@@ -44,12 +44,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const computeAvailable = (c: CardRow) => {
     if (c.card_type !== "credit") return 0;
     const from = (c.currency ?? "BRL") as CurrencyCode;
-    const base =
-      c.initial_balance != null
-        ? c.initial_balance
-        : (c.credit_limit != null
-            ? Math.max(0, (c.credit_limit ?? 0) - (c.initial_balance_original ?? 0) - (c.current_balance ?? 0))
-            : 0);
+    const base = Number(c.initial_balance ?? 0);
     return convertCurrency(base, from, displayCurrency);
   };
   useEffect(() => {
