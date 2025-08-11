@@ -12,11 +12,18 @@ interface SubscriptionPageProps {
 }
 
 export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, loading, createCheckoutSession, openCustomerPortal } = useSubscription();
   const [creatingSession, setCreatingSession] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
 
+  // Language-based pricing and Stripe price IDs
+  const isEnglish = language === 'en';
+  const monthlyDisplay = isEnglish ? '$ 9.90' : 'R$ 19,90';
+  const annualDisplay = isEnglish ? '$ 67.10' : 'R$ 179,80';
+  // NOTE: Using the provided USD price ID for both monthly and annual until an annual ID is provided
+  const monthlyPriceId = isEnglish ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP';
+  const annualPriceId = isEnglish ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1Ruie7FOhUY5r0H1qXXFouNn';
   const handleUpgrade = async (priceId: string) => {
     try {
       setCreatingSession(true);
@@ -158,13 +165,13 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
               )}
             </div>
             <div className="text-3xl font-bold text-primary">
-              R$ 19,90<span className="text-sm font-normal text-muted-foreground">/{t('subscription.month')}</span>
+              {monthlyDisplay}<span className="text-sm font-normal text-muted-foreground">/{t('subscription.month')}</span>
             </div>
             <div className="text-lg font-semibold text-primary">
-              R$ 179,80<span className="text-sm font-normal text-muted-foreground">/{t('subscription.year')}</span>
+              {annualDisplay}<span className="text-sm font-normal text-muted-foreground">/{t('subscription.year')}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('subscription.annualDiscount')}
+              {language === 'en' ? 'With the annual plan you get approximately 25% off.' : t('subscription.annualDiscount')}
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -182,14 +189,14 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
             {subscriptionTier !== 'premium' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Button 
-                  onClick={() => handleUpgrade('price_1RsLL5FOhUY5r0H1WIXv7yuP')} 
+                  onClick={() => handleUpgrade(monthlyPriceId)} 
                   disabled={creatingSession || loading}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
                   {creatingSession ? t('subscription.loading') : t('subscription.subscribeMonthly')}
                 </Button>
                 <Button 
-                  onClick={() => handleUpgrade('price_1Ruie7FOhUY5r0H1qXXFouNn')} 
+                  onClick={() => handleUpgrade(annualPriceId)} 
                   disabled={creatingSession || loading}
                   variant="outline"
                   className="w-full"
