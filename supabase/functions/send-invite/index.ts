@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import React from 'npm:react@18.3.1';
 import { CouplesFinancialsEmail } from './_templates/couples-financials-email.tsx';
+import { CouplesFinancialsEmailEn } from './_templates/couples-financials-email-en.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -22,6 +23,7 @@ interface InviteEmailRequest {
   email: string;
   name: string;
   inviter_name: string;
+  language?: 'pt' | 'en';
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -46,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Invalid authentication');
     }
 
-    const { email, name, inviter_name }: InviteEmailRequest = await req.json();
+    const { email, name, inviter_name, language: bodyLang }: InviteEmailRequest = await req.json();
 
     // Generate temporary password
     const { data: tempPassword, error: passwordError } = await supabase
@@ -71,25 +73,51 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Error creating invite record');
     }
 
+    // Determine preferred language
+    const acceptLanguage = (req.headers.get('accept-language') || '').toLowerCase();
+    const countryHeaderKeys = ['cf-ipcountry', 'x-vercel-ip-country', 'x-country', 'x-geo-country', 'x-country-code'];
+    const country = (countryHeaderKeys.map((k) => req.headers.get(k)).find(Boolean) || '').toUpperCase();
+
+    let lang: 'pt' | 'en' = 'pt';
+    if (bodyLang === 'en' || bodyLang === 'pt') {
+      lang = bodyLang;
+    } else if (country && country !== 'BR') {
+      lang = 'en';
+    } else if (!/pt(-br)?/.test(acceptLanguage)) {
+      lang = 'en';
+    }
+
     // Create the login URL with invite parameters
-    const baseUrl = req.headers.get("origin") || "https://couplesfinancials.com";
+    const baseUrl = req.headers.get('origin') || 'https://couplesfinancials.com';
     const loginUrl = `${baseUrl}/auth?invite=true&email=${encodeURIComponent(email)}`;
 
-    // Render the React email template
-    const emailHtml = await renderAsync(
-      React.createElement(CouplesFinancialsEmail, {
-        name,
-        inviter_name,
-        email,
-        temp_password: tempPassword,
-        login_url: loginUrl,
-      })
-    );
+    // Render the React email template according to language
+    const emailHtml = lang === 'en'
+      ? await renderAsync(
+          React.createElement(CouplesFinancialsEmailEn, {
+            name,
+            inviter_name,
+            email,
+            temp_password: tempPassword,
+            login_url: loginUrl,
+          })
+        )
+      : await renderAsync(
+          React.createElement(CouplesFinancialsEmail, {
+            name,
+            inviter_name,
+            email,
+            temp_password: tempPassword,
+            login_url: loginUrl,
+          })
+        );
 
     const emailResponse = await resend.emails.send({
-      from: "Couples Financials <contato@couplesfinancials.com>",
+      from: 'Couples Financials <contato@couplesfinancials.com>',
       to: [email],
-      subject: `${inviter_name} convidou você para o Couples Financials 💚`,
+      subject: lang === 'en' 
+        ? `${inviter_name} invited you to Couples Financials 💚`
+        : `${inviter_name} convidou você para o Couples Financials 💚`,
       html: emailHtml,
     });
 
