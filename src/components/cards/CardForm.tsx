@@ -49,6 +49,10 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
         toast.error('Informe a data de vencimento.');
         return;
       }
+      if (!cardData.closing_date) {
+        toast.error('Informe a data de fechamento.');
+        return;
+      }
     }
 
     setLoading(true);
