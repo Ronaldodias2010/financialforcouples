@@ -18,7 +18,7 @@ interface UserProfileFormProps {
 }
 
 export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { t } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading: subscriptionLoading } = useSubscription();
   const { isPartOfCouple } = useCouple();
@@ -36,12 +36,41 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
     new_password: "",
     confirm_password: ""
   });
+  const [billing, setBilling] = useState<{
+    planAmount?: number;
+    planInterval?: string;
+    renewalDate?: string | null;
+    cardBrand?: string | null;
+    last4?: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user]);
+
+  useEffect(() => {
+    const loadBilling = async () => {
+      if (!session) return;
+      try {
+        const { data, error } = await supabase.functions.invoke('get-billing-details', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (error) throw error;
+        setBilling({
+          planAmount: data?.plan?.amount,
+          planInterval: data?.plan?.interval,
+          renewalDate: data?.renewal_date || subscriptionEnd,
+          cardBrand: data?.card?.brand,
+          last4: data?.card?.last4,
+        });
+      } catch (e) {
+        console.error('Error loading billing details:', e);
+      }
+    };
+    loadBilling();
+  }, [session, subscribed, subscriptionEnd]);
 
   const fetchProfile = async () => {
     try {
@@ -207,10 +236,11 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   }
 };
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (priceId: string) => {
     setCreatingCheckout(true);
     try {
-      await createCheckoutSession();
+      await createCheckoutSession(priceId);
+      toast.success(t('subscription.redirectingToPayment'));
     } catch (error) {
       console.error("Error creating checkout:", error);
       toast.error("Erro ao iniciar upgrade. Tente novamente.");
@@ -427,6 +457,16 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                         {t('subscription.nextRenewal')}: {formatDate(subscriptionEnd)}
                       </p>
                     )}
+                    {billing?.cardBrand && billing?.last4 && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Cartão: {billing.cardBrand.toUpperCase()} •••• {billing.last4}
+                      </p>
+                    )}
+                    {typeof billing?.planAmount === 'number' && billing?.planInterval && (
+                      <p className="text-sm text-muted-foreground">
+                        Plano: Premium ({billing.planInterval === 'year' ? 'Anual' : 'Mensal'}) — {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(billing!.planAmount as number)}
+                      </p>
+                    )}
                   </div>
                   
                   <Button 
@@ -446,14 +486,23 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                     <p className="text-sm">{t('userProfile.upgradeText')}</p>
                   </div>
 
-                  <Button 
-                    onClick={handleUpgrade}
-                    disabled={creatingCheckout}
-                    variant="default" 
-                    className="w-full"
-                  >
-                    {creatingCheckout ? t('subscription.processing') : t('userProfile.upgradePlan')}
-                  </Button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Button 
+                      onClick={() => handleUpgrade('price_1RsLL5FOhUY5r0H1WIXv7yuP')}
+                      disabled={creatingCheckout}
+                      className="w-full"
+                    >
+                      {creatingCheckout ? t('subscription.processing') : t('subscription.subscribeMonthly')}
+                    </Button>
+                    <Button 
+                      onClick={() => handleUpgrade('price_1Ruie7FOhUY5r0H1qXXFouNn')}
+                      disabled={creatingCheckout}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      {creatingCheckout ? t('subscription.processing') : t('subscription.subscribeAnnually')}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

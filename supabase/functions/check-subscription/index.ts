@@ -106,9 +106,55 @@ serve(async (req) => {
           status: 200,
         });
       }
+
+      // Check if partner has an active subscription (shared access for couples)
+      const { data: couple } = await supabaseClient
+        .from('user_couples')
+        .select('user1_id, user2_id, status')
+        .eq('status', 'active')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .maybeSingle();
+
+      if (couple) {
+        const partnerId = couple.user1_id === user.id ? couple.user2_id : couple.user1_id;
+        if (partnerId) {
+          const { data: partnerSub } = await supabaseClient
+            .from('subscribers')
+            .select('subscribed, subscription_end')
+            .eq('user_id', partnerId)
+            .single();
+
+          if (partnerSub?.subscribed) {
+            logStep('Granting shared premium from partner', { partnerId, subscription_end: partnerSub.subscription_end });
+            await supabaseClient.from("subscribers").upsert({
+              email: user.email,
+              user_id: user.id,
+              stripe_customer_id: null,
+              subscribed: true,
+              subscription_tier: 'premium',
+              subscription_end: partnerSub.subscription_end,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'email' });
+            await supabaseClient.from("profiles").update({
+              subscribed: true,
+              subscription_tier: 'premium'
+            }).eq('user_id', user.id);
+
+            return new Response(JSON.stringify({
+              subscribed: true,
+              subscription_tier: 'premium',
+              subscription_end: partnerSub.subscription_end,
+              shared: true
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
+        }
+      }
       
-      // No local subscription, set as essential
-      logStep("No local subscription found, setting as essential");
+      // No subscription anywhere, set as essential
+      logStep("No local or partner subscription found, setting as essential");
       await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
@@ -142,9 +188,9 @@ serve(async (req) => {
       status: "active",
       limit: 1,
     });
-    const hasActiveSub = subscriptions.data.length > 0;
+    let hasActiveSub = subscriptions.data.length > 0;
     let subscriptionTier = 'essential';
-    let subscriptionEnd = null;
+    let subscriptionEnd: string | null = null;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
@@ -153,6 +199,33 @@ serve(async (req) => {
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
     } else {
       logStep("No active subscription found");
+    }
+
+    // If user has no active subscription, check if their partner has one (shared premium for couples)
+    if (!hasActiveSub) {
+      const { data: couple } = await supabaseClient
+        .from('user_couples')
+        .select('user1_id, user2_id, status')
+        .eq('status', 'active')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .maybeSingle();
+
+      if (couple) {
+        const partnerId = couple.user1_id === user.id ? couple.user2_id : couple.user1_id;
+        if (partnerId) {
+          const { data: partnerSub } = await supabaseClient
+            .from('subscribers')
+            .select('subscribed, subscription_end')
+            .eq('user_id', partnerId)
+            .single();
+          if (partnerSub?.subscribed) {
+            hasActiveSub = true;
+            subscriptionTier = 'premium';
+            subscriptionEnd = partnerSub.subscription_end;
+            logStep('Partner has active subscription - granting shared premium', { partnerId, subscriptionEnd });
+          }
+        }
+      }
     }
 
     await supabaseClient.from("subscribers").upsert({
@@ -170,6 +243,25 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier
     }).eq('user_id', user.id);
+
+    // If the user has an active subscription, grant shared access to partner profile
+    if (hasActiveSub) {
+      const { data: couple } = await supabaseClient
+        .from('user_couples')
+        .select('user1_id, user2_id, status')
+        .eq('status', 'active')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .maybeSingle();
+      if (couple) {
+        const partnerId = couple.user1_id === user.id ? couple.user2_id : couple.user1_id;
+        if (partnerId) {
+          await supabaseClient.from('profiles').update({
+            subscribed: true,
+            subscription_tier: 'premium',
+          }).eq('user_id', partnerId);
+        }
+      }
+    }
 
     logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
     return new Response(JSON.stringify({
