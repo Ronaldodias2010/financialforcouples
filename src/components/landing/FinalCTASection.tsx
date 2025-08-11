@@ -56,12 +56,12 @@ const FinalCTASection = () => {
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="xl" variant="secondary" className="group min-w-64">
+            <Button size="lg" variant="secondary" className="group min-w-64">
               <Download className="w-5 h-5 group-hover:animate-bounce" />
               {t('finalcta.free')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="xl" className="bg-white text-primary hover:bg-white/90 min-w-64 group">
+            <Button size="lg" className="bg-white text-primary hover:bg-white/90 min-w-64 group">
               <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
               {t('finalcta.premium')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

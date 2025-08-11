@@ -30,7 +30,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-20 w-72 h-72 rounded-full bg-white/20 blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-white/10 blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full" style={{backgroundColor: 'hsl(8 85% 72% / 0.15)'}}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full" style={{backgroundColor: 'hsl(var(--cherry-light) / 0.15)'}}></div>
       </div>
       
       <div className="container mx-auto px-4 py-20 relative z-10">
@@ -74,7 +74,7 @@ const HeroSection = () => {
             </div>
             
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm text-white text-sm font-medium border border-white/20" style={{backgroundColor: 'hsl(8 85% 72% / 0.2)'}}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm text-white text-sm font-medium border border-white/20" style={{backgroundColor: 'hsl(var(--cherry-light) / 0.2)'}}>
               <Sparkles className="w-4 h-4" />
               {t('hero.badge')}
             </div>
