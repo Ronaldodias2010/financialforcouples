@@ -358,6 +358,10 @@ const AdminDashboardContent = () => {
     });
   };
 
+  const handleDeleteAlert = (id: string) => {
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  };
+
   const exportToCSV = () => {
     const csvHeaders = [t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment'), t('admin.table.nextBilling')];
     const csvContent = [
@@ -670,11 +674,16 @@ const AdminDashboardContent = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">{alert.action}</p>
-                      {alert.action !== t('admin.actions.noActionNeeded') && (
-                        <Button size="sm" variant="outline" className="mt-2">
-                          {t('admin.actions.execute')}
+                      <div className="mt-2 flex items-center justify-end gap-2">
+                        {alert.action !== t('admin.actions.noActionNeeded') && (
+                          <Button size="sm" variant="outline">
+                            {t('admin.actions.execute')}
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => handleDeleteAlert(alert.id)}>
+                          {t('common.delete')}
                         </Button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 ))}
