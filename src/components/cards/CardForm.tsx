@@ -74,6 +74,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
               ? Math.max(0, (parseFloat(cardData.credit_limit || '0') || 0) - (parseFloat(cardData.current_balance || '0') || 0))
               : 0, // Garante que qualquer trigger de recálculo resulte exatamente no disponível informado
             currency: cardData.currency as "BRL" | "USD" | "EUR",
+            closing_date: cardData.card_type === "credit" && cardData.closing_date ? parseInt(cardData.closing_date) : null,
             due_date: cardData.card_type === "credit" && cardData.due_date ? parseInt(cardData.due_date) : null
           });
 
