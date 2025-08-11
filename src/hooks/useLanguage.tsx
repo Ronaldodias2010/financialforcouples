@@ -1077,8 +1077,44 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('language');
-      if (saved && (saved === 'pt' || saved === 'en')) {
+      if (saved === 'pt' || saved === 'en') {
         setLanguage(saved);
+        return;
+      }
+
+      try {
+        const navLang = navigator.language?.toLowerCase();
+        const navLangs: string[] = Array.isArray((navigator as any).languages)
+          ? (navigator as any).languages
+          : [];
+        const hasPtBR = (navLang && navLang.includes('pt-br')) ||
+          navLangs.some((l) => String(l).toLowerCase().includes('pt-br'));
+
+        let inBrazil = false;
+        if (hasPtBR) {
+          inBrazil = true;
+        } else {
+          const region = navLang?.split('-')[1]?.toUpperCase();
+          if (region === 'BR') {
+            inBrazil = true;
+          } else {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const BR_TZS = new Set([
+              'America/Sao_Paulo', 'America/Bahia', 'America/Fortaleza', 'America/Belem', 'America/Manaus',
+              'America/Porto_Velho', 'America/Boa_Vista', 'America/Recife', 'America/Araguaina', 'America/Noronha',
+              'America/Cuiaba', 'America/Campo_Grande', 'America/Eirunepe', 'America/Rio_Branco', 'America/Santarem', 'America/Maceio'
+            ]);
+            if (tz && BR_TZS.has(tz)) inBrazil = true;
+          }
+        }
+
+        // Set default language based on detection (do not persist; user choice will persist)
+        setLanguage(inBrazil ? 'pt' : 'en');
+      } catch (e) {
+        // On any detection error, fallback by region or default to 'en'
+        const navLang = navigator.language?.toLowerCase();
+        const region = navLang?.split('-')[1]?.toUpperCase();
+        setLanguage(region === 'BR' ? 'pt' : 'en');
       }
     }
   }, []);
