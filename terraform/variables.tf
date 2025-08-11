@@ -89,3 +89,9 @@ variable "cloudfront_oac_id" {
   type        = string
   default     = ""
 }
+
+variable "cloudfront_create_oac" {
+  description = "Se verdadeiro, cria um novo OAC quando nenhum ID for fornecido (pode falhar por cota)."
+  type        = bool
+  default     = false
+}
