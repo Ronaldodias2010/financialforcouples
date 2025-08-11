@@ -19,7 +19,7 @@ interface UserProfileFormProps {
 
 export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => {
   const { user, session } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading: subscriptionLoading } = useSubscription();
   const { isPartOfCouple } = useCouple();
   const [loading, setLoading] = useState(false);
@@ -39,6 +39,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   const [billing, setBilling] = useState<{
     planAmount?: number;
     planInterval?: string;
+    planCurrency?: string | null;
     renewalDate?: string | null;
     cardBrand?: string | null;
     last4?: string | null;
@@ -61,6 +62,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
         setBilling({
           planAmount: data?.plan?.amount,
           planInterval: data?.plan?.interval,
+          planCurrency: (data?.plan?.currency || 'BRL')?.toUpperCase(),
           renewalDate: data?.renewal_date || subscriptionEnd,
           cardBrand: data?.card?.brand,
           last4: data?.card?.last4,
@@ -262,7 +264,18 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    const locale = language === 'pt' ? 'pt-BR' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale);
+  };
+
+  const formatMoney = (amount: number, currency?: string) => {
+    const locale = language === 'pt' ? 'pt-BR' : 'en-US';
+    const curr = (currency || 'BRL').toUpperCase();
+    try {
+      return new Intl.NumberFormat(locale, { style: 'currency', currency: curr }).format(amount);
+    } catch {
+      return new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(amount);
+    }
   };
 
   const dismissInvitePermanently = () => {
@@ -440,7 +453,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
               
               {subscriptionLoading ? (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">{t('subscription.loadingInfo')}</p>
+                  <p className="text-muted-foreground">{t('subscription.loading')}</p>
                 </div>
               ) : subscribed ? (
                 <div className="space-y-4">
@@ -459,12 +472,12 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                     )}
                     {billing?.cardBrand && billing?.last4 && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        Cartão: {billing.cardBrand.toUpperCase()} •••• {billing.last4}
+                        {t('billing.cardLabel')}: {billing.cardBrand.toUpperCase()} •••• {billing.last4}
                       </p>
                     )}
                     {typeof billing?.planAmount === 'number' && billing?.planInterval && (
                       <p className="text-sm text-muted-foreground">
-                        Plano: Premium ({billing.planInterval === 'year' ? 'Anual' : 'Mensal'}) — {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(billing!.planAmount as number)}
+                        {`${t('billing.planLabel')}: Premium (${billing.planInterval === 'year' ? t('billing.interval.yearly') : t('billing.interval.monthly')}) — ${formatMoney(billing!.planAmount as number, billing?.planCurrency || 'BRL')}`}
                       </p>
                     )}
                   </div>
@@ -475,7 +488,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                     variant="outline" 
                     className="w-full"
                   >
-                    {openingPortal ? t('subscription.openingPortal') : t('subscription.manageSubscription')}
+                    {openingPortal ? t('subscription.redirectingToPortal') : t('subscription.manageSubscription')}
                   </Button>
                 </div>
               ) : (
@@ -492,7 +505,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                       disabled={creatingCheckout}
                       className="w-full"
                     >
-                      {creatingCheckout ? t('subscription.processing') : t('subscription.subscribeMonthly')}
+                      {creatingCheckout ? t('subscription.loading') : t('subscription.subscribeMonthly')}
                     </Button>
                     <Button 
                       onClick={() => handleUpgrade('price_1Ruie7FOhUY5r0H1qXXFouNn')}
@@ -500,7 +513,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                       variant="outline"
                       className="w-full"
                     >
-                      {creatingCheckout ? t('subscription.processing') : t('subscription.subscribeAnnually')}
+                      {creatingCheckout ? t('subscription.loading') : t('subscription.subscribeAnnually')}
                     </Button>
                   </div>
                 </div>
