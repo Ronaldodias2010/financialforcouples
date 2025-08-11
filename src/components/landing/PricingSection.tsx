@@ -5,7 +5,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import useInView from "@/hooks/use-in-view";
 
 const PricingSection = () => {
-  const { t } = useLanguage();
+  const { t, language, inBrazil } = useLanguage();
+  const isUSD = language !== 'pt' || !inBrazil;
+  const premiumPrice = isUSD ? '$ 9.90' : 'R$ 19,90';
   const plans = [
     {
       name: t('pricing.free.name'),
@@ -27,7 +29,7 @@ const PricingSection = () => {
     },
     {
       name: t('pricing.premium.name'),
-      price: t('pricing.premium.price'),
+      price: premiumPrice,
       period: t('pricing.premium.period'),
       description: t('pricing.premium.description'),
       features: [
@@ -94,8 +96,22 @@ const PricingSection = () => {
                 </div>
                 {plan.popular && (
                   <div className="mt-2 text-sm text-muted-foreground">
-                    ou <span className="font-semibold text-foreground">R$ 179,80/ano</span>
-                    <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~25% OFF no anual</span>
+                    {language === 'pt' && inBrazil ? (
+                      <>
+                        ou <span className="font-semibold text-foreground">R$ 179,80/ano</span>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~25% OFF no anual</span>
+                      </>
+                    ) : language === 'es' ? (
+                      <>
+                        o <span className="font-semibold text-foreground">$ 67.10/año</span>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~25% OFF anual</span>
+                      </>
+                    ) : (
+                      <>
+                        or <span className="font-semibold text-foreground">$ 67.10/year</span>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~25% OFF annually</span>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

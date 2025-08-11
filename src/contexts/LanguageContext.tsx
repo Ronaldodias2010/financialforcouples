@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export type Language = 'pt' | 'en' | 'es';
 
@@ -6,6 +6,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  inBrazil: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -326,14 +327,60 @@ interface LanguageProviderProps {
 }
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
-  const [language, setLanguage] = useState<Language>('pt');
+  const [languageState, setLanguageState] = useState<Language>('pt');
+  const [inBrazil, setInBrazil] = useState<boolean>(true);
+  const [userPreferred, setUserPreferred] = useState<boolean>(false);
+
+  // Persisted setter that marks user preference
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    setUserPreferred(true);
+    try {
+      localStorage.setItem('language', lang);
+    } catch {}
+  };
+
+  // Initialize language and detect location
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('language') as Language | null;
+      if (stored) {
+        setLanguageState(stored);
+        setUserPreferred(true);
+      } else {
+        const nav = navigator.language || (Array.isArray(navigator.languages) ? navigator.languages[0] : 'en');
+        const defaultLang: Language = nav?.startsWith('pt') ? 'pt' : nav?.startsWith('es') ? 'es' : 'en';
+        setLanguageState(defaultLang);
+      }
+    } catch {}
+
+    // Geo-IP detection (fallback to timezone heuristics)
+    fetch('https://ipapi.co/json/')
+      .then((res) => (res.ok ? res.json() : Promise.reject('geo fetch failed')))
+      .then((data) => {
+        const isBR = data?.country_code === 'BR';
+        setInBrazil(!!isBR);
+        if (!isBR && !userPreferred) {
+          setLanguageState('en');
+        }
+      })
+      .catch(() => {
+        try {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+          const isBR = tz.includes('Sao_Paulo') || tz.includes('America/Sao_Paulo') || tz.includes('America/Fortaleza') || tz.includes('America/Recife') || tz.includes('America/Manaus');
+          setInBrazil(isBR);
+        } catch {
+          setInBrazil(true);
+        }
+      });
+  }, []);
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[languageState][key] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language: languageState, setLanguage, t, inBrazil }}>
       {children}
     </LanguageContext.Provider>
   );
