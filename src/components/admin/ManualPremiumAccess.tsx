@@ -119,8 +119,13 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
       const { data, error } = await supabase
         .from('manual_premium_access')
         .select(`
-          *,
-          profiles!inner(display_name)
+          id,
+          user_id,
+          email,
+          start_date,
+          end_date,
+          status,
+          temp_password
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
@@ -137,44 +142,81 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
 
     setLoading(true);
     try {
-      // First, check if user exists and get user_id
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('user_id', session.user.id) // This is just to check auth, we'll need the actual user
-        .single();
+      // Locate the target user by email in subscribers
+      const { data: targetSub, error: targetSubErr } = await supabase
+        .from('subscribers')
+        .select('user_id, email')
+        .eq('email', data.email)
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (targetSubErr) throw targetSubErr;
+      if (!targetSub?.user_id) {
+        throw new Error('Usuário não encontrado pelo e-mail informado');
+      }
 
-      const tempPassword = generateTempPassword();
+      const targetUserId = targetSub.user_id as string;
 
-      const { data: accessData, error } = await supabase
+      // Insert manual access for the target user
+      const tempPasswordMain = generateTempPassword();
+      const { error: insertMainErr } = await supabase
         .from('manual_premium_access')
         .insert({
-          user_id: session.user.id, // In a real implementation, you'd get the actual user's ID
-          email: data.email,
+          user_id: targetUserId,
+          email: targetSub.email,
           start_date: data.startDate,
           end_date: data.endDate,
-          temp_password: tempPassword,
+          temp_password: tempPasswordMain,
           created_by_admin_id: session.user.id,
-        })
-        .select()
-        .single();
+        });
+      if (insertMainErr) throw insertMainErr;
 
-      if (error) throw error;
+      // Check for active couple and grant to partner as well
+      const { data: couple, error: coupleErr } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id, status')
+        .eq('status', 'active')
+        .or(`user1_id.eq.${targetUserId},user2_id.eq.${targetUserId}`)
+        .maybeSingle();
+      if (coupleErr) throw coupleErr;
+
+      if (couple) {
+        const partnerId = couple.user1_id === targetUserId ? couple.user2_id : couple.user1_id;
+        if (partnerId) {
+          // Fetch partner email from subscribers
+          const { data: partnerSub } = await supabase
+            .from('subscribers')
+            .select('user_id, email')
+            .eq('user_id', partnerId)
+            .maybeSingle();
+
+          if (partnerSub?.email) {
+            const tempPasswordPartner = generateTempPassword();
+            const { error: insertPartnerErr } = await supabase
+              .from('manual_premium_access')
+              .insert({
+                user_id: partnerId,
+                email: partnerSub.email,
+                start_date: data.startDate,
+                end_date: data.endDate,
+                temp_password: tempPasswordPartner,
+                created_by_admin_id: session.user.id,
+              });
+            if (insertPartnerErr) throw insertPartnerErr;
+          }
+        }
+      }
 
       toast({
         title: t.accessGranted,
-        description: `${t.tempPassword}: ${tempPassword}`,
       });
 
       form.reset();
       fetchActiveGrants();
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);

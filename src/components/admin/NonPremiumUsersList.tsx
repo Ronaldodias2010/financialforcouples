@@ -309,9 +309,6 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     {t.plan}
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    {t.actions}
-                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -344,15 +341,6 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                       <Badge variant="outline">
                         {user.subscribed ? t.premium : t.essential}
                       </Badge>
-                    </td>
-                    <td className="p-4 align-middle">
-                      <Button
-                        variant={user.subscribed ? "outline" : "default"}
-                        size="sm"
-                        onClick={() => toggleUserAccess(user.user_id, user.subscribed)}
-                      >
-                        {user.subscribed ? t.revokeAccess : t.grantAccess}
-                      </Button>
                     </td>
                   </tr>
                 ))}
