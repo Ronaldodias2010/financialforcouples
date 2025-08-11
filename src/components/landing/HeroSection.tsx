@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 const HeroSection = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -38,10 +39,8 @@ const HeroSection = () => {
         <div className="absolute top-4 right-4 z-10">
           <div className="flex items-center gap-2">
             <LanguageSelector />
-            <Button size="sm" variant="outline" onClick={() =>
-              toast({ title: t('header.login'), description: t('header.comingSoon') })
-            }>
-              {t('header.login')}
+            <Button asChild size="sm" variant="outline">
+              <Link to="/auth">{t('header.login')}</Link>
             </Button>
           </div>
         </div>
