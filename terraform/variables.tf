@@ -83,3 +83,9 @@ variable "cloudwatch_log_retention_days" {
   type        = number
   default     = 7
 }
+
+variable "cloudfront_oac_id" {
+  description = "ID de um Origin Access Control do CloudFront já existente para reutilizar. Se definido, não criaremos um novo OAC."
+  type        = string
+  default     = ""
+}
