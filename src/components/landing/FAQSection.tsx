@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
-
+import { Button } from "@/components/ui/button";
 interface FAQItem {
   question: string;
   answer: string;
@@ -172,13 +172,12 @@ const FAQSection = () => {
                 : 'Our team is always ready to help you.'
               }
             </p>
-            <a
-              href="mailto:suporte@couplesfinancials.com"
-              className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
-            >
-              <span>📧</span>
-              {language === 'pt' ? 'Entrar em contato' : 'Contact us'}
-            </a>
+            <Button asChild variant="ctaGradient" size="lg" className="font-semibold">
+              <a href="mailto:suporte@couplesfinancials.com" className="inline-flex items-center gap-2">
+                <span>📧</span>
+                {language === 'pt' ? 'Entrar em contato' : 'Contact us'}
+              </a>
+            </Button>
           </div>
         </div>
       </div>
