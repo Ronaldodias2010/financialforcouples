@@ -4,6 +4,8 @@ interface LanguageContextType {
   language: 'pt' | 'en';
   setLanguage: (lang: 'pt' | 'en') => void;
   t: (key: string) => string;
+  tFor: (lang: 'pt' | 'en', key: string) => string;
+  inBrazil: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -1072,6 +1074,7 @@ const translations = {
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<'pt' | 'en'>('pt');
+  const [inBrazil, setInBrazil] = useState<boolean>(true);
 
   // Load language preference from localStorage after component mounts
   useEffect(() => {
@@ -1090,13 +1093,13 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
         const hasPtBR = (navLang && navLang.includes('pt-br')) ||
           navLangs.some((l) => String(l).toLowerCase().includes('pt-br'));
 
-        let inBrazil = false;
+        let detectedInBrazil = false;
         if (hasPtBR) {
-          inBrazil = true;
+          detectedInBrazil = true;
         } else {
           const region = navLang?.split('-')[1]?.toUpperCase();
           if (region === 'BR') {
-            inBrazil = true;
+            detectedInBrazil = true;
           } else {
             const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const BR_TZS = new Set([
@@ -1104,17 +1107,20 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
               'America/Porto_Velho', 'America/Boa_Vista', 'America/Recife', 'America/Araguaina', 'America/Noronha',
               'America/Cuiaba', 'America/Campo_Grande', 'America/Eirunepe', 'America/Rio_Branco', 'America/Santarem', 'America/Maceio'
             ]);
-            if (tz && BR_TZS.has(tz)) inBrazil = true;
+            if (tz && BR_TZS.has(tz)) detectedInBrazil = true;
           }
         }
 
         // Set default language based on detection (do not persist; user choice will persist)
-        setLanguage(inBrazil ? 'pt' : 'en');
+        setLanguage(detectedInBrazil ? 'pt' : 'en');
+        setInBrazil(detectedInBrazil);
       } catch (e) {
         // On any detection error, fallback by region or default to 'en'
         const navLang = navigator.language?.toLowerCase();
         const region = navLang?.split('-')[1]?.toUpperCase();
-        setLanguage(region === 'BR' ? 'pt' : 'en');
+        const fallbackInBrazil = region === 'BR';
+        setLanguage(fallbackInBrazil ? 'pt' : 'en');
+        setInBrazil(fallbackInBrazil);
       }
     }
   }, []);
@@ -1129,9 +1135,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations['pt']] || key;
   };
+  const tFor = (lang: 'pt' | 'en', key: string): string => {
+    return translations[lang][key as keyof typeof translations['pt']] || key;
+  };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, tFor, inBrazil }}>
       {children}
     </LanguageContext.Provider>
   );

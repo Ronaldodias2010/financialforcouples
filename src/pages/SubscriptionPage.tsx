@@ -12,18 +12,19 @@ interface SubscriptionPageProps {
 }
 
 export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
-  const { t, language } = useLanguage();
+  const { t: tBase, language, tFor, inBrazil } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, loading, createCheckoutSession, openCustomerPortal } = useSubscription();
+  const t = (key: string) => (!inBrazil ? tFor('en', key) : tBase(key));
   const [creatingSession, setCreatingSession] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
 
   // Language-based pricing and Stripe price IDs
-  const isEnglish = language === 'en';
-  const monthlyDisplay = isEnglish ? '$ 9.90' : 'R$ 19,90';
-  const annualDisplay = isEnglish ? '$ 67.10' : 'R$ 179,80';
-  // NOTE: Using the provided USD price ID for both monthly and annual until an annual ID is provided
-  const monthlyPriceId = isEnglish ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP';
-  const annualPriceId = isEnglish ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn';
+  const isEnglishPricing = !inBrazil || language === 'en';
+  const monthlyDisplay = isEnglishPricing ? '$ 9.90' : 'R$ 19,90';
+  const annualDisplay = isEnglishPricing ? '$ 67.10' : 'R$ 179,80';
+  // NOTE: Using the provided USD price IDs for English pricing
+  const monthlyPriceId = isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP';
+  const annualPriceId = isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn';
   const handleUpgrade = async (priceId: string) => {
     try {
       setCreatingSession(true);
