@@ -16,6 +16,7 @@ import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
+import { PremiumUsersList } from "@/components/admin/PremiumUsersList";
 
 interface SubscriptionMetrics {
   activeUsers: number;
@@ -619,7 +620,10 @@ const AdminDashboardContent = () => {
         </TabsContent>
 
         <TabsContent value="premium">
-          <ManualPremiumAccess language={language} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ManualPremiumAccess language={language} />
+            <PremiumUsersList language={language} />
+          </div>
         </TabsContent>
 
         <TabsContent value="alerts">

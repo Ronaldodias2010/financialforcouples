@@ -191,68 +191,62 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
   const toggleUserAccess = async (userId: string, currentSubscribed: boolean) => {
     try {
       console.log('🔄 Toggling user access:', { userId, currentSubscribed });
-      
       const newSubscribed = !currentSubscribed;
       const newTier = newSubscribed ? 'premium' : 'essential';
-      
-      console.log('📝 Update values:', { newSubscribed, newTier });
-      
-      // Update profiles table
-      console.log('📝 Updating profiles table...');
+      const newEnd = newSubscribed ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() : null;
+
+      // Update target user - profiles
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ 
-          subscribed: newSubscribed,
-          subscription_tier: newTier
-        })
+        .update({ subscribed: newSubscribed, subscription_tier: newTier })
         .eq('user_id', userId);
+      if (profileError) throw profileError;
 
-      if (profileError) {
-        console.error('❌ Profile update error:', profileError);
-        throw profileError;
-      }
-      console.log('✅ Profiles table updated');
-
-      // Update subscribers table
-      console.log('📝 Updating subscribers table...');
+      // Update target user - subscribers
       const { error: subscriberError } = await supabase
         .from('subscribers')
-        .update({ 
-          subscribed: newSubscribed,
-          subscription_tier: newTier,
-          subscription_end: newSubscribed ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() : null
-        })
+        .update({ subscribed: newSubscribed, subscription_tier: newTier, subscription_end: newEnd })
         .eq('user_id', userId);
+      if (subscriberError) throw subscriberError;
 
-      if (subscriberError) {
-        console.error('❌ Subscriber update error:', subscriberError);
-        throw subscriberError;
+      // Also update active partner (shared premium for couples)
+      const { data: couple } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id, status')
+        .eq('status', 'active')
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+        .maybeSingle();
+
+      if (couple) {
+        const partnerId = couple.user1_id === userId ? couple.user2_id : couple.user1_id;
+        if (partnerId) {
+          // profiles for partner
+          const { error: partnerProfileErr } = await supabase
+            .from('profiles')
+            .update({ subscribed: newSubscribed, subscription_tier: newTier })
+            .eq('user_id', partnerId);
+          if (partnerProfileErr) throw partnerProfileErr;
+
+          // subscribers for partner
+          const { error: partnerSubErr } = await supabase
+            .from('subscribers')
+            .update({ subscribed: newSubscribed, subscription_tier: newTier, subscription_end: newEnd })
+            .eq('user_id', partnerId);
+          if (partnerSubErr) throw partnerSubErr;
+        }
       }
-      console.log('✅ Subscribers table updated');
 
-      toast({
-        title: newSubscribed ? t.userGranted : t.userRevoked,
-        variant: 'default',
-      });
-
-      console.log('🔄 Refreshing user list...');
-      fetchUsers(); // Refresh the list
+      toast({ title: newSubscribed ? t.userGranted : t.userRevoked, variant: 'default' });
+      fetchUsers();
     } catch (error) {
       console.error('❌ Error updating user access:', error);
-      
-      // Extract proper error message
       let errorMessage = 'Erro desconhecido';
       if (error && typeof error === 'object') {
         errorMessage = (error as any).message || (error as any).details || JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
-      
-      toast({
-        title: t.error,
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast({ title: t.error, description: errorMessage, variant: 'destructive' });
     }
   };
 
