@@ -7,10 +7,10 @@ import { EmailConfirmationEN } from './_templates/email-confirmation-en.tsx';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
+// Restricted CORS headers - only allow specific origins
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Origin": "https://elxttabdtddlavhseipz.lovableproject.com",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface WebhookPayload {
@@ -51,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const payload: WebhookPayload = JSON.parse(requestText);
-    console.log('Webhook payload received:', JSON.stringify(payload, null, 2));
+    console.log('Webhook payload received for user:', payload.user?.email);
 
     const { user, email_data } = payload;
     const { token_hash, redirect_to, email_action_type } = email_data;
