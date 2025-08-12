@@ -66,10 +66,13 @@ resource "aws_cloudfront_distribution" "app" {
     default_ttl            = 0
     max_ttl                = 0
 
-    # Função para reescrever URLs da SPA
-    function_association {
-      event_type   = "viewer-request"
-      function_arn = aws_cloudfront_function.spa_routing[0].arn
+    # Função para reescrever URLs da SPA (opcional)
+    dynamic "function_association" {
+      for_each = var.enable_cloudfront && var.create_cloudfront_function ? [1] : []
+      content {
+        event_type   = "viewer-request"
+        function_arn = aws_cloudfront_function.spa_routing[0].arn
+      }
     }
   }
 
@@ -261,9 +264,9 @@ resource "aws_cloudfront_distribution" "app" {
   }
 }
 
-# Função CloudFront para roteamento de SPA
+# Função CloudFront para roteamento de SPA (opcional devido a limites AWS)
 resource "aws_cloudfront_function" "spa_routing" {
-  count = var.enable_cloudfront ? 1 : 0
+  count = var.enable_cloudfront && var.create_cloudfront_function ? 1 : 0
   
   name    = "${var.app_name}-spa-routing"
   runtime = "cloudfront-js-1.0"
@@ -273,5 +276,6 @@ resource "aws_cloudfront_function" "spa_routing" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [name]
   }
 }

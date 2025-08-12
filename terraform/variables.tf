@@ -95,3 +95,9 @@ variable "cloudfront_create_oac" {
   type        = bool
   default     = false
 }
+
+variable "create_cloudfront_function" {
+  description = "Se verdadeiro, cria função CloudFront para SPA routing (desabilite se atingir limites AWS)"
+  type        = bool
+  default     = false
+}
