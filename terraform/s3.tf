@@ -111,6 +111,9 @@ resource "aws_s3_object" "maintenance_page" {
   source       = "../public/503.html"
   content_type = "text/html"
   
+  # Configurações de cache para página de erro
+  cache_control = "max-age=0, no-cache, no-store, must-revalidate"
+  
   etag = filemd5("../public/503.html")
   
   tags = {

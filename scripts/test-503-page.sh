@@ -123,24 +123,63 @@ simulate_503_locally() {
         # Navegar para o diretório public
         cd public
         
-        # Iniciar servidor Python simples
-        log_info "Servidor iniciado em http://localhost:8000/503.html"
-        log_info "Pressione Ctrl+C para parar o servidor"
+        # Iniciar servidor Python simples em background
+        python3 -m http.server 8000 > /dev/null 2>&1 &
+        local server_pid=$!
         
-        python3 -m http.server 8000
+        # Aguardar servidor iniciar
+        sleep 2
+        
+        # Testar se a página está acessível
+        if curl -f -s "http://localhost:8000/503.html" > /dev/null 2>&1; then
+            log_info "✅ Página 503 acessível em http://localhost:8000/503.html"
+            log_info "🌐 Abra no navegador para ver o resultado"
+            
+            # Mostrar preview das primeiras linhas
+            log_info "Preview da página:"
+            curl -s "http://localhost:8000/503.html" | head -10 | grep -E "(title|h1)" || echo "Preview não disponível"
+            
+            # Manter servidor por 30 segundos
+            log_info "Servidor ficará ativo por 30 segundos..."
+            sleep 30
+            
+        else
+            log_error "❌ Não foi possível acessar a página 503"
+        fi
+        
+        # Parar servidor
+        kill $server_pid 2>/dev/null || true
+        cd ..
         
     elif command -v python &> /dev/null; then
         log_info "Iniciando servidor local para testar página 503..."
         
         cd public
-        log_info "Servidor iniciado em http://localhost:8000/503.html"
-        log_info "Pressione Ctrl+C para parar o servidor"
+        python -m SimpleHTTPServer 8000 > /dev/null 2>&1 &
+        local server_pid=$!
         
-        python -m SimpleHTTPServer 8000
+        sleep 2
+        
+        if curl -f -s "http://localhost:8000/503.html" > /dev/null 2>&1; then
+            log_info "✅ Página 503 acessível em http://localhost:8000/503.html"
+            sleep 30
+        else
+            log_error "❌ Não foi possível acessar a página 503"
+        fi
+        
+        kill $server_pid 2>/dev/null || true
+        cd ..
         
     else
         log_warn "Python não está disponível. Instale Python para testar localmente."
         log_info "Alternativamente, abra public/503.html diretamente no navegador"
+        
+        # Tentar abrir no navegador se estiver no macOS/Linux
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            open "public/503.html"
+        elif command -v xdg-open &> /dev/null; then
+            xdg-open "public/503.html"
+        fi
     fi
 }
 

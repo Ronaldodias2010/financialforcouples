@@ -281,22 +281,34 @@ resource "aws_cloudfront_distribution" "app" {
   }
 
   # Páginas de erro para manutenção (503, 502, 504)
+  # Servir página 503 customizada com TTL baixo
   custom_error_response {
-    error_code         = 503
-    response_code      = 503
-    response_page_path = "/503.html"
+    error_code            = 503
+    response_code         = 503
+    response_page_path    = "/503.html"
+    error_caching_min_ttl = 0
   }
 
   custom_error_response {
-    error_code         = 502
-    response_code      = 503
-    response_page_path = "/503.html"
+    error_code            = 502
+    response_code         = 503
+    response_page_path    = "/503.html"
+    error_caching_min_ttl = 0
   }
 
   custom_error_response {
-    error_code         = 504
-    response_code      = 503
-    response_page_path = "/503.html"
+    error_code            = 504
+    response_code         = 503
+    response_page_path    = "/503.html"
+    error_caching_min_ttl = 0
+  }
+
+  # Erro 500 também deve mostrar página de manutenção
+  custom_error_response {
+    error_code            = 500
+    response_code         = 503
+    response_page_path    = "/503.html"
+    error_caching_min_ttl = 0
   }
 
   tags = {
