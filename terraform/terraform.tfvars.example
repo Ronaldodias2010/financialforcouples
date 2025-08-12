@@ -1,39 +1,29 @@
-# Arquivo de exemplo para configuração das variáveis do Terraform
-# Copie este arquivo para terraform.tfvars e configure os valores
+# Configuração para deploy do Couples Financials
+# Copie este arquivo para terraform.tfvars e ajuste os valores
 
-# Configurações gerais
-aws_region  = "us-east-1"
+# Configurações da AWS
+aws_region = "us-east-1"
 environment = "prod"
-app_name    = "couples-financials"
 
-# Domínio personalizado (opcional)
-# Se você possui um domínio registrado, descomente e configure:
-# domain_name = "meuapp.com.br"
+# Configurações da aplicação
+app_name = "couples-financials"
+domain_name = ""  # Opcional: seu domínio personalizado (ex: "app.seudominio.com")
 
-# Credenciais do Supabase (OBRIGATÓRIO)
-# Obtenha estas informações no painel do Supabase
+# Configurações do Supabase
 supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
 supabase_anon_key = "sua_chave_anonima_aqui"
 supabase_service_role_key = "sua_chave_service_role_aqui"
 
-# Configurações do container
+# Configurações do container (ajuste conforme necessário)
 container_image = "couples-financials:latest"
 container_port = 80
+desired_count = 2
+cpu = 256
+memory = 512
 
-# Configurações de escala
-desired_count = 2  # Número de instâncias do container
-cpu = 256         # CPU em unidades (256 = 0.25 vCPU)
-memory = 512      # Memória em MB
-
-# CloudFront
+# CloudFront (para performance global)
 enable_cloudfront = true
+cloudfront_oac_id = ""  # Deixe vazio para criar automaticamente
 
 # Logs
 cloudwatch_log_retention_days = 7
-
-# INSTRUÇÕES:
-# 1. Copie este arquivo para terraform.tfvars
-# 2. Configure as credenciais do Supabase
-# 3. Se tiver um domínio próprio, configure domain_name
-# 4. Ajuste os recursos conforme necessário
-# 5. Execute: terraform init && terraform plan && terraform apply

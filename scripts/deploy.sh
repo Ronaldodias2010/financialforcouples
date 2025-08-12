@@ -73,15 +73,20 @@ configure_aws() {
 }
 
 build_application() {
+    local skip_tests_param=${1:-false}
     log_info "Construindo aplicação..."
     
     # Instalar dependências
     log_info "Instalando dependências..."
     npm ci
     
-    # Executar testes
-    log_info "Executando testes..."
-    npm test -- --coverage --watchAll=false || log_warn "Alguns testes falharam, mas continuando..."
+    # Executar testes (se não foi passado --skip-tests)
+    if [ "$skip_tests_param" = false ]; then
+        log_info "Executando testes..."
+        npm test -- --coverage --watchAll=false || log_warn "Alguns testes falharam, mas continuando..."
+    else
+        log_info "Pulando testes..."
+    fi
     
     # Build da aplicação
     log_info "Gerando build de produção..."
@@ -296,7 +301,11 @@ main() {
     
     if [ "$app_only" = false ]; then
         if [ "$skip_build" = false ]; then
-            build_application
+            if [ "$skip_tests" = true ]; then
+                build_application true
+            else
+                build_application false
+            fi
         fi
         setup_ecr
         build_and_push_image
