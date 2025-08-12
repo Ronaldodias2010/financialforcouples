@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useUserNames } from "@/hooks/useUserNames";
+import { useLanguage } from "@/hooks/useLanguage";
 interface RecurringExpense {
   id: string;
   name: string;
@@ -55,6 +56,7 @@ export const RecurringExpensesManager = () => {
   
 const { toast } = useToast();
 const { userNames } = useUserNames();
+const { t } = useLanguage();
 const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : userNames.user1;
   useEffect(() => {
     fetchRecurringExpenses();
@@ -76,8 +78,8 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
       })));
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Não foi possível carregar gastos recorrentes",
+        title: t('recurring.error'),
+        description: t('recurring.loadError'),
         variant: "destructive",
       });
     }
@@ -145,7 +147,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+      if (!user) throw new Error(t('recurring.userNotAuth'));
 
       if (editingExpense) {
         const { error } = await supabase
@@ -163,8 +165,8 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
         if (error) throw error;
 
         toast({
-          title: "Sucesso",
-          description: "Gasto recorrente atualizado!",
+          title: t('recurring.success'),
+          description: t('recurring.updated'),
         });
       } else {
         const { error } = await supabase
@@ -183,8 +185,8 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
         if (error) throw error;
 
         toast({
-          title: "Sucesso",
-          description: "Gasto recorrente criado!",
+          title: t('recurring.success'),
+          description: t('recurring.created'),
         });
       }
 
@@ -193,8 +195,8 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
       fetchRecurringExpenses();
     } catch (error: any) {
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao salvar gasto recorrente",
+        title: t('recurring.error'),
+        description: error.message || t('recurring.saveError'),
         variant: "destructive",
       });
     }
@@ -221,15 +223,15 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Gasto recorrente excluído!",
+        title: t('recurring.success'),
+        description: t('recurring.deleted'),
       });
 
       fetchRecurringExpenses();
     } catch (error: any) {
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao excluir gasto recorrente",
+        title: t('recurring.error'),
+        description: error.message || t('recurring.deleteError'),
         variant: "destructive",
       });
     }
@@ -245,15 +247,15 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: `Gasto recorrente ${expense.is_active ? 'desativado' : 'ativado'}!`,
+        title: t('recurring.success'),
+        description: expense.is_active ? t('recurring.deactivated') : t('recurring.activated'),
       });
 
       fetchRecurringExpenses();
     } catch (error: any) {
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao alterar status",
+        title: t('recurring.error'),
+        description: error.message || t('recurring.statusError'),
         variant: "destructive",
       });
     }
@@ -270,17 +272,17 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
   };
 
   const getFrequencyLabel = (days: number) => {
-    if (days === 7) return "Semanal";
-    if (days === 30) return "Mensal";
-    if (days === 90) return "Trimestral";
-    if (days === 365) return "Anual";
-    return `A cada ${days} dias`;
+    if (days === 7) return t('recurring.weeklyShort');
+    if (days === 30) return t('recurring.monthlyShort');
+    if (days === 90) return t('recurring.quarterlyShort');
+    if (days === 365) return t('recurring.yearlyShort');
+    return t('recurring.everyDays').replace('{days}', days.toString());
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Gastos Recorrentes</h2>
+        <h2 className="text-2xl font-bold">{t('recurring.title')}</h2>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
@@ -288,45 +290,45 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Novo Gasto Recorrente
+              {t('recurring.addNew')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
-                {editingExpense ? "Editar Gasto Recorrente" : "Novo Gasto Recorrente"}
+                {editingExpense ? t('recurring.editTitle') : t('recurring.newTitle')}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="name">Nome</Label>
+                <Label htmlFor="name">{t('recurring.name')}</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Netflix, Aluguel..."
+                  placeholder={t('recurring.namePlaceholder')}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="amount">Valor</Label>
+                <Label htmlFor="amount">{t('recurring.amount')}</Label>
                 <Input
                   id="amount"
                   type="number"
                   step="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0,00"
+                  placeholder={t('recurring.amountPlaceholder')}
                   required
                 />
               </div>
 
               <div>
-                <Label>Categoria</Label>
+                <Label>{t('recurring.category')}</Label>
                 <Select value={categoryId} onValueChange={setCategoryId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
+                    <SelectValue placeholder={t('recurring.categoryPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -339,10 +341,10 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
               </div>
 
               <div>
-                <Label>Cartão (Opcional)</Label>
+                <Label>{t('recurring.card')}</Label>
                 <Select value={cardId} onValueChange={setCardId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione um cartão" />
+                    <SelectValue placeholder={t('recurring.cardPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {cards.map((card) => (
@@ -355,22 +357,22 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
               </div>
 
               <div>
-                <Label>Frequência</Label>
+                <Label>{t('recurring.frequency')}</Label>
                 <Select value={frequencyDays} onValueChange={setFrequencyDays}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="7">Semanal (7 dias)</SelectItem>
-                    <SelectItem value="30">Mensal (30 dias)</SelectItem>
-                    <SelectItem value="90">Trimestral (90 dias)</SelectItem>
-                    <SelectItem value="365">Anual (365 dias)</SelectItem>
+                    <SelectItem value="7">{t('recurring.weekly')}</SelectItem>
+                    <SelectItem value="30">{t('recurring.monthly')}</SelectItem>
+                    <SelectItem value="90">{t('recurring.quarterly')}</SelectItem>
+                    <SelectItem value="365">{t('recurring.yearly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label>Próximo Vencimento</Label>
+                <Label>{t('recurring.nextDue')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -381,7 +383,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {nextDueDate ? format(nextDueDate, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+                      {nextDueDate ? format(nextDueDate, "PPP", { locale: ptBR }) : <span>{t('recurring.datePlaceholder')}</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -397,14 +399,14 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
 
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1">
-                  {editingExpense ? "Atualizar" : "Criar"}
+                  {editingExpense ? t('recurring.update') : t('recurring.create')}
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  Cancelar
+                  {t('recurring.cancel')}
                 </Button>
               </div>
             </form>
@@ -417,7 +419,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
           <Card className="p-8 text-center">
             <RotateCcw className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">
-              Nenhum gasto recorrente cadastrado. Crie seu primeiro!
+              {t('recurring.noExpenses')}
             </p>
           </Card>
         ) : (
@@ -431,14 +433,14 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
                       "text-xs px-2 py-1 rounded-full",
                       expense.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
                     )}>
-                      {expense.is_active ? "Ativo" : "Inativo"}
+                      {expense.is_active ? t('recurring.active') : t('recurring.inactive')}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)} • {getOwnerName(expense.owner_user)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Próximo: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
+                    {t('recurring.next')}: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -447,7 +449,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
                     size="sm"
                     onClick={() => toggleActive(expense)}
                   >
-                    {expense.is_active ? "Desativar" : "Ativar"}
+                    {expense.is_active ? t('recurring.deactivate') : t('recurring.activate')}
                   </Button>
                   <Button
                     variant="outline"
