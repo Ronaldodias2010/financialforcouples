@@ -3,11 +3,28 @@ import { Download, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSelector from "@/components/landing/LanguageSelector";
 import heroCouple from "@/assets/hero-couple.jpg";
+import { useToast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { usePWA } from "@/hooks/usePWA";
 const HeroSection = () => {
   const { t } = useLanguage();
-  const { installApp } = usePWA();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Inscrição registrada",
+      description: "Avisaremos assim que a IA estiver disponível.",
+    });
+    setOpen(false);
+    setName("");
+    setEmail("");
+  };
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-hero-gradient">
       {/* Background decoration */}
@@ -78,14 +95,41 @@ const HeroSection = () => {
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" variant="secondary" className="group" onClick={installApp}>
+              <Button size="lg" variant="secondary" className="group">
                 <Download className="w-5 h-5 group-hover:animate-bounce" />
                 {t('hero.cta.free')}
               </Button>
-                  <Button size="lg" variant="ctaGradient" className="group" onClick={() => document.getElementById('pricing-premium')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" variant="ctaGradient" className="group">
                     <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    Try AI Version for $9,90
+                    {t('hero.cta.premium').replace(/ por .+$/, '')}
                   </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Em breve: IA Premium</DialogTitle>
+                    <DialogDescription>
+                      A nossa IA está em fase de testes e logo deixaremos disponível para todos.
+                      Caso deseje, adicione seu email e assim que estivermos online,
+                      entraremos em contato com a boa notícia!
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">Nome</Label>
+                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@exemplo.com" required />
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit">Quero ser avisado</Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
             
             {/* Social proof */}

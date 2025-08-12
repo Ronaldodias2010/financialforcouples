@@ -1,11 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Download, Sparkles, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { usePWA } from "@/hooks/usePWA";
 
 const FinalCTASection = () => {
   const { t } = useLanguage();
-  const { installApp } = usePWA();
 
   return (
     <section className="py-20 bg-hero-gradient relative overflow-hidden">
@@ -58,7 +56,7 @@ const FinalCTASection = () => {
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" variant="secondary" className="group min-w-64" onClick={installApp}>
+            <Button size="lg" variant="secondary" className="group min-w-64">
               <Download className="w-5 h-5 group-hover:animate-bounce" />
               {t('finalcta.free')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

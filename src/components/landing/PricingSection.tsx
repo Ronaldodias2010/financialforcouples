@@ -51,7 +51,7 @@ const PricingSection = () => {
   const { ref: headerRef, inView: headerIn } = useInView({ threshold: 0.2 });
 
   return (
-    <section id="pricing" className="py-20 bg-background">
+    <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-6xl bg-card rounded-3xl shadow-elegant p-6 md:p-12">
         {/* Header */}
@@ -72,7 +72,6 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <Card 
               key={index} 
-              id={plan.popular ? 'pricing-premium' : undefined}
               className={`relative p-8 hover:shadow-elegant transition-all duration-300 flex flex-col ${
                 plan.popular 
                   ? 'border-2 border-primary shadow-glow-green scale-105' 
