@@ -20,7 +20,7 @@ const translations = {
     'hero.subtitle': 'Controle suas finanças de forma inteligente',
     'hero.description': 'Idealizado para casais, mas recomendamos para todos. Planeje, economize e invista com ajuda da IA.',
     'hero.cta.free': 'Baixe Gratuitamente',
-    'hero.cta.premium': 'Experimente a versão com IA por R$ 19,90',
+    'hero.cta.premium': 'Experimente a versão com IA',
     
     // Header
     'header.login': 'Entrar',
@@ -307,6 +307,10 @@ const translations = {
     'testimonials.videoAlt': 'Capa ilustrativa do depoimento em vídeo de um casal real',
     'testimonials.playButton': 'Reproduzir depoimento em vídeo',
     'testimonials.comingSoon': 'Em breve: vídeo de depoimento',
+    
+    // Final CTA Section
+    'finalcta.free': 'Baixe Gratuitamente',
+    'finalcta.premium': 'Experimente a versão com IA',
     
     // User Profile & Invites
     'userProfile.title': 'Perfil do Usuário',
@@ -648,7 +652,7 @@ const translations = {
     'hero.subtitle': 'Control your finances intelligently',
     'hero.description': 'Designed for couples, but we recommend it for everyone. Plan, save and invest with AI help.',
     'hero.cta.free': 'Download for Free',
-    'hero.cta.premium': 'Try AI version for $19.90',
+    'hero.cta.premium': 'Try AI Version',
     
     // Header
     'header.login': 'Sign in',
@@ -935,6 +939,10 @@ const translations = {
     'testimonials.videoAlt': 'Illustrative cover of a real couple video testimonial',
     'testimonials.playButton': 'Play video testimonial',
     'testimonials.comingSoon': 'Coming soon: testimonial video',
+    
+    // Final CTA Section
+    'finalcta.free': 'Download for Free',
+    'finalcta.premium': 'Try AI Version',
     
     // User Profile & Invites
     'userProfile.title': 'User Profile',
@@ -1276,7 +1284,7 @@ const translations = {
     'hero.subtitle': 'Controla tus finanzas de forma inteligente',
     'hero.description': 'Diseñado para parejas, pero lo recomendamos para todos. Planifica, ahorra e invierte con ayuda de IA.',
     'hero.cta.free': 'Descargar Gratis',
-    'hero.cta.premium': 'Prueba la versión con IA por $19.90',
+    'hero.cta.premium': 'Probar Versión con IA',
     
     // Header
     'header.login': 'Iniciar sesión',
@@ -1563,6 +1571,10 @@ const translations = {
     'testimonials.videoAlt': 'Portada ilustrativa del testimonio en video de una pareja real',
     'testimonials.playButton': 'Reproducir testimonio en video',
     'testimonials.comingSoon': 'Próximamente: video de testimonio',
+    
+    // Final CTA Section
+    'finalcta.free': 'Descargar Gratis',
+    'finalcta.premium': 'Probar Versión con IA',
     
     // User Profile & Invites
     'userProfile.title': 'Perfil de Usuario',

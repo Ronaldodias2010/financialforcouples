@@ -103,7 +103,7 @@ const HeroSection = () => {
                 <DialogTrigger asChild>
                   <Button size="lg" variant="ctaGradient" className="group">
                     <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    {t('hero.cta.premium').replace(/ por .+$/, '')}
+                    {t('hero.cta.premium')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
