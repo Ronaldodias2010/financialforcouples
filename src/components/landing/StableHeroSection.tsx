@@ -141,6 +141,30 @@ const StableHeroSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           {/* Left side - Text content */}
           <div className="text-center lg:text-left">
+            {/* Logo */}
+            <div className="flex justify-center lg:justify-start mb-6">
+              <div
+                className="relative w-32 h-32 md:w-40 md:h-40"
+                style={{
+                  filter:
+                    "drop-shadow(0 6px 22px hsl(var(--cherry-light) / 0.15)) drop-shadow(0 3px 12px hsl(var(--blue-soft) / 0.15))",
+                }}
+             >
+                <img
+                  src="/lovable-uploads/2f7e7907-5cf5-4262-adbd-04f4dbd3151b.png"
+                  alt="Couples Financials Logo"
+                  className="w-full h-full object-contain relative z-10"
+                />
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-xl"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, hsl(var(--cherry-light) / 0.08), hsl(var(--blue-soft) / 0.08))",
+                  }}
+                />
+              </div>
+            </div>
+            
             <Badge 
               variant="secondary" 
               className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30"
