@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
   const privacyContent = {
     pt: {
       title: "Política de Privacidade – Couples Financials",
-      lastUpdated: "Última atualização: 04 de agosto de 2025",
+      lastUpdated: "Última atualização: 10 de agosto de 2025",
       intro: "A plataforma Couples Financials valoriza a privacidade e a segurança dos dados dos seus usuários. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações, em conformidade com a LGPD (Lei nº 13.709/2018) e o GDPR (Regulamento UE 2016/679).",
       sections: [
         {
@@ -81,7 +81,7 @@ Para exercer seus direitos, envie um e-mail para: privacidade@couplesfinancials.
     },
     en: {
       title: "Privacy Policy – Couples Financials",
-      lastUpdated: "Last updated: August 4, 2025",
+      lastUpdated: "Last updated: August 10, 2025",
       intro: "Couples Financials is committed to protecting your privacy and personal data. This Privacy Policy explains how we collect, use, store, and safeguard your information, in compliance with the LGPD (Brazilian General Data Protection Law – Law No. 13.709/2018) and the GDPR (EU General Data Protection Regulation – Regulation EU 2016/679).",
       sections: [
         {
