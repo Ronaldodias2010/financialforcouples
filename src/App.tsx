@@ -36,11 +36,27 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 // PWAPrompt temporarily disabled to stabilize app
 
-const queryClient = new QueryClient();
-
 const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
+  console.log("🔧 App component renderizando...");
+  
+  // Create QueryClient inside component to avoid null context issues
+  const [queryClient] = React.useState(() => {
+    console.log("🔧 Criando QueryClient...");
+    return new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: 1,
+          staleTime: 5 * 60 * 1000, // 5 minutes
+        },
+      },
+    });
+  });
+
+  console.log("🔧 QueryClient criado, renderizando QueryClientProvider...");
+
+  try {
+    return (
+      <QueryClientProvider client={queryClient}>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"
@@ -92,8 +108,18 @@ const App = () => {
           </LanguageProvider>
         </AuthProvider>
       </ThemeProvider>
-    </QueryClientProvider>
-  );
+        </QueryClientProvider>
+      );
+  } catch (error) {
+    console.error("🚨 ERRO no QueryClientProvider:", error);
+    return (
+      <div style={{ padding: 20, textAlign: 'center', background: '#fee', color: '#c00' }}>
+        <h1>Erro no QueryClient</h1>
+        <p>Recarregue a página para tentar novamente</p>
+        <button onClick={() => window.location.reload()}>Recarregar</button>
+      </div>
+    );
+  }
 };
 
 export default App;
