@@ -300,6 +300,14 @@ const translations = {
     'investments.saving': 'Salvando...',
     'investments.save': 'Salvar Investimento',
     
+    // Testimonials
+    'testimonials.title': 'Depoimentos em Vídeo',
+    'testimonials.subtitle': 'Casais Reais',
+    'testimonials.description': 'Aumente a confiança com histórias reais de quem já usa.',
+    'testimonials.videoAlt': 'Capa ilustrativa do depoimento em vídeo de um casal real',
+    'testimonials.playButton': 'Reproduzir depoimento em vídeo',
+    'testimonials.comingSoon': 'Em breve: vídeo de depoimento',
+    
     // User Profile & Invites
     'userProfile.title': 'Perfil do Usuário',
     'userProfile.profile': 'Perfil',
@@ -920,6 +928,14 @@ const translations = {
     'investments.saving': 'Saving...',
     'investments.save': 'Save Investment',
     
+    // Testimonials
+    'testimonials.title': 'Video Testimonials',
+    'testimonials.subtitle': 'Real Couples',
+    'testimonials.description': 'Build confidence with real stories from users.',
+    'testimonials.videoAlt': 'Illustrative cover of a real couple video testimonial',
+    'testimonials.playButton': 'Play video testimonial',
+    'testimonials.comingSoon': 'Coming soon: testimonial video',
+    
     // User Profile & Invites
     'userProfile.title': 'User Profile',
     'userProfile.profile': 'Profile',
@@ -1539,6 +1555,14 @@ const translations = {
     'investments.cancel': 'Cancelar',
     'investments.saving': 'Guardando...',
     'investments.save': 'Guardar Inversión',
+    
+    // Testimonials
+    'testimonials.title': 'Testimonios en Video',
+    'testimonials.subtitle': 'Parejas Reales',
+    'testimonials.description': 'Aumenta la confianza con historias reales de usuarios.',
+    'testimonials.videoAlt': 'Portada ilustrativa del testimonio en video de una pareja real',
+    'testimonials.playButton': 'Reproducir testimonio en video',
+    'testimonials.comingSoon': 'Próximamente: video de testimonio',
     
     // User Profile & Invites
     'userProfile.title': 'Perfil de Usuario',

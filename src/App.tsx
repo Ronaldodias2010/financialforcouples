@@ -53,8 +53,8 @@ const App = () => {
                   <GlobalErrorBoundary>
                     <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
                       <Routes>
-                        <Route path="/" element={<LandingSimple />} />
-                        <Route path="/landing-original" element={<Landing />} />
+                        <Route path="/" element={<Landing />} />
+                        <Route path="/landing-simple" element={<LandingSimple />} />
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/login" element={<Auth />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />

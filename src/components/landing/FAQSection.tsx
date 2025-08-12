@@ -73,6 +73,38 @@ const faqData = {
       answer: "We offer a free version with essential features. Paid plans are available for users who need advanced functionality and increased storage.",
       icon: "🧾"
     }
+  ],
+  es: [
+    {
+      question: "¿Qué es Couples Financials?",
+      answer: "Couples Financials es una plataforma de gestión financiera colaborativa para parejas. Permite rastrear gastos, definir metas, compartir decisiones y automatizar tareas financieras.",
+      icon: "❓"
+    },
+    {
+      question: "¿Cómo funciona el login con contraseña temporal?",
+      answer: "Cuando se invita a un usuario, el sistema envía una contraseña temporal válida por 7 días. Al iniciar sesión, será redirigido a una pantalla obligatoria de cambio de contraseña. Después, deberá iniciar sesión nuevamente con la nueva contraseña.",
+      icon: "🔐"
+    },
+    {
+      question: "¿Están seguros mis datos?",
+      answer: "Sí. Utilizamos Supabase como base de datos, con encriptación en reposo y en tránsito. Toda la infraestructura está alojada en AWS, con prácticas avanzadas de seguridad.",
+      icon: "🧠"
+    },
+    {
+      question: "¿Puedo usar el sistema sin conexión?",
+      answer: "Sí, si instalas Couples Financials como PWA (Progressive Web App), podrás acceder a datos previamente sincronizados incluso sin conexión.",
+      icon: "🔄"
+    },
+    {
+      question: "¿Puedo integrar con otros sistemas?",
+      answer: "Sí. Couples Financials está preparado para recibir automatizaciones vía APIs, permitiendo integración con CRMs, hojas de cálculo y otros servicios.",
+      icon: "🤝"
+    },
+    {
+      question: "¿Es gratuito el sistema?",
+      answer: "Ofrecemos una versión gratuita con recursos esenciales. Planes pagos están disponibles para quienes desean funcionalidades avanzadas y mayor capacidad de almacenamiento.",
+      icon: "🧾"
+    }
   ]
 };
 
@@ -127,7 +159,7 @@ const FAQSection = () => {
     setOpenItems(newOpenItems);
   };
 
-  const currentFAQ = faqData[language === 'es' ? 'en' : language];
+  const currentFAQ = faqData[language] || faqData['en'];
 
   return (
     <section className="py-24 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
@@ -135,11 +167,15 @@ const FAQSection = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            FAQ – Couples Financials
+            {language === 'pt' ? 'FAQ – Couples Financials' : 
+             language === 'es' ? 'Preguntas Frecuentes – Couples Financials' : 
+             'FAQ – Couples Financials'}
           </h2>
           <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
             {language === 'pt' 
               ? 'Encontre respostas para as perguntas mais frequentes sobre nossa plataforma.'
+              : language === 'es'
+              ? 'Encuentra respuestas a las preguntas más frecuentes sobre nuestra plataforma.'
               : 'Find answers to the most frequently asked questions about our platform.'
             }
           </p>
@@ -163,19 +199,23 @@ const FAQSection = () => {
             <h3 className="text-2xl font-bold text-white mb-4">
               {language === 'pt' 
                 ? 'Ainda tem dúvidas?'
+                : language === 'es'
+                ? '¿Aún tienes dudas?'
                 : 'Still have questions?'
               }
             </h3>
             <p className="text-slate-300 mb-6">
               {language === 'pt'
                 ? 'Nossa equipe está sempre pronta para ajudar você.'
+                : language === 'es'
+                ? 'Nuestro equipo está siempre listo para ayudarte.'
                 : 'Our team is always ready to help you.'
               }
             </p>
             <Button asChild variant="ctaGradient" size="lg" className="font-semibold">
               <a href="mailto:suporte@couplesfinancials.com" className="inline-flex items-center gap-2">
                 <span>📧</span>
-                {language === 'pt' ? 'Entrar em contato' : 'Contact us'}
+                {language === 'pt' ? 'Entrar em contato' : language === 'es' ? 'Contactar' : 'Contact us'}
               </a>
             </Button>
           </div>
