@@ -17,7 +17,7 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg border-0 bg-gradient-to-br from-background via-background to-primary/5">
+      <DialogContent className="sm:max-w-md border-0 bg-gradient-to-br from-background via-background to-primary/5">
         <DialogHeader className="text-center space-y-6">
           {/* Logo */}
           <div className="mx-auto w-28 h-28 relative">
