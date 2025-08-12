@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { toast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
@@ -510,12 +510,35 @@ const AdminDashboardContent = () => {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
-          <TabsTrigger value="non-premium">Usuários Essential</TabsTrigger>
-          <TabsTrigger value="premium">{t('admin.tabs.premiumAccess')}</TabsTrigger>
-          
-          <TabsTrigger value="alerts">{t('admin.tabs.alerts')}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger 
+            value="users" 
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <Crown className="h-4 w-4 mr-2" />
+            Usuários Premium
+          </TabsTrigger>
+          <TabsTrigger 
+            value="non-premium"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <UserCheck className="h-4 w-4 mr-2" />
+            Usuários Essential
+          </TabsTrigger>
+          <TabsTrigger 
+            value="premium"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <CreditCard className="h-4 w-4 mr-2" />
+            {t('admin.tabs.premiumAccess')}
+          </TabsTrigger>
+          <TabsTrigger 
+            value="alerts"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            {t('admin.tabs.alerts')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
