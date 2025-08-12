@@ -76,6 +76,28 @@ resource "aws_cloudfront_distribution" "app" {
     }
   }
 
+  # Comportamento específico para a página 503.html - DEVE ser o primeiro behavior
+  ordered_cache_behavior {
+    path_pattern     = "/503.html"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${var.app_name}-static"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 0
+    default_ttl            = 0
+    max_ttl                = 0
+
+    compress = true
+  }
+
   # Comportamento para assets estáticos do S3
   ordered_cache_behavior {
     path_pattern     = "/static/*"

@@ -122,8 +122,33 @@ aws ecs describe-services --cluster couples-financials-cluster --services couple
 aws elbv2 describe-target-health --target-group-arn $(aws elbv2 describe-target-groups --names couples-financials-tg --query 'TargetGroups[0].TargetGroupArn' --output text)
 ```
 
+## Correção Crítica - Ordem dos Cache Behaviors
+
+**Problema Identificado**: A página 503.html não estava sendo servida corretamente devido à precedência dos cache behaviors no CloudFront.
+
+**Solução Implementada**: 
+- Adicionado um `ordered_cache_behavior` específico para `/503.html` como o **primeiro** behavior
+- Este behavior direciona requisições para `/503.html` diretamente ao S3, não ao ALB
+- Configurado com TTL baixo (0) para garantir atualizações imediatas
+
+```hcl
+# Comportamento específico para a página 503.html - DEVE ser o primeiro behavior
+ordered_cache_behavior {
+  path_pattern     = "/503.html"
+  allowed_methods  = ["GET", "HEAD"]
+  cached_methods   = ["GET", "HEAD"]
+  target_origin_id = "S3-${var.app_name}-static"
+  # ... resto da configuração
+}
+```
+
+**Por que era necessário**: 
+- O CloudFront avalia os cache behaviors em ordem
+- O behavior default estava capturando todas as requisições e direcionando ao ALB
+- Mesmo com custom_error_response configurado, a requisição inicial precisava chegar ao S3
+
 ## Próximo Deploy
 
 Agora todos os deploys futuros mostrarão automaticamente a página 503 customizada durante atualizações ou problemas de infraestrutura.
 
-**Implementação concluída! 🎉**
+**Implementação corrigida e concluída! 🎉**
