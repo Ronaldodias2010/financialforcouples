@@ -237,6 +237,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          owner_user: string | null
           target_amount: number
           target_date: string | null
           updated_at: string
@@ -249,6 +250,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          owner_user?: string | null
           target_amount?: number
           target_date?: string | null
           updated_at?: string
@@ -261,6 +263,7 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          owner_user?: string | null
           target_amount?: number
           target_date?: string | null
           updated_at?: string

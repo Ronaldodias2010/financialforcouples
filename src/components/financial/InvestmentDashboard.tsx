@@ -40,6 +40,7 @@ interface InvestmentGoal {
   current_amount: number;
   target_date?: string;
   currency: string;
+  owner_user?: string;
 }
 
 interface PortfolioSummary {
@@ -144,14 +145,39 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
 
   const fetchGoals = async () => {
     try {
+      // Check if user is part of a couple to include partner's goals
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        // Include both users' goals
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
       const { data, error } = await supabase
         .from("investment_goals")
         .select("*")
-        .eq("user_id", user?.id)
+        .in("user_id", userIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setGoals(data || []);
+      
+      let filteredData = data || [];
+      
+      // Apply user filter based on viewMode
+      if (viewMode !== "both" && coupleData) {
+        filteredData = filteredData.filter(goal => {
+          const ownerUser = goal.owner_user || 'user1';
+          return ownerUser === viewMode;
+        });
+      }
+      
+      setGoals(filteredData);
     } catch (error) {
       console.error("Error fetching goals:", error);
     }
@@ -296,34 +322,22 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
         />
       </div>
 
-      {/* View Mode Selector - only show if part of a couple */}
+      {/* View Mode Indicator - only show if part of a couple */}
       {isPartOfCouple && (
-        <div className="flex items-center justify-center gap-4 py-4">
+        <div className="flex items-center justify-center gap-4 py-2 bg-muted/30 rounded-lg">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === "both" ? "default" : "outline"}
-                size="sm"
-                onClick={() => window.history.back()} // Go back to dashboard to change view mode
-              >
-                {t('dashboard.both')}
-              </Button>
-              <Button
-                variant={viewMode === "user1" ? "default" : "outline"}
-                size="sm"
-                onClick={() => window.history.back()}
-              >
-                {getUserLabel("user1")}
-              </Button>
-              <Button
-                variant={viewMode === "user2" ? "default" : "outline"}
-                size="sm"
-                onClick={() => window.history.back()}
-              >
-                {getUserLabel("user2")}
-              </Button>
+            <div className="flex items-center gap-2">
+              <div className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
+                {viewMode === "both" ? t('dashboard.both') : getUserLabel(viewMode)}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {viewMode === "both" 
+                  ? "Visualizando dados de ambos os usuários" 
+                  : `Visualizando apenas dados de ${getUserLabel(viewMode)}`
+                }
+              </span>
             </div>
           </div>
         </div>
