@@ -139,14 +139,14 @@ export const UserExpenseChart = () => {
 
       const chartData: FinancialData[] = [
         {
-          category: 'Receitas',
+          category: t('userAnalysis.income'),
           user1: incomeByUser.user1,
           user2: incomeByUser.user2,
           user1Color: CHART_COLORS.income.user1,
           user2Color: CHART_COLORS.income.user2
         },
         {
-          category: 'Despesas',
+          category: t('userAnalysis.expenses'),
           user1: expenseByUser.user1,
           user2: expenseByUser.user2,
           user1Color: CHART_COLORS.expense.user1,
@@ -223,7 +223,7 @@ export const UserExpenseChart = () => {
   const renderCustomBar = (props: any) => {
     const { payload, ...rest } = props;
     const category = payload.category;
-    const isIncome = category === 'Receitas';
+    const isIncome = category === t('userAnalysis.income');
     
     return (
       <Bar 
@@ -261,9 +261,9 @@ export const UserExpenseChart = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="current">Mês Atual</SelectItem>
-                <SelectItem value="last3">Últimos 3 Meses</SelectItem>
-                <SelectItem value="last6">Últimos 6 Meses</SelectItem>
+                <SelectItem value="current">{t('userAnalysis.period.current')}</SelectItem>
+                <SelectItem value="last3">{t('userAnalysis.period.last3')}</SelectItem>
+                <SelectItem value="last6">{t('userAnalysis.period.last6')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -273,7 +273,7 @@ export const UserExpenseChart = () => {
           <div className="h-48 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhum dado financeiro encontrado para este período</p>
+              <p>{t('userAnalysis.noData')}</p>
             </div>
           </div>
         ) : (
@@ -315,7 +315,7 @@ export const UserExpenseChart = () => {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-green-600" />
-                  <span className="font-medium">Receitas</span>
+                  <span className="font-medium">{t('userAnalysis.income')}</span>
                 </div>
                 <div className="flex items-center gap-4 ml-6">
                   <div className="flex items-center gap-2">
@@ -338,7 +338,7 @@ export const UserExpenseChart = () => {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <TrendingDown className="h-4 w-4 text-red-600" />
-                  <span className="font-medium">Despesas</span>
+                  <span className="font-medium">{t('userAnalysis.expenses')}</span>
                 </div>
                 <div className="flex items-center gap-4 ml-6">
                   <div className="flex items-center gap-2">

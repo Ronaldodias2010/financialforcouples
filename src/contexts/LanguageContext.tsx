@@ -609,6 +609,15 @@ const translations = {
     'simulator.regularContributions': 'Aportes regulares aceleram o crescimento.',
     'simulator.diversify': 'Diversifique sempre seus investimentos.',
     'simulator.inflation': 'Considere a inflação em seus cálculos.',
+    
+    // User Analysis
+    'userAnalysis.period.current': 'Mês Atual',
+    'userAnalysis.period.last3': 'Últimos 3 Meses',
+    'userAnalysis.period.last6': 'Últimos 6 Meses',
+    'userAnalysis.income': 'Receitas',
+    'userAnalysis.expenses': 'Despesas',
+    'userAnalysis.noData': 'Nenhum dado financeiro encontrado para este período',
+    'userAnalysis.user': 'Usuário',
   },
   
   en: {
@@ -1160,6 +1169,15 @@ const translations = {
     'simulator.regularContributions': 'Regular contributions accelerate growth.',
     'simulator.diversify': 'Always diversify your investments.',
     'simulator.inflation': 'Consider inflation in your calculations.',
+    
+    // User Analysis
+    'userAnalysis.period.current': 'Current Month',
+    'userAnalysis.period.last3': 'Last 3 Months',
+    'userAnalysis.period.last6': 'Last 6 Months',
+    'userAnalysis.income': 'Income',
+    'userAnalysis.expenses': 'Expenses',
+    'userAnalysis.noData': 'No financial data found for this period',
+    'userAnalysis.user': 'User',
     
     // Recurring Expenses
     'recurring.title': 'Recurring Expenses',
@@ -1758,6 +1776,15 @@ const translations = {
     'simulator.regularContributions': 'Los aportes regulares aceleran el crecimiento.',
     'simulator.diversify': 'Siempre diversifica tus inversiones.',
     'simulator.inflation': 'Considera la inflación en tus cálculos.',
+    
+    // User Analysis
+    'userAnalysis.period.current': 'Mes Actual',
+    'userAnalysis.period.last3': 'Últimos 3 Meses',
+    'userAnalysis.period.last6': 'Últimos 6 Meses',
+    'userAnalysis.income': 'Ingresos',
+    'userAnalysis.expenses': 'Gastos',
+    'userAnalysis.noData': 'No se encontraron datos financieros para este período',
+    'userAnalysis.user': 'Usuario',
     
     // Recurring Expenses
     'recurring.title': 'Gastos Recurrentes',
