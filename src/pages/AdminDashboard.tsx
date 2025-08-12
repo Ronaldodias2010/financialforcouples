@@ -103,8 +103,8 @@ const AdminDashboardContent = () => {
           let monthlyRevenue = cachedMetrics[0].monthly_revenue_brl || 0;
           let annualRevenue = cachedMetrics[0].annual_revenue_brl || 0;
           if (language === 'en') {
-            monthlyRevenue = await convertCurrency(monthlyRevenue, 'BRL', 'USD');
-            annualRevenue = await convertCurrency(annualRevenue, 'BRL', 'USD');
+            monthlyRevenue = convertCurrency(monthlyRevenue, 'BRL', 'USD');
+            annualRevenue = convertCurrency(annualRevenue, 'BRL', 'USD');
           }
           
           setMetrics({
@@ -137,8 +137,8 @@ const AdminDashboardContent = () => {
             let monthlyRevenue = stripeMetrics.monthlyRevenueBRL || 0;
             let annualRevenue = stripeMetrics.annualRevenueBRL || 0;
             if (language === 'en') {
-              monthlyRevenue = await convertCurrency(monthlyRevenue, 'BRL', 'USD');
-              annualRevenue = await convertCurrency(annualRevenue, 'BRL', 'USD');
+              monthlyRevenue = convertCurrency(monthlyRevenue, 'BRL', 'USD');
+              annualRevenue = convertCurrency(annualRevenue, 'BRL', 'USD');
             }
             
             setMetrics({
@@ -168,7 +168,7 @@ const AdminDashboardContent = () => {
             
             // Convert to USD if language is English
             const monthlyRevenue = language === 'en' 
-              ? await convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
+              ? convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
               : monthlyRevenueBRL;
             
             setMetrics({
