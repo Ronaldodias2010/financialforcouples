@@ -3,7 +3,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  
+  const contactInfo = language === 'pt' ? {
+    email: 'contato@couplesfinancials.com',
+    phone: '(11) 9999-9999',
+    location: 'São Paulo, Brasil'
+  } : {
+    email: 'contact@couplesfinancials.com',
+    phone: '(201) 5902401',
+    location: 'EUA'
+  };
 
   return (
     <footer className="bg-foreground text-background py-12">
@@ -48,15 +58,15 @@ const Footer = () => {
             <div className="space-y-3 text-sm text-background/70">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <span>contato@couplesfinancials.com</span>
+                <span>{contactInfo.email}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>(11) 9999-9999</span>
+                <span>{contactInfo.phone}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                <span>São Paulo, Brasil</span>
+                <span>{contactInfo.location}</span>
               </div>
             </div>
           </div>
