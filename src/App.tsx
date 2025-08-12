@@ -15,6 +15,7 @@ import { PerformanceMonitor } from "./components/system/PerformanceMonitor";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { RouteSEO } from "./components/seo/RouteSEO";
 import LandingSimple from "./pages/LandingSimple";
+import LandingStable from "./pages/LandingStable";
 import Auth from "./pages/Auth";
 const Landing = lazy(() => import("./pages/Landing"));
 const AppDashboard = lazy(() => import("./pages/AppDashboard"));
@@ -66,7 +67,8 @@ const App = () => {
               <SafeTooltipProvider>
                 <SubscriptionProvider>
                   <Routes>
-                    <Route path="/" element={<LandingSimple />} />
+                    <Route path="/" element={<LandingStable />} />
+                    <Route path="/landing-old" element={<LandingSimple />} />
                     <Route path="/landing-new" element={
                       <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Carregando...</div>}>
                         <Landing />
