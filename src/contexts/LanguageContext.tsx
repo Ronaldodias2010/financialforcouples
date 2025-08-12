@@ -716,6 +716,20 @@ const translations = {
     'userAnalysis.expenses': 'Despesas',
     'userAnalysis.noData': 'Nenhum dado financeiro encontrado para este período',
     'userAnalysis.user': 'Usuário',
+    
+    // Footer
+    'footer.description': 'Organize suas finanças em casal de forma simples e inteligente. Transforme a gestão financeira do relacionamento em algo fácil e transparente.',
+    'footer.product': 'Produto',
+    'footer.features': 'Funcionalidades',
+    'footer.pricing': 'Preços',
+    'footer.download': 'Download',
+    'footer.support': 'Suporte',
+    'footer.contact': 'Contato',
+    'footer.rights': '2024 Couples Financials. Todos os direitos reservados.',
+    'footer.privacy': 'Política de Privacidade',
+    'footer.terms': 'Termos de Uso',
+    'footer.help': 'Central de Ajuda',
+    'footer.faq': 'FAQ',
   },
   
   en: {
@@ -1421,6 +1435,20 @@ const translations = {
     'recurring.deleteError': 'Error deleting recurring expense',
     'recurring.statusError': 'Error changing status',
     'recurring.userNotAuth': 'User not authenticated',
+    
+    // Footer
+    'footer.description': 'Organize your couple\'s finances simply and intelligently. Transform relationship financial management into something easy and transparent.',
+    'footer.product': 'Product',
+    'footer.features': 'Features',
+    'footer.pricing': 'Pricing',
+    'footer.download': 'Download',
+    'footer.support': 'Support',
+    'footer.contact': 'Contact',
+    'footer.rights': '2024 Couples Financials. All rights reserved.',
+    'footer.privacy': 'Privacy Policy',
+    'footer.terms': 'Terms of Use',
+    'footer.help': 'Help Center',
+    'footer.faq': 'FAQ',
   },
   
   es: {
@@ -2126,6 +2154,20 @@ const translations = {
     'recurring.deleteError': 'Error al eliminar gasto recurrente',
     'recurring.statusError': 'Error al cambiar estado',
     'recurring.userNotAuth': 'Usuario no autenticado',
+    
+    // Footer
+    'footer.description': 'Organiza las finanzas de tu pareja de forma simple e inteligente. Transforma la gestión financiera de la relación en algo fácil y transparente.',
+    'footer.product': 'Producto',
+    'footer.features': 'Características',
+    'footer.pricing': 'Precios',
+    'footer.download': 'Descargar',
+    'footer.support': 'Soporte',
+    'footer.contact': 'Contacto',
+    'footer.rights': '2024 Couples Financials. Todos los derechos reservados.',
+    'footer.privacy': 'Política de Privacidad',
+    'footer.terms': 'Términos de Uso',
+    'footer.help': 'Centro de Ayuda',
+    'footer.faq': 'Preguntas Frecuentes',
   },
 };
 
