@@ -309,7 +309,7 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
           <CardContent className="text-center py-8">
             <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
-              Nenhum objetivo definido ainda. Crie seu primeiro objetivo!
+              {t('goals.emptyState')}
             </p>
           </CardContent>
         </Card>

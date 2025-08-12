@@ -539,6 +539,11 @@ const translations = {
     'subscription.benefits.voiceControl': 'Controle por voz via WhatsApp',
     'subscription.benefits.prioritySupport': 'Suporte prioritário',
     'subscription.benefits.unlimitedFeatures': 'Recursos ilimitados',
+    
+    // Goals
+    'goals.title': 'Objetivos de Investimento',
+    'goals.newGoal': 'Novo Objetivo',
+    'goals.emptyState': 'Nenhum objetivo definido ainda. Crie seu primeiro objetivo!',
   },
   
   en: {
@@ -1020,6 +1025,11 @@ const translations = {
     'subscription.benefits.voiceControl': 'Voice control via WhatsApp',
     'subscription.benefits.prioritySupport': 'Priority support',
     'subscription.benefits.unlimitedFeatures': 'Unlimited features',
+    
+    // Goals
+    'goals.title': 'Investment Goals',
+    'goals.newGoal': 'New Goal',
+    'goals.emptyState': 'No goals defined yet. Create your first goal!',
     
     // Recurring Expenses
     'recurring.title': 'Recurring Expenses',
@@ -1548,6 +1558,11 @@ const translations = {
     'subscription.benefits.voiceControl': 'Control por voz vía WhatsApp',
     'subscription.benefits.prioritySupport': 'Soporte prioritario',
     'subscription.benefits.unlimitedFeatures': 'Funcionalidades ilimitadas',
+    
+    // Goals
+    'goals.title': 'Objetivos de Inversión',
+    'goals.newGoal': 'Nuevo Objetivo',
+    'goals.emptyState': '¡Aún no se han definido objetivos. Crea tu primer objetivo!',
     
     // Recurring Expenses
     'recurring.title': 'Gastos Recurrentes',
