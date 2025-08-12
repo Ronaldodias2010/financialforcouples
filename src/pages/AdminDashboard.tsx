@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
 import { PremiumUsersList } from "@/components/admin/PremiumUsersList";
-import EmailSender from "@/components/admin/EmailSender";
+
 
 interface SubscriptionMetrics {
   activeUsers: number;
@@ -514,7 +514,7 @@ const AdminDashboardContent = () => {
           <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="non-premium">Usuários Essential</TabsTrigger>
           <TabsTrigger value="premium">{t('admin.tabs.premiumAccess')}</TabsTrigger>
-          <TabsTrigger value="emails">Envio de Emails</TabsTrigger>
+          
           <TabsTrigger value="alerts">{t('admin.tabs.alerts')}</TabsTrigger>
         </TabsList>
 
@@ -657,19 +657,6 @@ const AdminDashboardContent = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="emails">
-          <Card>
-            <CardHeader>
-              <CardTitle>Envio de Emails (PT/EN)</CardTitle>
-              <CardDescription>Visualize e envie emails de teste em português ou inglês</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="max-w-xl">
-                <EmailSender />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="alerts">
           <Card>
