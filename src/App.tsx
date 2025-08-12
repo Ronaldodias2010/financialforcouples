@@ -15,6 +15,8 @@ import { PerformanceMonitor } from "./components/system/PerformanceMonitor";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { RouteSEO } from "./components/seo/RouteSEO";
 import LandingSimple from "./pages/LandingSimple";
+const PrivacyPolicy = lazy(() => import("./components/landing/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
 import Auth from "./pages/Auth";
 const Landing = lazy(() => import("./pages/Landing"));
 const AppDashboard = lazy(() => import("./pages/AppDashboard"));
@@ -62,6 +64,8 @@ const App = () => {
                         <Route path="/email-confirmation" element={<EmailConfirmation />} />
                         <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
                         <Route path="/email-test" element={<EmailTest />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/terms" element={<TermsOfUse />} />
                         
                         {/* Protected Routes */}
                         <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
