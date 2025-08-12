@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, BarChart3, TrendingUp } from "lucide-react";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -49,6 +50,7 @@ interface PortfolioChartProps {
 
 export const PortfolioChart = ({ investments, userPreferredCurrency }: PortfolioChartProps) => {
   const { convertCurrency, formatCurrency } = useCurrencyConverter();
+  const { t } = useLanguage();
 
   const getTypeLabel = (type: string) => {
     const types: { [key: string]: string } = {
@@ -73,7 +75,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
     labels: Object.keys(distributionByType),
     datasets: [
       {
-        label: 'Valor Investido',
+        label: t('portfolioChart.investedValue'),
         data: Object.values(distributionByType),
         backgroundColor: [
           '#8B5CF6',
@@ -104,7 +106,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
     labels: returnsData.map(item => item.name.length > 15 ? item.name.substring(0, 15) + '...' : item.name),
     datasets: [
       {
-        label: 'Rentabilidade (%)',
+        label: t('portfolioChart.profitabilityPercent'),
         data: returnsData.map(item => item.returnPercentage),
         backgroundColor: returnsData.map(item => 
           item.returnPercentage >= 0 ? '#10B981' : '#EF4444'
@@ -145,7 +147,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
     labels: months,
     datasets: [
       {
-        label: 'Valor Total do Portfólio',
+        label: t('portfolioChart.totalPortfolioValue'),
         data: values,
         fill: false,
         borderColor: '#8B5CF6',
@@ -212,7 +214,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
         <CardContent className="text-center py-8">
           <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <p className="text-muted-foreground">
-            Adicione investimentos para visualizar os gráficos do seu portfólio.
+            {t('portfolioChart.emptyState')}
           </p>
         </CardContent>
       </Card>
@@ -221,7 +223,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Análise do Portfólio</h2>
+      <h2 className="text-2xl font-bold">{t('portfolioChart.analysis')}</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Distribuição por Tipo */}
@@ -229,7 +231,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PieChart className="h-5 w-5" />
-              Distribuição por Tipo
+              {t('portfolioChart.distributionByType')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -244,7 +246,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Rentabilidade por Investimento
+              {t('portfolioChart.profitabilityByInvestment')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -260,7 +262,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Evolução do Portfólio
+            {t('portfolioChart.portfolioEvolution')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -275,7 +277,7 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Melhor Investimento</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('portfolioChart.bestInvestment')}</h3>
               {returnsData.length > 0 && (
                 <>
                   <p className="text-sm text-muted-foreground">{returnsData[0].name}</p>
@@ -291,11 +293,11 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Diversificação</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('portfolioChart.diversification')}</h3>
               <p className="text-2xl font-bold text-blue-600">
                 {Object.keys(distributionByType).length}
               </p>
-              <p className="text-sm text-muted-foreground">tipos diferentes</p>
+              <p className="text-sm text-muted-foreground">{t('portfolioChart.differentTypes')}</p>
             </div>
           </CardContent>
         </Card>
@@ -303,11 +305,11 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Total de Investimentos</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('portfolioChart.totalInvestments')}</h3>
               <p className="text-2xl font-bold text-purple-600">
                 {investments.length}
               </p>
-              <p className="text-sm text-muted-foreground">investimentos ativos</p>
+              <p className="text-sm text-muted-foreground">{t('portfolioChart.activeInvestments')}</p>
             </div>
           </CardContent>
         </Card>
