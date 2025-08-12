@@ -107,7 +107,7 @@ const TermsOfUse = () => {
     }
   };
 
-  const content = termsContent[language as keyof typeof termsContent] || termsContent.pt;
+  const content = termsContent[language === 'pt' ? 'pt' : 'en'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10">

@@ -141,7 +141,7 @@ To exercise your rights, contact us at: privacy@couplesfinancials.com`
     }
   };
 
-  const content = privacyContent[language as keyof typeof privacyContent] || privacyContent.pt;
+  const content = privacyContent[language === 'pt' ? 'pt' : 'en'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10">
