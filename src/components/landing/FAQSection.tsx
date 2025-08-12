@@ -172,7 +172,7 @@ const FAQSection = () => {
                 : 'Our team is always ready to help you.'
               }
             </p>
-            <Button asChild variant="secondary" size="lg" className="font-semibold">
+            <Button asChild variant="ctaGradient" size="lg" className="font-semibold">
               <a href="mailto:suporte@couplesfinancials.com" className="inline-flex items-center gap-2">
                 <span>📧</span>
                 {language === 'pt' ? 'Entrar em contato' : 'Contact us'}
