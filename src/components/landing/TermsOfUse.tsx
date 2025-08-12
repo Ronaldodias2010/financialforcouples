@@ -107,6 +107,7 @@ const TermsOfUse = () => {
     }
   };
 
+  console.log('Terms of Use - Current language:', language);
   const content = termsContent[language === 'pt' ? 'pt' : 'en'];
 
   return (

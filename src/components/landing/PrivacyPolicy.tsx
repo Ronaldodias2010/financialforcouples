@@ -141,6 +141,7 @@ To exercise your rights, contact us at: privacy@couplesfinancials.com`
     }
   };
 
+  console.log('Privacy Policy - Current language:', language);
   const content = privacyContent[language === 'pt' ? 'pt' : 'en'];
 
   return (
