@@ -18,7 +18,7 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md border-0 bg-gradient-to-br from-background via-background to-primary/5">
-        <DialogHeader className="text-center space-y-6">
+        <DialogHeader className="text-center space-y-4">
           {/* Logo */}
           <div className="mx-auto w-28 h-28 relative">
             <img
@@ -64,7 +64,7 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex flex-col gap-3 mt-8">
+        <div className="flex flex-col gap-3 mt-6">
           <Button onClick={handleEmailContact} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg" size="lg">
             <Mail className="w-4 h-4 mr-2" />
             {t('aiBeta.contactButton')}
@@ -75,7 +75,7 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
           </Button>
         </div>
         
-        <div className="text-center mt-6 p-4 bg-gradient-to-r from-secondary/10 to-primary/10 rounded-xl border border-secondary/20">
+        <div className="text-center mt-4 p-4 bg-gradient-to-r from-secondary/10 to-primary/10 rounded-xl border border-secondary/20">
           <p className="text-sm font-medium text-foreground mb-2">
             {t('aiBeta.emails')}
           </p>
