@@ -196,6 +196,39 @@ export type Database = {
         }
         Relationships: []
       }
+      couple_relationship_requests: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          requested_email: string
+          requester_user_id: string
+          status: string
+          updated_at: string | null
+          verification_token: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          requested_email: string
+          requester_user_id: string
+          status?: string
+          updated_at?: string | null
+          verification_token?: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          requested_email?: string
+          requester_user_id?: string
+          status?: string
+          updated_at?: string | null
+          verification_token?: string
+        }
+        Relationships: []
+      }
       investment_goals: {
         Row: {
           created_at: string
@@ -334,40 +367,85 @@ export type Database = {
       }
       manual_premium_access: {
         Row: {
+          approval_date: string | null
+          approved_by_admin_id: string | null
           created_at: string
           created_by_admin_id: string
           email: string
           end_date: string
           id: string
+          ip_address: string | null
           start_date: string
           status: string
-          temp_password: string
+          temp_password_hash: string | null
           updated_at: string
+          user_agent: string | null
           user_id: string
         }
         Insert: {
+          approval_date?: string | null
+          approved_by_admin_id?: string | null
           created_at?: string
           created_by_admin_id: string
           email: string
           end_date: string
           id?: string
+          ip_address?: string | null
           start_date?: string
           status?: string
-          temp_password: string
+          temp_password_hash?: string | null
           updated_at?: string
+          user_agent?: string | null
           user_id: string
         }
         Update: {
+          approval_date?: string | null
+          approved_by_admin_id?: string | null
           created_at?: string
           created_by_admin_id?: string
           email?: string
           end_date?: string
           id?: string
+          ip_address?: string | null
           start_date?: string
           status?: string
-          temp_password?: string
+          temp_password_hash?: string | null
           updated_at?: string
+          user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      manual_premium_access_audit: {
+        Row: {
+          action_type: string
+          id: string
+          ip_address: string | null
+          performed_at: string
+          performed_by_admin_id: string
+          target_email: string
+          target_record_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          id?: string
+          ip_address?: string | null
+          performed_at?: string
+          performed_by_admin_id: string
+          target_email: string
+          target_record_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          id?: string
+          ip_address?: string | null
+          performed_at?: string
+          performed_by_admin_id?: string
+          target_email?: string
+          target_record_id?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -592,6 +670,42 @@ export type Database = {
           },
         ]
       }
+      security_audit_log: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       stripe_metrics_cache: {
         Row: {
           active_users: number
@@ -814,7 +928,7 @@ export type Database = {
           invitee_name: string
           inviter_user_id: string
           status: string
-          temp_password: string
+          temp_password_hash: string | null
           updated_at: string
         }
         Insert: {
@@ -825,7 +939,7 @@ export type Database = {
           invitee_name: string
           inviter_user_id: string
           status?: string
-          temp_password: string
+          temp_password_hash?: string | null
           updated_at?: string
         }
         Update: {
@@ -836,7 +950,7 @@ export type Database = {
           invitee_name?: string
           inviter_user_id?: string
           status?: string
-          temp_password?: string
+          temp_password_hash?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -850,13 +964,42 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_manual_premium_access: {
+        Args: {
+          p_email: string
+          p_user_id: string
+          p_start_date?: string
+          p_end_date?: string
+        }
+        Returns: string
+      }
+      fix_security_definer_views: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_temp_password: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_temp_password_for_invite: {
+        Args: { p_record_id: string }
+        Returns: string
+      }
+      hash_temp_password: {
+        Args: { password: string }
+        Returns: string
+      }
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       normalize_text_simple: {
         Args: { input: string }
         Returns: string
+      }
+      verify_temp_password: {
+        Args: { password: string; hash: string }
+        Returns: boolean
       }
     }
     Enums: {
