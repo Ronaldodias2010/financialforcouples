@@ -95,3 +95,9 @@ variable "cloudfront_create_oac" {
   type        = bool
   default     = false
 }
+
+variable "cloudfront_create_spa_function" {
+  description = "Se verdadeiro, cria função CloudFront para roteamento SPA (pode falhar por limite de funções)."
+  type        = bool
+  default     = false
+}

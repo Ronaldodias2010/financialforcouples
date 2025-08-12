@@ -164,6 +164,7 @@ jobs:
         supabase_anon_key = "${{ secrets.SUPABASE_ANON_KEY }}"
         supabase_service_role_key = "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
         cloudfront_oac_id = "${{ secrets.CLOUDFRONT_OAC_ID }}"
+        cloudfront_create_spa_function = false
         EOF
         if [ -z "${{ secrets.CLOUDFRONT_OAC_ID }}" ]; then
           echo "Note: CLOUDFRONT_OAC_ID not set; Terraform will attempt to create a new OAC."
@@ -242,7 +243,8 @@ jobs:
           -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
           -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
           -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-          -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}"
+          -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}" \
+          -var="cloudfront_create_spa_function=false"
 
   # Job de deploy da aplicação no ECS
   deploy-application:

@@ -14,16 +14,17 @@ supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
 supabase_anon_key = "sua_chave_anonima_aqui"
 supabase_service_role_key = "sua_chave_service_role_aqui"
 
+# CloudFront (para performance global)
+enable_cloudfront = true
+cloudfront_oac_id = ""  # Deixe vazio para criar automaticamente
+cloudfront_create_spa_function = false  # Desabilitado por padrão para evitar limite de funções
+
 # Configurações do container (ajuste conforme necessário)
 container_image = "couples-financials:latest"
 container_port = 80
 desired_count = 2
 cpu = 256
 memory = 512
-
-# CloudFront (para performance global)
-enable_cloudfront = true
-cloudfront_oac_id = ""  # Deixe vazio para criar automaticamente
 
 # Logs
 cloudwatch_log_retention_days = 7

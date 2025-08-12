@@ -66,10 +66,13 @@ resource "aws_cloudfront_distribution" "app" {
     default_ttl            = 0
     max_ttl                = 0
 
-    # Função para reescrever URLs da SPA
-    function_association {
-      event_type   = "viewer-request"
-      function_arn = aws_cloudfront_function.spa_routing[0].arn
+    # Função para reescrever URLs da SPA (se função CloudFront estiver disponível)
+    dynamic "function_association" {
+      for_each = length(aws_cloudfront_function.spa_routing) > 0 ? [1] : []
+      content {
+        event_type   = "viewer-request"
+        function_arn = aws_cloudfront_function.spa_routing[0].arn
+      }
     }
   }
 
@@ -262,12 +265,13 @@ resource "aws_cloudfront_distribution" "app" {
 }
 
 # Função CloudFront para roteamento de SPA
+# Agora é criada condicionalmente para evitar erro de limite de funções
 resource "aws_cloudfront_function" "spa_routing" {
-  count = var.enable_cloudfront ? 1 : 0
+  count = var.enable_cloudfront && var.cloudfront_create_spa_function ? 1 : 0
   
   name    = "${var.app_name}-spa-routing-${random_string.bucket_suffix.result}"
   runtime = "cloudfront-js-1.0"
-  comment = "Function to handle SPA routing"
+  comment = "Function to handle SPA routing for ${var.app_name}"
   publish = true
   code    = file("${path.module}/cloudfront-function.js")
 
