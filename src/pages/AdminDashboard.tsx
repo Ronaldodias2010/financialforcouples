@@ -648,12 +648,12 @@ const AdminDashboardContent = () => {
         </TabsContent>
 
         <TabsContent value="non-premium">
-          <NonPremiumUsersList language={language} />
+          <NonPremiumUsersList language={language === 'es' ? 'en' : language as 'pt' | 'en'} />
         </TabsContent>
 
         <TabsContent value="premium">
           <div className="grid grid-cols-1 gap-6">
-            <ManualPremiumAccess language={language} />
+            <ManualPremiumAccess language={language === 'es' ? 'en' : language as 'pt' | 'en'} />
           </div>
         </TabsContent>
 

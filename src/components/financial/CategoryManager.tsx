@@ -422,7 +422,7 @@ export const CategoryManager = () => {
                     className="w-4 h-4 rounded-full border"
                     style={{ backgroundColor: category.color || "#6366f1" }}
                   />
-                  <span className="font-medium">{translateCategoryName(category.name, language)}</span>
+                  <span className="font-medium">{translateCategoryName(category.name, language === 'es' ? 'en' : language as 'pt' | 'en')}</span>
                   <span className="text-xs px-2 py-1 rounded-full bg-muted">
                     {category.category_type === 'income' ? t('categories.type.income') : t('categories.type.expense')}
                   </span>
