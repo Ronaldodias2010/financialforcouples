@@ -104,6 +104,20 @@ resource "aws_s3_bucket_cors_configuration" "app_static" {
   }
 }
 
+# Upload da página 503.html para o bucket S3
+resource "aws_s3_object" "maintenance_page" {
+  bucket       = aws_s3_bucket.app_static.id
+  key          = "503.html"
+  source       = "../public/503.html"
+  content_type = "text/html"
+  
+  etag = filemd5("../public/503.html")
+  
+  tags = {
+    Name = "503-maintenance-page"
+  }
+}
+
 # Bucket para logs do ALB (opcional)
 # resource "aws_s3_bucket" "alb_logs" {
 #   bucket = "${var.app_name}-alb-logs-${random_string.bucket_suffix.result}"
