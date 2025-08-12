@@ -609,6 +609,15 @@ const translations = {
     'simulator.regularContributions': 'Aportes regulares aceleram o crescimento.',
     'simulator.diversify': 'Diversifique sempre seus investimentos.',
     'simulator.inflation': 'Considere a inflação em seus cálculos.',
+    'simulator.investments.treasuryBills': 'Treasury Bills (T-Bills)',
+    'simulator.investments.treasuryNotes': 'Treasury Notes',
+    'simulator.investments.treasuryBonds': 'Treasury Bonds',
+    'simulator.investments.corporateBonds': 'Corporate Bonds',
+    'simulator.investments.cds': 'Certificates of Deposit (CDs)',
+    'simulator.investments.stocks': 'Stocks (Historical)',
+    'simulator.investments.etfs': 'ETFs (Exchange-Traded Funds)',
+    'simulator.investments.reits': 'REITs (Real Estate Investment Trusts)',
+    'simulator.investments.custom': 'Custom Rate',
     
     // User Analysis
     'userAnalysis.period.current': 'Mês Atual',
@@ -1169,6 +1178,15 @@ const translations = {
     'simulator.regularContributions': 'Regular contributions accelerate growth.',
     'simulator.diversify': 'Always diversify your investments.',
     'simulator.inflation': 'Consider inflation in your calculations.',
+    'simulator.investments.treasuryBills': 'Treasury Bills (T-Bills)',
+    'simulator.investments.treasuryNotes': 'Treasury Notes',
+    'simulator.investments.treasuryBonds': 'Treasury Bonds',
+    'simulator.investments.corporateBonds': 'Corporate Bonds',
+    'simulator.investments.cds': 'Certificates of Deposit (CDs)',
+    'simulator.investments.stocks': 'Stocks (Historical)',
+    'simulator.investments.etfs': 'ETFs (Exchange-Traded Funds)',
+    'simulator.investments.reits': 'REITs (Real Estate Investment Trusts)',
+    'simulator.investments.custom': 'Custom Rate',
     
     // User Analysis
     'userAnalysis.period.current': 'Current Month',
@@ -1776,6 +1794,15 @@ const translations = {
     'simulator.regularContributions': 'Los aportes regulares aceleran el crecimiento.',
     'simulator.diversify': 'Siempre diversifica tus inversiones.',
     'simulator.inflation': 'Considera la inflación en tus cálculos.',
+    'simulator.investments.treasuryBills': 'Treasury Bills (T-Bills)',
+    'simulator.investments.treasuryNotes': 'Treasury Notes',
+    'simulator.investments.treasuryBonds': 'Treasury Bonds',
+    'simulator.investments.corporateBonds': 'Bonos Corporativos',
+    'simulator.investments.cds': 'Certificados de Depósito (CDs)',
+    'simulator.investments.stocks': 'Acciones (Histórico)',
+    'simulator.investments.etfs': 'ETFs (Fondos Cotizados)',
+    'simulator.investments.reits': 'REITs (Fideicomisos Inmobiliarios)',
+    'simulator.investments.custom': 'Tasa Personalizada',
     
     // User Analysis
     'userAnalysis.period.current': 'Mes Actual',

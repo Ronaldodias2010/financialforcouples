@@ -26,27 +26,48 @@ interface SimulationResult {
 }
 
 export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimulatorProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatCurrency } = useCurrencyConverter();
   const [formData, setFormData] = useState({
     initialAmount: "",
     monthlyAmount: "",
     annualRate: "",
     years: "",
-    investmentType: "tesouro_selic"
+    investmentType: language === 'pt' ? "tesouro_selic" : "treasury_bills"
   });
   const [result, setResult] = useState<SimulationResult | null>(null);
 
-  const investmentTypes = [
-    { value: "tesouro_selic", label: "Tesouro Selic", rate: 11.5 },
-    { value: "tesouro_ipca", label: "Tesouro IPCA+", rate: 12.0 },
-    { value: "cdb", label: "CDB", rate: 12.5 },
-    { value: "lci_lca", label: "LCI/LCA", rate: 10.5 },
-    { value: "fundos_di", label: "Fundos DI", rate: 10.8 },
-    { value: "acoes", label: "Ações (histórico)", rate: 15.0 },
-    { value: "fundos_imobiliarios", label: "Fundos Imobiliários", rate: 13.0 },
-    { value: "custom", label: "Taxa Personalizada", rate: 0 }
-  ];
+  const getInvestmentTypes = () => {
+    const { language } = useLanguage();
+    
+    if (language === 'pt') {
+      return [
+        { value: "tesouro_selic", label: "Tesouro Selic", rate: 11.5 },
+        { value: "tesouro_ipca", label: "Tesouro IPCA+", rate: 12.0 },
+        { value: "cdb", label: "CDB", rate: 12.5 },
+        { value: "lci_lca", label: "LCI/LCA", rate: 10.5 },
+        { value: "fundos_di", label: "Fundos DI", rate: 10.8 },
+        { value: "acoes", label: "Ações (histórico)", rate: 15.0 },
+        { value: "fundos_imobiliarios", label: "Fundos Imobiliários", rate: 13.0 },
+        { value: "custom", label: "Taxa Personalizada", rate: 0 }
+      ];
+    } else {
+      // US/International market investments
+      return [
+        { value: "treasury_bills", label: t('simulator.investments.treasuryBills'), rate: 4.5 },
+        { value: "treasury_notes", label: t('simulator.investments.treasuryNotes'), rate: 4.8 },
+        { value: "treasury_bonds", label: t('simulator.investments.treasuryBonds'), rate: 5.0 },
+        { value: "corporate_bonds", label: t('simulator.investments.corporateBonds'), rate: 6.5 },
+        { value: "cds", label: t('simulator.investments.cds'), rate: 4.2 },
+        { value: "stocks", label: t('simulator.investments.stocks'), rate: 10.0 },
+        { value: "etfs", label: t('simulator.investments.etfs'), rate: 8.5 },
+        { value: "reits", label: t('simulator.investments.reits'), rate: 7.8 },
+        { value: "custom", label: t('simulator.investments.custom'), rate: 0 }
+      ];
+    }
+  };
+
+  const investmentTypes = getInvestmentTypes();
 
   const calculateCompoundInterest = () => {
     const initial = parseFloat(formData.initialAmount) || 0;
@@ -95,7 +116,7 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
       monthlyAmount: "",
       annualRate: "",
       years: "",
-      investmentType: "tesouro_selic"
+      investmentType: language === 'pt' ? "tesouro_selic" : "treasury_bills"
     });
     setResult(null);
   };
