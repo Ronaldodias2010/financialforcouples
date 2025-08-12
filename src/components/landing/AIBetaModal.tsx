@@ -20,7 +20,7 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
       <DialogContent className="sm:max-w-lg border-0 bg-gradient-to-br from-background via-background to-primary/5">
         <DialogHeader className="text-center space-y-6">
           {/* Logo */}
-          <div className="mx-auto w-20 h-20 relative">
+          <div className="mx-auto w-28 h-28 relative">
             <img
               src="/lovable-uploads/2f7e7907-5cf5-4262-adbd-04f4dbd3151b.png"
               alt="Couples Financials Logo"
