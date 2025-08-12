@@ -54,7 +54,7 @@ const PricingSection = () => {
   const { ref: headerRef, inView: headerIn } = useInView({ threshold: 0.2 });
 
   return (
-    <section className="py-20 bg-background">
+    <section id="pricing" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-6xl bg-card rounded-3xl shadow-elegant p-6 md:p-12">
         {/* Header */}

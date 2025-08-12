@@ -26,8 +26,8 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-semibold text-background">{t('footer.product')}</h3>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="#" className="hover:text-background transition-colors">{t('footer.features')}</a></li>
-              <li><a href="#" className="hover:text-background transition-colors">{t('footer.pricing')}</a></li>
+              <li><a href="#benefits" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('benefits')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.features')}</a></li>
+              <li><a href="#pricing" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.pricing')}</a></li>
               <li><a href="#" className="hover:text-background transition-colors">{t('footer.download')}</a></li>
             </ul>
           </div>
