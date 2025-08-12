@@ -45,7 +45,8 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
     owner_user: "user1",
     broker: "",
     notes: "",
-    goal_id: ""
+    goal_id: "",
+    crypto_name: ""
   });
 
   const investmentTypes = [
@@ -74,6 +75,15 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
       return;
     }
 
+    if (formData.type === "cripto" && !formData.crypto_name) {
+      toast({
+        title: "Erro",
+        description: "Nome da criptomoeda é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -90,7 +100,9 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
           is_shared: formData.is_shared,
           owner_user: formData.owner_user,
           broker: formData.broker || null,
-          notes: formData.notes || null,
+          notes: formData.type === "cripto" && formData.crypto_name ? 
+            `${formData.crypto_name}${formData.notes ? ` - ${formData.notes}` : ''}` : 
+            formData.notes || null,
           goal_id: formData.goal_id === "no_goal" ? null : formData.goal_id || null
         });
 
@@ -160,6 +172,18 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.type === "cripto" && (
+              <div className="space-y-2">
+                <Label htmlFor="crypto_name">{t('investments.cryptoName')} *</Label>
+                <Input
+                  id="crypto_name"
+                  value={formData.crypto_name}
+                  onChange={(e) => setFormData({...formData, crypto_name: e.target.value})}
+                  placeholder={t('investments.cryptoNamePlaceholder')}
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="amount">{t('investments.amount')} *</Label>
