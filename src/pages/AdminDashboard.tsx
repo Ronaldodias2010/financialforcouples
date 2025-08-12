@@ -102,7 +102,7 @@ const AdminDashboardContent = () => {
           // Calculate monthly/annual revenue in appropriate currency
           let monthlyRevenue = cachedMetrics[0].monthly_revenue_brl || 0;
           let annualRevenue = cachedMetrics[0].annual_revenue_brl || 0;
-          if (language === 'en') {
+          if (language === 'en' || language === 'es') {
             monthlyRevenue = convertCurrency(monthlyRevenue, 'BRL', 'USD');
             annualRevenue = convertCurrency(annualRevenue, 'BRL', 'USD');
           }
@@ -136,7 +136,7 @@ const AdminDashboardContent = () => {
             // Calculate monthly/annual revenue in appropriate currency
             let monthlyRevenue = stripeMetrics.monthlyRevenueBRL || 0;
             let annualRevenue = stripeMetrics.annualRevenueBRL || 0;
-            if (language === 'en') {
+            if (language === 'en' || language === 'es') {
               monthlyRevenue = convertCurrency(monthlyRevenue, 'BRL', 'USD');
               annualRevenue = convertCurrency(annualRevenue, 'BRL', 'USD');
             }
@@ -166,8 +166,8 @@ const AdminDashboardContent = () => {
             // Calculate monthly revenue in BRL
             const monthlyRevenueBRL = activeUsers * 29.90;
             
-            // Convert to USD if language is English
-            const monthlyRevenue = language === 'en' 
+            // Convert to USD if language is English or Spanish
+            const monthlyRevenue = (language === 'en' || language === 'es')
               ? convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
               : monthlyRevenueBRL;
             
@@ -485,7 +485,7 @@ const AdminDashboardContent = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {language === 'en' 
+              {(language === 'en' || language === 'es')
                 ? `$ ${metrics.monthlyRevenue.toFixed(2)}` 
                 : `R$ ${metrics.monthlyRevenue.toFixed(2)}`
               }
@@ -500,7 +500,7 @@ const AdminDashboardContent = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {language === 'en' 
+              {(language === 'en' || language === 'es')
                 ? `$ ${metrics.annualRevenue.toFixed(2)}` 
                 : `R$ ${metrics.annualRevenue.toFixed(2)}`
               }
