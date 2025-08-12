@@ -78,14 +78,10 @@ const HeroSection = () => {
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" variant="secondary" className="group" onClick={installApp}>
+              <Button size="lg" variant="ctaGradient" className="group" onClick={installApp}>
                 <Download className="w-5 h-5 group-hover:animate-bounce" />
                 {t('hero.cta.free')}
               </Button>
-                  <Button size="lg" variant="ctaGradient" className="group" onClick={() => document.getElementById('pricing-premium')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-                    <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    Try AI Version for $9,90
-                  </Button>
             </div>
             
             {/* Social proof */}
