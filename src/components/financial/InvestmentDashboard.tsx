@@ -56,7 +56,7 @@ interface InvestmentDashboardProps {
   viewMode: "both" | "user1" | "user2";
 }
 
-export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardProps) => {
+export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: InvestmentDashboardProps) => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -69,6 +69,9 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<string>("BRL");
   const [activeTab, setActiveTab] = useState("overview");
   const [showInvestmentForm, setShowInvestmentForm] = useState(false);
+  
+  // Local viewMode state that can be changed independently
+  const [currentViewMode, setCurrentViewMode] = useState<"both" | "user1" | "user2">(initialViewMode);
 
   useEffect(() => {
     if (user) {
@@ -76,7 +79,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
       fetchInvestments();
       fetchGoals();
     }
-  }, [user, viewMode]); // Add viewMode as dependency
+  }, [user, currentViewMode]); // Use currentViewMode instead of viewMode
 
   const fetchUserPreferredCurrency = async () => {
     try {
@@ -123,17 +126,17 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
       let filteredData = data || [];
       
       console.log('InvestmentDashboard: Raw investments data:', filteredData.length, 'investments');
-      console.log('InvestmentDashboard: Current viewMode:', viewMode);
+      console.log('InvestmentDashboard: Current viewMode:', currentViewMode);
       console.log('InvestmentDashboard: Is part of couple:', !!coupleData);
       
-      // Apply user filter based on viewMode
-      if (viewMode !== "both" && coupleData) {
+      // Apply user filter based on currentViewMode
+      if (currentViewMode !== "both" && coupleData) {
         const originalCount = filteredData.length;
         filteredData = filteredData.filter(investment => {
           const ownerUser = investment.owner_user || 'user1';
-          return ownerUser === viewMode;
+          return ownerUser === currentViewMode;
         });
-        console.log('InvestmentDashboard: Filtered investments:', originalCount, '->', filteredData.length, 'for viewMode:', viewMode);
+        console.log('InvestmentDashboard: Filtered investments:', originalCount, '->', filteredData.length, 'for viewMode:', currentViewMode);
       }
       
       setInvestments(filteredData);
@@ -177,14 +180,14 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
       
       console.log('InvestmentDashboard: Raw goals data:', filteredData.length, 'goals');
       
-      // Apply user filter based on viewMode
-      if (viewMode !== "both" && coupleData) {
+      // Apply user filter based on currentViewMode
+      if (currentViewMode !== "both" && coupleData) {
         const originalCount = filteredData.length;
         filteredData = filteredData.filter(goal => {
           const ownerUser = goal.owner_user || 'user1';
-          return ownerUser === viewMode;
+          return ownerUser === currentViewMode;
         });
-        console.log('InvestmentDashboard: Filtered goals:', originalCount, '->', filteredData.length, 'for viewMode:', viewMode);
+        console.log('InvestmentDashboard: Filtered goals:', originalCount, '->', filteredData.length, 'for viewMode:', currentViewMode);
       }
       
       setGoals(filteredData);
@@ -332,22 +335,34 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
         />
       </div>
 
-      {/* View Mode Indicator - only show if part of a couple */}
+      {/* Interactive View Mode Selector - only show if part of a couple */}
       {isPartOfCouple && (
-        <div className="flex items-center justify-center gap-4 py-2 bg-muted/30 rounded-lg">
+        <div className="flex items-center justify-center gap-4 py-4 bg-muted/30 rounded-lg border">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
-            <div className="flex items-center gap-2">
-              <div className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                {viewMode === "both" ? t('dashboard.both') : getUserLabel(viewMode)}
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {viewMode === "both" 
-                  ? "Visualizando dados de ambos os usuários" 
-                  : `Visualizando apenas dados de ${getUserLabel(viewMode)}`
-                }
-              </span>
+            <div className="flex gap-2">
+              <Button
+                variant={currentViewMode === "both" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentViewMode("both")}
+              >
+                {t('dashboard.both')}
+              </Button>
+              <Button
+                variant={currentViewMode === "user1" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentViewMode("user1")}
+              >
+                {getUserLabel("user1")}
+              </Button>
+              <Button
+                variant={currentViewMode === "user2" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentViewMode("user2")}
+              >
+                {getUserLabel("user2")}
+              </Button>
             </div>
           </div>
         </div>
