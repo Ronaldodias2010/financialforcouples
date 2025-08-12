@@ -311,6 +311,18 @@ const translations = {
     // Final CTA Section
     'finalcta.free': 'Baixe Gratuitamente',
     'finalcta.premium': 'Experimente a versão com IA',
+    'finalcta.title': 'Transforme Suas Finanças Hoje Mesmo',
+    'finalcta.subtitle': 'Junte-se a milhares de pessoas que já estão no controle de suas finanças',
+    'finalcta.benefit1.title': 'Setup Instantâneo',
+    'finalcta.benefit1.description': 'Comece em menos de 2 minutos',
+    'finalcta.benefit2.title': 'IA Financeira',
+    'finalcta.benefit2.description': 'Insights personalizados para você',
+    'finalcta.benefit3.title': 'Resultados Reais',
+    'finalcta.benefit3.description': 'Melhore suas finanças rapidamente',
+    'finalcta.socialProof.users': '+10.000 usuários',
+    'finalcta.socialProof.rating': '4.9/5 estrelas',
+    'finalcta.socialProof.secure': '100% seguro',
+    'finalcta.disclaimer': 'Sem compromisso • Cancele quando quiser • Suporte em português',
     
     // App Demo Section
     'demo.title': 'Veja o App em Ação',
@@ -1004,6 +1016,18 @@ const translations = {
     // Final CTA Section
     'finalcta.free': 'Download for Free',
     'finalcta.premium': 'Try AI Version',
+    'finalcta.title': 'Transform Your Finances Today',
+    'finalcta.subtitle': 'Join thousands of people who are already in control of their finances',
+    'finalcta.benefit1.title': 'Instant Setup',
+    'finalcta.benefit1.description': 'Get started in less than 2 minutes',
+    'finalcta.benefit2.title': 'Financial AI',
+    'finalcta.benefit2.description': 'Personalized insights for you',
+    'finalcta.benefit3.title': 'Real Results',
+    'finalcta.benefit3.description': 'Improve your finances quickly',
+    'finalcta.socialProof.users': '+10,000 users',
+    'finalcta.socialProof.rating': '4.9/5 stars',
+    'finalcta.socialProof.secure': '100% secure',
+    'finalcta.disclaimer': 'No commitment • Cancel anytime • English support',
     
     // App Demo Section
     'demo.title': 'See the App in Action',
@@ -1697,6 +1721,18 @@ const translations = {
     // Final CTA Section
     'finalcta.free': 'Descargar Gratis',
     'finalcta.premium': 'Probar Versión con IA',
+    'finalcta.title': 'Transforma Tus Finanzas Hoy Mismo',
+    'finalcta.subtitle': 'Únete a miles de personas que ya tienen el control de sus finanzas',
+    'finalcta.benefit1.title': 'Configuración Instantánea',
+    'finalcta.benefit1.description': 'Comienza en menos de 2 minutos',
+    'finalcta.benefit2.title': 'IA Financiera',
+    'finalcta.benefit2.description': 'Insights personalizados para ti',
+    'finalcta.benefit3.title': 'Resultados Reales',
+    'finalcta.benefit3.description': 'Mejora tus finanzas rápidamente',
+    'finalcta.socialProof.users': '+10,000 usuarios',
+    'finalcta.socialProof.rating': '4.9/5 estrellas',
+    'finalcta.socialProof.secure': '100% seguro',
+    'finalcta.disclaimer': 'Sin compromiso • Cancela cuando quieras • Soporte en español',
     
     // App Demo Section
     'demo.title': 'Ve la App en Acción',

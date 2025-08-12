@@ -35,22 +35,22 @@ const FinalCTASection = () => {
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-2xl">⚡</span>
               </div>
-              <h3 className="text-white font-semibold mb-1">Setup Instantâneo</h3>
-              <p className="text-white/80 text-sm">Comece em menos de 2 minutos</p>
+              <h3 className="text-white font-semibold mb-1">{t('finalcta.benefit1.title')}</h3>
+              <p className="text-white/80 text-sm">{t('finalcta.benefit1.description')}</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-2xl">🤖</span>
               </div>
-              <h3 className="text-white font-semibold mb-1">IA Financeira</h3>
-              <p className="text-white/80 text-sm">Insights personalizados para você</p>
+              <h3 className="text-white font-semibold mb-1">{t('finalcta.benefit2.title')}</h3>
+              <p className="text-white/80 text-sm">{t('finalcta.benefit2.description')}</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-2xl">💎</span>
               </div>
-              <h3 className="text-white font-semibold mb-1">Resultados Reais</h3>
-              <p className="text-white/80 text-sm">Melhore suas finanças rapidamente</p>
+              <h3 className="text-white font-semibold mb-1">{t('finalcta.benefit3.title')}</h3>
+              <p className="text-white/80 text-sm">{t('finalcta.benefit3.description')}</p>
             </div>
           </div>
           
@@ -77,23 +77,23 @@ const FinalCTASection = () => {
                 <div className="w-6 h-6 rounded-full bg-white/30 border-2 border-white"></div>
                 <div className="w-6 h-6 rounded-full bg-white/30 border-2 border-white"></div>
               </div>
-              <span>+10.000 usuários</span>
+              <span>{t('finalcta.socialProof.users')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex text-yellow-300">
                 ⭐⭐⭐⭐⭐
               </div>
-              <span>4.9/5 estrelas</span>
+              <span>{t('finalcta.socialProof.rating')}</span>
             </div>
             <div className="flex items-center gap-2">
               <span>🔒</span>
-              <span>100% seguro</span>
+              <span>{t('finalcta.socialProof.secure')}</span>
             </div>
           </div>
           
           {/* Final note */}
           <p className="text-white/60 text-xs">
-            Sem compromisso • Cancele quando quiser • Suporte em português
+            {t('finalcta.disclaimer')}
           </p>
         </div>
       </div>
