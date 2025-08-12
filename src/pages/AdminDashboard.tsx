@@ -516,14 +516,14 @@ const AdminDashboardContent = () => {
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
           >
             <Crown className="h-4 w-4 mr-2" />
-            Usuários Premium
+            {t('admin.tabs.premiumUsers')}
           </TabsTrigger>
           <TabsTrigger 
             value="non-premium"
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
           >
             <UserCheck className="h-4 w-4 mr-2" />
-            Usuários Essential
+            {t('admin.tabs.essentialUsers')}
           </TabsTrigger>
           <TabsTrigger 
             value="premium"
