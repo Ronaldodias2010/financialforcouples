@@ -84,7 +84,7 @@ const HeroSection = () => {
               </Button>
                   <Button size="lg" variant="ctaGradient" className="group" onClick={() => document.getElementById('pricing-premium')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
                     <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    {t('hero.cta.premium')}
+                    Try AI Version for $9,90
                   </Button>
             </div>
             
