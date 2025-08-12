@@ -36,16 +36,9 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 // PWAPrompt temporarily disabled to stabilize app
 
+const queryClient = new QueryClient();
+
 const App = () => {
-  // Create QueryClient inside component to ensure proper React context
-  const [queryClient] = React.useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        retry: 1,
-      },
-    },
-  }));
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
