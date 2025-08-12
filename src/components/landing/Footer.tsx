@@ -47,7 +47,7 @@ const Footer = () => {
             <h3 className="font-semibold text-background">{t('footer.support')}</h3>
             <ul className="space-y-2 text-sm text-background/70">
               <li><a href="#" className="hover:text-background transition-colors">{t('footer.help')}</a></li>
-              <li><a href="#" className="hover:text-background transition-colors">{t('footer.contact')}</a></li>
+              <li><a href={`mailto:${contactInfo.email}`} className="hover:text-background transition-colors">{t('footer.contact')}</a></li>
               <li><a href="#faq" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('faq')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.faq')}</a></li>
             </ul>
           </div>
