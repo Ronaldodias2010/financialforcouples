@@ -9,11 +9,13 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Target, PieChart, Calculator, Plus, ArrowLeft } from "lucide-react";
+import { TrendingUp, Target, PieChart, Calculator, Plus, ArrowLeft, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { useToast } from "@/hooks/use-toast";
+import { useCouple } from "@/hooks/useCouple";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 
 interface Investment {
   id: string;
@@ -58,6 +60,8 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
   const { user } = useAuth();
   const { toast } = useToast();
   const { convertCurrency, formatCurrency, getCurrencySymbol } = useCurrencyConverter();
+  const { isPartOfCouple } = useCouple();
+  const { names } = usePartnerNames();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [goals, setGoals] = useState<InvestmentGoal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +75,7 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
       fetchInvestments();
       fetchGoals();
     }
-  }, [user]);
+  }, [user, viewMode]); // Add viewMode as dependency
 
   const fetchUserPreferredCurrency = async () => {
     try {
@@ -92,21 +96,40 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
   const fetchInvestments = async () => {
     try {
       setLoading(true);
-      let query = supabase
-        .from("investments")
-        .select("*")
-        .eq("user_id", user?.id);
+      
+      // Check if user is part of a couple to include partner's investments
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
 
-      if (viewMode === "user1") {
-        query = query.eq("owner_user", "user1");
-      } else if (viewMode === "user2") {
-        query = query.eq("owner_user", "user2");
+      let userIds = [user?.id];
+      if (coupleData) {
+        // Include both users' investments
+        userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      const { data, error } = await query.order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("investments")
+        .select("*")
+        .in("user_id", userIds)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setInvestments(data || []);
+      
+      let filteredData = data || [];
+      
+      // Apply user filter based on viewMode
+      if (viewMode !== "both" && coupleData) {
+        filteredData = filteredData.filter(investment => {
+          const ownerUser = investment.owner_user || 'user1';
+          return ownerUser === viewMode;
+        });
+      }
+      
+      setInvestments(filteredData);
     } catch (error) {
       console.error("Error fetching investments:", error);
       toast({
@@ -174,6 +197,16 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
       'tesouro_direto': 'Tesouro Direto'
     };
     return types[type] || type;
+  };
+
+  const getUserLabel = (userKey: "user1" | "user2") => {
+    if (userKey === "user1") {
+      return names.user1Name && names.user1Name !== 'Usuário 1' ? names.user1Name : t('dashboard.user1');
+    }
+    if (userKey === "user2") {
+      return names.user2Name && names.user2Name !== 'Usuário 2' ? names.user2Name : t('dashboard.user2');
+    }
+    return userKey === "user1" ? t('dashboard.user1') : t('dashboard.user2');
   };
 
   const handleAddInvestment = async () => {
@@ -262,6 +295,39 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
           type={portfolioSummary.returnPercentage >= 0 ? "income" : "expense"}
         />
       </div>
+
+      {/* View Mode Selector - only show if part of a couple */}
+      {isPartOfCouple && (
+        <div className="flex items-center justify-center gap-4 py-4">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === "both" ? "default" : "outline"}
+                size="sm"
+                onClick={() => window.history.back()} // Go back to dashboard to change view mode
+              >
+                {t('dashboard.both')}
+              </Button>
+              <Button
+                variant={viewMode === "user1" ? "default" : "outline"}
+                size="sm"
+                onClick={() => window.history.back()}
+              >
+                {getUserLabel("user1")}
+              </Button>
+              <Button
+                variant={viewMode === "user2" ? "default" : "outline"}
+                size="sm"
+                onClick={() => window.history.back()}
+              >
+                {getUserLabel("user2")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
