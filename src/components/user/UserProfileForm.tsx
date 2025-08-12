@@ -396,7 +396,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                       />
                       {!isPartOfCouple && (
                         <p className="text-sm text-muted-foreground mt-1">
-                          Email onde o convite será enviado para o segundo usuário se cadastrar
+                          {t('userProfile.inviteEmailHelp')}
                         </p>
                       )}
                     </div>
@@ -418,7 +418,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                           size="sm"
                           className="shrink-0 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                         >
-                          Não mostrar mais lembretes
+                          {t('userProfile.dismissReminders')}
                         </Button>
                         {profile.second_user_email && (
                           <Button 

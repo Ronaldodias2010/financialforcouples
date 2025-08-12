@@ -326,6 +326,8 @@ const translations = {
     'userProfile.confirmPassword': 'Confirmar Senha',
     'userProfile.updating': 'Atualizando...',
     'userProfile.updatePassword': 'Atualizar Senha',
+    'userProfile.inviteEmailHelp': 'Email onde o convite será enviado para o segundo usuário se cadastrar',
+    'userProfile.dismissReminders': 'Não mostrar mais lembretes',
     
     // Invite Card
     'inviteCard': 'Convidar Parceiro(a)',
@@ -942,6 +944,8 @@ const translations = {
     'userProfile.confirmPassword': 'Confirm Password',
     'userProfile.updating': 'Updating...',
     'userProfile.updatePassword': 'Update Password',
+    'userProfile.inviteEmailHelp': 'Email where the invite will be sent for the second user to register',
+    'userProfile.dismissReminders': 'Don\'t show reminders anymore',
     
     // Invite Card
     'inviteCard': 'Invite Partner',
@@ -1558,6 +1562,8 @@ const translations = {
     'userProfile.confirmPassword': 'Confirmar Contraseña',
     'userProfile.updating': 'Actualizando...',
     'userProfile.updatePassword': 'Actualizar Contraseña',
+    'userProfile.inviteEmailHelp': 'Email donde se enviará la invitación para que el segundo usuario se registre',
+    'userProfile.dismissReminders': 'No mostrar más recordatorios',
     
     // Invite Card
     'inviteCard': 'Invitar Pareja',
