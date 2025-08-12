@@ -312,6 +312,17 @@ const translations = {
     'finalcta.free': 'Baixe Gratuitamente',
     'finalcta.premium': 'Experimente a versão com IA',
     
+    // App Demo Section
+    'demo.title': 'Veja o App em Ação',
+    'demo.subtitle': 'Interface intuitiva e recursos poderosos para gerenciar suas finanças',
+    'demo.balance.title': 'Saldo Total Consolidado',
+    'demo.balance.description': 'Visualize o saldo de todas as suas contas em um só lugar',
+    'demo.transactions.title': 'Receitas e Despesas',
+    'demo.transactions.description': 'Acompanhe todas as movimentações financeiras do casal',
+    'demo.analysis.title': 'Análise por Usuário',
+    'demo.analysis.description': 'Relatórios detalhados dos gastos de cada pessoa',
+    'demo.growth': '+15% este mês',
+    
     // User Profile & Invites
     'userProfile.title': 'Perfil do Usuário',
     'userProfile.profile': 'Perfil',
@@ -944,6 +955,17 @@ const translations = {
     'finalcta.free': 'Download for Free',
     'finalcta.premium': 'Try AI Version',
     
+    // App Demo Section
+    'demo.title': 'See the App in Action',
+    'demo.subtitle': 'Intuitive interface and powerful features to manage your finances',
+    'demo.balance.title': 'Consolidated Total Balance',
+    'demo.balance.description': 'View the balance of all your accounts in one place',
+    'demo.transactions.title': 'Income and Expenses',
+    'demo.transactions.description': 'Track all financial movements of the couple',
+    'demo.analysis.title': 'Analysis by User',
+    'demo.analysis.description': 'Detailed reports of each person\'s expenses',
+    'demo.growth': '+15% this month',
+    
     // User Profile & Invites
     'userProfile.title': 'User Profile',
     'userProfile.profile': 'Profile',
@@ -1575,6 +1597,17 @@ const translations = {
     // Final CTA Section
     'finalcta.free': 'Descargar Gratis',
     'finalcta.premium': 'Probar Versión con IA',
+    
+    // App Demo Section
+    'demo.title': 'Ve la App en Acción',
+    'demo.subtitle': 'Interfaz intuitiva y características poderosas para gestionar tus finanzas',
+    'demo.balance.title': 'Saldo Total Consolidado',
+    'demo.balance.description': 'Visualiza el saldo de todas tus cuentas en un solo lugar',
+    'demo.transactions.title': 'Ingresos y Gastos',
+    'demo.transactions.description': 'Rastrea todos los movimientos financieros de la pareja',
+    'demo.analysis.title': 'Análisis por Usuario',
+    'demo.analysis.description': 'Reportes detallados de los gastos de cada persona',
+    'demo.growth': '+15% este mes',
     
     // User Profile & Invites
     'userProfile.title': 'Perfil de Usuario',

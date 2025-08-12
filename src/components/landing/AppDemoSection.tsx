@@ -43,7 +43,7 @@ const AppDemoSection = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-elegant">
               <img 
                 src={appInterface} 
-                alt="Interface do Couples Financials" 
+                alt={t('demo.subtitle')} 
                 className="w-full h-auto object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
@@ -53,7 +53,7 @@ const AppDemoSection = () => {
               <Card className="p-3 bg-white shadow-glow-green">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">+15% este mês</span>
+                  <span className="text-sm font-medium">{t('demo.growth')}</span>
                 </div>
               </Card>
             </div>
