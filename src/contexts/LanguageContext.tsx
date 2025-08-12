@@ -730,6 +730,16 @@ const translations = {
     'footer.terms': 'Termos de Uso',
     'footer.help': 'Central de Ajuda',
     'footer.faq': 'FAQ',
+    
+    // AI Beta Modal
+    'aiBeta.title': '🤖 IA em Fase Beta',
+    'aiBeta.status': 'Projeto em fase de testes',
+    'aiBeta.description': 'Nossa inteligência artificial está em desenvolvimento e será liberada para todos os usuários em breve. Aguarde!',
+    'aiBeta.betatester': 'Quer ser um testador beta?',
+    'aiBeta.betatesterDescription': 'Entre em contato conosco e seja um dos primeiros a experimentar nossa IA financeira.',
+    'aiBeta.contactButton': 'Quero ser testador beta',
+    'aiBeta.waitButton': 'Vou aguardar',
+    'aiBeta.emails': 'Nossos contatos:',
   },
   
   en: {
@@ -1449,6 +1459,16 @@ const translations = {
     'footer.terms': 'Terms of Use',
     'footer.help': 'Help Center',
     'footer.faq': 'FAQ',
+    
+    // AI Beta Modal
+    'aiBeta.title': '🤖 AI in Beta Phase',
+    'aiBeta.status': 'Project in testing phase',
+    'aiBeta.description': 'Our artificial intelligence is under development and will be released to all users soon. Please wait!',
+    'aiBeta.betatester': 'Want to be a beta tester?',
+    'aiBeta.betatesterDescription': 'Contact us and be one of the first to try our financial AI.',
+    'aiBeta.contactButton': 'I want to be a beta tester',
+    'aiBeta.waitButton': 'I\'ll wait',
+    'aiBeta.emails': 'Our contacts:',
   },
   
   es: {
@@ -2168,6 +2188,16 @@ const translations = {
     'footer.terms': 'Términos de Uso',
     'footer.help': 'Centro de Ayuda',
     'footer.faq': 'Preguntas Frecuentes',
+    
+    // AI Beta Modal
+    'aiBeta.title': '🤖 IA en Fase Beta',
+    'aiBeta.status': 'Proyecto en fase de pruebas',
+    'aiBeta.description': 'Nuestra inteligencia artificial está en desarrollo y será liberada para todos los usuarios pronto. ¡Espera!',
+    'aiBeta.betatester': '¿Quieres ser un probador beta?',
+    'aiBeta.betatesterDescription': 'Contáctanos y sé uno de los primeros en probar nuestra IA financiera.',
+    'aiBeta.contactButton': 'Quiero ser probador beta',
+    'aiBeta.waitButton': 'Voy a esperar',
+    'aiBeta.emails': 'Nuestros contactos:',
   },
 };
 

@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Download, Sparkles, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState } from "react";
+import AIBetaModal from "@/components/landing/AIBetaModal";
 
 const FinalCTASection = () => {
   const { t } = useLanguage();
+  const [aiBetaOpen, setAiBetaOpen] = useState(false);
 
   return (
     <section className="py-20 bg-hero-gradient relative overflow-hidden">
@@ -61,7 +64,7 @@ const FinalCTASection = () => {
               {t('finalcta.free')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 min-w-64 group">
+            <Button size="lg" className="bg-white text-primary hover:bg-white/90 min-w-64 group" onClick={() => setAiBetaOpen(true)}>
               <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
               {t('finalcta.premium')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -97,6 +100,8 @@ const FinalCTASection = () => {
           </p>
         </div>
       </div>
+      
+      <AIBetaModal open={aiBetaOpen} onOpenChange={setAiBetaOpen} />
     </section>
   );
 };

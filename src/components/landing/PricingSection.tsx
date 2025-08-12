@@ -4,10 +4,13 @@ import { Check, Sparkles, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import useInView from "@/hooks/use-in-view";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import AIBetaModal from "@/components/landing/AIBetaModal";
 const PricingSection = () => {
   const { t, language, inBrazil } = useLanguage();
   const isUSD = language !== 'pt' || !inBrazil;
   const premiumPrice = isUSD ? '$ 9.90' : 'R$ 19,90';
+  const [aiBetaOpen, setAiBetaOpen] = useState(false);
   const plans = [
     {
       name: t('pricing.free.name'),
@@ -144,6 +147,7 @@ const PricingSection = () => {
                   variant={plan.buttonVariant} 
                   size="lg" 
                   className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
+                  onClick={() => setAiBetaOpen(true)}
                 >
                   <Sparkles className="w-4 h-4" />
                   {plan.buttonText}
@@ -161,6 +165,8 @@ const PricingSection = () => {
         </div>
         </div>
       </div>
+      
+      <AIBetaModal open={aiBetaOpen} onOpenChange={setAiBetaOpen} />
     </section>
   );
 };

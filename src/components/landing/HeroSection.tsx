@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import AIBetaModal from "@/components/landing/AIBetaModal";
 const HeroSection = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [aiBetaOpen, setAiBetaOpen] = useState(false);
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     toast({
@@ -99,12 +101,14 @@ const HeroSection = () => {
                 <Download className="w-5 h-5 group-hover:animate-bounce" />
                 {t('hero.cta.free')}
               </Button>
+              <Button size="lg" variant="ctaGradient" className="group" onClick={() => setAiBetaOpen(true)}>
+                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                {t('hero.cta.premium')}
+              </Button>
+              
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button size="lg" variant="ctaGradient" className="group">
-                    <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    {t('hero.cta.premium')}
-                  </Button>
+                  <div style={{ display: 'none' }}></div>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -130,6 +134,8 @@ const HeroSection = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+              
+              <AIBetaModal open={aiBetaOpen} onOpenChange={setAiBetaOpen} />
             </div>
             
             {/* Social proof */}
