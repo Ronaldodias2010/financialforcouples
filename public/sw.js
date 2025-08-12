@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v5';
-const STATIC_CACHE_NAME = 'couples-financials-static-v5';
-const API_CACHE_NAME = 'couples-financials-api-v5';
+const CACHE_NAME = 'couples-financials-v6';
+const STATIC_CACHE_NAME = 'couples-financials-static-v6';
+const API_CACHE_NAME = 'couples-financials-api-v6';
 
 const urlsToCache = [
   '/',
@@ -114,17 +114,23 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Listen for messages from main thread
+// Listen for messages from main thread (update, skip waiting, clear caches)
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-// Check for updates
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'CHECK_UPDATE') {
-    // Force update check
-    self.registration.update();
+  const type = event.data && event.data.type;
+  switch (type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+    case 'CHECK_UPDATE':
+      self.registration.update();
+      break;
+    case 'CLEAR_CACHES':
+      caches.keys().then((names) => Promise.all(names.map((n) => caches.delete(n)))).then(() => {
+        self.skipWaiting();
+      });
+      break;
+    default:
+      // no-op
+      break;
   }
 });
