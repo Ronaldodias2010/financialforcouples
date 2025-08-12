@@ -146,6 +146,15 @@ const translations = {
     'transactionForm.subcategory': 'Subcategoria',
     'transactionForm.currency': 'Moeda',
     'transactionForm.addTransaction': 'Adicionar Transação',
+    'transactionForm.paymentTransfer': 'Transferência de Pagamento',
+    'transactionForm.receivedTransfer': 'Transferência Recebida',
+    'transactionForm.accountTransfer': 'Transferência entre Contas',
+    'transactionForm.accountInvestmentTransfer': 'Transferência Conta-Investimento',
+    'transactionForm.selectAccount': 'Selecionar Conta',
+    'transactionForm.selectAccountPlaceholder': 'Escolha uma conta',
+    'transactionForm.selectSourceAccount': 'Conta de Origem',
+    'transactionForm.selectDestinationAccount': 'Conta de Destino',
+    'transactionForm.selectInvestment': 'Selecionar Investimento',
     
     // Categories
     'categories.title': 'Gerenciar Categorias',
@@ -613,6 +622,15 @@ const translations = {
     'transactionForm.subcategory': 'Subcategory',
     'transactionForm.currency': 'Currency',
     'transactionForm.addTransaction': 'Add Transaction',
+    'transactionForm.paymentTransfer': 'Payment Transfer',
+    'transactionForm.receivedTransfer': 'Received Transfer',
+    'transactionForm.accountTransfer': 'Account Transfer',
+    'transactionForm.accountInvestmentTransfer': 'Account-Investment Transfer',
+    'transactionForm.selectAccount': 'Select Account',
+    'transactionForm.selectAccountPlaceholder': 'Choose an account',
+    'transactionForm.selectSourceAccount': 'Source Account',
+    'transactionForm.selectDestinationAccount': 'Destination Account',
+    'transactionForm.selectInvestment': 'Select Investment',
     
     // Categories
     'categories.title': 'Manage Categories',
@@ -1080,6 +1098,15 @@ const translations = {
     'transactionForm.subcategory': 'Subcategoría',
     'transactionForm.currency': 'Moneda',
     'transactionForm.addTransaction': 'Agregar Transacción',
+    'transactionForm.paymentTransfer': 'Transferencia de Pago',
+    'transactionForm.receivedTransfer': 'Transferencia Recibida',
+    'transactionForm.accountTransfer': 'Transferencia entre Cuentas',
+    'transactionForm.accountInvestmentTransfer': 'Transferencia Cuenta-Inversión',
+    'transactionForm.selectAccount': 'Seleccionar Cuenta',
+    'transactionForm.selectAccountPlaceholder': 'Elige una cuenta',
+    'transactionForm.selectSourceAccount': 'Cuenta de Origen',
+    'transactionForm.selectDestinationAccount': 'Cuenta de Destino',
+    'transactionForm.selectInvestment': 'Seleccionar Inversión',
     
     // Categories
     'categories.title': 'Gestionar Categorías',
