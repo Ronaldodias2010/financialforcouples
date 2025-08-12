@@ -41,7 +41,7 @@ const WhatsAppSection = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-elegant">
               <img 
                 src={whatsappChat} 
-                alt="Chat do WhatsApp com assistente financeiro" 
+                alt={t('whatsapp.imageAlt')} 
                 className="w-full h-auto object-cover max-w-md mx-auto"
               />
             </div>
@@ -50,7 +50,7 @@ const WhatsAppSection = () => {
               <Card className="p-3 bg-[#25D366] text-white shadow-lg">
                 <div className="flex items-center gap-2">
                   <Mic className="w-4 h-4" />
-                  <span className="text-sm font-medium">Gravando...</span>
+                  <span className="text-sm font-medium">{t('whatsapp.recording')}</span>
                 </div>
               </Card>
             </div>
@@ -60,7 +60,7 @@ const WhatsAppSection = () => {
           <div className="space-y-8">
             <div className="space-y-6">
               <h3 className="text-2xl font-bold text-foreground">
-                Como funciona o input por voz
+                {t('whatsapp.howItWorks')}
               </h3>
               
               {/* Steps */}
@@ -71,9 +71,9 @@ const WhatsAppSection = () => {
                       1
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">Mande uma mensagem de voz</h4>
+                      <h4 className="font-semibold text-foreground">{t('whatsapp.step1.title')}</h4>
                       <p className="text-muted-foreground text-sm">
-                        "Gastei R$ 45 no almoço hoje"
+                        {t('whatsapp.step1.example')}
                       </p>
                     </div>
                   </div>
@@ -85,9 +85,9 @@ const WhatsAppSection = () => {
                       2
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">IA processa automaticamente</h4>
+                      <h4 className="font-semibold text-foreground">{t('whatsapp.step2.title')}</h4>
                       <p className="text-muted-foreground text-sm">
-                        Reconhece valor, categoria e data
+                        {t('whatsapp.step2.description')}
                       </p>
                     </div>
                   </div>
@@ -99,9 +99,9 @@ const WhatsAppSection = () => {
                       3
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">Confirma e registra</h4>
+                      <h4 className="font-semibold text-foreground">{t('whatsapp.step3.title')}</h4>
                       <p className="text-muted-foreground text-sm">
-                        Gasto adicionado instantaneamente
+                        {t('whatsapp.step3.description')}
                       </p>
                     </div>
                   </div>
@@ -112,7 +112,7 @@ const WhatsAppSection = () => {
             {/* Benefits */}
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-foreground">
-                Vantagens do input por voz:
+                {t('whatsapp.benefitsTitle')}
               </h4>
               <ul className="space-y-2 text-muted-foreground">
                 {features.map((feature, index) => (
@@ -123,7 +123,7 @@ const WhatsAppSection = () => {
                 ))}
                 <li className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  IA entende linguagem natural
+                  {t('whatsapp.naturalLanguage')}
                 </li>
               </ul>
             </div>

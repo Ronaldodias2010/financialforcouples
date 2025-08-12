@@ -354,6 +354,25 @@ const translations = {
     'pricing.premium.feature8': 'Suporte prioritário',
     'pricing.premium.button': 'Experimentar Premium',
     
+    // WhatsApp Section
+    'whatsapp.title': 'Controle por Voz via WhatsApp',
+    'whatsapp.subtitle': 'Registre seus gastos sem digitar - apenas fale e nossa IA faz o resto',
+    'whatsapp.howItWorks': 'Como funciona o input por voz',
+    'whatsapp.step1.title': 'Mande uma mensagem de voz',
+    'whatsapp.step1.example': '"Gastei R$ 45 no almoço hoje"',
+    'whatsapp.step2.title': 'IA processa automaticamente',
+    'whatsapp.step2.description': 'Reconhece valor, categoria e data',
+    'whatsapp.step3.title': 'Confirma e registra',
+    'whatsapp.step3.description': 'Gasto adicionado instantaneamente',
+    'whatsapp.benefitsTitle': 'Vantagens do input por voz:',
+    'whatsapp.feature1': 'Registro mais rápido que digitar',
+    'whatsapp.feature2': 'Funciona enquanto você está ocupado',
+    'whatsapp.feature3': 'Dados mais precisos e organizados',
+    'whatsapp.naturalLanguage': 'IA entende linguagem natural',
+    'whatsapp.recording': 'Gravando...',
+    'whatsapp.cta': 'Experimentar no WhatsApp',
+    'whatsapp.imageAlt': 'Chat do WhatsApp com assistente financeiro',
+    
     // User Profile & Invites
     'userProfile.title': 'Perfil do Usuário',
     'userProfile.profile': 'Perfil',
@@ -1028,6 +1047,25 @@ const translations = {
     'pricing.premium.feature8': 'Priority support',
     'pricing.premium.button': 'Try Premium',
     
+    // WhatsApp Section
+    'whatsapp.title': 'Voice Control via WhatsApp',
+    'whatsapp.subtitle': 'Record your expenses without typing - just speak and our AI does the rest',
+    'whatsapp.howItWorks': 'How voice input works',
+    'whatsapp.step1.title': 'Send a voice message',
+    'whatsapp.step1.example': '"I spent $45 on lunch today"',
+    'whatsapp.step2.title': 'AI processes automatically',
+    'whatsapp.step2.description': 'Recognizes amount, category and date',
+    'whatsapp.step3.title': 'Confirms and records',
+    'whatsapp.step3.description': 'Expense added instantly',
+    'whatsapp.benefitsTitle': 'Voice input advantages:',
+    'whatsapp.feature1': 'Faster than typing',
+    'whatsapp.feature2': 'Works while you are busy',
+    'whatsapp.feature3': 'More accurate and organized data',
+    'whatsapp.naturalLanguage': 'AI understands natural language',
+    'whatsapp.recording': 'Recording...',
+    'whatsapp.cta': 'Try on WhatsApp',
+    'whatsapp.imageAlt': 'WhatsApp chat with financial assistant',
+    
     // User Profile & Invites
     'userProfile.title': 'User Profile',
     'userProfile.profile': 'Profile',
@@ -1701,6 +1739,25 @@ const translations = {
     'pricing.premium.feature7': 'Gestión de millas aéreas',
     'pricing.premium.feature8': 'Soporte prioritario',
     'pricing.premium.button': 'Probar Premium',
+    
+    // WhatsApp Section
+    'whatsapp.title': 'Control por Voz vía WhatsApp',
+    'whatsapp.subtitle': 'Registra tus gastos sin escribir - solo habla y nuestra IA hace el resto',
+    'whatsapp.howItWorks': 'Cómo funciona la entrada por voz',
+    'whatsapp.step1.title': 'Envía un mensaje de voz',
+    'whatsapp.step1.example': '"Gasté $45 en el almuerzo hoy"',
+    'whatsapp.step2.title': 'IA procesa automáticamente',
+    'whatsapp.step2.description': 'Reconoce cantidad, categoría y fecha',
+    'whatsapp.step3.title': 'Confirma y registra',
+    'whatsapp.step3.description': 'Gasto agregado instantáneamente',
+    'whatsapp.benefitsTitle': 'Ventajas de la entrada por voz:',
+    'whatsapp.feature1': 'Más rápido que escribir',
+    'whatsapp.feature2': 'Funciona mientras estás ocupado',
+    'whatsapp.feature3': 'Datos más precisos y organizados',
+    'whatsapp.naturalLanguage': 'IA entiende lenguaje natural',
+    'whatsapp.recording': 'Grabando...',
+    'whatsapp.cta': 'Probar en WhatsApp',
+    'whatsapp.imageAlt': 'Chat de WhatsApp con asistente financiero',
     
     // User Profile & Invites
     'userProfile.title': 'Perfil de Usuario',
