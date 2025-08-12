@@ -65,7 +65,7 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
         </DialogHeader>
         
         <div className="flex flex-col gap-3 mt-8">
-          <Button onClick={handleEmailContact} className="w-full bg-hero-gradient hover:opacity-90 text-white shadow-glow-green" size="lg">
+          <Button onClick={handleEmailContact} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg" size="lg">
             <Mail className="w-4 h-4 mr-2" />
             {t('aiBeta.contactButton')}
           </Button>
