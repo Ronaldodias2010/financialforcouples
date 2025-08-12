@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
-import { useOptimizedRealtime } from './useOptimizedRealtime';
 
 interface Transaction {
   id: string;
@@ -40,97 +39,113 @@ export const useFinancialData = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>('BRL');
   const [loading, setLoading] = useState(true);
-  const [coupleData, setCoupleData] = useState<any>(null);
-  const [lastFetch, setLastFetch] = useState<{ transactions: number; accounts: number; couple: number }>({
-    transactions: 0,
-    accounts: 0,
-    couple: 0
-  });
-  
-  // Cache para evitar re-consultas desnecessárias
-  const cacheRef = useRef({
-    couple: null as any,
-    transactions: null as Transaction[],
-    accounts: null as Account[],
-    currency: null as CurrencyCode | null
-  });
-
-  // Otimizado: buscar dados couple uma única vez
-  const fetchCoupleData = useCallback(async () => {
-    if (!user?.id) return null;
-    
-    const now = Date.now();
-    // Cache por 5 minutos
-    if (cacheRef.current.couple && (now - lastFetch.couple) < 300000) {
-      return cacheRef.current.couple;
-    }
-    
-    try {
-      const { data } = await supabase
-        .from("user_couples")
-        .select("user1_id, user2_id")
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .eq("status", "active")
-        .maybeSingle();
-      
-      cacheRef.current.couple = data;
-      setLastFetch(prev => ({ ...prev, couple: now }));
-      setCoupleData(data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching couple data:', error);
-      return null;
-    }
-  }, [user?.id]);
 
   useEffect(() => {
     if (user) {
-      const initializeData = async () => {
-        setLoading(true);
-        await fetchUserPreferredCurrency();
-        const couple = await fetchCoupleData();
-        await Promise.all([
-          fetchTransactions(couple),
-          fetchAccounts(couple)
-        ]);
-        setLoading(false);
-      };
-      initializeData();
+      fetchUserPreferredCurrency();
+      fetchTransactions();
+      fetchAccounts();
     }
   }, [user]);
 
   // Re-fetch data when preferred currency changes
   useEffect(() => {
-    if (user && userPreferredCurrency && cacheRef.current.currency !== userPreferredCurrency) {
-      cacheRef.current.currency = userPreferredCurrency;
-      fetchTransactions(coupleData);
+    if (user && userPreferredCurrency) {
+      fetchTransactions();
     }
-  }, [userPreferredCurrency, coupleData]);
+  }, [userPreferredCurrency]);
 
-  // Real-time otimizado - substitui os 4 canais por 1 otimizado
-  useOptimizedRealtime({
-    userId: user?.id || '',
-    onTransactionChange: () => {
-      cacheRef.current.transactions = null;
-      fetchTransactions(coupleData);
-    },
-    onAccountChange: () => {
-      cacheRef.current.accounts = null;
-      fetchAccounts(coupleData);
-    },
-    onCoupleChange: async () => {
-      cacheRef.current.couple = null;
-      const newCouple = await fetchCoupleData();
-      await Promise.all([
-        fetchTransactions(newCouple),
-        fetchAccounts(newCouple)
-      ]);
-    },
-    onProfileChange: (currency) => {
-      setUserPreferredCurrency(currency as CurrencyCode);
-    },
-    debounceMs: 2000 // Debounce agressivo
-  });
+  // Listen for profile changes and real-time transaction updates
+  useEffect(() => {
+    if (!user) return;
+
+    const profileChannel = supabase
+      .channel('profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Profile updated:', payload);
+          if (payload.new && payload.new.preferred_currency) {
+            console.log('New currency:', payload.new.preferred_currency);
+            setUserPreferredCurrency(payload.new.preferred_currency as CurrencyCode);
+          }
+        }
+      )
+      .subscribe();
+
+  // Listen for real-time transaction changes for unified dashboard
+  const transactionChannel = supabase
+    .channel('transaction_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'transactions'
+      },
+      (payload) => {
+        console.log('Real-time transaction change detected:', payload);
+        // Refresh transactions when any change occurs to ensure couples see each other's data
+        setTimeout(fetchTransactions, 100); // Small delay to ensure database consistency
+      }
+    )
+    .subscribe();
+
+  // Listen for real-time account changes to reflect balances immediately
+  const accountChannel = supabase
+    .channel('account_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'accounts'
+      },
+      (payload) => {
+        console.log('Real-time account change detected:', payload);
+        setTimeout(fetchAccounts, 100);
+      }
+    )
+    .subscribe();
+
+  // Also listen for couple relationship changes
+  const coupleChannel = supabase
+    .channel('couple_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'user_couples'
+      },
+      (payload) => {
+        console.log('Couple relationship changed:', payload);
+        const data = payload.new || payload.old;
+        if (data && typeof data === 'object' && 'user1_id' in data && 'user2_id' in data) {
+          if (data.user1_id === user.id || data.user2_id === user.id) {
+            setTimeout(() => {
+              fetchTransactions();
+              fetchAccounts();
+            }, 100);
+          }
+        }
+      }
+    )
+    .subscribe();
+
+    return () => {
+      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(transactionChannel);
+      supabase.removeChannel(accountChannel);
+      supabase.removeChannel(coupleChannel);
+    };
+  }, [user]);
 
   const fetchUserPreferredCurrency = async () => {
     try {
@@ -148,13 +163,9 @@ export const useFinancialData = () => {
     }
   };
 
-  const fetchTransactions = async (providedCoupleData?: any) => {
+  const fetchTransactions = async () => {
     try {
-      const now = Date.now();
-      // Cache por 2 minutos
-      if (cacheRef.current.transactions && (now - lastFetch.transactions) < 120000) {
-        return;
-      }
+      setLoading(true);
       
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
@@ -165,14 +176,20 @@ export const useFinancialData = () => {
       endOfMonth.setDate(0);
       endOfMonth.setHours(23, 59, 59, 999);
 
-      // Usar dados do casal fornecidos ou buscar do cache
-      const currentCoupleData = providedCoupleData || coupleData || cacheRef.current.couple;
+      // Check if user is part of a couple to include partner's transactions
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
 
       let userIds = [user?.id];
       let isPartOfCouple = false;
       
-      if (currentCoupleData) {
-        userIds = [currentCoupleData.user1_id, currentCoupleData.user2_id];
+      if (coupleData) {
+        // Include both users' transactions for shared dashboard
+        userIds = [coupleData.user1_id, coupleData.user2_id];
         isPartOfCouple = true;
         console.log('✅ User is part of a couple - fetching transactions for both users:', userIds);
       } else {
@@ -201,29 +218,27 @@ export const useFinancialData = () => {
         user_id: t.user_id,
         type: t.type 
       })));
-      
-      cacheRef.current.transactions = data || [];
-      setLastFetch(prev => ({ ...prev, transactions: now }));
       setTransactions(data || []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchAccounts = async (providedCoupleData?: any) => {
+  const fetchAccounts = async () => {
     try {
-      const now = Date.now();
-      // Cache por 2 minutos
-      if (cacheRef.current.accounts && (now - lastFetch.accounts) < 120000) {
-        return;
-      }
-
-      // Usar dados do casal fornecidos ou buscar do cache
-      const currentCoupleData = providedCoupleData || coupleData || cacheRef.current.couple;
+      // Determine if in a couple to fetch both users' accounts
+      const { data: coupleData } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
 
       let userIds = [user?.id];
-      if (currentCoupleData) {
-        userIds = [currentCoupleData.user1_id, currentCoupleData.user2_id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
       const { data, error } = await supabase
@@ -233,9 +248,6 @@ export const useFinancialData = () => {
         .eq('account_model', 'personal');
 
       if (error) throw error;
-      
-      cacheRef.current.accounts = data || [];
-      setLastFetch(prev => ({ ...prev, accounts: now }));
       setAccounts(data || []);
       console.log('Accounts fetched:', data?.length || 0);
     } catch (error) {
@@ -289,7 +301,7 @@ export const useFinancialData = () => {
     };
   };
 
-  const getFinancialComparison = useCallback(async () => {
+  const getFinancialComparison = async () => {
     try {
       // Get previous month data
       const prevMonth = new Date();
@@ -304,12 +316,18 @@ export const useFinancialData = () => {
       endOfPrevMonth.setDate(0);
       endOfPrevMonth.setHours(23, 59, 59, 999);
 
-      // Usar dados do casal do cache
-      const currentCoupleData = coupleData || cacheRef.current.couple;
+      // Check if user is part of a couple to include partner's transactions
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq("status", "active")
+        .maybeSingle();
 
       let userIds = [user?.id];
-      if (currentCoupleData) {
-        userIds = [currentCoupleData.user1_id, currentCoupleData.user2_id];
+      if (coupleData) {
+        // Include both users' transactions
+        userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
       const { data: prevTransactions, error } = await supabase
@@ -375,7 +393,7 @@ export const useFinancialData = () => {
         balanceChange: 0
       };
     }
-  }, [transactions, coupleData, user?.id, userPreferredCurrency, convertCurrency]);
+  };
 
   const getAccountsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
     if (viewMode === 'both') return accounts;
@@ -408,29 +426,17 @@ export const useFinancialData = () => {
     return { user1Expenses, user2Expenses };
   };
 
-  const refreshData = useCallback(async () => {
+  const refreshData = async () => {
     if (user) {
       console.log('🔄 Refreshing financial data...');
       setLoading(true);
-      
-      // Limpar todos os caches
-      cacheRef.current = {
-        couple: null,
-        transactions: null,
-        accounts: null,
-        currency: null
-      };
-      
       await fetchUserPreferredCurrency();
-      const couple = await fetchCoupleData();
-      await Promise.all([
-        fetchTransactions(couple),
-        fetchAccounts(couple)
-      ]);
+      await fetchTransactions();
+      await fetchAccounts();
       setLoading(false);
       console.log('✅ Financial data refreshed');
     }
-  }, [user, fetchCoupleData]);
+  };
 
   // Returns the sum of balances from personal accounts as income (converted)
   const getAccountsIncome = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
@@ -469,7 +475,6 @@ export const useFinancialData = () => {
 
   return {
     transactions,
-    accounts,
     userPreferredCurrency,
     loading,
     getFinancialSummary,
@@ -479,7 +484,6 @@ export const useFinancialData = () => {
     getAccountsIncome,
     getTransactionsIncome,
     getTransactionsExpenses,
-    refreshData,
-    fetchCoupleData
+    refreshData
   };
 };

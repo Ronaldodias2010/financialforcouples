@@ -105,17 +105,33 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
     },
   });
 
+  const generateTempPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
   const fetchActiveGrants = async () => {
     try {
-      // Use regular table without sensitive data (password is now hashed)
       const { data, error } = await supabase
         .from('manual_premium_access')
-        .select('id, email, start_date, end_date, status, created_at, updated_at')
+        .select(`
+          id,
+          user_id,
+          email,
+          start_date,
+          end_date,
+          status,
+          temp_password
+        `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      setActiveGrants(data?.map(item => ({ ...item, password_status: 'SET' })) || []);
+      setActiveGrants(data || []);
     } catch (error) {
       console.error('Error fetching active grants:', error);
     }
@@ -140,24 +156,19 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
 
       const targetUserId = targetSub.user_id as string;
 
-      // For now, use direct insert with temporary password generation
-      // TODO: Update to use secure function once types are regenerated
-      const tempPassword = Array.from({ length: 8 }, () => 
-        'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 33)]
-      ).join('');
-
-      const { error: createError } = await supabase
+      // Insert manual access for the target user
+      const tempPasswordMain = generateTempPassword();
+      const { error: insertMainErr } = await supabase
         .from('manual_premium_access')
         .insert({
           user_id: targetUserId,
           email: targetSub.email,
           start_date: data.startDate,
           end_date: data.endDate,
-          temp_password: tempPassword,
+          temp_password: tempPasswordMain,
           created_by_admin_id: session.user.id,
         });
-
-      if (createError) throw createError;
+      if (insertMainErr) throw insertMainErr;
 
       // Check for active couple and grant to partner as well
       const { data: couple, error: coupleErr } = await supabase
@@ -179,10 +190,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
             .maybeSingle();
 
           if (partnerSub?.email) {
-            const partnerTempPassword = Array.from({ length: 8 }, () => 
-              'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 33)]
-            ).join('');
-
+            const tempPasswordPartner = generateTempPassword();
             const { error: insertPartnerErr } = await supabase
               .from('manual_premium_access')
               .insert({
@@ -190,7 +198,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                 email: partnerSub.email,
                 start_date: data.startDate,
                 end_date: data.endDate,
-                temp_password: partnerTempPassword,
+                temp_password: tempPasswordPartner,
                 created_by_admin_id: session.user.id,
               });
             if (insertPartnerErr) throw insertPartnerErr;
@@ -354,9 +362,18 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {grant.password_status === 'SET' ? t.generated : 'Not Set'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono">
+                          {showPassword[grant.id] ? grant.temp_password : '••••••••'}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => togglePasswordVisibility(grant.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Button

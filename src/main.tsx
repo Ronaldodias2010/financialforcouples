@@ -27,9 +27,11 @@ try {
   console.log("🔄 Renderizando aplicação completa...");
   
   reactRoot.render(
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </StrictMode>
   );
   
   console.log("✅ SUCESSO! Aplicação completa renderizada!");
@@ -53,7 +55,6 @@ try {
         
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
           <button onclick="location.reload()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🔄 Tentar Novamente</button>
-          <button onclick="(async ()=>{try{if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));} if('caches' in window){const names=await caches.keys(); await Promise.all(names.map(n=>caches.delete(n)));} location.reload();}catch(e){location.reload();}})()" style="padding: 10px 20px; background: #f59e0b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🧹 Limpar cache e reiniciar</button>
           <button onclick="window.location.href='/auth'" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🔐 Fazer Login</button>
         </div>
         

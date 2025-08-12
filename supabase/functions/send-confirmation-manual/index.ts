@@ -1,13 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from "npm:resend@2.0.0";
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import React from 'npm:react@18.3.1';
-
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
 
 // Import the Portuguese email template
 import {
@@ -177,9 +171,8 @@ const footer = {
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-// Restricted CORS headers - only allow specific origins
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://elxttabdtddlavhseipz.lovableproject.com",
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -194,58 +187,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Verify admin authentication
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Authorization required" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    // Check if user is admin
-    const { data: isAdmin, error: adminError } = await supabase
-      .rpc('is_admin_user');
-
-    if (adminError || !isAdmin) {
-      return new Response(
-        JSON.stringify({ error: "Admin access required" }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
     const { email }: ConfirmationEmailRequest = await req.json();
     
-    if (!email || !email.includes('@')) {
-      return new Response(
-        JSON.stringify({ error: "Invalid email format" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-    
-    const loginUrl = "https://elxttabdtddlavhseipz.lovableproject.com/app";
+    const loginUrl = "https://elxttabdtddlavhseipz.supabase.co/auth/v1/verify?type=signup&redirect_to=https://your-app-url.com/auth";
 
     const html = await renderAsync(
       React.createElement(EmailConfirmationPT, {
@@ -254,7 +198,7 @@ const handler = async (req: Request): Promise<Response> => {
       })
     );
     
-    console.log("Confirmation email generated for:", email);
+    console.log("Generated HTML:", html);
 
     const emailResponse = await resend.emails.send({
       from: "Couples Financials <onboarding@resend.dev>",

@@ -66,8 +66,11 @@ resource "aws_cloudfront_distribution" "app" {
     default_ttl            = 0
     max_ttl                = 0
 
-      # SPA routing handled via custom_error_response 403/404 -> /index.html (no CloudFront Function needed)
-
+    # Função para reescrever URLs da SPA
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.spa_routing[0].arn
+    }
   }
 
   # Comportamento para assets estáticos do S3
@@ -259,4 +262,16 @@ resource "aws_cloudfront_distribution" "app" {
 }
 
 # Função CloudFront para roteamento de SPA
-# CloudFront Function removed — using custom_error_response for SPA routing
+resource "aws_cloudfront_function" "spa_routing" {
+  count = var.enable_cloudfront ? 1 : 0
+  
+  name    = "${var.app_name}-spa-routing-${random_string.bucket_suffix.result}"
+  runtime = "cloudfront-js-1.0"
+  comment = "Function to handle SPA routing"
+  publish = true
+  code    = file("${path.module}/cloudfront-function.js")
+
+  lifecycle {
+    ignore_changes = [name]
+  }
+}

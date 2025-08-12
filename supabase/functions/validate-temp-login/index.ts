@@ -6,32 +6,11 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
-// Restricted CORS headers - only allow specific origins
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://elxttabdtddlavhseipz.lovableproject.com",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
-
-// Rate limiting storage (in production, use Redis or similar)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-function isRateLimited(identifier: string): boolean {
-  const now = Date.now();
-  const limit = rateLimitMap.get(identifier);
-  
-  if (!limit || now > limit.resetTime) {
-    // Reset or create new limit
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + 60000 }); // 1 minute window
-    return false;
-  }
-  
-  if (limit.count >= 5) { // Max 5 attempts per minute
-    return true;
-  }
-  
-  limit.count++;
-  return false;
-}
 
 interface TempLoginRequest {
   email: string;
@@ -45,47 +24,21 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-    
-    // Rate limiting check
-    if (isRateLimited(clientIP)) {
-      console.log(`Rate limit exceeded for IP: ${clientIP}`);
-      return new Response(
-        JSON.stringify({ error: "Too many attempts. Please try again later." }),
-        {
-          status: 429,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
     const { email, temp_password }: TempLoginRequest = await req.json();
 
-    if (!email || !temp_password) {
-      return new Response(
-        JSON.stringify({ error: "Invalid request format" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    console.log(`Validating temp login for email: ${email}`);
-
-    // Check if invite exists and is valid (using the hashed password)
+    // Check if there's a valid invite with this email and temp password
     const { data: invite, error: inviteError } = await supabase
       .from('user_invites')
       .select('*')
       .eq('invitee_email', email)
+      .eq('temp_password', temp_password)
       .eq('status', 'pending')
       .gt('expires_at', new Date().toISOString())
       .single();
 
     if (inviteError || !invite) {
-      console.log(`Invalid or expired invite for email: ${email}`);
       return new Response(
-        JSON.stringify({ error: "Invalid or expired invitation" }),
+        JSON.stringify({ error: 'Invalid or expired invitation' }),
         {
           status: 401,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -93,29 +46,11 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Verify password using the new hash verification function
-    const { data: passwordValid, error: verifyError } = await supabase
-      .rpc('verify_temp_password', {
-        password: temp_password,
-        hash: invite.temp_password_hash
-      });
-
-    if (verifyError || !passwordValid) {
-      console.log(`Invalid password for email: ${email}`);
-      return new Response(
-        JSON.stringify({ error: "Invalid credentials" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    // Generate a secure password for the permanent account
-    const permanentPassword = crypto.randomUUID();
-    const { data: userData, error: userError } = await supabase.auth.admin.createUser({
+    // Create user account with a secure password (not the temp one)
+    const securePassword = `${temp_password}${Date.now()}${Math.random()}`;
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email,
-      password: permanentPassword,
+      password: securePassword,
       email_confirm: true,
       user_metadata: {
         display_name: invite.invitee_name,
@@ -123,10 +58,10 @@ const handler = async (req: Request): Promise<Response> => {
       }
     });
 
-    if (userError || !userData.user) {
-      console.error('Error creating user:', userError);
+    if (authError) {
+      console.error('Error creating user:', authError);
       return new Response(
-        JSON.stringify({ error: "Failed to create account" }),
+        JSON.stringify({ error: 'Error creating user account' }),
         {
           status: 500,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -134,83 +69,120 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create or update profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .upsert({
-        user_id: userData.user.id,
-        display_name: invite.invitee_name,
-      });
+    // Create the couple relationship and profile
+    if (authData.user) {
+      // Get inviter's profile to update second_user_name
+      const { data: inviterProfile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', invite.inviter_user_id)
+        .single();
 
-    if (profileError) {
-      console.error('Error creating profile:', profileError);
-    }
+      // Check if profile already exists (trigger might have created it)
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', authData.user.id)
+        .single();
 
-    // Create couple relationship
-    const { error: coupleError } = await supabase
-      .from('user_couples')
-      .insert({
-        user1_id: invite.inviter_user_id,
-        user2_id: userData.user.id,
-        status: 'active'
-      });
+      // Only create profile if it doesn't exist
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: authData.user.id,
+            display_name: invite.invitee_name || email.split('@')[0]
+          });
 
-    if (coupleError) {
-      console.error('Error creating couple relationship:', coupleError);
-    }
-
-    // Mark invite as accepted and clear sensitive data
-    const { error: updateError } = await supabase
-      .from('user_invites')
-      .update({
-        status: 'accepted',
-        temp_password: null, // Clear plaintext if any
-        temp_password_hash: null, // Clear hash after use
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', invite.id);
-
-    if (updateError) {
-      console.error('Error updating invite status:', updateError);
-    }
-
-    // Sign in the user to get session tokens
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: permanentPassword,
-    });
-
-    if (signInError || !signInData.session) {
-      console.error('Error signing in user:', signInError);
-      return new Response(
-        JSON.stringify({ error: "Account created but sign-in failed" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
         }
-      );
+      } else {
+        // Update existing profile with display name
+        const { error: updateProfileError } = await supabase
+          .from('profiles')
+          .update({
+            display_name: invite.invitee_name || email.split('@')[0]
+          })
+          .eq('user_id', authData.user.id);
+
+        if (updateProfileError) {
+          console.error('Error updating profile:', updateProfileError);
+        }
+      }
+
+      // Update inviter's profile with second user name
+      const { error: updateInviterError } = await supabase
+        .from('profiles')
+        .update({
+          second_user_name: invite.invitee_name || email.split('@')[0],
+          second_user_email: invite.invitee_email
+        })
+        .eq('user_id', invite.inviter_user_id);
+
+      if (updateInviterError) {
+        console.error('Error updating inviter profile:', updateInviterError);
+      }
+
+      const { error: coupleError } = await supabase
+        .from('user_couples')
+        .insert({
+          user1_id: invite.inviter_user_id,
+          user2_id: authData.user.id,
+          status: 'active'
+        });
+
+      if (coupleError) {
+        console.error('Error creating couple relationship:', coupleError);
+      }
+
+      // Update invite status to accepted
+      const { error: updateError } = await supabase
+        .from('user_invites')
+        .update({ status: 'accepted' })
+        .eq('id', invite.id);
+
+      if (updateError) {
+        console.error('Error updating invite status:', updateError);
+      }
+
+      // Generate a session token for the user using signInWithPassword  
+      const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: securePassword
+      });
+
+      if (sessionError) {
+        console.error('Error creating session:', sessionError);
+        return new Response(
+          JSON.stringify({ error: 'Error creating session' }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        user: authData.user,
+        access_token: sessionData.session?.access_token,
+        refresh_token: sessionData.session?.refresh_token,
+        requires_password_change: true
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
     }
-
-    console.log(`Successfully created account and signed in user: ${email}`);
-
-    return new Response(JSON.stringify({
-      message: "Account created successfully",
-      user: signInData.user,
-      session: signInData.session,
-      requires_password_change: true
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
 
 
   } catch (error: any) {
     console.error("Error in validate-temp-login function:", error);
     return new Response(
-      JSON.stringify({ error: "An unexpected error occurred" }),
+      JSON.stringify({ error: error.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

@@ -13,34 +13,11 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
-// Enhanced CORS headers - restrict to specific domains
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://couplesfinancials.com",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
-
-// Rate limiting storage
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 5;
-
-function isRateLimited(identifier: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(identifier);
-  
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-  
-  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
-    return true;
-  }
-  
-  record.count++;
-  return false;
-}
 
 interface InviteEmailRequest {
   email: string;
@@ -55,23 +32,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Only allow POST requests
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
-  }
-
   try {
-    // Rate limiting
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-    if (isRateLimited(clientIP)) {
-      return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-        status: 429,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
     // Get auth header to identify the inviter
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
@@ -88,36 +49,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { email, name, inviter_name, language: bodyLang }: InviteEmailRequest = await req.json();
-
-    // Input validation
-    if (!email || !name || !inviter_name) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return new Response(JSON.stringify({ error: "Invalid email format" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    // Security logging
-    await supabase.from('security_audit_log').insert({
-      user_id: user.id,
-      action_type: 'invite_sent',
-      resource_type: 'user_invite',
-      ip_address: clientIP,
-      user_agent: req.headers.get('user-agent'),
-      details: { 
-        invitee_email: email,
-        invitee_name: name 
-      }
-    });
 
     // Generate temporary password
     const { data: tempPassword, error: passwordError } = await supabase

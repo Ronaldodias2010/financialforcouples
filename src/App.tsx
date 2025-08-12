@@ -15,7 +15,6 @@ import { PerformanceMonitor } from "./components/system/PerformanceMonitor";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { RouteSEO } from "./components/seo/RouteSEO";
 import LandingSimple from "./pages/LandingSimple";
-import LandingStable from "./pages/LandingStable";
 import Auth from "./pages/Auth";
 const Landing = lazy(() => import("./pages/Landing"));
 const AppDashboard = lazy(() => import("./pages/AppDashboard"));
@@ -37,148 +36,51 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 // PWAPrompt temporarily disabled to stabilize app
 
+const queryClient = new QueryClient();
+
 const App = () => {
-  console.log("🔧 App component renderizando...");
-  
-  // Simplified QueryClient creation
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        staleTime: 5 * 60 * 1000,
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
-
-  console.log("🔧 QueryClient criado");
-
   return (
-    <GlobalErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <LanguageProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <AuthProvider>
+          <LanguageProvider>
+            <ClientOnly>
               <SafeTooltipProvider>
                 <SubscriptionProvider>
-                  <Routes>
-                    <Route path="/" element={<LandingStable />} />
-                    <Route path="/landing-old" element={<LandingSimple />} />
-                    <Route path="/landing-new" element={
-                      <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Carregando...</div>}>
-                        <Landing />
-                      </Suspense>
-                    } />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/login" element={<Auth />} />
-                    <Route path="/forgot-password" element={
-                      <Suspense fallback={<div>Carregando...</div>}>
-                        <ForgotPassword />
-                      </Suspense>
-                    } />
-                    <Route path="/reset-password" element={
-                      <Suspense fallback={<div>Carregando...</div>}>
-                        <ResetPassword />
-                      </Suspense>
-                    } />
-                    <Route path="/email-confirmation" element={
-                      <Suspense fallback={<div>Carregando...</div>}>
-                        <EmailConfirmation />
-                      </Suspense>
-                    } />
-                    <Route path="/send-confirmation" element={
-                      <Suspense fallback={<div>Carregando...</div>}>
-                        <SendConfirmationEmail />
-                      </Suspense>
-                    } />
-                    <Route path="/email-test" element={
-                      <Suspense fallback={<div>Carregando...</div>}>
-                        <EmailTest />
-                      </Suspense>
-                    } />
-                    <Route path="/privacy" element={
-                      <Suspense fallback={<div>Carregando...</div>}>
-                        <Privacy />
-                      </Suspense>
-                    } />
-                    
-                    {/* Protected Routes */}
-                    <Route path="/app" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <AppDashboard />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/accounts" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <AccountsPage onBack={() => window.history.back()} />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/cards" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <CardsPage onBack={() => window.history.back()} />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/mileage" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <MileagePage onBack={() => window.history.back()} />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <UserProfilePage onBack={() => window.history.back()} />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/subscription" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <SubscriptionPage onBack={() => window.history.back()} />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/subscription-success" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <SubscriptionSuccess />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/admin" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <AdminDashboard />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/change-password" element={
-                      <ProtectedRoute>
-                        <Suspense fallback={<div>Carregando...</div>}>
-                          <ChangePassword />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    
-                    <Route path="*" element={
-                      <Suspense fallback={<div>Carregando...</div>}>
-                        <NotFound />
-                      </Suspense>
-                    } />
-                  </Routes>
-                  
+                  <GlobalErrorBoundary>
+                    <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
+                      <Routes>
+                        <Route path="/" element={<Landing />} />
+                        <Route path="/landing-new" element={<Landing />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/login" element={<Auth />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/email-confirmation" element={<EmailConfirmation />} />
+                        <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
+                        <Route path="/email-test" element={<EmailTest />} />
+                        <Route path="/privacy" element={<Privacy />} />
+                        
+                        {/* Protected Routes */}
+                        <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
+                        <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                        <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                        <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                        <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                        <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                        <Route path="/subscription-success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
+                        <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+                        
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </GlobalErrorBoundary>
                   <Toaster />
                   <Sonner />
                   <GlobalErrorLogger />
@@ -186,11 +88,11 @@ const App = () => {
                   <RouteSEO />
                 </SubscriptionProvider>
               </SafeTooltipProvider>
-            </LanguageProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </GlobalErrorBoundary>
+            </ClientOnly>
+          </LanguageProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 
