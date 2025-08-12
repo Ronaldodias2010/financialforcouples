@@ -122,12 +122,18 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
       
       let filteredData = data || [];
       
+      console.log('InvestmentDashboard: Raw investments data:', filteredData.length, 'investments');
+      console.log('InvestmentDashboard: Current viewMode:', viewMode);
+      console.log('InvestmentDashboard: Is part of couple:', !!coupleData);
+      
       // Apply user filter based on viewMode
       if (viewMode !== "both" && coupleData) {
+        const originalCount = filteredData.length;
         filteredData = filteredData.filter(investment => {
           const ownerUser = investment.owner_user || 'user1';
           return ownerUser === viewMode;
         });
+        console.log('InvestmentDashboard: Filtered investments:', originalCount, '->', filteredData.length, 'for viewMode:', viewMode);
       }
       
       setInvestments(filteredData);
@@ -169,12 +175,16 @@ export const InvestmentDashboard = ({ onBack, viewMode }: InvestmentDashboardPro
       
       let filteredData = data || [];
       
+      console.log('InvestmentDashboard: Raw goals data:', filteredData.length, 'goals');
+      
       // Apply user filter based on viewMode
       if (viewMode !== "both" && coupleData) {
+        const originalCount = filteredData.length;
         filteredData = filteredData.filter(goal => {
           const ownerUser = goal.owner_user || 'user1';
           return ownerUser === viewMode;
         });
+        console.log('InvestmentDashboard: Filtered goals:', originalCount, '->', filteredData.length, 'for viewMode:', viewMode);
       }
       
       setGoals(filteredData);
