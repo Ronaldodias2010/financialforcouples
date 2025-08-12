@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
   const privacyContent = {
     pt: {
       title: "Política de Privacidade – Couples Financials",
-      lastUpdated: "Última atualização: 10 de agosto de 2025",
+      lastUpdated: "Última atualização: 04 de agosto de 2025",
       intro: "A plataforma Couples Financials valoriza a privacidade e a segurança dos dados dos seus usuários. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações, em conformidade com a LGPD (Lei nº 13.709/2018) e o GDPR (Regulamento UE 2016/679).",
       sections: [
         {
@@ -141,8 +141,7 @@ To exercise your rights, contact us at: privacy@couplesfinancials.com`
     }
   };
 
-  const normalizedLang = language === 'es' ? 'en' : (language as keyof typeof privacyContent);
-  const content = privacyContent[normalizedLang as keyof typeof privacyContent] || privacyContent.pt;
+  const content = privacyContent[language as keyof typeof privacyContent] || privacyContent.pt;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10">
@@ -229,7 +228,7 @@ To exercise your rights, contact us at: privacy@couplesfinancials.com`
                 }
               </p>
               <Button asChild>
-                <a href={language === 'pt' ? "mailto:privacidade@couplesfinancials.com" : "mailto:privacy@couplesfinancials.com"}>
+                <a href="mailto:privacidade@couplesfinancials.com">
                   {language === 'pt' ? 'Contatar Suporte' : 'Contact Support'}
                 </a>
               </Button>

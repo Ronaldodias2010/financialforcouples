@@ -32,7 +32,6 @@ const SendConfirmationEmail = lazy(() => import("./pages/SendConfirmationEmail")
 const NotFound = lazy(() => import("./pages/NotFound"));
 const EmailTest = lazy(() => import("./pages/EmailTest"));
 const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
-const Privacy = lazy(() => import("./pages/Privacy"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 // PWAPrompt temporarily disabled to stabilize app
 
@@ -64,7 +63,6 @@ const App = () => {
                         <Route path="/email-confirmation" element={<EmailConfirmation />} />
                         <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
                         <Route path="/email-test" element={<EmailTest />} />
-                        <Route path="/privacy" element={<Privacy />} />
                         
                         {/* Protected Routes */}
                         <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
