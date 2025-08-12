@@ -162,7 +162,7 @@ const FAQSection = () => {
   const currentFAQ = faqData[language] || faqData['en'];
 
   return (
-    <section className="py-24 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <section id="faq" className="py-24 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
