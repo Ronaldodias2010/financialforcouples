@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface LanguageContextType {
   language: 'pt' | 'en';
@@ -1140,20 +1140,22 @@ const translations = {
   },
 };
 
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<'pt' | 'en'>('pt');
   const [inBrazil, setInBrazil] = useState<boolean>(true);
 
   // Load language preference from localStorage after component mounts
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('language');
-      if (saved === 'pt' || saved === 'en') {
-        setLanguage(saved);
-        return;
-      }
-
+    let mounted = true;
+    
+    if (typeof window !== 'undefined' && mounted) {
       try {
+        const saved = localStorage.getItem('language');
+        if (saved === 'pt' || saved === 'en') {
+          setLanguage(saved);
+          return;
+        }
+
         const navLang = navigator.language?.toLowerCase();
         const navLangs: string[] = Array.isArray((navigator as any).languages)
           ? (navigator as any).languages
@@ -1180,29 +1182,42 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
         }
 
         // Set default language based on detection (do not persist; user choice will persist)
-        setLanguage(detectedInBrazil ? 'pt' : 'en');
-        setInBrazil(detectedInBrazil);
+        if (mounted) {
+          setLanguage(detectedInBrazil ? 'pt' : 'en');
+          setInBrazil(detectedInBrazil);
+        }
       } catch (e) {
         // On any detection error, fallback by region or default to 'en'
-        const navLang = navigator.language?.toLowerCase();
-        const region = navLang?.split('-')[1]?.toUpperCase();
-        const fallbackInBrazil = region === 'BR';
-        setLanguage(fallbackInBrazil ? 'pt' : 'en');
-        setInBrazil(fallbackInBrazil);
+        if (mounted) {
+          const navLang = navigator.language?.toLowerCase();
+          const region = navLang?.split('-')[1]?.toUpperCase();
+          const fallbackInBrazil = region === 'BR';
+          setLanguage(fallbackInBrazil ? 'pt' : 'en');
+          setInBrazil(fallbackInBrazil);
+        }
       }
     }
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleSetLanguage = (lang: 'pt' | 'en') => {
     setLanguage(lang);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('language', lang);
+      try {
+        localStorage.setItem('language', lang);
+      } catch (error) {
+        console.error('Error saving language preference:', error);
+      }
     }
   };
 
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations['pt']] || key;
   };
+  
   const tFor = (lang: 'pt' | 'en', key: string): string => {
     return translations[lang][key as keyof typeof translations['pt']] || key;
   };
