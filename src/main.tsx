@@ -27,11 +27,9 @@ try {
   console.log("🔄 Renderizando aplicação completa...");
   
   reactRoot.render(
-    <StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   );
   
   console.log("✅ SUCESSO! Aplicação completa renderizada!");
