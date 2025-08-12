@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
+import { useOptimizedRealtime } from './useOptimizedRealtime';
 
 interface Transaction {
   id: string;
@@ -106,104 +107,30 @@ export const useFinancialData = () => {
     }
   }, [userPreferredCurrency, coupleData]);
 
-  // Listen for profile changes and real-time transaction updates
-  useEffect(() => {
-    if (!user) return;
-
-    const profileChannel = supabase
-      .channel('profile_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('Profile updated:', payload);
-          if (payload.new && payload.new.preferred_currency) {
-            console.log('New currency:', payload.new.preferred_currency);
-            setUserPreferredCurrency(payload.new.preferred_currency as CurrencyCode);
-          }
-        }
-      )
-      .subscribe();
-
-  // Listen for real-time transaction changes for unified dashboard
-  const transactionChannel = supabase
-    .channel('transaction_changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'transactions'
-      },
-        (payload) => {
-          console.log('Real-time transaction change detected:', payload);
-          // Limpar cache e refetch
-          cacheRef.current.transactions = null;
-          setTimeout(() => fetchTransactions(coupleData), 100);
-        }
-    )
-    .subscribe();
-
-  // Listen for real-time account changes to reflect balances immediately
-  const accountChannel = supabase
-    .channel('account_changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'accounts'
-      },
-        (payload) => {
-          console.log('Real-time account change detected:', payload);
-          cacheRef.current.accounts = null;
-          setTimeout(() => fetchAccounts(coupleData), 100);
-        }
-    )
-    .subscribe();
-
-  // Also listen for couple relationship changes
-  const coupleChannel = supabase
-    .channel('couple_changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'user_couples'
-      },
-      (payload) => {
-        console.log('Couple relationship changed:', payload);
-        const data = payload.new || payload.old;
-        if (data && typeof data === 'object' && 'user1_id' in data && 'user2_id' in data) {
-          if (data.user1_id === user.id || data.user2_id === user.id) {
-            // Limpar cache do casal e refetch
-            cacheRef.current.couple = null;
-            setTimeout(async () => {
-              const newCouple = await fetchCoupleData();
-              await Promise.all([
-                fetchTransactions(newCouple),
-                fetchAccounts(newCouple)
-              ]);
-            }, 100);
-          }
-        }
-      }
-    )
-    .subscribe();
-
-    return () => {
-      supabase.removeChannel(profileChannel);
-      supabase.removeChannel(transactionChannel);
-      supabase.removeChannel(accountChannel);
-      supabase.removeChannel(coupleChannel);
-    };
-  }, [user]);
+  // Real-time otimizado - substitui os 4 canais por 1 otimizado
+  useOptimizedRealtime({
+    userId: user?.id || '',
+    onTransactionChange: () => {
+      cacheRef.current.transactions = null;
+      fetchTransactions(coupleData);
+    },
+    onAccountChange: () => {
+      cacheRef.current.accounts = null;
+      fetchAccounts(coupleData);
+    },
+    onCoupleChange: async () => {
+      cacheRef.current.couple = null;
+      const newCouple = await fetchCoupleData();
+      await Promise.all([
+        fetchTransactions(newCouple),
+        fetchAccounts(newCouple)
+      ]);
+    },
+    onProfileChange: (currency) => {
+      setUserPreferredCurrency(currency as CurrencyCode);
+    },
+    debounceMs: 2000 // Debounce agressivo
+  });
 
   const fetchUserPreferredCurrency = async () => {
     try {
