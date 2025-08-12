@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 // Removed global TooltipProvider to prevent crashes; using SafeTooltipProvider instead
-import { LanguageProvider } from "@/hooks/useLanguage";
+
 import { AuthProvider } from "@/hooks/useAuth";
 import { SafeTooltipProvider } from "./components/system/SafeTooltipProvider";
 import { GlobalErrorBoundary } from "./components/system/GlobalErrorBoundary";
@@ -47,15 +47,14 @@ const App = () => {
         disableTransitionOnChange
       >
         <AuthProvider>
-          <LanguageProvider>
             <ClientOnly>
               <SafeTooltipProvider>
                 <SubscriptionProvider>
                   <GlobalErrorBoundary>
                     <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
                       <Routes>
-                        <Route path="/" element={<Landing />} />
-                        <Route path="/landing-new" element={<Landing />} />
+                        <Route path="/" element={<LandingSimple />} />
+                        <Route path="/landing-original" element={<Landing />} />
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/login" element={<Auth />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -87,7 +86,6 @@ const App = () => {
                 </SubscriptionProvider>
               </SafeTooltipProvider>
             </ClientOnly>
-          </LanguageProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

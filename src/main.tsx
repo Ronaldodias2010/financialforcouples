@@ -1,7 +1,7 @@
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import SimpleRouter from "./SimpleRouter.tsx";
+import AppWithProvider from "./AppWithProvider.tsx";
 import "./index.css";
 
 console.log("🚀 APLICAÇÃO RESTAURADA E FUNCIONANDO");
@@ -29,7 +29,7 @@ try {
   reactRoot.render(
     <StrictMode>
       <BrowserRouter>
-        <SimpleRouter />
+        <AppWithProvider />
       </BrowserRouter>
     </StrictMode>
   );
