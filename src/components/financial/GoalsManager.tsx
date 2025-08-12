@@ -239,18 +239,18 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descrição</Label>
+                  <Label htmlFor="description">{t('goals.description')}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    placeholder="Descrição do objetivo..."
+                    placeholder={t('goals.descriptionPlaceholder')}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="target_amount">Valor Alvo *</Label>
+                    <Label htmlFor="target_amount">{t('goals.targetAmount')} *</Label>
                     <Input
                       id="target_amount"
                       type="number"
@@ -262,7 +262,7 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="currency">Moeda</Label>
+                    <Label htmlFor="currency">{t('goals.currency')}</Label>
                     <Select
                       value={formData.currency}
                       onValueChange={(value) => setFormData({...formData, currency: value})}
@@ -282,7 +282,7 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="target_date">Data Alvo</Label>
+                  <Label htmlFor="target_date">{t('goals.targetDate')}</Label>
                   <Input
                     id="target_date"
                     type="date"
@@ -293,10 +293,10 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
+                  {t('goals.cancel')}
                 </Button>
                 <Button type="submit" disabled={loading}>
-                  {loading ? "Salvando..." : (editingGoal ? "Atualizar" : "Criar")}
+                  {loading ? t('goals.saving') : (editingGoal ? t('goals.update') : t('goals.create'))}
                 </Button>
               </DialogFooter>
             </form>
