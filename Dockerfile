@@ -22,6 +22,9 @@ FROM nginx:alpine AS production
 # Copiar configuração customizada do nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Copiar página de erro customizada
+COPY public/503.html /usr/share/nginx/html/503.html
+
 # Copiar arquivos buildados do estágio anterior
 COPY --from=builder /app/dist /usr/share/nginx/html
 
