@@ -17,9 +17,20 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-hero-gradient rounded-full flex items-center justify-center mb-4">
+      <DialogContent className="sm:max-w-lg border-0 bg-gradient-to-br from-background via-background to-primary/5">
+        <DialogHeader className="text-center space-y-6">
+          {/* Logo */}
+          <div className="mx-auto w-20 h-20 relative">
+            <img
+              src="/lovable-uploads/2f7e7907-5cf5-4262-adbd-04f4dbd3151b.png"
+              alt="Couples Financials Logo"
+              className="w-full h-full object-contain relative z-10"
+            />
+            <div className="absolute inset-0 bg-hero-gradient rounded-full opacity-20 blur-md animate-pulse"></div>
+          </div>
+          
+          {/* AI Icon with gradient background */}
+          <div className="mx-auto w-16 h-16 bg-hero-gradient rounded-full flex items-center justify-center shadow-glow-green">
             <Brain className="w-8 h-8 text-white" />
           </div>
           
@@ -28,45 +39,49 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
           </DialogTitle>
           
           <DialogDescription className="text-base text-muted-foreground space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
-              <Clock className="w-5 h-5 text-primary" />
-              <span>{t('aiBeta.status')}</span>
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl border border-primary/20">
+              <div className="w-8 h-8 bg-hero-gradient rounded-full flex items-center justify-center">
+                <Clock className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-medium text-foreground">{t('aiBeta.status')}</span>
             </div>
             
-            <p className="leading-relaxed">
+            <p className="leading-relaxed text-foreground">
               {t('aiBeta.description')}
             </p>
             
-            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-4 rounded-lg border border-primary/10">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-foreground">{t('aiBeta.betatester')}</span>
+            <div className="bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 p-5 rounded-xl border border-primary/20 shadow-inner">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-6 h-6 bg-hero-gradient rounded-full flex items-center justify-center">
+                  <Sparkles className="w-3 h-3 text-white" />
+                </div>
+                <span className="font-semibold text-foreground text-lg">{t('aiBeta.betatester')}</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {t('aiBeta.betatesterDescription')}
               </p>
             </div>
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex flex-col gap-3 mt-6">
-          <Button onClick={handleEmailContact} className="w-full" size="lg">
+        <div className="flex flex-col gap-3 mt-8">
+          <Button onClick={handleEmailContact} className="w-full bg-hero-gradient hover:opacity-90 text-white shadow-glow-green" size="lg">
             <Mail className="w-4 h-4 mr-2" />
             {t('aiBeta.contactButton')}
           </Button>
           
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full border-primary/30 hover:bg-primary/5">
             {t('aiBeta.waitButton')}
           </Button>
         </div>
         
-        <div className="text-center mt-4 space-y-1">
-          <p className="text-sm text-muted-foreground">
+        <div className="text-center mt-6 p-4 bg-gradient-to-r from-secondary/10 to-primary/10 rounded-xl border border-secondary/20">
+          <p className="text-sm font-medium text-foreground mb-2">
             {t('aiBeta.emails')}
           </p>
-          <div className="flex flex-col text-xs text-primary">
-            <span>contato@couplesfinancials.com</span>
-            <span>contact@couplesfinancials.com</span>
+          <div className="flex flex-col text-sm space-y-1">
+            <span className="text-primary font-medium">contato@couplesfinancials.com</span>
+            <span className="text-primary font-medium">contact@couplesfinancials.com</span>
           </div>
         </div>
       </DialogContent>
