@@ -193,6 +193,8 @@ const translations = {
     'transactionForm.selectSourceAccount': 'Conta de Origem',
     'transactionForm.selectDestinationAccount': 'Conta de Destino',
     'transactionForm.selectInvestment': 'Selecionar Investimento',
+    'transactionForm.selectCard': 'Selecionar Cartão',
+    'transactionForm.selectCardPlaceholder': 'Escolha um cartão',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -987,6 +989,8 @@ const translations = {
     'transactionForm.selectSourceAccount': 'Source Account',
     'transactionForm.selectDestinationAccount': 'Destination Account',
     'transactionForm.selectInvestment': 'Select Investment',
+    'transactionForm.selectCard': 'Select Card',
+    'transactionForm.selectCardPlaceholder': 'Choose a card',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -1781,6 +1785,8 @@ const translations = {
     'transactionForm.selectSourceAccount': 'Cuenta de Origen',
     'transactionForm.selectDestinationAccount': 'Cuenta de Destino',
     'transactionForm.selectInvestment': 'Seleccionar Inversión',
+    'transactionForm.selectCard': 'Seleccionar Tarjeta',
+    'transactionForm.selectCardPlaceholder': 'Elegir una tarjeta',
     
     // Auth
     'auth.appName': 'Couples Financials',
