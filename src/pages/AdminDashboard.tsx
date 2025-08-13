@@ -164,7 +164,7 @@ const AdminDashboardContent = () => {
             const canceledSubscriptions = subscribers.filter(s => !s.subscribed).length || 0;
             
             // Calculate monthly revenue in BRL
-            const monthlyRevenueBRL = activeUsers * 29.90;
+            const monthlyRevenueBRL = activeUsers * 19.90;
             
             // Convert to USD if language is English or Spanish
             const monthlyRevenue = (language === 'en' || language === 'es')
