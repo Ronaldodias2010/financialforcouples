@@ -740,6 +740,19 @@ const translations = {
     'aiBeta.contactButton': 'Quero ser testador beta',
     'aiBeta.waitButton': 'Vou aguardar',
     'aiBeta.emails': 'Nossos contatos:',
+    
+    // Monthly Income translations
+    'monthlyIncome.monthLabel': 'Mês',
+    'monthlyIncome.selectMonth': 'Selecionar mês',
+    'monthlyIncome.categoryLabel': 'Categoria',
+    'monthlyIncome.allCategories': 'Todas as categorias',
+    'monthlyIncome.totalIncome': 'Receita Total do Período',
+    'monthlyIncome.periodIncome': 'Receitas do Período',
+    'monthlyIncome.noneFound': 'Nenhuma receita encontrada para este período',
+    'monthlyIncome.receivedBy': 'Recebido por',
+    'monthlyIncome.subcategoryLabel': 'Subcategoria',
+    'monthlyIncome.receiptMethod': 'Método de recebimento',
+    'monthlyIncome.date': 'Data',
   },
   
   en: {
@@ -1469,6 +1482,19 @@ const translations = {
     'aiBeta.contactButton': 'I want to be a beta tester',
     'aiBeta.waitButton': 'I\'ll wait',
     'aiBeta.emails': 'Our contacts:',
+    
+    // Monthly Income translations
+    'monthlyIncome.monthLabel': 'Month',
+    'monthlyIncome.selectMonth': 'Select month',
+    'monthlyIncome.categoryLabel': 'Category',
+    'monthlyIncome.allCategories': 'All categories',
+    'monthlyIncome.totalIncome': 'Total Period Income',
+    'monthlyIncome.periodIncome': 'Period Income',
+    'monthlyIncome.noneFound': 'No income found for this period',
+    'monthlyIncome.receivedBy': 'Received by',
+    'monthlyIncome.subcategoryLabel': 'Subcategory',
+    'monthlyIncome.receiptMethod': 'Receipt method',
+    'monthlyIncome.date': 'Date',
   },
   
   es: {
@@ -2198,6 +2224,19 @@ const translations = {
     'aiBeta.contactButton': 'Quiero ser probador beta',
     'aiBeta.waitButton': 'Voy a esperar',
     'aiBeta.emails': 'Nuestros contactos:',
+    
+    // Monthly Income translations
+    'monthlyIncome.monthLabel': 'Mes',
+    'monthlyIncome.selectMonth': 'Seleccionar mes',
+    'monthlyIncome.categoryLabel': 'Categoría',
+    'monthlyIncome.allCategories': 'Todas las categorías',
+    'monthlyIncome.totalIncome': 'Ingresos Totales del Período',
+    'monthlyIncome.periodIncome': 'Ingresos del Período',
+    'monthlyIncome.noneFound': 'No se encontraron ingresos para este período',
+    'monthlyIncome.receivedBy': 'Recibido por',
+    'monthlyIncome.subcategoryLabel': 'Subcategoría',
+    'monthlyIncome.receiptMethod': 'Método de recepción',
+    'monthlyIncome.date': 'Fecha',
   },
 };
 
