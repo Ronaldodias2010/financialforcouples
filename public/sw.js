@@ -77,11 +77,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For navigations and HTML, use network-first to prevent serving stale index.html
+// For navigations and HTML, use network-first to prevent serving stale index.html
   if (event.request.mode === 'navigate' || acceptHeader.includes('text/html')) {
     event.respondWith(
       fetch(event.request)
-        .then((response) => response)
+        .then((response) => {
+          // Never cache 503 responses
+          if (response.status === 503) {
+            return response;
+          }
+          return response;
+        })
         .catch(async () => {
           const cached = await caches.match(event.request);
           if (cached) return cached;

@@ -112,6 +112,12 @@ export const usePWA = () => {
 
   const forceRefresh = async () => {
     try {
+      // Unregister service worker first
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(registration => registration.unregister()));
+      }
+      
       // Clear cache and reload
       if ('caches' in window) {
         const names = await caches.keys();
@@ -119,10 +125,12 @@ export const usePWA = () => {
           names.map(name => caches.delete(name))
         );
       }
-      window.location.reload();
+      
+      // Force hard reload without cache
+      window.location.replace(window.location.href);
     } catch (error) {
       console.error('Error clearing cache:', error);
-      window.location.reload();
+      window.location.replace(window.location.href);
     }
   };
 
