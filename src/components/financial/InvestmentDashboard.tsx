@@ -32,6 +32,9 @@ interface Investment {
   broker?: string;
   notes?: string;
   goal_id?: string;
+  yield_type?: string;
+  yield_value?: number;
+  auto_calculate_yield?: boolean;
 }
 
 interface InvestmentGoal {
