@@ -47,7 +47,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
     notes: "",
     goal_id: "",
     crypto_name: "",
-    yield_type: "",
+    yield_type: "none",
     yield_value: "",
     auto_calculate_yield: false
   });
@@ -107,7 +107,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             `${formData.crypto_name}${formData.notes ? ` - ${formData.notes}` : ''}` : 
             formData.notes || null,
           goal_id: formData.goal_id === "no_goal" ? null : formData.goal_id || null,
-          yield_type: formData.yield_type || null,
+          yield_type: formData.yield_type === "none" ? null : formData.yield_type,
           yield_value: formData.yield_value ? parseFloat(formData.yield_value) : 0,
           auto_calculate_yield: formData.auto_calculate_yield,
           last_yield_date: formData.auto_calculate_yield ? formData.purchase_date : null
@@ -272,7 +272,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
               </Select>
             </div>
 
-            {formData.yield_type && (
+            {formData.yield_type && formData.yield_type !== "none" && (
               <div className="space-y-2">
                 <Label htmlFor="yield_value">
                   {formData.yield_type === 'percentage' ? 'Percentual Mensal (%)' : 'Valor Mensal'}
@@ -319,7 +319,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
               <Label htmlFor="is_shared">{t('investments.sharedInvestment')}</Label>
             </div>
 
-            {formData.yield_type && (
+            {formData.yield_type && formData.yield_type !== "none" && (
               <div className="flex items-center space-x-2">
                 <Switch
                   id="auto_calculate_yield"

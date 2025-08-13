@@ -65,7 +65,7 @@ export const InvestmentEditForm = ({ investment, goals, onSuccess, onCancel }: I
     broker: investment.broker || "",
     notes: investment.notes || "",
     goal_id: investment.goal_id || "",
-    yield_type: investment.yield_type || "",
+    yield_type: investment.yield_type || "none",
     yield_value: investment.yield_value?.toString() || "",
     auto_calculate_yield: investment.auto_calculate_yield || false
   });
@@ -113,7 +113,7 @@ export const InvestmentEditForm = ({ investment, goals, onSuccess, onCancel }: I
           broker: formData.broker || null,
           notes: formData.notes || null,
           goal_id: formData.goal_id === "no_goal" ? null : formData.goal_id || null,
-          yield_type: formData.yield_type || null,
+          yield_type: formData.yield_type === "none" ? null : formData.yield_type,
           yield_value: formData.yield_value ? parseFloat(formData.yield_value) : 0,
           auto_calculate_yield: formData.auto_calculate_yield
         })
@@ -249,14 +249,14 @@ export const InvestmentEditForm = ({ investment, goals, onSuccess, onCancel }: I
                   <SelectValue placeholder="Selecione o tipo de rentabilidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   <SelectItem value="percentage">Percentual (%)</SelectItem>
                   <SelectItem value="fixed_amount">Valor Fixo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {formData.yield_type && (
+            {formData.yield_type && formData.yield_type !== "none" && (
               <div className="space-y-2">
                 <Label htmlFor="yield_value">
                   {formData.yield_type === 'percentage' ? 'Percentual Mensal (%)' : 'Valor Mensal'}
