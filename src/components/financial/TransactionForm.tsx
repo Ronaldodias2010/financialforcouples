@@ -673,8 +673,8 @@ const invTxn: TablesInsert<'transactions'> = {
       }
 
       toast({
-        title: "Sucesso",
-        description: "Transação adicionada com sucesso!",
+        title: t('transactionForm.success'),
+        description: t('transactionForm.successMessage'),
       });
 
       // Reset form
@@ -689,8 +689,8 @@ const invTxn: TablesInsert<'transactions'> = {
       setCurrency(userPreferredCurrency);
     } catch (error: any) {
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao adicionar transação",
+        title: t('transactionForm.error'),
+        description: error.message || t('transactionForm.errorMessage'),
         variant: "destructive",
       });
     }

@@ -195,6 +195,10 @@ const translations = {
     'transactionForm.selectInvestment': 'Selecionar Investimento',
     'transactionForm.selectCard': 'Selecionar Cartão',
     'transactionForm.selectCardPlaceholder': 'Escolha um cartão',
+    'transactionForm.error': 'Erro',
+    'transactionForm.errorMessage': 'Erro ao adicionar transação',
+    'transactionForm.success': 'Sucesso',
+    'transactionForm.successMessage': 'Transação adicionada com sucesso!',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -991,6 +995,10 @@ const translations = {
     'transactionForm.selectInvestment': 'Select Investment',
     'transactionForm.selectCard': 'Select Card',
     'transactionForm.selectCardPlaceholder': 'Choose a card',
+    'transactionForm.error': 'Error',
+    'transactionForm.errorMessage': 'Error adding transaction',
+    'transactionForm.success': 'Success',
+    'transactionForm.successMessage': 'Transaction added successfully!',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -1787,6 +1795,10 @@ const translations = {
     'transactionForm.selectInvestment': 'Seleccionar Inversión',
     'transactionForm.selectCard': 'Seleccionar Tarjeta',
     'transactionForm.selectCardPlaceholder': 'Elegir una tarjeta',
+    'transactionForm.error': 'Error',
+    'transactionForm.errorMessage': 'Error al agregar transacción',
+    'transactionForm.success': 'Éxito',
+    'transactionForm.successMessage': '¡Transacción agregada exitosamente!',
     
     // Auth
     'auth.appName': 'Couples Financials',
