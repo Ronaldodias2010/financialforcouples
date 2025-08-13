@@ -1,8 +1,25 @@
-# Welcome to your Lovable project
+# Couples Financials - Aplicação de Gestão Financeira para Casais
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/7150d9bc-0276-4ec3-9617-5a690eb3a444
+**Production**: https://www.couplesfinancials.com
+
+## 🚨 Problema Página 503 - Solução Rápida
+
+Se a página 503 customizada não estiver aparecendo em produção, execute:
+
+```bash
+# Corrigir página 503
+chmod +x scripts/fix-503-page.sh
+./scripts/fix-503-page.sh
+
+# Testar se está funcionando
+chmod +x scripts/test-503-production.sh
+./scripts/test-503-production.sh
+```
+
+A página 503 customizada deve aparecer durante manutenções ou falhas do serviço.
 
 ## How can I edit this code?
 
