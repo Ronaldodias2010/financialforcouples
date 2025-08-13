@@ -25,6 +25,7 @@ interface RecurringExpense {
   next_due_date: Date;
   is_active: boolean;
   owner_user?: string;
+  contract_duration_months?: number;
 }
 
 interface Category {
@@ -53,6 +54,7 @@ export const RecurringExpensesManager = () => {
   const [cardId, setCardId] = useState("");
   const [frequencyDays, setFrequencyDays] = useState("30");
   const [nextDueDate, setNextDueDate] = useState<Date>(new Date());
+  const [contractDuration, setContractDuration] = useState("");
   
 const { toast } = useToast();
 const { userNames } = useUserNames();
@@ -159,6 +161,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
             next_due_date: nextDueDate.toISOString().split('T')[0],
+            contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
           })
           .eq('id', editingExpense.id);
 
@@ -180,6 +183,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
             next_due_date: nextDueDate.toISOString().split('T')[0],
             owner_user: "user1",
             user_id: user.id,
+            contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
           });
 
         if (error) throw error;
@@ -210,6 +214,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
     setCardId(expense.card_id || "");
     setFrequencyDays(expense.frequency_days.toString());
     setNextDueDate(new Date(expense.next_due_date));
+    setContractDuration(expense.contract_duration_months?.toString() || "");
     setIsDialogOpen(true);
   };
 
@@ -268,6 +273,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
     setCardId("");
     setFrequencyDays("30");
     setNextDueDate(new Date());
+    setContractDuration("");
     setEditingExpense(null);
   };
 
@@ -369,6 +375,18 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
                     <SelectItem value="365">{t('recurring.yearly')}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="contractDuration">{t('recurring.contractDuration')}</Label>
+                <Input
+                  id="contractDuration"
+                  type="number"
+                  min="1"
+                  value={contractDuration}
+                  onChange={(e) => setContractDuration(e.target.value)}
+                  placeholder={t('recurring.contractDurationPlaceholder')}
+                />
               </div>
 
               <div>
