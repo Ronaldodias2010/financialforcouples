@@ -6,6 +6,7 @@ import { MonthlyExpensesView } from "./MonthlyExpensesView";
 import { MonthlyIncomeView } from "./MonthlyIncomeView";
 import { CategoryManager } from "./CategoryManager";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
+import { ExpensesPieChart } from "./ExpensesPieChart";
 import { InvestmentDashboard } from "./InvestmentDashboard";
 import { MileageSystem } from "./MileageSystem";
 import { CardsPage } from "@/pages/CardsPage";
@@ -241,6 +242,11 @@ export const FinancialDashboard = () => {
               <div>
                 <UserExpenseChart />
               </div>
+            </div>
+
+            {/* Expenses by Category Chart */}
+            <div className="w-full">
+              <ExpensesPieChart viewMode={viewMode} />
             </div>
 
             {/* Quick Actions */}
