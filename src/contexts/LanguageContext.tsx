@@ -259,6 +259,8 @@ const translations = {
     'categories.create': 'Criar',
     'categories.update': 'Atualizar',
     'categories.none': 'Nenhuma categoria cadastrada. Crie sua primeira categoria!',
+    'attention': 'Atenção',
+    'categoryExists': 'Já existe uma categoria com este nome.',
     
     // Charts
     'charts.userAnalysisTitle': 'Análise Financeira por Usuário',
@@ -1067,6 +1069,8 @@ const translations = {
     'categories.create': 'Create',
     'categories.update': 'Update',
     'categories.none': 'No categories registered. Create your first category!',
+    'attention': 'Attention',
+    'categoryExists': 'A category with this name already exists.',
     
     // Charts
     'charts.userAnalysisTitle': 'Financial Analysis by User',
@@ -1875,6 +1879,8 @@ const translations = {
     'categories.create': 'Crear',
     'categories.update': 'Actualizar',
     'categories.none': 'No hay categorías registradas. ¡Crea tu primera categoría!',
+    'attention': 'Atención',
+    'categoryExists': 'Ya existe una categoría con este nombre.',
     
     // Charts
     'charts.userAnalysisTitle': 'Análisis Financiero por Usuario',

@@ -201,41 +201,31 @@ export const CategoryManager = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Load existing categories for duplicate check (same user and type)
-      const { data: existingList } = await supabase
-        .from('categories')
-        .select('id, name, category_type')
-        .eq('user_id', user.id)
-        .eq('category_type', newCategoryType);
+      // Se estamos editando e apenas mudando cor/tipo (nome igual), pular validação de duplicata
+      const isOnlyColorOrTypeChange = editingCategory && 
+        normalize(trimmedName) === normalize(editingCategory.name);
 
-      console.log('DEBUG CategoryManager - Validating duplicate:', {
-        trimmedName,
-        normalizedName: normalize(trimmedName),
-        existingList,
-        editingCategory,
-        editingCategoryId: editingCategory?.id
-      });
+      if (!isOnlyColorOrTypeChange) {
+        // Load existing categories for duplicate check (same user and type)
+        const { data: existingList } = await supabase
+          .from('categories')
+          .select('id, name, category_type')
+          .eq('user_id', user.id)
+          .eq('category_type', newCategoryType);
 
-      const exists = (existingList || []).some((c) => {
-        const isDuplicate = normalize(c.name) === normalize(trimmedName);
-        const isNotSameCategory = !editingCategory || c.id !== editingCategory.id;
-        console.log('DEBUG CategoryManager - Checking category:', {
-          categoryName: c.name,
-          normalizedCategoryName: normalize(c.name),
-          categoryId: c.id,
-          isDuplicate,
-          isNotSameCategory,
-          willFlagAsDuplicate: isDuplicate && isNotSameCategory
-        });
-        return isDuplicate && isNotSameCategory;
-      });
-      if (exists) {
-        toast({
-          title: "Atenção",
-          description: "Já existe uma categoria com este nome.",
-          variant: "default",
-        });
-        return;
+        const exists = (existingList || []).some((c) => 
+          normalize(c.name) === normalize(trimmedName) && 
+          (!editingCategory || c.id !== editingCategory.id)
+        );
+
+        if (exists) {
+          toast({
+            title: t('attention'),
+            description: t('categoryExists'),
+            variant: "default",
+          });
+          return;
+        }
       }
 
       if (editingCategory) {
