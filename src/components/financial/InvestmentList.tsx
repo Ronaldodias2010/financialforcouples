@@ -210,14 +210,9 @@ export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCur
                         ) : (
                           <TrendingDown className="h-4 w-4 text-red-600" />
                         )}
-                        <div className={returnPercentage >= 0 ? "text-green-600" : "text-red-600"}>
-                          <div className="font-medium">
-                            {returnPercentage >= 0 ? "+" : ""}{returnPercentage.toFixed(2)}%
-                          </div>
-                          <div className="text-xs">
-                            {returnValue >= 0 ? "+" : ""}{formatCurrency(convertedReturn, userPreferredCurrency as any)}
-                          </div>
-                        </div>
+                        <span className={`font-medium ${returnPercentage >= 0 ? "text-green-600" : "text-red-600"}`}>
+                          {returnPercentage >= 0 ? "+" : ""}{returnPercentage.toFixed(2)}%
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
