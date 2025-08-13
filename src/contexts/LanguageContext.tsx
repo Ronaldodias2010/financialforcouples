@@ -752,6 +752,7 @@ const translations = {
     'userAnalysis.period.last6': 'Últimos 6 Meses',
     'userAnalysis.income': 'Receitas',
     'userAnalysis.expenses': 'Despesas',
+    'userAnalysis.monthlySpendingTrend': 'Tendência de Gastos Mensais',
     'userAnalysis.noData': 'Nenhum dado financeiro encontrado para este período',
     'userAnalysis.user': 'Usuário',
     
@@ -1486,6 +1487,7 @@ const translations = {
     'userAnalysis.period.last6': 'Last 6 Months',
     'userAnalysis.income': 'Income',
     'userAnalysis.expenses': 'Expenses',
+    'userAnalysis.monthlySpendingTrend': 'Monthly Spending Trend',
     'userAnalysis.noData': 'No financial data found for this period',
     'userAnalysis.user': 'User',
     
@@ -2267,6 +2269,7 @@ const translations = {
     'userAnalysis.period.last6': 'Últimos 6 Meses',
     'userAnalysis.income': 'Ingresos',
     'userAnalysis.expenses': 'Gastos',
+    'userAnalysis.monthlySpendingTrend': 'Tendencia de Gastos Mensuales',
     'userAnalysis.noData': 'No se encontraron datos financieros para este período',
     'userAnalysis.user': 'Usuario',
     

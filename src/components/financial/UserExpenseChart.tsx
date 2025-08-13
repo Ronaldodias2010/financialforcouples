@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,12 +34,19 @@ interface MonthlyExpense {
   user2: number;
 }
 
+interface MonthlySpending {
+  month: string;
+  user1Expense: number;
+  user2Expense: number;
+}
+
 export const UserExpenseChart = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [period, setPeriod] = useState<"current" | "last3" | "last6">("current");
   const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyExpense[]>([]);
+  const [monthlySpendingData, setMonthlySpendingData] = useState<MonthlySpending[]>([]);
   const [loading, setLoading] = useState(true);
   const { names } = usePartnerNames();
 
@@ -188,7 +195,15 @@ export const UserExpenseChart = () => {
           user2: data.user2Income - data.user2Expense  // Net amount
         }));
 
+        // Create monthly spending data for line chart
+        const monthlySpendingChartData: MonthlySpending[] = Object.entries(monthlyBreakdown).map(([month, data]) => ({
+          month,
+          user1Expense: data.user1Expense,
+          user2Expense: data.user2Expense
+        }));
+
         setMonthlyData(monthlyChartData);
+        setMonthlySpendingData(monthlySpendingChartData);
       }
     } catch (error) {
       console.error('Erro ao buscar dados financeiros:', error);
@@ -309,6 +324,76 @@ export const UserExpenseChart = () => {
                 )}
               </ResponsiveContainer>
             </div>
+
+            {/* Monthly Spending Trend Line Chart - Only show for multi-month periods */}
+            {period !== "current" && monthlySpendingData.length > 0 && (
+              <div className="mt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingDown className="h-4 w-4 text-primary" />
+                  <h4 className="text-md font-medium">{t('userAnalysis.monthlySpendingTrend')}</h4>
+                </div>
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={monthlySpendingData}>
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis dataKey="month" className="text-xs" />
+                      <YAxis className="text-xs" />
+                      <Tooltip 
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
+                                <p className="font-medium">{label}</p>
+                                {payload.map((entry: any, index: number) => (
+                                  <p key={index} style={{ color: entry.color }}>
+                                    {entry.dataKey === 'user1Expense' ? names.user1Name : names.user2Name}: {formatCurrency(entry.value)}
+                                  </p>
+                                ))}
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="user1Expense" 
+                        stroke={CHART_COLORS.expense.user1} 
+                        strokeWidth={3}
+                        dot={{ fill: CHART_COLORS.expense.user1, strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, stroke: CHART_COLORS.expense.user1, strokeWidth: 2 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="user2Expense" 
+                        stroke={CHART_COLORS.expense.user2} 
+                        strokeWidth={3}
+                        dot={{ fill: CHART_COLORS.expense.user2, strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, stroke: CHART_COLORS.expense.user2, strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Line Chart Legend */}
+                <div className="flex items-center justify-center gap-6 mt-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-0.5 rounded" 
+                      style={{ backgroundColor: CHART_COLORS.expense.user1 }}
+                    ></div>
+                    <span>{names.user1Name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-0.5 rounded" 
+                      style={{ backgroundColor: CHART_COLORS.expense.user2 }}
+                    ></div>
+                    <span>{names.user2Name}</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Legenda personalizada com cores corretas */}
             <div className="grid grid-cols-2 gap-4 text-sm">
