@@ -752,6 +752,7 @@ const translations = {
     'monthlyIncome.receivedBy': 'Recebido por',
     'monthlyIncome.subcategoryLabel': 'Subcategoria',
     'monthlyIncome.receiptMethod': 'Método de recebimento',
+    'monthlyIncome.receivedAccount': 'Conta bancária',
     'monthlyIncome.date': 'Data',
   },
   
@@ -1494,6 +1495,7 @@ const translations = {
     'monthlyIncome.receivedBy': 'Received by',
     'monthlyIncome.subcategoryLabel': 'Subcategory',
     'monthlyIncome.receiptMethod': 'Receipt method',
+    'monthlyIncome.receivedAccount': 'Bank account',
     'monthlyIncome.date': 'Date',
   },
   
@@ -2236,6 +2238,7 @@ const translations = {
     'monthlyIncome.receivedBy': 'Recibido por',
     'monthlyIncome.subcategoryLabel': 'Subcategoría',
     'monthlyIncome.receiptMethod': 'Método de recepción',
+    'monthlyIncome.receivedAccount': 'Cuenta bancaria',
     'monthlyIncome.date': 'Fecha',
   },
 };

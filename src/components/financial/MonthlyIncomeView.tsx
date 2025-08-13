@@ -18,6 +18,7 @@ interface Transaction {
   amount: number;
   description: string;
   category_id: string;
+  account_id?: string;
   subcategory?: string;
   transaction_date: string;
   payment_method: string;
@@ -28,6 +29,9 @@ interface Transaction {
     name: string;
   };
   cards?: {
+    name: string;
+  };
+  accounts?: {
     name: string;
   };
 }
@@ -163,7 +167,8 @@ const fetchCategories = async () => {
         .select(`
           *,
           categories(name),
-          cards(name)
+          cards(name),
+          accounts(name)
         `)
         .in('user_id', userIds)
         .eq('type', 'income')
@@ -333,6 +338,9 @@ if (selectedCategory !== "all") {
                       <p>{t('monthlyIncome.subcategoryLabel')}: {transaction.subcategory}</p>
                     )}
                     <p>{t('monthlyIncome.receiptMethod')}: {getPaymentMethodText(transaction.payment_method)}</p>
+                    {transaction.payment_method !== 'dinheiro' && transaction.account_id && transaction.accounts?.name && (
+                      <p>{t('monthlyIncome.receivedAccount')}: {transaction.accounts.name}</p>
+                    )}
                     <p>{t('monthlyIncome.date')}: {formatDate(transaction.transaction_date)}</p>
                   </div>
                 </div>
