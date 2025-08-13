@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FinancialCard } from "./FinancialCard";
 import { InvestmentForm } from "./InvestmentForm";
+import { InvestmentWithdrawForm } from "./InvestmentWithdrawForm";
 import { InvestmentList } from "./InvestmentList";
 import { GoalsManager } from "./GoalsManager";
 import { PortfolioChart } from "./PortfolioChart";
@@ -9,7 +10,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Target, PieChart, Calculator, Plus, ArrowLeft, User } from "lucide-react";
+import { TrendingUp, Target, PieChart, Calculator, Plus, ArrowLeft, User, Minus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
@@ -69,6 +70,7 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<string>("BRL");
   const [activeTab, setActiveTab] = useState("overview");
   const [showInvestmentForm, setShowInvestmentForm] = useState(false);
+  const [showWithdrawForm, setShowWithdrawForm] = useState(false);
   
   // Local viewMode state that can be changed independently
   const [currentViewMode, setCurrentViewMode] = useState<"both" | "user1" | "user2">(
@@ -264,6 +266,16 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
     });
   };
 
+  const handleWithdrawSuccess = async () => {
+    await fetchInvestments();
+    await fetchGoals();
+    setShowWithdrawForm(false);
+    toast({
+      title: "Sucesso",
+      description: "Resgate realizado com sucesso!",
+    });
+  };
+
   if (showInvestmentForm) {
     return (
       <div className="container mx-auto p-6">
@@ -287,6 +299,28 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
     );
   }
 
+  if (showWithdrawForm) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowWithdrawForm(false)}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('nav.back')}
+          </Button>
+          <h2 className="text-2xl font-bold">{t('investments.withdraw')}</h2>
+        </div>
+        <InvestmentWithdrawForm 
+          onSuccess={handleWithdrawSuccess}
+          onCancel={() => setShowWithdrawForm(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -303,10 +337,16 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
             {t('investments.title')}
           </h1>
         </div>
-        <Button onClick={() => setShowInvestmentForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t('investments.newInvestment')}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowInvestmentForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('investments.newInvestment')}
+          </Button>
+          <Button variant="outline" onClick={() => setShowWithdrawForm(true)}>
+            <Minus className="h-4 w-4 mr-2" />
+            {t('investments.withdraw')}
+          </Button>
+        </div>
       </div>
 
       {/* View Mode Selector - always visible, like other tabs */}
