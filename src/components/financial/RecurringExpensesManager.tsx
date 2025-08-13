@@ -13,7 +13,7 @@ import { Plus, Trash2, Edit, CalendarIcon, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useUserNames } from "@/hooks/useUserNames";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useLanguage } from "@/hooks/useLanguage";
 interface RecurringExpense {
   id: string;
@@ -26,6 +26,7 @@ interface RecurringExpense {
   is_active: boolean;
   owner_user?: string;
   contract_duration_months?: number;
+  created_at: string;
 }
 
 interface Category {
@@ -62,9 +63,9 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [contractDuration, setContractDuration] = useState("");
   
 const { toast } = useToast();
-const { userNames } = useUserNames();
+const { names } = usePartnerNames();
 const { t } = useLanguage();
-const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : userNames.user1;
+const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : names.user1Name;
   useEffect(() => {
     fetchRecurringExpenses();
     fetchCategories();
@@ -75,7 +76,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
     try {
       const { data, error } = await supabase
         .from('recurring_expenses')
-        .select('*')
+        .select('*, created_at')
         .order('next_due_date');
 
       if (error) throw error;
@@ -488,6 +489,17 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
                   <p className="text-xs text-muted-foreground">
                     {t('recurring.next')}: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
                   </p>
+                  {expense.contract_duration_months && (
+                    <p className="text-xs text-muted-foreground">
+                      {(() => {
+                        const startDate = new Date(expense.created_at);
+                        const currentDate = new Date();
+                        const monthsPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
+                        const remainingMonths = Math.max(0, expense.contract_duration_months - monthsPassed);
+                        return `${monthsPassed + 1}/${expense.contract_duration_months} • Restam ${remainingMonths} parcelas`;
+                      })()}
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button
