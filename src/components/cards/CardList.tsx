@@ -132,7 +132,7 @@ const detectBankKey = (name: string): keyof typeof bankLogos | null => {
   if (n.includes("c6")) return "c6";
   if (n.includes("caixa") || n.includes("cef")) return "caixa";
   if (n.includes("sicredi")) return "sicredi";
-  if (n.includes("bank of america") || n.includes("bofa")) return "bankofamerica";
+  if (n.includes("bank of america") || n.includes("bofa") || n.includes("boa") || n === "boa") return "bankofamerica";
   if (n.includes("mercado pago") || n.includes("mercadopago")) return "mercadopago";
   if (n.includes("chase")) return "chase";
   if (n.includes("wells fargo") || n.includes("weels fargo") || n.includes("wells")) return "wellsfargo";
