@@ -40,7 +40,12 @@ interface Card {
   card_type: string;
   owner_user?: string;
 }
-export const RecurringExpensesManager = () => {
+
+interface RecurringExpensesManagerProps {
+  viewMode: "both" | "user1" | "user2";
+}
+
+export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerProps) => {
   const [expenses, setExpenses] = useState<RecurringExpense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
@@ -64,7 +69,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
     fetchRecurringExpenses();
     fetchCategories();
     fetchCards();
-  }, []);
+  }, [viewMode]);
 
   const fetchRecurringExpenses = async () => {
     try {
@@ -74,10 +79,21 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
         .order('next_due_date');
 
       if (error) throw error;
-      setExpenses((data || []).map(expense => ({
+
+      let allExpenses = (data || []).map(expense => ({
         ...expense,
         next_due_date: new Date(expense.next_due_date)
-      })));
+      }));
+
+      // Filtrar por viewMode
+      if (viewMode !== "both") {
+        allExpenses = allExpenses.filter(expense => {
+          const ownerUser = expense.owner_user || 'user1';
+          return ownerUser === viewMode;
+        });
+      }
+
+      setExpenses(allExpenses);
     } catch (error) {
       toast({
         title: t('recurring.error'),

@@ -347,7 +347,7 @@ export const FinancialDashboard = () => {
       case "categories":
         return <CategoryManager />;
       case "recurring":
-        return <RecurringExpensesManager />;
+        return <RecurringExpensesManager viewMode={viewMode} />;
       case "investments":
         return (
           <div className="text-center py-8">
