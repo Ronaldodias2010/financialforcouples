@@ -337,14 +337,14 @@ const getAccountOwnerName = (account: Account) => {
     }
 
   // Validar conta para despesas com débito/transferência de pagamento
-  if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && !accountId) {
-    toast({
-      title: "Erro",
-      description: "Selecione uma conta para pagamento",
-      variant: "destructive",
-    });
-    return;
-  }
+        if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && !accountId) {
+          toast({
+            title: t('transactionForm.error'),
+            description: t('transactionForm.selectAccountError'),
+            variant: "destructive",
+          });
+          return;
+        }
 
   // Validar parcelas para cartão de crédito parcelado
   if (type === "expense" && paymentMethod === "credit_card" && paymentPlan === "parcelado") {
@@ -456,7 +456,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         const insertRes = await supabase.from('transactions').insert(transferInserts);
         if (insertRes.error) throw insertRes.error;
 
-        toast({ title: 'Sucesso', description: 'Transferência entre contas registrada!' });
+        toast({ title: t('transactionForm.success'), description: t('transactionForm.transferSuccess') });
         // Reset
         setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(new Date());
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
@@ -493,7 +493,7 @@ const invTxn: TablesInsert<'transactions'> = {
         const { error: invErr } = await supabase.from('transactions').insert(invTxn);
         if (invErr) throw invErr;
 
-        toast({ title: 'Sucesso', description: 'Transferência para investimento registrada!' });
+        toast({ title: t('transactionForm.success'), description: t('transactionForm.investmentTransferSuccess') });
         // Reset
         setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(new Date());
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setCardId(""); setCurrency(userPreferredCurrency);
@@ -582,8 +582,8 @@ const invTxn: TablesInsert<'transactions'> = {
           const proposed = (Number(selectedAccount?.balance ?? 0)) - txnInAccCurrency;
           if (proposed < -limit) {
             toast({
-              title: "Limite excedido",
-              description: "Esta despesa ultrapassa o limite negativo permitido da conta.",
+              title: t('transactionForm.limitExceeded'),
+              description: t('transactionForm.limitExceededMessage'),
               variant: "destructive",
             });
             return;
@@ -849,7 +849,12 @@ const invTxn: TablesInsert<'transactions'> = {
                 ) : (
                   <>
                     <SelectItem value="debit_card">{t('transactionForm.debitCard')}</SelectItem>
-                    <SelectItem value="payment_transfer">{t('transactionForm.paymentTransfer')}</SelectItem>
+                     <SelectItem value="payment_transfer">
+                       {t('transactionForm.paymentTransfer')}
+                       <span className="text-xs text-muted-foreground ml-1">
+                         ({language === 'pt' ? 'PIX' : 'ZELLE'})
+                       </span>
+                     </SelectItem>
                     <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
                   </>
                 )}
@@ -1161,7 +1166,7 @@ const invTxn: TablesInsert<'transactions'> = {
               })()
             }
             title={
-              type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") ? "Bloqueado: limite esgotado para esta conta" : undefined
+              type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") ? t('transactionForm.blockedLimitExhausted') : undefined
             }
           >
             {t('transactionForm.addTransaction')}

@@ -199,6 +199,13 @@ const translations = {
     'transactionForm.errorMessage': 'Erro ao adicionar transação',
     'transactionForm.success': 'Sucesso',
     'transactionForm.successMessage': 'Transação adicionada com sucesso!',
+    'transactionForm.selectAccountError': 'Selecione uma conta para pagamento',
+    'transactionForm.limitExceeded': 'Limite excedido',
+    'transactionForm.limitExceededMessage': 'Esta despesa ultrapassa o limite negativo permitido da conta.',
+    'transactionForm.blockedLimitExhausted': 'Bloqueado: limite esgotado para esta conta',
+    'transactionForm.transferSuccess': 'Transferência entre contas registrada!',
+    'transactionForm.investmentTransferSuccess': 'Transferência para investimento registrada!',
+    'transactionForm.paymentTransferNote': 'Transferência de pagamento = PIX no Brasil',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -999,6 +1006,13 @@ const translations = {
     'transactionForm.errorMessage': 'Error adding transaction',
     'transactionForm.success': 'Success',
     'transactionForm.successMessage': 'Transaction added successfully!',
+    'transactionForm.selectAccountError': 'Select an account for payment',
+    'transactionForm.limitExceeded': 'Limit exceeded',
+    'transactionForm.limitExceededMessage': 'This expense exceeds the allowed negative limit for the account.',
+    'transactionForm.blockedLimitExhausted': 'Blocked: limit exhausted for this account',
+    'transactionForm.transferSuccess': 'Account transfer registered!',
+    'transactionForm.investmentTransferSuccess': 'Investment transfer registered!',
+    'transactionForm.paymentTransferNote': 'Payment transfer = ZELLE in the USA',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -1799,6 +1813,13 @@ const translations = {
     'transactionForm.errorMessage': 'Error al agregar transacción',
     'transactionForm.success': 'Éxito',
     'transactionForm.successMessage': '¡Transacción agregada exitosamente!',
+    'transactionForm.selectAccountError': 'Selecciona una cuenta para el pago',
+    'transactionForm.limitExceeded': 'Límite excedido',
+    'transactionForm.limitExceededMessage': 'Este gasto excede el límite negativo permitido para la cuenta.',
+    'transactionForm.blockedLimitExhausted': 'Bloqueado: límite agotado para esta cuenta',
+    'transactionForm.transferSuccess': '¡Transferencia entre cuentas registrada!',
+    'transactionForm.investmentTransferSuccess': '¡Transferencia para inversión registrada!',
+    'transactionForm.paymentTransferNote': 'Transferencia de pago = PIX en Brasil',
     
     // Auth
     'auth.appName': 'Couples Financials',
