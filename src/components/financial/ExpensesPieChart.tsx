@@ -32,6 +32,40 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
   });
   const [loading, setLoading] = useState(false);
 
+  // Function to translate category names from database to localized names
+  const translateCategoryName = (categoryName: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'Alimentação': t('categories.food'),
+      'Food': t('categories.food'),
+      'Alimentación': t('categories.food'),
+      'Transporte': t('categories.transport'),
+      'Transportation': t('categories.transport'),
+      'Saúde': t('categories.health'),
+      'Health': t('categories.health'),
+      'Salud': t('categories.health'),
+      'Entretenimento': t('categories.entertainment'),
+      'Entertainment': t('categories.entertainment'),
+      'Entretenimiento': t('categories.entertainment'),
+      'Educação': t('categories.education'),
+      'Education': t('categories.education'),
+      'Educación': t('categories.education'),
+      'Moradia': t('categories.housing'),
+      'Housing': t('categories.housing'),
+      'Vivienda': t('categories.housing'),
+      'Vestuário': t('categories.clothing'),
+      'Clothing': t('categories.clothing'),
+      'Ropa': t('categories.clothing'),
+      'Utilidades': t('categories.utilities'),
+      'Utilities': t('categories.utilities'),
+      'Servicios': t('categories.utilities'),
+      'Outros': t('categories.other'),
+      'Other': t('categories.other'),
+      'Otros': t('categories.other'),
+    };
+
+    return categoryMap[categoryName] || categoryName;
+  };
+
   const fetchExpensesByCategory = async () => {
     if (!user) return;
     
@@ -79,7 +113,8 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       const categoryMap = new Map<string, { amount: number; color: string }>();
       
       data?.forEach((transaction) => {
-        const categoryName = transaction.categories?.name || t('categories.uncategorized');
+        const originalCategoryName = transaction.categories?.name || t('categories.uncategorized');
+        const categoryName = translateCategoryName(originalCategoryName);
         const categoryColor = transaction.categories?.color || '#6366f1';
         const amount = Number(transaction.amount);
         
