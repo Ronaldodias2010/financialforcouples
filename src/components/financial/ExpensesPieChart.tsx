@@ -33,8 +33,10 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
   const [loading, setLoading] = useState(false);
 
   // Function to translate category names from database to localized names
-  const translateCategoryName = (categoryName: string): string => {
+  const translateCategoryName = React.useCallback((categoryName: string): string => {
     if (!categoryName) return t('categories.uncategorized');
+    
+    console.log('translateCategoryName called with:', categoryName, 'current lang test:', t('categories.food'));
     
     // Normalize the category name (remove accents and convert to lowercase for better matching)
     const normalizedName = categoryName.toLowerCase().trim();
@@ -85,8 +87,10 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       'otros': t('categories.other'),
     };
 
-    return categoryMap[normalizedName] || categoryName;
-  };
+    const result = categoryMap[normalizedName] || categoryName;
+    console.log('translateCategoryName result:', normalizedName, '->', result);
+    return result;
+  }, [t]); // Dependency on 't' so it updates when language changes
 
   const fetchExpensesByCategory = async () => {
     if (!user) return;
@@ -136,7 +140,12 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       
       data?.forEach((transaction) => {
         const originalCategoryName = transaction.categories?.name || t('categories.uncategorized');
+        console.log('ExpensesPieChart Debug - Original category:', originalCategoryName);
+        
         const categoryName = translateCategoryName(originalCategoryName);
+        console.log('ExpensesPieChart Debug - Translated category:', categoryName);
+        console.log('ExpensesPieChart Debug - Current language:', t('categories.food')); // Test translation
+        
         const categoryColor = transaction.categories?.color || '#6366f1';
         const amount = Number(transaction.amount);
         
@@ -166,7 +175,7 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
 
   useEffect(() => {
     fetchExpensesByCategory();
-  }, [selectedMonth, viewMode, user, coupleData]);
+  }, [selectedMonth, viewMode, user, coupleData, t]); // Added 't' as dependency
 
   // Set up real-time updates for transactions and categories
   useEffect(() => {
