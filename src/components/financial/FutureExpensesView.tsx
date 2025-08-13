@@ -160,10 +160,11 @@ export const FutureExpensesView = () => {
   };
 
   const calculateCardPaymentAmount = async (card: any, userId: string): Promise<number> => {
-    // Para cartão de crédito, o "limite disponível" é exatamente o que pode ser usado em despesas
+    // Para cartão de crédito, calcular: Limite Total - Limite Disponível
     if (card.card_type === 'credit') {
-      const available = Number(card.initial_balance || 0);
-      return available;
+      const totalLimit = Number(card.credit_limit || 0);
+      const availableLimit = Number(card.initial_balance || 0);
+      return totalLimit - availableLimit;
     }
     
     // Para outros tipos de cartão, usar saldo atual
