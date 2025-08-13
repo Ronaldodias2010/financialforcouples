@@ -326,13 +326,11 @@ if (selectedCategory !== "all") {
                   </div>
                   
                   <div className="text-sm text-muted-foreground space-y-1">
-                    {isPartOfCouple && (
-                      <p>
-                        <span className="font-medium text-primary">
-                          {t('monthlyIncome.receivedBy')}: {getUserName(transaction.owner_user || 'user1')}
-                        </span>
-                      </p>
-                    )}
+                    <p>
+                      <span className="font-medium text-primary">
+                        {t('monthlyIncome.receivedBy')}: {getUserName(transaction.owner_user || 'user1')}
+                      </span>
+                    </p>
                     <p>{t('monthlyIncome.categoryLabel')}: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
                     {transaction.subcategory && (
                       <p>{t('monthlyIncome.subcategoryLabel')}: {transaction.subcategory}</p>

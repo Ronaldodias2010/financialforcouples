@@ -330,13 +330,11 @@ if (selectedCategory !== "all") {
                       </div>
                       
                       <div className="text-sm text-muted-foreground space-y-1">
-                        {isPartOfCouple && (
-                          <p>
-                            <span className="font-medium text-primary">
-                              Realizado por: {getUserName(transaction.owner_user || 'user1')}
-                            </span>
-                          </p>
-                        )}
+                        <p>
+                          <span className="font-medium text-primary">
+                            Realizado por: {getUserName(transaction.owner_user || 'user1')}
+                          </span>
+                        </p>
                         <p>Categoria: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
                         {transaction.subcategory && (
                           <p>Subcategoria: {transaction.subcategory}</p>

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -24,7 +25,10 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
   const { user } = useAuth();
   const { couple: coupleData } = useCouple();
   const { t } = useLanguage();
+  const { names } = usePartnerNames();
   
+  const [expenseDataUser1, setExpenseDataUser1] = useState<ExpenseByCategory[]>([]);
+  const [expenseDataUser2, setExpenseDataUser2] = useState<ExpenseByCategory[]>([]);
   const [expenseData, setExpenseData] = useState<ExpenseByCategory[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -127,14 +131,6 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         query = query.eq('user_id', user.id);
       }
 
-      // Then apply user filters based on viewMode
-      if (viewMode === 'user1') {
-        query = query.eq('owner_user', 'user1');
-      } else if (viewMode === 'user2') {
-        query = query.eq('owner_user', 'user2');
-      }
-      // If viewMode is 'both', no additional filter needed
-
       const { data, error } = await query;
 
       if (error) {
@@ -142,37 +138,54 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         return;
       }
 
-      // Group by category and sum amounts
-      const categoryMap = new Map<string, { amount: number; color: string }>();
+      // Group by category and sum amounts for each user separately
+      const categoryMapUser1 = new Map<string, { amount: number; color: string }>();
+      const categoryMapUser2 = new Map<string, { amount: number; color: string }>();
+      const categoryMapBoth = new Map<string, { amount: number; color: string }>();
       
       data?.forEach((transaction) => {
         const originalCategoryName = transaction.categories?.name || t('categories.uncategorized');
-        console.log('ExpensesPieChart Debug - Original category:', originalCategoryName);
-        
         const categoryName = translateCategoryName(originalCategoryName);
-        console.log('ExpensesPieChart Debug - Translated category:', categoryName);
-        console.log('ExpensesPieChart Debug - Current language:', t('categories.food')); // Test translation
-        
         const categoryColor = transaction.categories?.color || '#6366f1';
         const amount = Number(transaction.amount);
+        const ownerUser = transaction.owner_user || 'user1';
         
-        if (categoryMap.has(categoryName)) {
-          categoryMap.get(categoryName)!.amount += amount;
+        // Add to "both" map
+        if (categoryMapBoth.has(categoryName)) {
+          categoryMapBoth.get(categoryName)!.amount += amount;
         } else {
-          categoryMap.set(categoryName, { amount, color: categoryColor });
+          categoryMapBoth.set(categoryName, { amount, color: categoryColor });
+        }
+        
+        // Add to user-specific maps
+        if (ownerUser === 'user1') {
+          if (categoryMapUser1.has(categoryName)) {
+            categoryMapUser1.get(categoryName)!.amount += amount;
+          } else {
+            categoryMapUser1.set(categoryName, { amount, color: categoryColor });
+          }
+        } else if (ownerUser === 'user2') {
+          if (categoryMapUser2.has(categoryName)) {
+            categoryMapUser2.get(categoryName)!.amount += amount;
+          } else {
+            categoryMapUser2.set(categoryName, { amount, color: categoryColor });
+          }
         }
       });
 
-      // Convert to array and sort by amount
-      const expensesByCategory = Array.from(categoryMap.entries())
-        .map(([categoryName, { amount, color }]) => ({
-          categoryName,
-          amount,
-          color
-        }))
-        .sort((a, b) => b.amount - a.amount);
+      // Convert to arrays and sort by amount
+      const convertToArray = (map: Map<string, { amount: number; color: string }>) =>
+        Array.from(map.entries())
+          .map(([categoryName, { amount, color }]) => ({
+            categoryName,
+            amount,
+            color
+          }))
+          .sort((a, b) => b.amount - a.amount);
 
-      setExpenseData(expensesByCategory);
+      setExpenseDataUser1(convertToArray(categoryMapUser1));
+      setExpenseDataUser2(convertToArray(categoryMapUser2));
+      setExpenseData(convertToArray(categoryMapBoth));
     } catch (error) {
       console.error('Error fetching expenses by category:', error);
     } finally {
@@ -223,19 +236,19 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
     };
   }, [user, selectedMonth, viewMode, coupleData]);
 
-  const chartData = {
-    labels: expenseData.map(item => item.categoryName),
+  const getChartData = (data: ExpenseByCategory[]) => ({
+    labels: data.map(item => item.categoryName),
     datasets: [
       {
-        data: expenseData.map(item => item.amount),
-        backgroundColor: expenseData.map(item => item.color),
-        borderColor: expenseData.map(item => item.color),
+        data: data.map(item => item.amount),
+        backgroundColor: data.map(item => item.color),
+        borderColor: data.map(item => item.color),
         borderWidth: 1,
       },
     ],
-  };
+  });
 
-  const chartOptions = {
+  const getChartOptions = (data: ExpenseByCategory[]) => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -253,14 +266,14 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         callbacks: {
           label: (context: any) => {
             const value = context.parsed;
-            const total = expenseData.reduce((sum, item) => sum + item.amount, 0);
+            const total = data.reduce((sum, item) => sum + item.amount, 0);
             const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
             return `${context.label}: R$ ${value.toFixed(2)} (${percentage}%)`;
           },
         },
       },
     },
-  };
+  });
 
   // Generate month options for the last 12 months
   const getMonthOptions = () => {
@@ -281,50 +294,72 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
     return options;
   };
 
-  const totalExpenses = expenseData.reduce((sum, item) => sum + item.amount, 0);
+  const renderChartSection = (data: ExpenseByCategory[], title: string) => {
+    const total = data.reduce((sum, item) => sum + item.amount, 0);
+    
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-center">{title}</CardTitle>
+          {total > 0 && (
+            <p className="text-sm text-muted-foreground text-center">
+              {t('dashboard.total')}: R$ {total.toFixed(2)}
+            </p>
+          )}
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">{t('common.loading')}</div>
+            </div>
+          ) : data.length > 0 ? (
+            <div className="h-64">
+              <Pie data={getChartData(data)} options={getChartOptions(data)} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center text-muted-foreground">
+                <p>{t('dashboard.noExpensesFound')}</p>
+                <p className="text-sm">{t('dashboard.forSelectedPeriod')}</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{t('dashboard.expensesByCategory')}</CardTitle>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {getMonthOptions().map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">{t('dashboard.expensesByCategory')}</h2>
+        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {getMonthOptions().map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {viewMode === 'both' && coupleData?.status === 'active' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {renderChartSection(expenseDataUser1, `${t('dashboard.expensesByCategory')} - ${names.user1Name}`)}
+          {renderChartSection(expenseDataUser2, `${t('dashboard.expensesByCategory')} - ${names.user2Name}`)}
         </div>
-        {totalExpenses > 0 && (
-          <p className="text-sm text-muted-foreground">
-            {t('dashboard.total')}: R$ {totalExpenses.toFixed(2)}
-          </p>
-        )}
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-muted-foreground">{t('common.loading')}</div>
-          </div>
-        ) : expenseData.length > 0 ? (
-          <div className="h-64">
-            <Pie data={chartData} options={chartOptions} />
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center text-muted-foreground">
-              <p>{t('dashboard.noExpensesFound')}</p>
-              <p className="text-sm">{t('dashboard.forSelectedPeriod')}</p>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      ) : (
+        renderChartSection(
+          viewMode === 'user1' ? expenseDataUser1 : viewMode === 'user2' ? expenseDataUser2 : expenseData,
+          viewMode === 'user1' ? `${t('dashboard.expensesByCategory')} - ${names.user1Name}` :
+          viewMode === 'user2' ? `${t('dashboard.expensesByCategory')} - ${names.user2Name}` :
+          t('dashboard.expensesByCategory')
+        )
+      )}
+    </div>
   );
 };
