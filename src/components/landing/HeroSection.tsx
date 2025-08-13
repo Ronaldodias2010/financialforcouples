@@ -152,21 +152,21 @@ const HeroSection = () => {
           </div>
           
           {/* Hero Image */}
-          <div className="relative mt-8 lg:mt-0 px-4 sm:px-8 lg:px-0">
-            <div className="relative rounded-lg sm:rounded-xl lg:rounded-2xl overflow-hidden shadow-elegant">
+          <div className="relative">
+            <div className="relative rounded-2xl overflow-hidden shadow-elegant">
               <img 
                 src={heroCouple} 
                 alt="Casal feliz gerenciando finanças" 
-                className="w-full h-auto object-cover aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto"
+                className="w-full h-auto object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             </div>
-            {/* Floating elements - Hidden on small screens */}
-            <div className="hidden sm:block absolute -top-2 sm:-top-4 -right-2 sm:-right-4 w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-secondary rounded-full flex items-center justify-center shadow-glow-yellow animate-bounce">
-              <span className="text-lg sm:text-xl lg:text-2xl">💰</span>
+            {/* Floating elements */}
+            <div className="absolute -top-4 -right-4 w-20 h-20 bg-secondary rounded-full flex items-center justify-center shadow-glow-yellow animate-bounce">
+              <span className="text-2xl">💰</span>
             </div>
-            <div className="hidden sm:block absolute -bottom-2 sm:-bottom-4 -left-2 sm:-left-4 w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center shadow-glow-green animate-bounce delay-500">
-              <span className="text-sm sm:text-lg lg:text-xl">📊</span>
+            <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-glow-green animate-bounce delay-500">
+              <span className="text-xl">📊</span>
             </div>
           </div>
         </div>
