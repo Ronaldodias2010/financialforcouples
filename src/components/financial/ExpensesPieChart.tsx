@@ -34,36 +34,58 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
 
   // Function to translate category names from database to localized names
   const translateCategoryName = (categoryName: string): string => {
+    if (!categoryName) return t('categories.uncategorized');
+    
+    // Normalize the category name (remove accents and convert to lowercase for better matching)
+    const normalizedName = categoryName.toLowerCase().trim();
+    
     const categoryMap: { [key: string]: string } = {
-      'Alimentação': t('categories.food'),
-      'Food': t('categories.food'),
-      'Alimentación': t('categories.food'),
-      'Transporte': t('categories.transport'),
-      'Transportation': t('categories.transport'),
-      'Saúde': t('categories.health'),
-      'Health': t('categories.health'),
-      'Salud': t('categories.health'),
-      'Entretenimento': t('categories.entertainment'),
-      'Entertainment': t('categories.entertainment'),
-      'Entretenimiento': t('categories.entertainment'),
-      'Educação': t('categories.education'),
-      'Education': t('categories.education'),
-      'Educación': t('categories.education'),
-      'Moradia': t('categories.housing'),
-      'Housing': t('categories.housing'),
-      'Vivienda': t('categories.housing'),
-      'Vestuário': t('categories.clothing'),
-      'Clothing': t('categories.clothing'),
-      'Ropa': t('categories.clothing'),
-      'Utilidades': t('categories.utilities'),
-      'Utilities': t('categories.utilities'),
-      'Servicios': t('categories.utilities'),
-      'Outros': t('categories.other'),
-      'Other': t('categories.other'),
-      'Otros': t('categories.other'),
+      // Portuguese variations
+      'alimentação': t('categories.food'),
+      'alimentacao': t('categories.food'),
+      'comida': t('categories.food'),
+      'transporte': t('categories.transport'),
+      'saúde': t('categories.health'),
+      'saude': t('categories.health'),
+      'entretenimento': t('categories.entertainment'),
+      'educação': t('categories.education'),
+      'educacao': t('categories.education'),
+      'moradia': t('categories.housing'),
+      'casa': t('categories.housing'),
+      'vestuário': t('categories.clothing'),
+      'vestuario': t('categories.clothing'),
+      'roupa': t('categories.clothing'),
+      'utilidades': t('categories.utilities'),
+      'contas': t('categories.utilities'),
+      'outros': t('categories.other'),
+      'outro': t('categories.other'),
+      
+      // English variations
+      'food': t('categories.food'),
+      'transportation': t('categories.transport'),
+      'transport': t('categories.transport'),
+      'health': t('categories.health'),
+      'entertainment': t('categories.entertainment'),
+      'education': t('categories.education'),
+      'housing': t('categories.housing'),
+      'clothing': t('categories.clothing'),
+      'utilities': t('categories.utilities'),
+      'other': t('categories.other'),
+      
+      // Spanish variations
+      'alimentación': t('categories.food'),
+      'alimentacion': t('categories.food'),
+      'salud': t('categories.health'),
+      'entretenimiento': t('categories.entertainment'),
+      'educación': t('categories.education'),
+      'educacion': t('categories.education'),
+      'vivienda': t('categories.housing'),
+      'ropa': t('categories.clothing'),
+      'servicios': t('categories.utilities'),
+      'otros': t('categories.other'),
     };
 
-    return categoryMap[categoryName] || categoryName;
+    return categoryMap[normalizedName] || categoryName;
   };
 
   const fetchExpensesByCategory = async () => {
@@ -145,6 +167,45 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
   useEffect(() => {
     fetchExpensesByCategory();
   }, [selectedMonth, viewMode, user, coupleData]);
+
+  // Set up real-time updates for transactions and categories
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('expenses-pie-chart-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions'
+        },
+        (payload) => {
+          console.log('Transaction change detected:', payload);
+          // Refetch data when transactions change
+          fetchExpensesByCategory();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'categories'
+        },
+        (payload) => {
+          console.log('Category change detected:', payload);
+          // Refetch data when categories change
+          fetchExpensesByCategory();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, selectedMonth, viewMode, coupleData]);
 
   const chartData = {
     labels: expenseData.map(item => item.categoryName),

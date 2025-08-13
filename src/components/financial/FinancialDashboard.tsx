@@ -107,6 +107,20 @@ export const FinancialDashboard = () => {
           refreshData();
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions'
+        },
+        (payload) => {
+          console.log('Dashboard sync - transaction change detected:', payload);
+          // Immediately refresh data when transactions change
+          refreshData();
+          loadFinancialComparison();
+        }
+      )
       .subscribe();
 
     return () => {
