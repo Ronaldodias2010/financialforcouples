@@ -678,6 +678,8 @@ const translations = {
     'recurring.deleteError': 'Erro ao excluir gasto recorrente',
     'recurring.statusError': 'Erro ao alterar status',
     'recurring.userNotAuth': 'Usuário não autenticado',
+    'recurring.remaining': 'Restam',
+    'recurring.installments': 'parcelas',
     'subscription.upgradeToPremium': 'Fazer Upgrade para Premium',
     'subscription.features.aiFinancialPlanning': 'Planejamento financeiro com IA',
     'subscription.features.voiceInput': 'Input por voz via WhatsApp',
@@ -1593,6 +1595,8 @@ const translations = {
     'recurring.deleteError': 'Error deleting recurring expense',
     'recurring.statusError': 'Error changing status',
     'recurring.userNotAuth': 'User not authenticated',
+    'recurring.remaining': 'Remaining',
+    'recurring.installments': 'installments',
     
     // Footer
     'footer.description': 'Organize your couple\'s finances simply and intelligently. Transform relationship financial management into something easy and transparent.',

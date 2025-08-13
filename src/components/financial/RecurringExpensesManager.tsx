@@ -496,7 +496,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                         const currentDate = new Date();
                         const monthsPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
                         const remainingMonths = Math.max(0, expense.contract_duration_months - monthsPassed);
-                        return `${monthsPassed + 1}/${expense.contract_duration_months} • Restam ${remainingMonths} parcelas`;
+                        return `${monthsPassed + 1}/${expense.contract_duration_months} • ${t('recurring.remaining')} ${remainingMonths} ${t('recurring.installments')}`;
                       })()}
                     </p>
                   )}
