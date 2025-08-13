@@ -59,6 +59,13 @@ resource "aws_s3_bucket_policy" "app_static" {
         Resource  = "${aws_s3_bucket.app_static.arn}/public/*"
       },
       {
+        Sid       = "PublicRead503Page"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.app_static.arn}/503.html"
+      },
+      {
         Sid    = "CloudFrontOriginAccessControl"
         Effect = "Allow"
         Principal = {
@@ -111,13 +118,18 @@ resource "aws_s3_object" "maintenance_page" {
   source       = "../public/503.html"
   content_type = "text/html"
   
-  # Configurações de cache para página de erro
+  # Configurações de cache para página de erro - sem cache
   cache_control = "max-age=0, no-cache, no-store, must-revalidate"
   
+  # Force o upload sempre que houver mudanças
   etag = filemd5("../public/503.html")
+  
+  # Garantir que seja público para acesso via CloudFront
+  acl = "public-read"
   
   tags = {
     Name = "503-maintenance-page"
+    Environment = var.environment
   }
 }
 
