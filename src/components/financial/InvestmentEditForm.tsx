@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,24 @@ import { useToast } from "@/hooks/use-toast";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useLanguage } from "@/hooks/useLanguage";
 
+interface Investment {
+  id: string;
+  name: string;
+  type: string;
+  amount: number;
+  current_value: number;
+  purchase_date: string;
+  currency: string;
+  is_shared: boolean;
+  owner_user: string;
+  broker?: string;
+  notes?: string;
+  goal_id?: string;
+  yield_type?: string;
+  yield_value?: number;
+  auto_calculate_yield?: boolean;
+}
+
 interface InvestmentGoal {
   id: string;
   name: string;
@@ -22,34 +40,34 @@ interface InvestmentGoal {
   currency: string;
 }
 
-interface InvestmentFormProps {
+interface InvestmentEditFormProps {
+  investment: Investment;
   goals: InvestmentGoal[];
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormProps) => {
+export const InvestmentEditForm = ({ investment, goals, onSuccess, onCancel }: InvestmentEditFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { names } = usePartnerNames();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    type: "",
-    amount: "",
-    current_value: "",
-    purchase_date: new Date().toISOString().split('T')[0],
-    currency: "BRL",
-    is_shared: false,
-    owner_user: "user1",
-    broker: "",
-    notes: "",
-    goal_id: "",
-    crypto_name: "",
-    yield_type: "",
-    yield_value: "",
-    auto_calculate_yield: false
+    name: investment.name,
+    type: investment.type,
+    amount: investment.amount.toString(),
+    current_value: investment.current_value.toString(),
+    purchase_date: investment.purchase_date,
+    currency: investment.currency,
+    is_shared: investment.is_shared,
+    owner_user: investment.owner_user,
+    broker: investment.broker || "",
+    notes: investment.notes || "",
+    goal_id: investment.goal_id || "",
+    yield_type: investment.yield_type || "",
+    yield_value: investment.yield_value?.toString() || "",
+    auto_calculate_yield: investment.auto_calculate_yield || false
   });
 
   const investmentTypes = [
@@ -78,22 +96,12 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
       return;
     }
 
-    if (formData.type === "cripto" && !formData.crypto_name) {
-      toast({
-        title: "Erro",
-        description: "Nome da criptomoeda é obrigatório",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
       const { error } = await supabase
         .from("investments")
-        .insert({
-          user_id: user?.id,
+        .update({
           name: formData.name,
           type: formData.type,
           amount: parseFloat(formData.amount),
@@ -103,39 +111,27 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
           is_shared: formData.is_shared,
           owner_user: formData.owner_user,
           broker: formData.broker || null,
-          notes: formData.type === "cripto" && formData.crypto_name ? 
-            `${formData.crypto_name}${formData.notes ? ` - ${formData.notes}` : ''}` : 
-            formData.notes || null,
+          notes: formData.notes || null,
           goal_id: formData.goal_id === "no_goal" ? null : formData.goal_id || null,
           yield_type: formData.yield_type || null,
           yield_value: formData.yield_value ? parseFloat(formData.yield_value) : 0,
-          auto_calculate_yield: formData.auto_calculate_yield,
-          last_yield_date: formData.auto_calculate_yield ? formData.purchase_date : null
-        });
+          auto_calculate_yield: formData.auto_calculate_yield
+        })
+        .eq("id", investment.id);
 
       if (error) throw error;
 
-      // Se houver objetivo associado, atualizar o valor atual
-      if (formData.goal_id && formData.goal_id !== "no_goal") {
-        const goal = goals.find(g => g.id === formData.goal_id);
-        if (goal) {
-          const { error: goalError } = await supabase
-            .from("investment_goals")
-            .update({
-              current_amount: goal.current_amount + parseFloat(formData.current_value)
-            })
-            .eq("id", formData.goal_id);
-
-          if (goalError) throw goalError;
-        }
-      }
+      toast({
+        title: "Sucesso",
+        description: "Investimento atualizado com sucesso!",
+      });
 
       onSuccess();
     } catch (error) {
-      console.error("Error creating investment:", error);
+      console.error("Error updating investment:", error);
       toast({
         title: "Erro",
-        description: "Erro ao criar investimento",
+        description: "Erro ao atualizar investimento",
         variant: "destructive",
       });
     } finally {
@@ -146,7 +142,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>{t('investments.newInvestment')}</CardTitle>
+        <CardTitle>Editar Investimento</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -179,18 +175,6 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                 </SelectContent>
               </Select>
             </div>
-
-            {formData.type === "cripto" && (
-              <div className="space-y-2">
-                <Label htmlFor="crypto_name">{t('investments.cryptoName')} *</Label>
-                <Input
-                  id="crypto_name"
-                  value={formData.crypto_name}
-                  onChange={(e) => setFormData({...formData, crypto_name: e.target.value})}
-                  placeholder={t('investments.cryptoNamePlaceholder')}
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="amount">{t('investments.amount')} *</Label>
@@ -359,10 +343,10 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
 
           <div className="flex gap-4">
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-              {t('investments.cancel')}
+              Cancelar
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? t('investments.saving') : t('investments.save')}
+              {loading ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </form>

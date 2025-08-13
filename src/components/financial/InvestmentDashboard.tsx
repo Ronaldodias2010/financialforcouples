@@ -3,6 +3,7 @@ import { FinancialCard } from "./FinancialCard";
 import { InvestmentForm } from "./InvestmentForm";
 import { InvestmentWithdrawForm } from "./InvestmentWithdrawForm";
 import { InvestmentList } from "./InvestmentList";
+import { InvestmentEditForm } from "./InvestmentEditForm";
 import { GoalsManager } from "./GoalsManager";
 import { PortfolioChart } from "./PortfolioChart";
 import { RentabilitySimulator } from "./RentabilitySimulator";
@@ -71,6 +72,8 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
   const [activeTab, setActiveTab] = useState("overview");
   const [showInvestmentForm, setShowInvestmentForm] = useState(false);
   const [showWithdrawForm, setShowWithdrawForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
   
   // Local viewMode state that can be changed independently
   const [currentViewMode, setCurrentViewMode] = useState<"both" | "user1" | "user2">(
@@ -276,6 +279,50 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
     });
   };
 
+  const handleEdit = (investment: Investment) => {
+    setSelectedInvestment(investment);
+    setShowEditForm(true);
+  };
+
+  const handleEditSuccess = async () => {
+    await fetchInvestments();
+    await fetchGoals();
+    setShowEditForm(false);
+    setSelectedInvestment(null);
+    toast({
+      title: "Sucesso",
+      description: "Investimento atualizado com sucesso!",
+    });
+  };
+
+  const handleCalculateYields = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('calculate-investment-yields');
+
+      if (error) throw error;
+      
+      if (data?.success) {
+        toast({
+          title: "Sucesso",
+          description: `Rendimentos calculados! ${data.updatedCount || 0} investimentos atualizados.`,
+        });
+        await fetchInvestments();
+      } else {
+        throw new Error(data?.error || 'Erro ao calcular rendimentos');
+      }
+    } catch (error) {
+      console.error('Error calculating yields:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao calcular rendimentos automáticos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (showInvestmentForm) {
     return (
       <div className="container mx-auto p-6">
@@ -321,6 +368,30 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
     );
   }
 
+  if (showEditForm && selectedInvestment) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEditForm(false)}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('nav.back')}
+          </Button>
+          <h2 className="text-2xl font-bold">Editar Investimento</h2>
+        </div>
+        <InvestmentEditForm 
+          investment={selectedInvestment}
+          goals={goals}
+          onSuccess={handleEditSuccess}
+          onCancel={() => setShowEditForm(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -345,6 +416,14 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
           <Button variant="outline" onClick={() => setShowWithdrawForm(true)}>
             <Minus className="h-4 w-4 mr-2" />
             {t('investments.withdraw')}
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleCalculateYields}
+            disabled={loading}
+          >
+            <Calculator className="h-4 w-4 mr-2" />
+            Calcular Rendimentos
           </Button>
         </div>
       </div>
@@ -508,6 +587,7 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
             goals={goals}
             onRefresh={fetchInvestments}
             userPreferredCurrency={userPreferredCurrency}
+            onEdit={handleEdit}
           />
         </TabsContent>
 

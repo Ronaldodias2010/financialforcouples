@@ -33,6 +33,9 @@ interface Investment {
   broker?: string;
   notes?: string;
   goal_id?: string;
+  yield_type?: string;
+  yield_value?: number;
+  auto_calculate_yield?: boolean;
 }
 
 interface InvestmentGoal {
@@ -50,9 +53,10 @@ interface InvestmentListProps {
   goals: InvestmentGoal[];
   onRefresh: () => void;
   userPreferredCurrency: string;
+  onEdit: (investment: Investment) => void;
 }
 
-export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCurrency }: InvestmentListProps) => {
+export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCurrency, onEdit }: InvestmentListProps) => {
   const { t } = useLanguage();
   const { formatCurrency, convertCurrency } = useCurrencyConverter();
   const { toast } = useToast();
@@ -147,6 +151,7 @@ export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCur
                 <TableHead>{t('investments.amount')}</TableHead>
                 <TableHead>{t('investments.currentValueField')}</TableHead>
                 <TableHead>{t('investments.returnPercentage')}</TableHead>
+                <TableHead>Rendimento</TableHead>
                 <TableHead>{t('investments.date')}</TableHead>
                 <TableHead>{t('investments.goal')}</TableHead>
                 <TableHead>{t('investments.actions')}</TableHead>
@@ -216,6 +221,23 @@ export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCur
                       </div>
                     </TableCell>
                     <TableCell>
+                      {investment.yield_type ? (
+                        <div className="text-sm">
+                          <div className="font-medium">
+                            {investment.yield_type === 'percentage' 
+                              ? `${investment.yield_value}% a.m.`
+                              : formatCurrency(investment.yield_value || 0, userPreferredCurrency as any)
+                            }
+                          </div>
+                          <div className="text-muted-foreground">
+                            {investment.auto_calculate_yield ? 'Automático' : 'Manual'}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       {new Date(investment.purchase_date).toLocaleDateString("pt-BR")}
                     </TableCell>
                     <TableCell>
@@ -230,7 +252,11 @@ export const InvestmentList = ({ investments, goals, onRefresh, userPreferredCur
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => onEdit(investment)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <AlertDialog>

@@ -309,6 +309,7 @@ export type Database = {
       investments: {
         Row: {
           amount: number
+          auto_calculate_yield: boolean | null
           broker: string | null
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
@@ -316,6 +317,7 @@ export type Database = {
           goal_id: string | null
           id: string
           is_shared: boolean | null
+          last_yield_date: string | null
           name: string
           notes: string | null
           owner_user: string | null
@@ -323,9 +325,12 @@ export type Database = {
           type: string
           updated_at: string
           user_id: string
+          yield_type: string | null
+          yield_value: number | null
         }
         Insert: {
           amount?: number
+          auto_calculate_yield?: boolean | null
           broker?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
@@ -333,6 +338,7 @@ export type Database = {
           goal_id?: string | null
           id?: string
           is_shared?: boolean | null
+          last_yield_date?: string | null
           name: string
           notes?: string | null
           owner_user?: string | null
@@ -340,9 +346,12 @@ export type Database = {
           type: string
           updated_at?: string
           user_id: string
+          yield_type?: string | null
+          yield_value?: number | null
         }
         Update: {
           amount?: number
+          auto_calculate_yield?: boolean | null
           broker?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
@@ -350,6 +359,7 @@ export type Database = {
           goal_id?: string | null
           id?: string
           is_shared?: boolean | null
+          last_yield_date?: string | null
           name?: string
           notes?: string | null
           owner_user?: string | null
@@ -357,6 +367,8 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+          yield_type?: string | null
+          yield_value?: number | null
         }
         Relationships: [
           {
