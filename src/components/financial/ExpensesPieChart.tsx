@@ -52,20 +52,21 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         .gte('transaction_date', startDate)
         .lte('transaction_date', endDate);
 
-      // Apply user filters based on viewMode
-      if (viewMode === 'user1') {
-        query = query.eq('owner_user', 'user1');
-      } else if (viewMode === 'user2') {
-        query = query.eq('owner_user', 'user2');
-      }
-
-      // Apply couple or individual user filter
+      // Apply couple or individual user filter first
       if (coupleData?.status === 'active') {
         const partnerId = coupleData.user1_id === user.id ? coupleData.user2_id : coupleData.user1_id;
         query = query.or(`user_id.eq.${user.id},user_id.eq.${partnerId}`);
       } else {
         query = query.eq('user_id', user.id);
       }
+
+      // Then apply user filters based on viewMode
+      if (viewMode === 'user1') {
+        query = query.eq('owner_user', 'user1');
+      } else if (viewMode === 'user2') {
+        query = query.eq('owner_user', 'user2');
+      }
+      // If viewMode is 'both', no additional filter needed
 
       const { data, error } = await query;
 
@@ -78,7 +79,7 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       const categoryMap = new Map<string, { amount: number; color: string }>();
       
       data?.forEach((transaction) => {
-        const categoryName = transaction.categories?.name || 'Sem categoria';
+        const categoryName = transaction.categories?.name || t('categories.uncategorized');
         const categoryColor = transaction.categories?.color || '#6366f1';
         const amount = Number(transaction.amount);
         
@@ -194,14 +195,14 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         </div>
         {totalExpenses > 0 && (
           <p className="text-sm text-muted-foreground">
-            Total: R$ {totalExpenses.toFixed(2)}
+            {t('dashboard.total')}: R$ {totalExpenses.toFixed(2)}
           </p>
         )}
       </CardHeader>
       <CardContent>
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="text-muted-foreground">Carregando...</div>
+            <div className="text-muted-foreground">{t('common.loading')}</div>
           </div>
         ) : expenseData.length > 0 ? (
           <div className="h-64">
@@ -210,8 +211,8 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         ) : (
           <div className="flex items-center justify-center h-64">
             <div className="text-center text-muted-foreground">
-              <p>Nenhuma despesa encontrada</p>
-              <p className="text-sm">para o período selecionado</p>
+              <p>{t('dashboard.noExpensesFound')}</p>
+              <p className="text-sm">{t('dashboard.forSelectedPeriod')}</p>
             </div>
           </div>
         )}
