@@ -606,6 +606,7 @@ export type Database = {
           amount: number
           card_id: string | null
           category_id: string | null
+          contract_duration_months: number | null
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
           frequency_days: number
@@ -622,6 +623,7 @@ export type Database = {
           amount: number
           card_id?: string | null
           category_id?: string | null
+          contract_duration_months?: number | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           frequency_days?: number
@@ -638,6 +640,7 @@ export type Database = {
           amount?: number
           card_id?: string | null
           category_id?: string | null
+          contract_duration_months?: number | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           frequency_days?: number
