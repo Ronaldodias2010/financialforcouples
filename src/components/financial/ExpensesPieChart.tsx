@@ -161,12 +161,8 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const value = `${year}-${month}`;
       
-      const monthNames = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-      ];
-      
-      const label = `${monthNames[date.getMonth()]} ${year}`;
+      const monthKey = `months.${date.getMonth()}` as const;
+      const label = `${t(monthKey)} ${year}`;
       options.push({ value, label });
     }
     
