@@ -70,6 +70,7 @@ const translations = {
     // Common categories
     'categories.food': 'Alimentação',
     'categories.transport': 'Transporte',
+    'categories.fuel': 'Combustível',
     'categories.health': 'Saúde',
     'categories.entertainment': 'Entretenimento',
     'categories.education': 'Educação',
@@ -850,6 +851,7 @@ const translations = {
     // Common categories
     'categories.food': 'Food',
     'categories.transport': 'Transportation',
+    'categories.fuel': 'Fuel',
     'categories.health': 'Health',
     'categories.entertainment': 'Entertainment',
     'categories.education': 'Education',
@@ -1630,6 +1632,7 @@ const translations = {
     // Common categories
     'categories.food': 'Alimentación',
     'categories.transport': 'Transporte',
+    'categories.fuel': 'Combustible',
     'categories.health': 'Salud',
     'categories.entertainment': 'Entretenimiento',
     'categories.education': 'Educación',
