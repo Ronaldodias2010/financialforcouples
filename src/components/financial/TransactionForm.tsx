@@ -688,9 +688,13 @@ const invTxn: TablesInsert<'transactions'> = {
       setCardId("");
       setCurrency(userPreferredCurrency);
     } catch (error: any) {
+      const errorMessage = error.message?.includes('transaction_payment_method__check') || error.message?.includes('violates check constraint')
+        ? t('transactionForm.constraintError')
+        : error.message || t('transactionForm.errorMessage');
+      
       toast({
         title: t('transactionForm.error'),
-        description: error.message || t('transactionForm.errorMessage'),
+        description: errorMessage,
         variant: "destructive",
       });
     }

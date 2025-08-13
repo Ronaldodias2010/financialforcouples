@@ -206,6 +206,7 @@ const translations = {
     'transactionForm.transferSuccess': 'Transferência entre contas registrada!',
     'transactionForm.investmentTransferSuccess': 'Transferência para investimento registrada!',
     'transactionForm.paymentTransferNote': 'Transferência de pagamento = PIX no Brasil',
+    'transactionForm.constraintError': 'Método de pagamento inválido. Selecione uma opção válida.',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -1013,6 +1014,7 @@ const translations = {
     'transactionForm.transferSuccess': 'Account transfer registered!',
     'transactionForm.investmentTransferSuccess': 'Investment transfer registered!',
     'transactionForm.paymentTransferNote': 'Payment transfer = ZELLE in the USA',
+    'transactionForm.constraintError': 'Invalid payment method. Please select a valid option.',
     
     // Auth
     'auth.appName': 'Couples Financials',
@@ -1820,6 +1822,7 @@ const translations = {
     'transactionForm.transferSuccess': '¡Transferencia entre cuentas registrada!',
     'transactionForm.investmentTransferSuccess': '¡Transferencia para inversión registrada!',
     'transactionForm.paymentTransferNote': 'Transferencia de pago = PIX en Brasil',
+    'transactionForm.constraintError': 'Método de pago inválido. Selecciona una opción válida.',
     
     // Auth
     'auth.appName': 'Couples Financials',
