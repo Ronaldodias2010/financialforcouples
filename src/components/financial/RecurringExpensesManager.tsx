@@ -172,6 +172,18 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
           description: t('recurring.updated'),
         });
       } else {
+        // Determine owner_user based on couple relationship
+        const { data: coupleData } = await supabase
+          .from('user_couples')
+          .select('user1_id, user2_id')
+          .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        const ownerUser = coupleData 
+          ? (coupleData.user1_id === user.id ? 'user1' : 'user2')
+          : 'user1';
+
         const { error } = await supabase
           .from('recurring_expenses')
           .insert({
@@ -181,7 +193,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? userNames.user2 : u
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
             next_due_date: nextDueDate.toISOString().split('T')[0],
-            owner_user: "user1",
+            owner_user: ownerUser,
             user_id: user.id,
             contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
           });
