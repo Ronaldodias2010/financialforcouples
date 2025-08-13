@@ -124,9 +124,6 @@ resource "aws_s3_object" "maintenance_page" {
   # Force o upload sempre que houver mudanças
   etag = filemd5("../public/503.html")
   
-  # Garantir que seja público para acesso via CloudFront
-  acl = "public-read"
-  
   tags = {
     Name = "503-maintenance-page"
     Environment = var.environment
