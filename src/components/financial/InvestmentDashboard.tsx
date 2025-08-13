@@ -71,7 +71,9 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
   const [showInvestmentForm, setShowInvestmentForm] = useState(false);
   
   // Local viewMode state that can be changed independently
-  const [currentViewMode, setCurrentViewMode] = useState<"both" | "user1" | "user2">(initialViewMode);
+  const [currentViewMode, setCurrentViewMode] = useState<"both" | "user1" | "user2">(
+    isPartOfCouple ? initialViewMode : "user1"
+  );
 
   useEffect(() => {
     if (user) {
@@ -130,7 +132,9 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
       console.log('InvestmentDashboard: Is part of couple:', !!coupleData);
       
       // Apply user filter based on currentViewMode
-      if (currentViewMode !== "both" && coupleData) {
+      if (currentViewMode !== "both") {
+        // For users not in a couple, always show their own data (user1)
+        // For couples, filter based on selected viewMode
         const originalCount = filteredData.length;
         filteredData = filteredData.filter(investment => {
           const ownerUser = investment.owner_user || 'user1';
@@ -181,7 +185,9 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
       console.log('InvestmentDashboard: Raw goals data:', filteredData.length, 'goals');
       
       // Apply user filter based on currentViewMode
-      if (currentViewMode !== "both" && coupleData) {
+      if (currentViewMode !== "both") {
+        // For users not in a couple, always show their own data (user1)
+        // For couples, filter based on selected viewMode
         const originalCount = filteredData.length;
         filteredData = filteredData.filter(goal => {
           const ownerUser = goal.owner_user || 'user1';
@@ -303,6 +309,39 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
         </Button>
       </div>
 
+      {/* View Mode Selector - always visible, like other tabs */}
+      <div className="flex items-center justify-center gap-4 py-4">
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4" />
+          <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
+          <div className="flex gap-2">
+            <Button
+              variant={currentViewMode === "both" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentViewMode("both")}
+              disabled={!isPartOfCouple}
+            >
+              {t('dashboard.both')}
+            </Button>
+            <Button
+              variant={currentViewMode === "user1" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentViewMode("user1")}
+            >
+              {getUserLabel("user1")}
+            </Button>
+            <Button
+              variant={currentViewMode === "user2" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentViewMode("user2")}
+              disabled={!isPartOfCouple}
+            >
+              {getUserLabel("user2")}
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Resumo do Portfólio */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <FinancialCard
@@ -335,45 +374,6 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
         />
       </div>
 
-      {/* Interactive View Mode Selector - only show if part of a couple */}
-      {isPartOfCouple && (
-        <div className="flex items-center justify-center gap-4 py-4 bg-muted/30 rounded-lg border">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
-            <div className="flex gap-2">
-              <Button
-                variant={currentViewMode === "both" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentViewMode("both")}
-              >
-                {t('dashboard.both')}
-              </Button>
-              <Button
-                variant={currentViewMode === "user1" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentViewMode("user1")}
-              >
-                {getUserLabel("user1")}
-              </Button>
-              <Button
-                variant={currentViewMode === "user2" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentViewMode("user2")}
-              >
-                {getUserLabel("user2")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Debug info - show when not part of couple */}
-      {!isPartOfCouple && (
-        <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
-          💡 Para ver as opções "AMBOS", "Usuário 1", "Usuário 2", você precisa estar em um relacionamento de casal.
-        </div>
-      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
