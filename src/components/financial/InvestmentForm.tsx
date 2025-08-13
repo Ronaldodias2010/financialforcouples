@@ -265,7 +265,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                   <SelectValue placeholder="Selecione o tipo de rentabilidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   <SelectItem value="percentage">Percentual (%)</SelectItem>
                   <SelectItem value="fixed_amount">Valor Fixo</SelectItem>
                 </SelectContent>
