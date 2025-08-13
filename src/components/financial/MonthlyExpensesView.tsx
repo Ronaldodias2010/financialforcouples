@@ -21,6 +21,7 @@ interface Transaction {
   amount: number;
   description: string;
   category_id: string;
+  account_id?: string;
   subcategory?: string;
   transaction_date: string; // para cartão, representa o vencimento
   payment_method: string;
@@ -37,6 +38,9 @@ interface Transaction {
     name: string;
     owner_user?: string;
     due_date?: number;
+  };
+  accounts?: {
+    name: string;
   };
 }
 
@@ -150,7 +154,8 @@ const fetchCategories = async () => {
         .select(`
           *,
           categories(name),
-          cards(name, owner_user, due_date)
+          cards(name, owner_user, due_date),
+          accounts(name)
         `)
         .in('user_id', userIds)
         .gte('transaction_date', startDate)
@@ -337,6 +342,9 @@ if (selectedCategory !== "all") {
                           <p>Subcategoria: {transaction.subcategory}</p>
                         )}
                         <p>Pagamento: {getPaymentMethodText(transaction.payment_method)}</p>
+                        {transaction.payment_method !== 'dinheiro' && transaction.account_id && transaction.accounts?.name && (
+                          <p>Conta bancária: {transaction.accounts.name}</p>
+                        )}
                         {transaction.cards?.name && (
                           <p>Cartão: {transaction.cards.name}</p>
                         )}
