@@ -249,7 +249,7 @@ export const FinancialDashboard = () => {
               />
               <FinancialCard
                 title={t('dashboard.expenses')}
-                amount={financialSummary.totalExpenses}
+                amount={getTransactionsExpenses(viewMode)}
                 currency={financialSummary.currency}
                 icon={TrendingDown}
                 type="expense"
