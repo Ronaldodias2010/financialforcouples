@@ -367,6 +367,13 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
           </div>
         </div>
       )}
+      
+      {/* Debug info - show when not part of couple */}
+      {!isPartOfCouple && (
+        <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+          💡 Para ver as opções "AMBOS", "Usuário 1", "Usuário 2", você precisa estar em um relacionamento de casal.
+        </div>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">

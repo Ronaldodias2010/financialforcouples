@@ -39,9 +39,11 @@ export const useCouple = () => {
         }
 
         if (coupleData) {
+          console.log('useCouple: User is part of a couple:', coupleData);
           setCouple(coupleData);
           setIsPartOfCouple(true);
         } else {
+          console.log('useCouple: User is NOT part of a couple');
           setCouple(null);
           setIsPartOfCouple(false);
         }
