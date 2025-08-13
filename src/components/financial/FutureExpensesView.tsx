@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar, CreditCard, AlertCircle, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
+import { useCouple } from "@/hooks/useCouple";
 
 interface FutureExpense {
   id: string;
@@ -20,9 +21,14 @@ interface FutureExpense {
   owner_user?: string;
 }
 
-export const FutureExpensesView = () => {
+interface FutureExpensesViewProps {
+  viewMode: "both" | "user1" | "user2";
+}
+
+export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { user } = useAuth();
   const { names } = usePartnerNames();
+  const { isPartOfCouple } = useCouple();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -31,7 +37,7 @@ export const FutureExpensesView = () => {
     if (user) {
       fetchFutureExpenses();
     }
-  }, [user]);
+  }, [user, viewMode]);
 
   const fetchFutureExpenses = async () => {
     if (!user) return;
@@ -147,10 +153,19 @@ export const FutureExpensesView = () => {
         }
       }
 
-      // Ordenar por data
-      expenses.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+      // Filtrar por viewMode se necessário
+      let filteredExpenses = expenses;
+      if (viewMode !== "both" && isPartOfCouple) {
+        filteredExpenses = expenses.filter(expense => {
+          const ownerUser = expense.owner_user || 'user1';
+          return ownerUser === viewMode;
+        });
+      }
 
-      setFutureExpenses(expenses);
+      // Ordenar por data
+      filteredExpenses.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+
+      setFutureExpenses(filteredExpenses);
     } catch (error) {
       console.error("Error fetching future expenses:", error);
       toast.error("Erro ao carregar gastos futuros");

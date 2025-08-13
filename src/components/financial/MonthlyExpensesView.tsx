@@ -369,7 +369,7 @@ if (selectedCategory !== "all") {
       </TabsContent>
 
       <TabsContent value="future">
-        <FutureExpensesView />
+        <FutureExpensesView viewMode={viewMode} />
       </TabsContent>
     </Tabs>
   );
