@@ -66,7 +66,10 @@ export const FinancialCard = ({
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold text-foreground">
-            {formatCurrency(displayAmount, finalDisplayCurrency)}
+            {title.includes('%') 
+              ? `${displayAmount >= 0 ? '+' : ''}${displayAmount.toFixed(2)}%`
+              : formatCurrency(displayAmount, finalDisplayCurrency)
+            }
           </p>
           {change !== undefined && (
             <p className={cn(
