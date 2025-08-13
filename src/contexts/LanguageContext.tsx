@@ -19,7 +19,7 @@ const translations = {
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Controle suas finanças de forma inteligente',
     'hero.description': 'Idealizado para casais, mas recomendamos para todos. Planeje, economize e invista com ajuda da IA.',
-    'hero.cta.free': 'Baixe Gratuitamente',
+    'hero.cta.free': 'Baixe Gratuitamente (PWA)',
     'hero.cta.premium': 'Experimente a versão com IA',
     
     // Header
@@ -309,7 +309,7 @@ const translations = {
     'testimonials.comingSoon': 'Em breve: vídeo de depoimento',
     
     // Final CTA Section
-    'finalcta.free': 'Baixe Gratuitamente',
+    'finalcta.free': 'Baixe Gratuitamente (PWA)',
     'finalcta.premium': 'Experimente a versão com IA',
     'finalcta.title': 'Transforme Suas Finanças Hoje Mesmo',
     'finalcta.subtitle': 'Junte-se a milhares de pessoas que já estão no controle de suas finanças',
@@ -748,7 +748,7 @@ const translations = {
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Control your finances intelligently',
     'hero.description': 'Designed for couples, but we recommend it for everyone. Plan, save and invest with AI help.',
-    'hero.cta.free': 'Download for Free',
+    'hero.cta.free': 'Download for Free (PWA)',
     'hero.cta.premium': 'Try AI Version',
     
     // Header
@@ -1038,7 +1038,7 @@ const translations = {
     'testimonials.comingSoon': 'Coming soon: testimonial video',
     
     // Final CTA Section
-    'finalcta.free': 'Download for Free',
+    'finalcta.free': 'Download for Free (PWA)',
     'finalcta.premium': 'Try AI Version',
     'finalcta.title': 'Transform Your Finances Today',
     'finalcta.subtitle': 'Join thousands of people who are already in control of their finances',
@@ -1477,7 +1477,7 @@ const translations = {
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Controla tus finanzas de forma inteligente',
     'hero.description': 'Diseñado para parejas, pero lo recomendamos para todos. Planifica, ahorra e invierte con ayuda de IA.',
-    'hero.cta.free': 'Descargar Gratis',
+    'hero.cta.free': 'Descargar Gratis (PWA)',
     'hero.cta.premium': 'Probar Versión con IA',
     
     // Header
@@ -1767,7 +1767,7 @@ const translations = {
     'testimonials.comingSoon': 'Próximamente: video de testimonio',
     
     // Final CTA Section
-    'finalcta.free': 'Descargar Gratis',
+    'finalcta.free': 'Descargar Gratis (PWA)',
     'finalcta.premium': 'Probar Versión con IA',
     'finalcta.title': 'Transforma Tus Finanzas Hoy Mismo',
     'finalcta.subtitle': 'Únete a miles de personas que ya tienen el control de sus finanzas',
