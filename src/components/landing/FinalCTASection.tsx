@@ -64,7 +64,7 @@ const FinalCTASection = () => {
               {t('finalcta.free')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 min-w-64 group" onClick={() => setAiBetaOpen(true)}>
+            <Button size="lg" className="bg-card text-card-foreground border border-white/20 hover:bg-card/90 min-w-64 group" onClick={() => setAiBetaOpen(true)}>
               <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
               {t('finalcta.premium')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

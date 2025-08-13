@@ -50,10 +50,10 @@ const AppDemoSection = () => {
             </div>
             {/* Floating UI elements */}
             <div className="absolute -top-4 -right-4 animate-bounce delay-300">
-              <Card className="p-3 bg-white shadow-glow-green">
+              <Card className="p-3 bg-card border-primary/20 shadow-glow-green">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">{t('demo.growth')}</span>
+                  <span className="text-sm font-medium text-card-foreground">{t('demo.growth')}</span>
                 </div>
               </Card>
             </div>
