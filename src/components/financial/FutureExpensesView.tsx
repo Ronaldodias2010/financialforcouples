@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, CreditCard, AlertCircle, DollarSign } from "lucide-react";
 import { toast } from "sonner";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 
 interface FutureExpense {
   id: string;
@@ -21,34 +22,16 @@ interface FutureExpense {
 
 export const FutureExpensesView = () => {
   const { user } = useAuth();
+  const { names } = usePartnerNames();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
-      fetchUserProfile();
       fetchFutureExpenses();
     }
   }, [user]);
-
-  const fetchUserProfile = async () => {
-    if (!user) return;
-
-    try {
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) throw error;
-      setUserProfile(profile);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  };
 
   const fetchFutureExpenses = async () => {
     if (!user) return;
@@ -264,9 +247,9 @@ export const FutureExpensesView = () => {
 
   const getOwnerName = (ownerUser: string) => {
     if (ownerUser === 'user1') {
-      return userProfile?.display_name || 'Usuário Principal';
+      return names.user1Name;
     } else if (ownerUser === 'user2') {
-      return userProfile?.second_user_name || 'Usuário 2';
+      return names.user2Name;
     }
     return ownerUser;
   };
