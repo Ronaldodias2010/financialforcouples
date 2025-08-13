@@ -77,6 +77,14 @@ const translations = {
     'categories.clothing': 'Vestuário',
     'categories.utilities': 'Utilidades',
     'categories.other': 'Outros',
+    
+    // Onboarding
+    'onboarding.manualTitle': 'Primeiros Passos - Guia Rápido',
+    'onboarding.step1': 'Primeiro, configure suas contas bancárias clicando no botão "Contas" que está piscando. Isso permitirá que você gerencie seus saldos.',
+    'onboarding.step2': 'Agora configure seus cartões de crédito clicando no botão "Cartões" que está piscando. Isso permitirá rastrear seus gastos.',
+    'onboarding.skip': 'Pular',
+    'onboarding.next': 'Próximo',
+    'onboarding.finish': 'Finalizar',
     'dashboard.addTransaction': 'Adicionar Transação',
     'dashboard.viewMode': 'Modo de Visualização',
     'dashboard.both': 'Ambos',
@@ -849,6 +857,14 @@ const translations = {
     'categories.clothing': 'Clothing',
     'categories.utilities': 'Utilities',
     'categories.other': 'Other',
+    
+    // Onboarding
+    'onboarding.manualTitle': 'Getting Started - Quick Guide',
+    'onboarding.step1': 'First, set up your bank accounts by clicking the flashing "Accounts" button. This will allow you to manage your balances.',
+    'onboarding.step2': 'Now set up your credit cards by clicking the flashing "Cards" button. This will allow you to track your expenses.',
+    'onboarding.skip': 'Skip',
+    'onboarding.next': 'Next',
+    'onboarding.finish': 'Finish',
     'dashboard.addTransaction': 'Add Transaction',
     'dashboard.viewMode': 'View Mode',
     'dashboard.both': 'Both',
@@ -1621,6 +1637,14 @@ const translations = {
     'categories.clothing': 'Ropa',
     'categories.utilities': 'Servicios',
     'categories.other': 'Otros',
+    
+    // Onboarding
+    'onboarding.manualTitle': 'Primeros Pasos - Guía Rápida',
+    'onboarding.step1': 'Primero, configure sus cuentas bancarias haciendo clic en el botón "Cuentas" que parpadea. Esto le permitirá gestionar sus saldos.',
+    'onboarding.step2': 'Ahora configure sus tarjetas de crédito haciendo clic en el botón "Tarjetas" que parpadea. Esto le permitirá rastrear sus gastos.',
+    'onboarding.skip': 'Omitir',
+    'onboarding.next': 'Siguiente',
+    'onboarding.finish': 'Finalizar',
     'dashboard.addTransaction': 'Agregar Transacción',
     'dashboard.viewMode': 'Modo de Vista',
     'dashboard.both': 'Ambos',

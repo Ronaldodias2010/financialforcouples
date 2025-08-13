@@ -136,7 +136,20 @@ export const FinancialDashboard = () => {
 
   useEffect(() => {
     const done = typeof window !== 'undefined' && localStorage.getItem('onboarding_v1_done') === 'true';
-    if (!done) setOnboardingStep(1);
+    if (!done) {
+      setOnboardingStep(1);
+      
+      // Scroll to the bottom where the buttons are after a short delay
+      setTimeout(() => {
+        const accountsBtn = document.getElementById('onboarding-accounts-btn');
+        if (accountsBtn) {
+          accountsBtn.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 1000);
+    }
   }, []);
 
   const handleAddTransaction = async (transaction: Transaction) => {
