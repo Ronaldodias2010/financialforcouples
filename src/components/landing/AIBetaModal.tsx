@@ -20,9 +20,9 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md border-0 bg-gradient-to-br from-background via-background to-primary/5 max-h-[90vh]">
         <ScrollArea className="max-h-[80vh] pr-6">
-          <DialogHeader className="text-center space-y-4">
+          <DialogHeader className="text-center space-y-2">
             {/* Logo */}
-            <div className="mx-auto w-28 h-28 relative">
+            <div className="mx-auto w-24 h-24 relative mb-2">
               <img
                 src="/lovable-uploads/2f7e7907-5cf5-4262-adbd-04f4dbd3151b.png"
                 alt="Couples Financials Logo"
@@ -32,8 +32,8 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
             </div>
             
             {/* AI Icon with gradient background */}
-            <div className="mx-auto w-16 h-16 bg-hero-gradient rounded-full flex items-center justify-center shadow-glow-green">
-              <Brain className="w-8 h-8 text-white" />
+            <div className="mx-auto w-14 h-14 bg-hero-gradient rounded-full flex items-center justify-center shadow-glow-green mb-3">
+              <Brain className="w-7 h-7 text-white" />
             </div>
             
             <DialogTitle className="text-2xl font-bold bg-hero-gradient bg-clip-text text-transparent">
