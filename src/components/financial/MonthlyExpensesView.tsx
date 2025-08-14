@@ -14,6 +14,9 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
+import { Download, FileText } from "lucide-react";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface Transaction {
   id: string;
@@ -245,6 +248,115 @@ if (selectedCategory !== "all") {
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
 
+  const exportToCSV = () => {
+    if (transactions.length === 0) {
+      toast({
+        title: "Aviso",
+        description: "Não há transações para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const headers = [
+      'Data',
+      'Descrição',
+      'Categoria',
+      'Subcategoria',
+      'Realizado por',
+      'Pagamento',
+      'Conta/Cartão',
+      'Valor'
+    ];
+
+    const csvData = transactions.map(transaction => [
+      formatDate(transaction.transaction_date),
+      transaction.description,
+      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en'),
+      transaction.subcategory || '',
+      getUserName(transaction.owner_user || 'user1'),
+      getPaymentMethodText(transaction.payment_method),
+      transaction.cards?.name || transaction.accounts?.name || '',
+      formatCurrency(transaction.amount)
+    ]);
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const monthLabel = format(new Date(selectedMonth + '-01'), "MMMM-yyyy", { locale: ptBR });
+    const categoryLabel = selectedCategory === 'all' ? 'todas-categorias' : selectedCategory;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `gastos-${monthLabel}-${categoryLabel}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Sucesso",
+      description: "Arquivo CSV exportado com sucesso",
+    });
+  };
+
+  const exportToPDF = () => {
+    if (transactions.length === 0) {
+      toast({
+        title: "Aviso",
+        description: "Não há transações para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Título
+    doc.setFontSize(16);
+    doc.text('Relatório de Gastos Mensais', 14, 20);
+    
+    // Informações do período
+    const monthLabel = format(new Date(selectedMonth + '-01'), "MMMM 'de' yyyy", { locale: ptBR });
+    const categoryLabel = selectedCategory === 'all' ? 'Todas as categorias' : 
+      categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory;
+    
+    doc.setFontSize(12);
+    doc.text(`Período: ${monthLabel}`, 14, 30);
+    doc.text(`Categoria: ${categoryLabel}`, 14, 38);
+    doc.text(`Total de Gastos: ${formatCurrency(totalExpenses)}`, 14, 46);
+    
+    // Tabela
+    const tableData = transactions.map(transaction => [
+      formatDate(transaction.transaction_date),
+      transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
+      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en'),
+      getUserName(transaction.owner_user || 'user1'),
+      getPaymentMethodText(transaction.payment_method),
+      formatCurrency(transaction.amount)
+    ]);
+
+    autoTable(doc, {
+      head: [['Data', 'Descrição', 'Categoria', 'Usuário', 'Pagamento', 'Valor']],
+      body: tableData,
+      startY: 55,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [66, 66, 66] },
+    });
+
+    const fileName = `gastos-${format(new Date(selectedMonth + '-01'), "MMMM-yyyy", { locale: ptBR })}-${categoryLabel.replace(/\s+/g, '-')}.pdf`;
+    doc.save(fileName);
+
+    toast({
+      title: "Sucesso",
+      description: "Arquivo PDF exportado com sucesso",
+    });
+  };
+
   return (
     <Tabs defaultValue="current" className="space-y-6">
       <TabsList className="grid w-full grid-cols-2">
@@ -309,7 +421,31 @@ if (selectedCategory !== "all") {
           </Card>
 
           <Card className="p-6">
-            <h4 className="text-md font-semibold mb-4">Transações do Período</h4>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-md font-semibold">Transações do Período</h4>
+              {transactions.length > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportToCSV}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportToPDF}
+                    className="flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    PDF
+                  </Button>
+                </div>
+              )}
+            </div>
             
             {transactions.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
