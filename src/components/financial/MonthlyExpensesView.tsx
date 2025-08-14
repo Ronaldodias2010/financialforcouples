@@ -288,7 +288,9 @@ if (selectedCategory !== "all") {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     
-    const monthLabel = format(new Date(selectedMonth + '-01'), "MMMM-yyyy", { locale: ptBR });
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const monthDate = new Date(year, month - 1, 1);
+    const monthLabel = format(monthDate, "MMMM-yyyy", { locale: ptBR });
     const categoryLabel = selectedCategory === 'all' ? 'todas-categorias' : selectedCategory;
     
     link.setAttribute('href', url);
@@ -321,7 +323,9 @@ if (selectedCategory !== "all") {
     doc.text('Relatório de Gastos Mensais', 14, 20);
     
     // Informações do período
-    const monthLabel = format(new Date(selectedMonth + '-01'), "MMMM 'de' yyyy", { locale: ptBR });
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const monthDate = new Date(year, month - 1, 1);
+    const monthLabel = format(monthDate, "MMMM 'de' yyyy", { locale: ptBR });
     const categoryLabel = selectedCategory === 'all' ? 'Todas as categorias' : 
       categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory;
     
@@ -348,7 +352,7 @@ if (selectedCategory !== "all") {
       headStyles: { fillColor: [66, 66, 66] },
     });
 
-    const fileName = `gastos-${format(new Date(selectedMonth + '-01'), "MMMM-yyyy", { locale: ptBR })}-${categoryLabel.replace(/\s+/g, '-')}.pdf`;
+    const fileName = `gastos-${format(monthDate, "MMMM-yyyy", { locale: ptBR })}-${categoryLabel.replace(/\s+/g, '-')}.pdf`;
     doc.save(fileName);
 
     toast({
