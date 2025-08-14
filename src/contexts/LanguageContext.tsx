@@ -365,12 +365,17 @@ const translations = {
     'investments.save': 'Salvar Investimento',
     
     // Testimonials
-    'testimonials.title': 'Depoimentos em Vídeo',
-    'testimonials.subtitle': 'Casais Reais',
-    'testimonials.description': 'Aumente a confiança com histórias reais de quem já usa.',
-    'testimonials.videoAlt': 'Capa ilustrativa do depoimento em vídeo de um casal real',
-    'testimonials.playButton': 'Reproduzir depoimento em vídeo',
-    'testimonials.comingSoon': 'Em breve: vídeo de depoimento',
+    'testimonials.title': 'O que nossos usuários',
+    'testimonials.subtitle': 'estão falando',
+    'testimonials.description': 'Histórias reais de pessoas que transformaram suas finanças com nossa plataforma.',
+    'testimonials.couple1.names': 'Maria & Carlos',
+    'testimonials.couple1.text': 'Antes do Couples Financials, vivíamos brigando por causa de dinheiro e não conseguíamos nos organizar financeiramente. Hoje, após 8 meses usando a plataforma, conseguimos quitar nossas dívidas, fazer uma reserva de emergência e até planejar nossa lua de mel. A ferramenta realmente mudou nossa vida para melhor e trouxe harmonia para nosso relacionamento.',
+    'testimonials.couple2.names': 'João & Lucia',
+    'testimonials.couple2.text': 'Éramos completamente desorganizados com nosso dinheiro. Cada um gastava sem saber o que o outro estava fazendo. Com o app, conseguimos visualizar tudo de forma clara e tomar decisões juntos. Em apenas 6 meses conseguimos economizar para a entrada do nosso apartamento. É incrível como uma ferramenta pode mudar tanto a vida de um casal.',
+    'testimonials.single1.name': 'Rafael Silva',
+    'testimonials.single1.text': 'Eu sei que a ferramenta aparentemente é voltada para casais, mas eu utilizo no formato "Single" e posso afirmar que é realmente uma das melhores ferramentas para controle orçamentário que já usei. A interface é intuitiva, os relatórios são detalhados e a IA me ajuda muito no planejamento financeiro. Recomendo para qualquer pessoa, mesmo solteira.',
+    'testimonials.single2.name': 'Thiago Costa',
+    'testimonials.single2.text': 'A facilidade de utilização do app via WhatsApp é um divisor de águas entre as aplicações convencionais e esta aplicação. As outras que existem no mercado, mesmo com interação de IA, não são tão perfeitas e bem acabadas quanto esta, e nem têm metade das possibilidades que este app oferece. É simplesmente revolucionário poder controlar minhas finanças apenas falando com o robô.',
     
     // Final CTA Section
     'finalcta.free': 'Baixe Gratuitamente (PWA)',
@@ -1179,12 +1184,17 @@ const translations = {
     'investments.save': 'Save Investment',
     
     // Testimonials
-    'testimonials.title': 'Video Testimonials',
-    'testimonials.subtitle': 'Real Couples',
-    'testimonials.description': 'Build confidence with real stories from users.',
-    'testimonials.videoAlt': 'Illustrative cover of a real couple video testimonial',
-    'testimonials.playButton': 'Play video testimonial',
-    'testimonials.comingSoon': 'Coming soon: testimonial video',
+    'testimonials.title': 'What our users',
+    'testimonials.subtitle': 'are saying',
+    'testimonials.description': 'Real stories from people who transformed their finances with our platform.',
+    'testimonials.couple1.names': 'Maria & Carlos',
+    'testimonials.couple1.text': 'Before Couples Financials, we used to fight over money and couldn\'t get our finances organized. Today, after 8 months using the platform, we managed to pay off our debts, build an emergency fund, and even plan our honeymoon. The tool really changed our lives for the better and brought harmony to our relationship.',
+    'testimonials.couple2.names': 'John & Lucia',
+    'testimonials.couple2.text': 'We were completely disorganized with our money. Each of us spent without knowing what the other was doing. With the app, we can see everything clearly and make decisions together. In just 6 months we managed to save for the down payment on our apartment. It\'s amazing how a tool can change a couple\'s life so much.',
+    'testimonials.single1.name': 'Rafael Silva',
+    'testimonials.single1.text': 'I know the tool is apparently designed for couples, but I use it in "Single" format and I can say it\'s really one of the best budgeting tools I\'ve ever used. The interface is intuitive, the reports are detailed, and the AI helps me a lot with financial planning. I recommend it to anyone, even single people.',
+    'testimonials.single2.name': 'Thiago Costa',
+    'testimonials.single2.text': 'The ease of using the app via WhatsApp is a game changer between conventional applications and this one. The others on the market, even with AI interaction, are not as perfect and polished as this one, and don\'t have half the possibilities that this app offers. It\'s simply revolutionary to be able to control my finances just by talking to the bot.',
     
     // Final CTA Section
     'finalcta.free': 'Download for Free (PWA)',
@@ -1993,12 +2003,17 @@ const translations = {
     'investments.save': 'Guardar Inversión',
     
     // Testimonials
-    'testimonials.title': 'Testimonios en Video',
-    'testimonials.subtitle': 'Parejas Reales',
-    'testimonials.description': 'Aumenta la confianza con historias reales de usuarios.',
-    'testimonials.videoAlt': 'Portada ilustrativa del testimonio en video de una pareja real',
-    'testimonials.playButton': 'Reproducir testimonio en video',
-    'testimonials.comingSoon': 'Próximamente: video de testimonio',
+    'testimonials.title': 'Lo que dicen nuestros',
+    'testimonials.subtitle': 'usuarios',
+    'testimonials.description': 'Historias reales de personas que transformaron sus finanzas con nuestra plataforma.',
+    'testimonials.couple1.names': 'María & Carlos',
+    'testimonials.couple1.text': 'Antes de Couples Financials, solíamos pelear por dinero y no podíamos organizar nuestras finanzas. Hoy, después de 8 meses usando la plataforma, logramos pagar nuestras deudas, hacer un fondo de emergencia e incluso planear nuestra luna de miel. La herramienta realmente cambió nuestras vidas para mejor y trajo armonía a nuestra relación.',
+    'testimonials.couple2.names': 'Juan & Lucía',
+    'testimonials.couple2.text': 'Estábamos completamente desorganizados con nuestro dinero. Cada uno gastaba sin saber lo que hacía el otro. Con la app, podemos ver todo claramente y tomar decisiones juntos. En solo 6 meses logramos ahorrar para el anticipo de nuestro apartamento. Es increíble cómo una herramienta puede cambiar tanto la vida de una pareja.',
+    'testimonials.single1.name': 'Rafael Silva',
+    'testimonials.single1.text': 'Sé que la herramienta aparentemente está diseñada para parejas, pero la uso en formato "Single" y puedo decir que es realmente una de las mejores herramientas de presupuesto que he usado. La interfaz es intuitiva, los informes son detallados y la IA me ayuda mucho con la planificación financiera. La recomiendo a cualquiera, incluso a personas solteras.',
+    'testimonials.single2.name': 'Thiago Costa',
+    'testimonials.single2.text': 'La facilidad de usar la app vía WhatsApp es un divisor de aguas entre las aplicaciones convencionales y esta. Las otras en el mercado, incluso con interacción de IA, no son tan perfectas y pulidas como esta, y no tienen ni la mitad de las posibilidades que ofrece esta app. Es simplemente revolucionario poder controlar mis finanzas solo hablando con el bot.',
     
     // Final CTA Section
     'finalcta.free': 'Descargar Gratis (PWA)',
