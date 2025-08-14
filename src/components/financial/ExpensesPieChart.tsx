@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
+import { format } from 'date-fns';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -110,7 +111,7 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
     try {
       const [year, month] = selectedMonth.split('-');
       const startDate = `${year}-${month}-01`;
-      const endDate = new Date(parseInt(year), parseInt(month), 0).toISOString().split('T')[0];
+      const endDate = format(new Date(parseInt(year), parseInt(month), 0), 'yyyy-MM-dd');
       
       let query = supabase
         .from('transactions')

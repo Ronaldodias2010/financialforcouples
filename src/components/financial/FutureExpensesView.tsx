@@ -8,6 +8,7 @@ import { Calendar, CreditCard, AlertCircle, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
+import { format } from 'date-fns';
 
 interface FutureExpense {
   id: string;
@@ -71,8 +72,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         `)
         .in("user_id", userIds)
         .eq("is_installment", true)
-        .gte("transaction_date", now.toISOString().split('T')[0])
-        .lte("transaction_date", futureDate.toISOString().split('T')[0])
+        .gte("transaction_date", format(now, 'yyyy-MM-dd'))
+        .lte("transaction_date", format(futureDate, 'yyyy-MM-dd'))
         .order("transaction_date", { ascending: true });
 
       // Buscar gastos recorrentes ativos
@@ -86,8 +87,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         `)
         .in("user_id", userIds)
         .eq("is_active", true)
-        .gte("next_due_date", now.toISOString().split('T')[0])
-        .lte("next_due_date", futureDate.toISOString().split('T')[0])
+        .gte("next_due_date", format(now, 'yyyy-MM-dd'))
+        .lte("next_due_date", format(futureDate, 'yyyy-MM-dd'))
         .order("next_due_date", { ascending: true });
 
       // Buscar vencimentos de cartões de crédito
@@ -207,7 +208,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       nextDueDate = new Date(currentYear, currentMonth + 1, dueDay);
     }
     
-    return nextDueDate.toISOString().split('T')[0];
+    return format(nextDueDate, 'yyyy-MM-dd');
   };
 
   const formatCurrency = (value: number) => {

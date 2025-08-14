@@ -5,6 +5,7 @@ import { logger } from '@/utils/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useCallback, useMemo } from 'react';
+import { format } from 'date-fns';
 
 /**
  * Optimized queries for large scale applications
@@ -55,10 +56,10 @@ export const useOptimizedTransactions = (
           .order('transaction_date', { ascending: false });
 
         if (filters.startDate) {
-          query = query.gte('transaction_date', filters.startDate.toISOString().split('T')[0]);
+          query = query.gte('transaction_date', format(filters.startDate, 'yyyy-MM-dd'));
         }
         if (filters.endDate) {
-          query = query.lte('transaction_date', filters.endDate.toISOString().split('T')[0]);
+          query = query.lte('transaction_date', format(filters.endDate, 'yyyy-MM-dd'));
         }
         if (filters.type) {
           query = query.eq('type', filters.type);
@@ -129,8 +130,8 @@ export const useOptimizedFinancialSummary = (viewMode: 'both' | 'user1' | 'user2
             .from('transactions')
             .select('type, amount, currency, owner_user')
             .eq('user_id', userId)
-            .gte('transaction_date', startOfMonth.toISOString().split('T')[0])
-            .lte('transaction_date', endOfMonth.toISOString().split('T')[0]),
+            .gte('transaction_date', format(startOfMonth, 'yyyy-MM-dd'))
+            .lte('transaction_date', format(endOfMonth, 'yyyy-MM-dd')),
           
           supabase
             .from('accounts')

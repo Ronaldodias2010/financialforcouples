@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
+import { format } from 'date-fns';
 
 interface Transaction {
   id: string;
@@ -204,8 +205,8 @@ export const useFinancialData = () => {
           cards(name)
         `)
         .in('user_id', userIds)
-        .gte('transaction_date', startOfMonth.toISOString().split('T')[0])
-        .lte('transaction_date', endOfMonth.toISOString().split('T')[0])
+        .gte('transaction_date', format(startOfMonth, 'yyyy-MM-dd'))
+        .lte('transaction_date', format(endOfMonth, 'yyyy-MM-dd'))
         .order('transaction_date', { ascending: false });
 
       if (error) throw error;
@@ -334,8 +335,8 @@ export const useFinancialData = () => {
         .from('transactions')
         .select('*')
         .in('user_id', userIds)
-        .gte('transaction_date', startOfPrevMonth.toISOString().split('T')[0])
-        .lte('transaction_date', endOfPrevMonth.toISOString().split('T')[0]);
+        .gte('transaction_date', format(startOfPrevMonth, 'yyyy-MM-dd'))
+        .lte('transaction_date', format(endOfPrevMonth, 'yyyy-MM-dd'));
 
       if (error) throw error;
 

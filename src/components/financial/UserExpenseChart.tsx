@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
+import { format } from 'date-fns';
 
 // Cores para diferenciação visual
 const CHART_COLORS = {
@@ -119,8 +120,8 @@ export const UserExpenseChart = () => {
         .from('transactions')
         .select('owner_user, amount, transaction_date, type')
         .in('user_id', userIds)
-        .gte('transaction_date', startDate.toISOString().split('T')[0])
-        .lte('transaction_date', endDate.toISOString().split('T')[0]);
+        .gte('transaction_date', format(startDate, 'yyyy-MM-dd'))
+        .lte('transaction_date', format(endDate, 'yyyy-MM-dd'));
 
       if (error) throw error;
       
