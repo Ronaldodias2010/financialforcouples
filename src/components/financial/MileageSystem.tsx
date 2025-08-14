@@ -137,6 +137,7 @@ export const MileageSystem = () => {
   };
 
   const loadData = async () => {
+    console.log('MileageSystem: loadData called with viewMode:', viewMode);
     await Promise.all([
       loadCards(),
       loadMileageRules(),
