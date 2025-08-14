@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -64,6 +64,7 @@ export type Database = {
           card_id: string | null
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
+          existing_miles: number | null
           id: string
           is_active: boolean
           miles_per_amount: number
@@ -77,6 +78,7 @@ export type Database = {
           card_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          existing_miles?: number | null
           id?: string
           is_active?: boolean
           miles_per_amount?: number
@@ -90,6 +92,7 @@ export type Database = {
           card_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          existing_miles?: number | null
           id?: string
           is_active?: boolean
           miles_per_amount?: number
@@ -985,9 +988,9 @@ export type Database = {
       create_manual_premium_access: {
         Args: {
           p_email: string
-          p_user_id: string
-          p_start_date?: string
           p_end_date?: string
+          p_start_date?: string
+          p_user_id: string
         }
         Returns: string
       }
@@ -1016,7 +1019,7 @@ export type Database = {
         Returns: string
       }
       verify_temp_password: {
-        Args: { password: string; hash: string }
+        Args: { hash: string; password: string }
         Returns: boolean
       }
     }

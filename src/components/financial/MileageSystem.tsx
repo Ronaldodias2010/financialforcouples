@@ -30,6 +30,7 @@ interface MileageRule {
   amount_threshold: number;
   currency: string;
   is_active: boolean;
+  existing_miles?: number;
   card?: Card;
 }
 
@@ -76,7 +77,8 @@ export const MileageSystem = () => {
     card_brand: "",
     miles_per_amount: 1,
     amount_threshold: 1,
-    currency: "BRL" as "BRL" | "USD" | "EUR"
+    currency: "BRL" as "BRL" | "USD" | "EUR",
+    existing_miles: 0
   });
 
   const [goalForm, setGoalForm] = useState({
@@ -170,18 +172,33 @@ export const MileageSystem = () => {
   };
 
   const loadTotalMiles = async () => {
-    const { data, error } = await supabase
+    // Get miles from history
+    const { data: historyData, error: historyError } = await supabase
       .from("mileage_history")
       .select("miles_earned")
       .eq("user_id", user?.id);
 
-    if (error) {
-      console.error("Error loading total miles:", error);
+    if (historyError) {
+      console.error("Error loading miles history:", historyError);
       return;
     }
 
-    const total = data?.reduce((sum, record) => sum + Number(record.miles_earned), 0) || 0;
-    setTotalMiles(total);
+    // Get existing miles from active rules
+    const { data: rulesData, error: rulesError } = await supabase
+      .from("card_mileage_rules")
+      .select("existing_miles")
+      .eq("user_id", user?.id)
+      .eq("is_active", true);
+
+    if (rulesError) {
+      console.error("Error loading rules:", rulesError);
+      return;
+    }
+
+    const historyMiles = historyData?.reduce((sum, record) => sum + Number(record.miles_earned), 0) || 0;
+    const existingMiles = rulesData?.reduce((sum, rule) => sum + Number(rule.existing_miles || 0), 0) || 0;
+    
+    setTotalMiles(historyMiles + existingMiles);
   };
 
   const handleCreateRule = async (e: React.FormEvent) => {
@@ -214,10 +231,12 @@ export const MileageSystem = () => {
       card_brand: "",
       miles_per_amount: 1,
       amount_threshold: 1,
-      currency: "BRL"
+      currency: "BRL",
+      existing_miles: 0
     });
     setShowRuleForm(false);
     loadMileageRules();
+    loadTotalMiles();
   };
 
   const handleCreateGoal = async (e: React.FormEvent) => {
@@ -273,6 +292,7 @@ export const MileageSystem = () => {
     }
 
     loadMileageRules();
+    loadTotalMiles();
   };
 
   const deleteRule = async (ruleId: string) => {
@@ -296,6 +316,7 @@ export const MileageSystem = () => {
     });
 
     loadMileageRules();
+    loadTotalMiles();
   };
 
   const deleteGoal = async (goalId: string) => {
@@ -473,6 +494,21 @@ export const MileageSystem = () => {
                         placeholder={t('mileage.thresholdPlaceholder')}
                         required
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="existing_miles">Milhas Existentes</Label>
+                      <Input
+                        id="existing_miles"
+                        type="number"
+                        step="1"
+                        value={ruleForm.existing_miles}
+                        onChange={(e) => setRuleForm({...ruleForm, existing_miles: Number(e.target.value)})}
+                        placeholder="Ex: 15000"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Informe quantas milhas você já possui neste cartão
+                      </p>
                     </div>
                   </div>
 
