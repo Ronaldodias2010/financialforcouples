@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useCouple } from "@/hooks/useCouple";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
@@ -19,6 +21,7 @@ interface Card {
   id: string;
   name: string;
   card_type: string;
+  user_id?: string;
 }
 
 interface MileageRule {
@@ -58,12 +61,17 @@ export const MileageSystem = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { couple, isPartOfCouple, getPartnerUserId } = useCouple();
+  const { names } = usePartnerNames();
   
   const [cards, setCards] = useState<Card[]>([]);
   const [mileageRules, setMileageRules] = useState<MileageRule[]>([]);
   const [mileageGoals, setMileageGoals] = useState<MileageGoal[]>([]);
   const [mileageHistory, setMileageHistory] = useState<MileageHistory[]>([]);
   const [totalMiles, setTotalMiles] = useState(0);
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<'both' | 'user1' | 'user2'>('both');
   
   // Form states
   const [showRuleForm, setShowRuleForm] = useState(false);
@@ -92,7 +100,24 @@ export const MileageSystem = () => {
     if (user) {
       loadData();
     }
-  }, [user]);
+  }, [user, viewMode]);
+
+  // Get user IDs to query based on view mode
+  const getUserIdsToQuery = () => {
+    if (!isPartOfCouple || !couple) {
+      return [user?.id];
+    }
+
+    switch (viewMode) {
+      case 'user1':
+        return [couple.user1_id];
+      case 'user2':
+        return [couple.user2_id];
+      case 'both':
+      default:
+        return [couple.user1_id, couple.user2_id];
+    }
+  };
 
   const loadData = async () => {
     await Promise.all([
@@ -105,10 +130,12 @@ export const MileageSystem = () => {
   };
 
   const loadCards = async () => {
+    const userIds = getUserIdsToQuery();
+    
     const { data, error } = await supabase
       .from("cards")
-      .select("id, name, card_type")
-      .eq("user_id", user?.id)
+      .select("id, name, card_type, user_id")
+      .in("user_id", userIds.filter(Boolean))
       .eq("card_type", "credit");
 
     if (error) {
@@ -120,13 +147,15 @@ export const MileageSystem = () => {
   };
 
   const loadMileageRules = async () => {
+    const userIds = getUserIdsToQuery();
+    
     const { data, error } = await supabase
       .from("card_mileage_rules")
       .select(`
         *,
-        cards:card_id (id, name, card_type)
+        cards:card_id (id, name, card_type, user_id)
       `)
-      .eq("user_id", user?.id)
+      .in("user_id", userIds.filter(Boolean))
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -138,10 +167,12 @@ export const MileageSystem = () => {
   };
 
   const loadMileageGoals = async () => {
+    const userIds = getUserIdsToQuery();
+    
     const { data, error } = await supabase
       .from("mileage_goals")
       .select("*")
-      .eq("user_id", user?.id)
+      .in("user_id", userIds.filter(Boolean))
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -153,13 +184,15 @@ export const MileageSystem = () => {
   };
 
   const loadMileageHistory = async () => {
+    const userIds = getUserIdsToQuery();
+    
     const { data, error } = await supabase
       .from("mileage_history")
       .select(`
         *,
-        cards:card_id (id, name, card_type)
+        cards:card_id (id, name, card_type, user_id)
       `)
-      .eq("user_id", user?.id)
+      .in("user_id", userIds.filter(Boolean))
       .order("calculation_date", { ascending: false })
       .limit(50);
 
@@ -172,11 +205,13 @@ export const MileageSystem = () => {
   };
 
   const loadTotalMiles = async () => {
+    const userIds = getUserIdsToQuery();
+    
     // Get miles from history
     const { data: historyData, error: historyError } = await supabase
       .from("mileage_history")
       .select("miles_earned")
-      .eq("user_id", user?.id);
+      .in("user_id", userIds.filter(Boolean));
 
     if (historyError) {
       console.error("Error loading miles history:", historyError);
@@ -187,7 +222,7 @@ export const MileageSystem = () => {
     const { data: rulesData, error: rulesError } = await supabase
       .from("card_mileage_rules")
       .select("existing_miles")
-      .eq("user_id", user?.id)
+      .in("user_id", userIds.filter(Boolean))
       .eq("is_active", true);
 
     if (rulesError) {
@@ -354,6 +389,32 @@ export const MileageSystem = () => {
         </p>
       </div>
 
+      {/* View Mode Selector - Only show if part of couple */}
+      {isPartOfCouple && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium">Visualização</h3>
+                <p className="text-xs text-muted-foreground">
+                  Escolha quais dados de milhagem deseja visualizar
+                </p>
+              </div>
+              <Select value={viewMode} onValueChange={(value: 'both' | 'user1' | 'user2') => setViewMode(value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="both">Ambos</SelectItem>
+                  <SelectItem value="user1">{names.user1Name}</SelectItem>
+                  <SelectItem value="user2">{names.user2Name}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -424,13 +485,13 @@ export const MileageSystem = () => {
                         <SelectTrigger>
                           <SelectValue placeholder={t('mileage.selectCard')} />
                         </SelectTrigger>
-                        <SelectContent>
-                          {cards.map((card) => (
-                            <SelectItem key={card.id} value={card.id}>
-                              {card.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
+                         <SelectContent>
+                           {cards.filter(card => card.user_id === user?.id).map((card) => (
+                             <SelectItem key={card.id} value={card.id}>
+                               {card.name}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
                       </Select>
                     </div>
 
