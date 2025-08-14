@@ -497,7 +497,7 @@ export const MileageSystem = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="existing_miles">Milhas Existentes</Label>
+                      <Label htmlFor="existing_miles">{t('mileage.existingMiles')}</Label>
                       <Input
                         id="existing_miles"
                         type="number"
