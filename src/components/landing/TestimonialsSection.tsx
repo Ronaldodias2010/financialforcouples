@@ -111,7 +111,7 @@ const TestimonialsSection = () => {
             onClick={() => {
               const subject = encodeURIComponent(t('testimonials.emailSubject'));
               const body = encodeURIComponent(t('testimonials.emailBody'));
-              window.open(`mailto:contact@couplesfinancials.com?subject=${subject}&body=${body}`);
+              window.open(`mailto:contato@couplesfinancials.com?subject=${subject}&body=${body}`);
             }}
             className="px-8 py-3 text-lg font-semibold"
             variant="default"
