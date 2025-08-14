@@ -76,6 +76,10 @@ export const CategoryManager = () => {
       'pet': 'Pet',
       'gift': 'Presente',
       'donation': 'Doação',
+      'basic bills': 'Contas Básicas',
+      'gift or donation': 'Presente ou Doação',
+      'refund': 'Reembolso',
+      'reimbursement': 'Reembolso',
     },
     en: {
       'alimentacao': 'Food',
@@ -114,6 +118,9 @@ export const CategoryManager = () => {
       'pet': 'Pet',
       'presente': 'Gift',
       'doacao': 'Donation',
+      'contas basicas': 'Basic Bills',
+      'presente ou doacao': 'Gift or Donation',
+      'reembolso': 'Refund',
     },
     es: {
       'alimentacao': 'Comida',
@@ -183,13 +190,27 @@ export const CategoryManager = () => {
       'gift': 'Regalo',
       'doacao': 'Donación',
       'donation': 'Donación',
+      'contas basicas': 'Cuentas Básicas',
+      'basic bills': 'Cuentas Básicas',
+      'presente ou doacao': 'Regalo o Donación',
+      'gift or donation': 'Regalo o Donación',
+      'reembolso': 'Reembolso',
+      'refund': 'Reembolso',
+      'reimbursement': 'Reembolso',
     }
   };
 
   const translateCategoryName = (name: string, lang: 'pt' | 'en' | 'es') => {
     const key = normalize(name);
     const translations = categoryTranslations[lang];
-    return translations?.[key] ?? name;
+    const translated = translations?.[key];
+    
+    // Se não encontrou tradução e não é português, retorna o nome original
+    if (!translated && lang !== 'pt') {
+      return name;
+    }
+    
+    return translated ?? name;
   };
 
   useEffect(() => {
