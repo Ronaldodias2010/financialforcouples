@@ -202,7 +202,10 @@ if (selectedCategory !== "all") {
   };
 
   const formatDate = (dateString: string): string => {
-    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+    // Parse the date string manually to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
   };
 
   const getPaymentMethodText = (method: string) => {
