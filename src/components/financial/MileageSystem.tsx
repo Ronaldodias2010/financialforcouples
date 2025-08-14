@@ -507,7 +507,7 @@ export const MileageSystem = () => {
                         placeholder="Ex: 15000"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Informe quantas milhas você já possui neste cartão
+                        {t('mileage.existingMilesDescription')}
                       </p>
                     </div>
                   </div>
