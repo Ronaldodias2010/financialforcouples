@@ -3,6 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useInView from "@/hooks/use-in-view";
 import { Quote, Heart, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import coupleMariaCarlos from "@/assets/testimonials/couple-maria-carlos.jpg";
+import coupleJoaoLucia from "@/assets/testimonials/couple-joao-lucia.jpg";
+import singleRafael from "@/assets/testimonials/single-rafael.jpg";
+import singleThiago from "@/assets/testimonials/single-thiago.jpg";
 
 const TestimonialsSection = () => {
   const { ref, inView } = useInView({ threshold: 0.2 });
@@ -14,8 +18,7 @@ const TestimonialsSection = () => {
       type: 'couple',
       names: t('testimonials.couple1.names'),
       text: t('testimonials.couple1.text'),
-      avatar1: "MA",
-      avatar2: "CR",
+      image: coupleMariaCarlos,
       rating: 5
     },
     {
@@ -23,8 +26,7 @@ const TestimonialsSection = () => {
       type: 'couple',
       names: t('testimonials.couple2.names'),
       text: t('testimonials.couple2.text'),
-      avatar1: "JS",
-      avatar2: "LP",
+      image: coupleJoaoLucia,
       rating: 5
     },
     {
@@ -32,7 +34,7 @@ const TestimonialsSection = () => {
       type: 'single',
       names: t('testimonials.single1.name'),
       text: t('testimonials.single1.text'),
-      avatar1: "RF",
+      image: singleRafael,
       rating: 5
     },
     {
@@ -40,7 +42,7 @@ const TestimonialsSection = () => {
       type: 'single',
       names: t('testimonials.single2.name'),
       text: t('testimonials.single2.text'),
-      avatar1: "TC",
+      image: singleThiago,
       rating: 5
     }
   ];
@@ -64,22 +66,20 @@ const TestimonialsSection = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     {testimonial.type === 'couple' ? (
-                      <div className="flex -space-x-2">
-                        <Avatar className="border-2 border-background">
+                      <div className="relative">
+                        <Avatar className="w-16 h-16 border-2 border-background">
+                          <AvatarImage src={testimonial.image} alt={testimonial.names} className="object-cover" />
                           <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                            {testimonial.avatar1}
+                            {testimonial.names.split(' & ')[0][0]}{testimonial.names.split(' & ')[1][0]}
                           </AvatarFallback>
                         </Avatar>
-                        <Avatar className="border-2 border-background">
-                          <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold">
-                            {testimonial.avatar2}
-                          </AvatarFallback>
-                        </Avatar>
+                        <Heart className="absolute -bottom-1 -right-1 w-6 h-6 text-red-500 fill-red-500 bg-white rounded-full p-1" />
                       </div>
                     ) : (
-                      <Avatar className="border-2 border-primary">
+                      <Avatar className="w-16 h-16 border-2 border-primary">
+                        <AvatarImage src={testimonial.image} alt={testimonial.names} className="object-cover" />
                         <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                          {testimonial.avatar1}
+                          {testimonial.names.split(' ')[0][0]}{testimonial.names.split(' ')[1][0]}
                         </AvatarFallback>
                       </Avatar>
                     )}
@@ -92,9 +92,6 @@ const TestimonialsSection = () => {
                       </div>
                     </div>
                   </div>
-                  {testimonial.type === 'couple' && (
-                    <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-                  )}
                 </div>
                 
                 <div className="relative">

@@ -25,9 +25,9 @@ const Landing = () => {
           <HeroSection />
           <BenefitsSection />
           <AppDemoSection />
-          <TestimonialsSection />
           <PricingSection />
           <WhatsAppSection />
+          <TestimonialsSection />
           <FinalCTASection />
           <FAQSection />
           <Footer />
