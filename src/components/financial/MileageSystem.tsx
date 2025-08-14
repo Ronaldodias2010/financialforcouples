@@ -418,7 +418,10 @@ export const MileageSystem = () => {
             <Button
               variant={viewMode === "both" ? "default" : "outline"}
               size="sm"
-              onClick={() => setViewMode("both")}
+              onClick={() => {
+                console.log('MileageSystem: Clicking "Ambos" button, changing viewMode to "both"');
+                setViewMode("both");
+              }}
             >
               {t('dashboard.both')}
             </Button>
