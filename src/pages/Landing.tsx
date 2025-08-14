@@ -27,6 +27,12 @@ const Landing = () => {
           <AppDemoSection />
           <PricingSection />
           <WhatsAppSection />
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-muted/30 h-32"></div>
+            <div className="relative flex justify-center py-8">
+              <div className="w-24 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+            </div>
+          </div>
           <TestimonialsSection />
           <FinalCTASection />
           <FAQSection />
