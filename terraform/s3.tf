@@ -117,7 +117,6 @@ resource "aws_s3_object" "maintenance_page" {
   key          = "503.html"
   source       = "../public/503.html"
   content_type = "text/html"
-  acl          = "public-read"
   
   # Configurações de cache para página de erro - sem cache
   cache_control = "max-age=0, no-cache, no-store, must-revalidate"
