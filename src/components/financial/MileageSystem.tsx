@@ -14,7 +14,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { supabase } from "@/integrations/supabase/client";
-import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2 } from "lucide-react";
+import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User } from "lucide-react";
 import { format } from "date-fns";
 
 interface Card {
@@ -116,6 +116,18 @@ export const MileageSystem = () => {
       case 'both':
       default:
         return [couple.user1_id, couple.user2_id];
+    }
+  };
+
+  const getUserLabel = (userKey: "user1" | "user2") => {
+    // Always show consistent names regardless of who is viewing
+    if (userKey === "user1") {
+      // Always show User1 name (the creator of the couple)
+      return names.user1Name && names.user1Name !== 'Usuário 1' ? names.user1Name : t('dashboard.user1');
+    }
+    if (userKey === "user2") {
+      // Always show User2 name (the invited user) when available
+      return names.user2Name && names.user2Name !== 'Usuário 2' ? names.user2Name : t('dashboard.user2');
     }
   };
 
@@ -391,28 +403,33 @@ export const MileageSystem = () => {
 
       {/* View Mode Selector - Only show if part of couple */}
       {isPartOfCouple && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium">Visualização</h3>
-                <p className="text-xs text-muted-foreground">
-                  Escolha quais dados de milhagem deseja visualizar
-                </p>
-              </div>
-              <Select value={viewMode} onValueChange={(value: 'both' | 'user1' | 'user2') => setViewMode(value)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both">Ambos</SelectItem>
-                  <SelectItem value="user1">{names.user1Name}</SelectItem>
-                  <SelectItem value="user2">{names.user2Name}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4" />
+          <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === "both" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("both")}
+            >
+              {t('dashboard.both')}
+            </Button>
+            <Button
+              variant={viewMode === "user1" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("user1")}
+            >
+              {getUserLabel("user1")}
+            </Button>
+            <Button
+              variant={viewMode === "user2" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("user2")}
+            >
+              {getUserLabel("user2")}
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Summary Cards */}
