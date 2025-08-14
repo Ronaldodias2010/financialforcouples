@@ -101,10 +101,16 @@ const HeroSection = () => {
                 <Download className="w-4 h-4 sm:w-5 sm:h-5 group-hover:animate-bounce" />
                 <span className="text-sm sm:text-base">{t('hero.cta.free')}</span>
               </Button>
-              <Button size="lg" variant="ctaGradient" className="group w-full sm:w-auto" onClick={() => setAiBetaOpen(true)}>
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
-                <span className="text-sm sm:text-base">{t('hero.cta.premium')}</span>
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Button size="default" variant="secondary" className="group flex-1 sm:flex-none">
+                  <Download className="w-4 h-4 group-hover:animate-bounce" />
+                  <span className="text-sm">Baixe gratuitamente PWA</span>
+                </Button>
+                <Button size="default" variant="ctaGradient" className="group flex-1 sm:flex-none" onClick={() => setAiBetaOpen(true)}>
+                  <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                  <span className="text-sm">{t('hero.cta.premium')}</span>
+                </Button>
+              </div>
               
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
