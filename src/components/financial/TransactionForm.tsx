@@ -100,7 +100,10 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [subcategory, setSubcategory] = useState("");
-  const [transactionDate, setTransactionDate] = useState<Date>(new Date());
+  const [transactionDate, setTransactionDate] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  });
 const [paymentMethod, setPaymentMethod] = useState<
   | "cash"
   | "deposit"
@@ -458,7 +461,10 @@ const transferInserts: TablesInsert<'transactions'>[] = [
 
         toast({ title: t('transactionForm.success'), description: t('transactionForm.transferSuccess') });
         // Reset
-        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(new Date());
+        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(() => {
+          const now = new Date();
+          return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        });
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
         return;
       }
@@ -495,7 +501,10 @@ const invTxn: TablesInsert<'transactions'> = {
 
         toast({ title: t('transactionForm.success'), description: t('transactionForm.investmentTransferSuccess') });
         // Reset
-        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(new Date());
+        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(() => {
+          const now = new Date();
+          return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        });
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setCardId(""); setCurrency(userPreferredCurrency);
         return;
       }
@@ -682,7 +691,10 @@ const invTxn: TablesInsert<'transactions'> = {
       setDescription("");
       setCategoryId("");
       setSubcategory("");
-      setTransactionDate(new Date());
+      setTransactionDate(() => {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      });
       setPaymentMethod("cash");
       setAccountId("");
       setCardId("");
