@@ -376,6 +376,9 @@ const translations = {
     'testimonials.single1.text': 'Eu sei que a ferramenta aparentemente é voltada para casais, mas eu utilizo no formato "Single" e posso afirmar que é realmente uma das melhores ferramentas para controle orçamentário que já usei. A interface é intuitiva, os relatórios são detalhados e a IA me ajuda muito no planejamento financeiro. Recomendo para qualquer pessoa, mesmo solteira.',
     'testimonials.single2.name': 'Thiago Costa',
     'testimonials.single2.text': 'A facilidade de utilização do app via WhatsApp é um divisor de águas entre as aplicações convencionais e esta aplicação. As outras que existem no mercado, mesmo com interação de IA, não são tão perfeitas e bem acabadas quanto esta, e nem têm metade das possibilidades que este app oferece. É simplesmente revolucionário poder controlar minhas finanças apenas falando com o robô.',
+    'testimonials.leaveTestimonial': 'Deixe seu Depoimento',
+    'testimonials.emailSubject': 'Meu Depoimento - Couples Financials',
+    'testimonials.emailBody': 'Olá equipe Couples Financials,\n\nGostaria de compartilhar minha experiência com a plataforma:\n\n[Escreva aqui seu depoimento]\n\nObrigado!',
     
     // Final CTA Section
     'finalcta.free': 'Baixe Gratuitamente (PWA)',
@@ -1195,6 +1198,9 @@ const translations = {
     'testimonials.single1.text': 'I know the tool is apparently designed for couples, but I use it in "Single" format and I can say it\'s really one of the best budgeting tools I\'ve ever used. The interface is intuitive, the reports are detailed, and the AI helps me a lot with financial planning. I recommend it to anyone, even single people.',
     'testimonials.single2.name': 'Thiago Costa',
     'testimonials.single2.text': 'The ease of using the app via WhatsApp is a game changer between conventional applications and this one. The others on the market, even with AI interaction, are not as perfect and polished as this one, and don\'t have half the possibilities that this app offers. It\'s simply revolutionary to be able to control my finances just by talking to the bot.',
+    'testimonials.leaveTestimonial': 'Leave Your Testimonial',
+    'testimonials.emailSubject': 'My Testimonial - Couples Financials',
+    'testimonials.emailBody': 'Hello Couples Financials team,\n\nI would like to share my experience with the platform:\n\n[Write your testimonial here]\n\nThank you!',
     
     // Final CTA Section
     'finalcta.free': 'Download for Free (PWA)',
@@ -2014,6 +2020,9 @@ const translations = {
     'testimonials.single1.text': 'Sé que la herramienta aparentemente está diseñada para parejas, pero la uso en formato "Single" y puedo decir que es realmente una de las mejores herramientas de presupuesto que he usado. La interfaz es intuitiva, los informes son detallados y la IA me ayuda mucho con la planificación financiera. La recomiendo a cualquiera, incluso a personas solteras.',
     'testimonials.single2.name': 'Thiago Costa',
     'testimonials.single2.text': 'La facilidad de usar la app vía WhatsApp es un divisor de aguas entre las aplicaciones convencionales y esta. Las otras en el mercado, incluso con interacción de IA, no son tan perfectas y pulidas como esta, y no tienen ni la mitad de las posibilidades que ofrece esta app. Es simplemente revolucionario poder controlar mis finanzas solo hablando con el bot.',
+    'testimonials.leaveTestimonial': 'Deja tu Testimonio',
+    'testimonials.emailSubject': 'Mi Testimonio - Couples Financials',
+    'testimonials.emailBody': 'Hola equipo de Couples Financials,\n\nMe gustaría compartir mi experiencia con la plataforma:\n\n[Escribe aquí tu testimonio]\n\n¡Gracias!',
     
     // Final CTA Section
     'finalcta.free': 'Descargar Gratis (PWA)',

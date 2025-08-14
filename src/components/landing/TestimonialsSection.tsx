@@ -104,6 +104,15 @@ const TestimonialsSection = () => {
             </Card>
           ))}
         </div>
+        
+        <div className="text-center mt-12">
+          <button
+            onClick={() => window.open('mailto:contact@couplesfinancials.com?subject=' + encodeURIComponent(t('testimonials.emailSubject')) + '&body=' + encodeURIComponent(t('testimonials.emailBody')))}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-elegant"
+          >
+            {t('testimonials.leaveTestimonial')}
+          </button>
+        </div>
       </div>
     </section>
   );
