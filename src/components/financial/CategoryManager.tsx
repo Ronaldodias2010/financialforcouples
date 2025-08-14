@@ -38,28 +38,71 @@ export const CategoryManager = () => {
       .replace(/\s+/g, ' ')
       .trim();
 
-  const categoryTranslations: Record<string, string> = {
-    'alimentacao': 'Food',
-    'combustivel': 'Fuel',
-    'saude': 'Health',
-    'educacao': 'Education',
-    'vestuario': 'Clothing',
-    'viagem': 'Travel',
-    'transporte': 'Transport',
-    'moradia': 'Housing',
-    'salario': 'Salary',
-    'comissao': 'Commission',
-    'renda extra': 'Extra Income',
-    'pagamento de cartao de credito': 'Credit Card Payment',
-    'transferencia': 'Transfer',
+  const categoryTranslations: Record<string, Record<string, string>> = {
+    pt: {
+      'food': 'Alimentação',
+      'fuel': 'Combustível', 
+      'health': 'Saúde',
+      'education': 'Educação',
+      'clothing': 'Vestuário',
+      'travel': 'Viagem',
+      'transport': 'Transporte',
+      'housing': 'Moradia',
+      'salary': 'Salário',
+      'commission': 'Comissão',
+      'extra income': 'Renda Extra',
+      'credit card payment': 'Pagamento de Cartão de Crédito',
+      'transfer': 'Transferência',
+    },
+    en: {
+      'alimentacao': 'Food',
+      'combustivel': 'Fuel',
+      'saude': 'Health',
+      'educacao': 'Education',
+      'vestuario': 'Clothing',
+      'viagem': 'Travel',
+      'transporte': 'Transport',
+      'moradia': 'Housing',
+      'salario': 'Salary',
+      'comissao': 'Commission',
+      'renda extra': 'Extra Income',
+      'pagamento de cartao de credito': 'Credit Card Payment',
+      'transferencia': 'Transfer',
+    },
+    es: {
+      'alimentacao': 'Comida',
+      'food': 'Comida',
+      'combustivel': 'Combustible',
+      'fuel': 'Combustible',
+      'saude': 'Salud',
+      'health': 'Salud',
+      'educacao': 'Educación',
+      'education': 'Educación',
+      'vestuario': 'Ropa',
+      'clothing': 'Ropa',
+      'viagem': 'Viaje',
+      'travel': 'Viaje',
+      'transporte': 'Transporte',
+      'transport': 'Transporte',
+      'moradia': 'Vivienda',
+      'housing': 'Vivienda',
+      'salario': 'Salario',
+      'salary': 'Salario',
+      'comissao': 'Comisión',
+      'commission': 'Comisión',
+      'renda extra': 'Ingresos Extra',
+      'extra income': 'Ingresos Extra',
+      'pagamento de cartao de credito': 'Pago de Tarjeta de Crédito',
+      'credit card payment': 'Pago de Tarjeta de Crédito',
+      'transferencia': 'Transferencia',
+      'transfer': 'Transferencia',
+    }
   };
 
-  const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
-    if (lang === 'en') {
-      const key = normalize(name);
-      return categoryTranslations[key] ?? name;
-    }
-    return name;
+  const translateCategoryName = (name: string, lang: 'pt' | 'en' | 'es') => {
+    const key = normalize(name);
+    const translations = categoryTranslations[lang];
+    return translations?.[key] ?? name;
   };
 
   useEffect(() => {
@@ -432,7 +475,7 @@ export const CategoryManager = () => {
                     className="w-4 h-4 rounded-full border"
                     style={{ backgroundColor: category.color || "#6366f1" }}
                   />
-                  <span className="font-medium">{translateCategoryName(category.name, language === 'es' ? 'en' : language as 'pt' | 'en')}</span>
+                  <span className="font-medium">{translateCategoryName(category.name, language as 'pt' | 'en' | 'es')}</span>
                   <span className="text-xs px-2 py-1 rounded-full bg-muted">
                     {category.category_type === 'income' ? t('categories.type.income') : t('categories.type.expense')}
                   </span>
