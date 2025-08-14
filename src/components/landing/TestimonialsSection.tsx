@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/landing/ui/button";
 import useInView from "@/hooks/use-in-view";
 import { Quote, Heart, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -106,12 +107,17 @@ const TestimonialsSection = () => {
         </div>
         
         <div className="text-center mt-12">
-          <button
-            onClick={() => window.open('mailto:contact@couplesfinancials.com?subject=' + encodeURIComponent(t('testimonials.emailSubject')) + '&body=' + encodeURIComponent(t('testimonials.emailBody')))}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-elegant"
+          <Button
+            onClick={() => {
+              const subject = encodeURIComponent(t('testimonials.emailSubject'));
+              const body = encodeURIComponent(t('testimonials.emailBody'));
+              window.open(`mailto:contact@couplesfinancials.com?subject=${subject}&body=${body}`);
+            }}
+            className="px-8 py-3 text-lg font-semibold"
+            variant="default"
           >
             {t('testimonials.leaveTestimonial')}
-          </button>
+          </Button>
         </div>
       </div>
     </section>
