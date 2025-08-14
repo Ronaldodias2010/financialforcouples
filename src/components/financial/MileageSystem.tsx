@@ -105,16 +105,21 @@ export const MileageSystem = () => {
   // Get user IDs to query based on view mode
   const getUserIdsToQuery = () => {
     if (!isPartOfCouple || !couple) {
+      console.log('MileageSystem: Single user mode, returning current user ID:', user?.id);
       return [user?.id];
     }
 
+    console.log('MileageSystem: Couple mode, viewMode:', viewMode, 'couple:', couple);
     switch (viewMode) {
       case 'user1':
+        console.log('MileageSystem: Returning user1 ID:', couple.user1_id);
         return [couple.user1_id];
       case 'user2':
+        console.log('MileageSystem: Returning user2 ID:', couple.user2_id);
         return [couple.user2_id];
       case 'both':
       default:
+        console.log('MileageSystem: Returning both IDs:', [couple.user1_id, couple.user2_id]);
         return [couple.user1_id, couple.user2_id];
     }
   };
@@ -180,6 +185,7 @@ export const MileageSystem = () => {
 
   const loadMileageGoals = async () => {
     const userIds = getUserIdsToQuery();
+    console.log('MileageSystem: loadMileageGoals called with userIds:', userIds);
     
     const { data, error } = await supabase
       .from("mileage_goals")
@@ -192,6 +198,7 @@ export const MileageSystem = () => {
       return;
     }
 
+    console.log('MileageSystem: loadMileageGoals data received:', data);
     setMileageGoals(data || []);
   };
 
