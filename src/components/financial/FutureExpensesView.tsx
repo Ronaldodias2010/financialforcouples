@@ -8,6 +8,7 @@ import { Calendar, CreditCard, AlertCircle, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
+import { useLanguage } from "@/hooks/useLanguage";
 import { format } from 'date-fns';
 import { FutureExpensesCalendar } from "./FutureExpensesCalendar";
 
@@ -31,6 +32,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { user } = useAuth();
   const { names } = usePartnerNames();
   const { isPartOfCouple } = useCouple();
+  const { t } = useLanguage();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -280,7 +282,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   if (loading) {
-    return <div>Carregando gastos futuros...</div>;
+    return <div>{t('monthlyExpenses.loading')}</div>;
   }
 
   return (
@@ -289,7 +291,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">Gastos Futuros</h3>
+            <h3 className="text-lg font-semibold">{t('monthlyExpenses.futureExpenses')}</h3>
           </div>
           <div className="flex items-center gap-3">
             <FutureExpensesCalendar 
@@ -297,7 +299,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               getOwnerName={getOwnerName}
             />
             <Badge variant="outline" className="text-lg px-3 py-1">
-              Total: {formatCurrency(totalAmount)}
+              {t('monthlyExpenses.totalFuture')}: {formatCurrency(totalAmount)}
             </Badge>
           </div>
         </div>
@@ -308,7 +310,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             size="sm"
             onClick={() => setSelectedCategory("all")}
           >
-            Todas
+            {t('monthlyExpenses.allFilter')}
           </Button>
           {categories.map(category => (
             <Button
@@ -325,7 +327,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         {filteredExpenses.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nenhum gasto futuro encontrado</p>
+            <p>{t('monthlyExpenses.noFutureExpenses')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -348,7 +350,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                         {expense.category} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Vencimento: {formatDate(expense.due_date)}
+                        {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
                       </p>
                     </div>
                   </div>

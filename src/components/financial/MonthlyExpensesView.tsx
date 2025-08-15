@@ -364,21 +364,21 @@ if (selectedCategory !== "all") {
   return (
     <Tabs defaultValue="current" className="space-y-6">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="current">Gastos Atuais</TabsTrigger>
-        <TabsTrigger value="future">Gastos Futuros</TabsTrigger>
+        <TabsTrigger value="current">{t('monthlyExpenses.currentExpenses')}</TabsTrigger>
+        <TabsTrigger value="future">{t('monthlyExpenses.futureExpenses')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="current">
         <div className="space-y-6">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Gastos Mensais</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('monthlyExpenses.title')}</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
-                <Label>Mês</Label>
+                <Label>{t('monthlyExpenses.month')}</Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o mês" />
+                    <SelectValue placeholder={t('monthlyExpenses.selectMonth')} />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 12 }, (_, i) => {
@@ -397,13 +397,13 @@ if (selectedCategory !== "all") {
               </div>
 
               <div>
-                <Label>Categoria</Label>
+                <Label>{t('monthlyExpenses.category')}</Label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todas as categorias" />
+                    <SelectValue placeholder={t('monthlyExpenses.allCategories')} />
                   </SelectTrigger>
                   <SelectContent>
-<SelectItem value="all">Todas as categorias</SelectItem>
+                    <SelectItem value="all">{t('monthlyExpenses.allCategories')}</SelectItem>
                     {categoryOptions.map((opt) => (
                       <SelectItem key={opt.key} value={opt.key}>
                         {opt.name}
@@ -416,7 +416,7 @@ if (selectedCategory !== "all") {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg">
-                <p className="text-sm text-red-600 dark:text-red-400">Total de Gastos</p>
+                <p className="text-sm text-red-600 dark:text-red-400">{t('monthlyExpenses.totalExpenses')}</p>
                 <p className="text-2xl font-bold text-red-700 dark:text-red-300">
                   {formatCurrency(totalExpenses)}
                 </p>
@@ -426,7 +426,7 @@ if (selectedCategory !== "all") {
 
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="text-md font-semibold">Transações do Período</h4>
+              <h4 className="text-md font-semibold">{t('monthlyExpenses.periodTransactions')}</h4>
               {transactions.length > 0 && (
                 <div className="flex gap-2">
                   <Button
@@ -453,7 +453,7 @@ if (selectedCategory !== "all") {
             
             {transactions.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                Nenhuma transação encontrada para o período selecionado.
+                {t('monthlyExpenses.noTransactions')}
               </p>
             ) : (
               <div className="space-y-4">
@@ -475,14 +475,14 @@ if (selectedCategory !== "all") {
                       <div className="text-sm text-muted-foreground space-y-1">
                         <p>
                           <span className="font-medium text-primary">
-                            Realizado por: {getUserName(transaction.owner_user || 'user1')}
+                            {t('monthlyExpenses.performedBy')}: {getUserName(transaction.owner_user || 'user1')}
                           </span>
                         </p>
-                        <p>Categoria: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
+                        <p>{t('monthlyExpenses.category')}: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
                         {transaction.subcategory && (
-                          <p>Subcategoria: {transaction.subcategory}</p>
+                          <p>{t('monthlyExpenses.subcategory')}: {transaction.subcategory}</p>
                         )}
-                        <p>Pagamento: {getPaymentMethodText(transaction.payment_method)}</p>
+                        <p>{t('monthlyExpenses.payment')}: {getPaymentMethodText(transaction.payment_method)}</p>
                         {transaction.payment_method !== 'dinheiro' && transaction.account_id && transaction.accounts?.name && (
                           <p>Conta bancária: {transaction.accounts.name}</p>
                         )}
