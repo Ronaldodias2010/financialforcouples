@@ -83,6 +83,11 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
     isPartOfCouple ? initialViewMode : "user1"
   );
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchUserPreferredCurrency();
@@ -439,30 +444,30 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
           </h1>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setShowInvestmentForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('investments.newInvestment')}
-          </Button>
-          <Button variant="outline" onClick={() => setShowWithdrawForm(true)}>
-            <Minus className="h-4 w-4 mr-2" />
-            {t('investments.withdraw')}
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={handleCalculateYields}
-            disabled={loading}
-          >
-            <Calculator className="h-4 w-4 mr-2" />
-            Calcular Rendimentos
-          </Button>
+          {/* Check if PWA mode to adjust layout */}
+          <div className={`flex gap-2 ${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'flex-col sm:flex-row' : 'flex-row'}`}>
+            <Button onClick={() => setShowInvestmentForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('investments.newInvestment')}
+            </Button>
+            <Button variant="outline" onClick={() => setShowWithdrawForm(true)}>
+              <Minus className="h-4 w-4 mr-2" />
+              {t('investments.withdraw')}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* View Mode Selector - always visible, like other tabs */}
+      {/* View Mode Selector - PWA simplified version */}
       <div className="flex items-center justify-center gap-4 py-4">
         <div className="flex items-center gap-2">
-          <User className="h-4 w-4" />
-          <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
+          {/* Check if PWA mode to hide the label */}
+          {!(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) && (
+            <>
+              <User className="h-4 w-4" />
+              <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
+            </>
+          )}
           <div className="flex gap-2">
             <Button
               variant={currentViewMode === "both" ? "default" : "outline"}

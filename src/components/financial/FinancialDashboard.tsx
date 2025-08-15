@@ -211,7 +211,10 @@ export const FinancialDashboard = () => {
   }
 
   if (currentPage === "investments") {
-    return <InvestmentDashboard onBack={() => setCurrentPage("dashboard")} viewMode={viewMode} />;
+    return <InvestmentDashboard onBack={() => {
+      setCurrentPage("dashboard");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }} viewMode={viewMode} />;
   }
 
   if (currentPage === "mileage") {

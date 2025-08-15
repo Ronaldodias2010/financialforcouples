@@ -6,7 +6,7 @@ import { PremiumFeatureGuard } from '@/components/subscription/PremiumFeatureGua
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bell, TrendingUp, Gift, Clock, ArrowLeft } from 'lucide-react';
+import { Bell, TrendingUp, Gift, Clock, ArrowLeft, User } from 'lucide-react';
 
 interface MileagePageProps {
   onBack: () => void;
