@@ -73,6 +73,11 @@ const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, Record<string, string>> = {
     'utilidades': 'Utilities',
     'compras': 'Shopping',
     'viagem': 'Travel',
+    'aposentadoria': 'Retirement',
+    'combustivel': 'Fuel',
+    'conta basica': 'Basic Account',
+    'presente ou doacao': 'Gift or Donation',
+    'reembolso': 'Refund',
   },
   'es': {
     'pagamento de cartao de credito': 'Pago de Tarjeta de Crédito',
@@ -87,6 +92,11 @@ const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, Record<string, string>> = {
     'utilidades': 'Servicios',
     'compras': 'Compras',
     'viagem': 'Viaje',
+    'aposentadoria': 'Jubilación',
+    'combustivel': 'Combustible',
+    'conta basica': 'Cuenta Básica',
+    'presente ou doacao': 'Regalo o Donación',
+    'reembolso': 'Reembolso',
   }
 };
 
