@@ -443,9 +443,9 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
             {t('investments.title')}
           </h1>
         </div>
-        <div className="flex gap-2">
-          {/* Check if PWA mode to adjust layout */}
-          <div className={`flex gap-2 ${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'flex-col sm:flex-row' : 'flex-row'}`}>
+        {/* Action buttons for desktop only */}
+        {!(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) && (
+          <div className="flex gap-2">
             <Button onClick={() => setShowInvestmentForm(true)}>
               <Plus className="h-4 w-4 mr-2" />
               {t('investments.newInvestment')}
@@ -455,8 +455,22 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
               {t('investments.withdraw')}
             </Button>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Action buttons for PWA - below title */}
+      {(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <Button onClick={() => setShowInvestmentForm(true)} className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            {t('investments.newInvestment')}
+          </Button>
+          <Button variant="outline" onClick={() => setShowWithdrawForm(true)} className="w-full sm:w-auto">
+            <Minus className="h-4 w-4 mr-2" />
+            {t('investments.withdraw')}
+          </Button>
+        </div>
+      )}
 
       {/* View Mode Selector - PWA simplified version */}
       <div className="flex items-center justify-center gap-4 py-4">
@@ -530,12 +544,25 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">{t('investments.overview')}</TabsTrigger>
-          <TabsTrigger value="investments">{t('investments.title')}</TabsTrigger>
-          <TabsTrigger value="goals">{t('investments.goals')}</TabsTrigger>
-          <TabsTrigger value="charts">{t('investments.portfolioChart')}</TabsTrigger>
-          <TabsTrigger value="simulator">{t('investments.profitabilitySimulator')}</TabsTrigger>
+        {/* PWA uses two-row layout, desktop uses single row */}
+        <TabsList className={`w-full ${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) 
+          ? 'grid grid-rows-2 grid-cols-3 gap-1 h-auto p-1' 
+          : 'grid grid-cols-5'}`}>
+          <TabsTrigger value="overview" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs' : ''}`}>
+            {t('investments.overview')}
+          </TabsTrigger>
+          <TabsTrigger value="investments" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs' : ''}`}>
+            {t('investments.title')}
+          </TabsTrigger>
+          <TabsTrigger value="goals" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs' : ''}`}>
+            {t('investments.goals')}
+          </TabsTrigger>
+          <TabsTrigger value="charts" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs col-span-1' : ''}`}>
+            {(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'Gráficos' : t('investments.portfolioChart')}
+          </TabsTrigger>
+          <TabsTrigger value="simulator" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs col-span-1' : ''}`}>
+            {(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'Simulador' : t('investments.profitabilitySimulator')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
