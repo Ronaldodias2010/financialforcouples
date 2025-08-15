@@ -131,8 +131,8 @@ const translations = {
     'cards.addCard': 'Adicionar Cartão',
     
     // Accounts
-    'accounts.title': 'Gerenciar Contas',
-    'accounts.manage': 'Gerenciar Contas',
+    'accounts.title': 'Gerenciar Contas Bancárias',
+    'accounts.manage': 'Gerenciar Contas Bancárias',
     'accounts.add': 'Adicionar Conta',
     'accounts.name': 'Nome da Conta',
     'accounts.type': 'Tipo da Conta',
@@ -954,8 +954,8 @@ const translations = {
     'cards.addCard': 'Add Card',
     
     // Accounts
-    'accounts.title': 'Manage Accounts',
-    'accounts.manage': 'Manage Accounts',
+    'accounts.title': 'Manage Bank Accounts',
+    'accounts.manage': 'Manage Bank Accounts',
     'accounts.add': 'Add Account',
     'accounts.name': 'Account Name',
     'accounts.type': 'Account Type',
@@ -1777,8 +1777,8 @@ const translations = {
     'cards.addCard': 'Agregar Tarjeta',
     
     // Accounts
-    'accounts.title': 'Gestionar Cuentas',
-    'accounts.manage': 'Gestionar Cuentas',
+    'accounts.title': 'Gestionar Cuentas Bancarias',
+    'accounts.manage': 'Gestionar Cuentas Bancarias',
     'accounts.add': 'Agregar Cuenta',
     'accounts.name': 'Nombre de Cuenta',
     'accounts.type': 'Tipo de Cuenta',
