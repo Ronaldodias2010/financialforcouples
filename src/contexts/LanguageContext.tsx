@@ -78,6 +78,10 @@ const translations = {
     'categories.housing': 'Moradia',
     'categories.clothing': 'Vestuário',
     'categories.utilities': 'Utilidades',
+    'categories.basicBills': 'Contas Básicas',
+    'categories.giftOrDonation': 'Presente ou Doação',
+    'categories.retirement': 'Aposentadoria',
+    'categories.refund': 'Reembolso',
     'categories.other': 'Outros',
     
     // Onboarding
@@ -957,6 +961,10 @@ const translations = {
     'categories.housing': 'Housing',
     'categories.clothing': 'Clothing',
     'categories.utilities': 'Utilities',
+    'categories.basicBills': 'Basic Bills',
+    'categories.giftOrDonation': 'Gift or Donation',
+    'categories.retirement': 'Retirement',
+    'categories.refund': 'Refund',
     'categories.other': 'Other',
     
     // Onboarding
@@ -1836,6 +1844,10 @@ const translations = {
     'categories.housing': 'Vivienda',
     'categories.clothing': 'Ropa',
     'categories.utilities': 'Servicios',
+    'categories.basicBills': 'Cuentas Básicas',
+    'categories.giftOrDonation': 'Regalo o Donación',
+    'categories.retirement': 'Jubilación',
+    'categories.refund': 'Reembolso',
     'categories.other': 'Otros',
     
     // Onboarding
