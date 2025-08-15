@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { usePWA } from "@/hooks/usePWA";
 import { supabase } from "@/integrations/supabase/client";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { useCouple } from "@/hooks/useCouple";
@@ -27,6 +28,7 @@ import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGua
 import { useSubscription } from "@/hooks/useSubscription";
 import { UserInviteCard } from "@/components/ui/user-invite-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 interface Transaction {
   id: string;
   type: "income" | "expense";
@@ -47,6 +49,7 @@ export const FinancialDashboard = () => {
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
   const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
+  const { isInstalled } = usePWA();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
@@ -424,7 +427,7 @@ export const FinancialDashboard = () => {
           <div className="flex items-center justify-center gap-4 pt-4">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
+              {!isInstalled && <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>}
               <div className="flex gap-2">
                 <Button
                   variant={viewMode === "both" ? "default" : "outline"}
@@ -462,42 +465,75 @@ export const FinancialDashboard = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex justify-center gap-4 border-b">
-          <Button
-            variant={activeTab === "dashboard" ? "default" : "ghost"}
-            onClick={() => setActiveTab("dashboard")}
-            className="pb-2"
-          >
-            {t('nav.dashboard')}
-          </Button>
-          <Button
-            variant={activeTab === "transactions" ? "default" : "ghost"}
-            onClick={() => setActiveTab("transactions")}
-            className="pb-2"
-          >
-            {t('nav.monthlyExpenses')}
-          </Button>
-          <Button
-            variant={activeTab === "income" ? "default" : "ghost"}
-            onClick={() => setActiveTab("income")}
-            className="pb-2"
-          >
-            {t('nav.monthlyIncome')}
-          </Button>
-          <Button
-            variant={activeTab === "categories" ? "default" : "ghost"}
-            onClick={() => setActiveTab("categories")}
-            className="pb-2"
-          >
-            {t('nav.categories')}
-          </Button>
-          <Button
-            variant={activeTab === "recurring" ? "default" : "ghost"}
-            onClick={() => setActiveTab("recurring")}
-            className="pb-2"
-          >
-            {t('nav.recurring')}
-          </Button>
+        <div className={`flex justify-center gap-2 border-b ${isInstalled ? 'flex-wrap max-w-full' : 'gap-4'}`}>
+          <div className={`flex gap-2 ${isInstalled ? 'w-full justify-center' : ''}`}>
+            <Button
+              variant={activeTab === "dashboard" ? "default" : "ghost"}
+              onClick={() => setActiveTab("dashboard")}
+              className={`pb-2 ${isInstalled ? 'text-xs px-2' : ''}`}
+            >
+              {t('nav.dashboard')}
+            </Button>
+            <Button
+              variant={activeTab === "transactions" ? "default" : "ghost"}
+              onClick={() => setActiveTab("transactions")}
+              className={`pb-2 ${isInstalled ? 'text-xs px-2' : ''}`}
+            >
+              {t('nav.monthlyExpenses')}
+            </Button>
+            {!isInstalled && (
+              <Button
+                variant={activeTab === "income" ? "default" : "ghost"}
+                onClick={() => setActiveTab("income")}
+                className="pb-2"
+              >
+                {t('nav.monthlyIncome')}
+              </Button>
+            )}
+          </div>
+          {isInstalled && (
+            <div className="flex gap-2 w-full justify-center">
+              <Button
+                variant={activeTab === "income" ? "default" : "ghost"}
+                onClick={() => setActiveTab("income")}
+                className="pb-2 text-xs px-2"
+              >
+                {t('nav.monthlyIncome')}
+              </Button>
+              <Button
+                variant={activeTab === "categories" ? "default" : "ghost"}
+                onClick={() => setActiveTab("categories")}
+                className="pb-2 text-xs px-2"
+              >
+                {t('nav.categories')}
+              </Button>
+              <Button
+                variant={activeTab === "recurring" ? "default" : "ghost"}
+                onClick={() => setActiveTab("recurring")}
+                className="pb-2 text-xs px-2"
+              >
+                {t('nav.recurring')}
+              </Button>
+            </div>
+          )}
+          {!isInstalled && (
+            <>
+              <Button
+                variant={activeTab === "categories" ? "default" : "ghost"}
+                onClick={() => setActiveTab("categories")}
+                className="pb-2"
+              >
+                {t('nav.categories')}
+              </Button>
+              <Button
+                variant={activeTab === "recurring" ? "default" : "ghost"}
+                onClick={() => setActiveTab("recurring")}
+                className="pb-2"
+              >
+                {t('nav.recurring')}
+              </Button>
+            </>
+          )}
         </div>
 
         {renderTabContent()}
