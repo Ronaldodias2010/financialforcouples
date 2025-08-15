@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v5';
-const STATIC_CACHE_NAME = 'couples-financials-static-v5';
-const API_CACHE_NAME = 'couples-financials-api-v5';
+const CACHE_NAME = 'couples-financials-v6';
+const STATIC_CACHE_NAME = 'couples-financials-static-v6';
+const API_CACHE_NAME = 'couples-financials-api-v6';
 
 const urlsToCache = [
   '/',
