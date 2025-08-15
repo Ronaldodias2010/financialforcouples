@@ -130,6 +130,23 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
   }, [user]);
 
+  // Force refresh for PWA to ensure couple subscription sharing works correctly
+  useEffect(() => {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  (window.navigator as any).standalone || 
+                  document.referrer.includes('android-app://');
+    
+    if (isPWA && user) {
+      // Small delay to ensure authentication is complete
+      const timer = setTimeout(() => {
+        console.log('🔄 [PWA] Force refreshing subscription for PWA mode');
+        checkSubscription();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
   const value = {
     subscribed,
     subscriptionTier,
