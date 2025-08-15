@@ -149,7 +149,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               amount: paymentAmount,
               due_date: nextDueDate,
               type: 'card_payment',
-              category: 'Cartão de Crédito',
+              category: t('transactionForm.creditCard'),
               card_name: card.name,
               owner_user: card.owner_user
             });
@@ -242,13 +242,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'installment':
-        return 'Parcela';
+        return t('installment');
       case 'recurring':
-        return 'Recorrente';
+        return t('recurring');
       case 'card_payment':
-        return 'Vencimento';
+        return t('cardPayment');
       default:
-        return 'Outro';
+        return t('other');
     }
   };
 
@@ -272,6 +272,30 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       return names.user2Name;
     }
     return ownerUser;
+  };
+
+  const translateCategory = (category: string) => {
+    // Mapping common categories to translation keys
+    const categoryMap: { [key: string]: string } = {
+      'Alimentação': 'food',
+      'Transporte': 'transportation', 
+      'Entretenimento': 'entertainment',
+      'Saúde': 'health',
+      'Educação': 'education',
+      'Moradia': 'housing',
+      'Vestuário': 'clothing',
+      'Utilidades': 'utilities',
+      'Compras': 'shopping',
+      'Viagem': 'travel',
+      'Aposentadoria': 'aposentadoria',
+      'Combustível': 'combustivel',
+      'Conta Básica': 'conta basica',
+      'Presente ou Doação': 'presente ou doacao',
+      'Reembolso': 'reembolso',
+      'Cartão de Crédito': 'transactionForm.creditCard'
+    };
+    
+    return categoryMap[category] ? t(categoryMap[category]) : category;
   };
 
   const categories = Array.from(new Set(futureExpenses.map(expense => expense.category)));
@@ -319,7 +343,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               size="sm"
               onClick={() => setSelectedCategory(category)}
             >
-              {category}
+              {translateCategory(category)}
             </Button>
           ))}
         </div>
@@ -346,9 +370,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                           <Badge variant="outline">{expense.installment_info}</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {expense.category} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
-                      </p>
+                       <p className="text-sm text-muted-foreground">
+                         {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
+                       </p>
                       <p className="text-sm text-muted-foreground">
                         {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
                       </p>
