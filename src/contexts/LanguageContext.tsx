@@ -216,7 +216,7 @@ const translations = {
     'travel': 'Viagem',
     'aposentadoria': 'Aposentadoria',
     'combustivel': 'Combustível',
-    'conta basica': 'Conta Básica',
+    'conta basica': 'Basic Bills',
     'presente ou doacao': 'Presente ou Doação',
     'reembolso': 'Reembolso',
     
@@ -1095,7 +1095,7 @@ const translations = {
     'travel': 'Travel',
     'aposentadoria': 'Retirement',
     'combustivel': 'Fuel',
-    'conta basica': 'Basic Account',
+    'conta basica': 'Basic Bills',
     'presente ou doacao': 'Gift or Donation',
     'reembolso': 'Refund',
     
