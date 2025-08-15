@@ -148,7 +148,7 @@ const HeroSection = () => {
                   <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-white/30 border-2 border-white"></div>
                   <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-white/30 border-2 border-white"></div>
                 </div>
-                <span className="ml-1 sm:ml-2">+10k casais já usam</span>
+                <span className="ml-1 sm:ml-2">{t('header.socialProof')}</span>
               </div>
             </div>
           </div>

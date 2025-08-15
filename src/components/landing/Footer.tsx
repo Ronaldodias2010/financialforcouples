@@ -75,7 +75,15 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-background/20 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-background/70">
           <p>&copy; {t('footer.rights')}</p>
-          <div className="flex gap-6 mt-4 md:mt-0">
+          
+          {/* Logo centralizado */}
+          <div className="flex items-center justify-center my-4 md:my-0">
+            <div className="w-10 h-10 bg-hero-gradient rounded-lg flex items-center justify-center">
+              <Heart className="w-6 h-6 text-white" />
+            </div>
+          </div>
+          
+          <div className="flex gap-6">
             <Link to="/privacy" className="hover:text-background transition-colors">{t('footer.privacy')}</Link>
             <Link to="/terms" className="hover:text-background transition-colors">{t('footer.terms')}</Link>
           </div>

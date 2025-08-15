@@ -25,6 +25,7 @@ const translations = {
     // Header
     'header.login': 'Entrar',
     'header.comingSoon': 'Funcionalidade em breve.',
+    'header.socialProof': '+10k casais já usam',
     
     // Benefits Section
     'benefits.title': 'Por que escolher o',
@@ -847,6 +848,7 @@ const translations = {
     // Header
     'header.login': 'Sign in',
     'header.comingSoon': 'Feature coming soon.',
+    'header.socialProof': '+10k couples already use',
     
     // Benefits Section
     'benefits.title': 'Why choose',
@@ -1669,6 +1671,7 @@ const translations = {
     // Header
     'header.login': 'Iniciar sesión',
     'header.comingSoon': 'Funcionalidad próximamente.',
+    'header.socialProof': '+10k parejas ya usan',
     
     // Benefits Section
     'benefits.title': 'Por qué elegir',

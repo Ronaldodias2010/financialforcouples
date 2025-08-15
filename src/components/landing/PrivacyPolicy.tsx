@@ -148,14 +148,13 @@ To exercise your rights, contact us at: privacy@couplesfinancials.com`
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-start">
           <Link to="/">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              {language === 'pt' ? 'Voltar' : 'Back'}
             </Button>
           </Link>
-          <LanguageSelector />
         </div>
       </div>
 
