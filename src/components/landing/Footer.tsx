@@ -1,6 +1,7 @@
 import { Heart, Mail, Phone, MapPin } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
+import logo from "/lovable-uploads/4e601a03-6175-4cab-82d2-bbe463a775dc.png";
 
 const Footer = () => {
   const { t, language } = useLanguage();
@@ -78,9 +79,11 @@ const Footer = () => {
           
           {/* Logo centralizado */}
           <div className="flex items-center justify-center my-4 md:my-0">
-            <div className="w-10 h-10 bg-hero-gradient rounded-lg flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
+            <img 
+              src={logo} 
+              alt="Couples Financials Logo" 
+              className="w-12 h-12 rounded-lg"
+            />
           </div>
           
           <div className="flex gap-6">
