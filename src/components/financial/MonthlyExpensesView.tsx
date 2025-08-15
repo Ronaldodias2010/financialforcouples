@@ -12,7 +12,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS, es } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
 import { Download, FileText } from "lucide-react";
 import jsPDF from 'jspdf';
@@ -58,16 +58,44 @@ const normalizeCategory = (s: string) =>
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim();
-const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, string> = {
-  'pagamento de cartao de credito': 'Credit Card Payment',
-  'transferencia': 'Transfer',
-};
-const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
-  if (lang === 'en') {
-    const key = normalizeCategory(name);
-    return EXPENSE_CATEGORY_TRANSLATIONS[key] ?? name;
+
+const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, Record<string, string>> = {
+  'en': {
+    'pagamento de cartao de credito': 'Credit Card Payment',
+    'transferencia': 'Transfer',
+    'alimentacao': 'Food',
+    'transporte': 'Transportation',
+    'saude': 'Health',
+    'educacao': 'Education',
+    'entretenimento': 'Entertainment',
+    'moradia': 'Housing',
+    'vestuario': 'Clothing',
+    'utilidades': 'Utilities',
+    'compras': 'Shopping',
+    'viagem': 'Travel',
+  },
+  'es': {
+    'pagamento de cartao de credito': 'Pago de Tarjeta de Crédito',
+    'transferencia': 'Transferencia',
+    'alimentacao': 'Alimentación',
+    'transporte': 'Transporte',
+    'saude': 'Salud',
+    'educacao': 'Educación',
+    'entretenimento': 'Entretenimiento',
+    'moradia': 'Vivienda',
+    'vestuario': 'Ropa',
+    'utilidades': 'Servicios',
+    'compras': 'Compras',
+    'viagem': 'Viaje',
   }
-  return name;
+};
+
+const translateCategoryName = (name: string, lang: 'pt' | 'en' | 'es') => {
+  if (lang === 'pt') return name;
+  
+  const key = normalizeCategory(name);
+  const translations = EXPENSE_CATEGORY_TRANSLATIONS[lang];
+  return translations?.[key] ?? name;
 };
 
 export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
@@ -204,11 +232,19 @@ if (selectedCategory !== "all") {
     }).format(value);
   };
 
+  const getLocale = () => {
+    switch (language) {
+      case 'en': return enUS;
+      case 'es': return es;
+      default: return ptBR;
+    }
+  };
+
   const formatDate = (dateString: string): string => {
     // Parse the date string manually to avoid timezone issues
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day);
-    return format(date, "dd/MM/yyyy", { locale: ptBR });
+    return format(date, "dd/MM/yyyy", { locale: getLocale() });
   };
 
   const getPaymentMethodText = (method: string) => {
@@ -272,7 +308,7 @@ if (selectedCategory !== "all") {
     const csvData = transactions.map(transaction => [
       formatDate(transaction.transaction_date),
       transaction.description,
-      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en'),
+      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
       transaction.subcategory || '',
       getUserName(transaction.owner_user || 'user1'),
       getPaymentMethodText(transaction.payment_method),
@@ -290,7 +326,7 @@ if (selectedCategory !== "all") {
     
     const [year, month] = selectedMonth.split('-').map(Number);
     const monthDate = new Date(year, month - 1, 1);
-    const monthLabel = format(monthDate, "MMMM-yyyy", { locale: ptBR });
+    const monthLabel = format(monthDate, "MMMM-yyyy", { locale: getLocale() });
     const categoryLabel = selectedCategory === 'all' ? 'todas-categorias' : selectedCategory;
     
     link.setAttribute('href', url);
@@ -325,9 +361,10 @@ if (selectedCategory !== "all") {
     // Informações do período
     const [year, month] = selectedMonth.split('-').map(Number);
     const monthDate = new Date(year, month - 1, 1);
-    const monthLabel = format(monthDate, "MMMM 'de' yyyy", { locale: ptBR });
-    const categoryLabel = selectedCategory === 'all' ? 'Todas as categorias' : 
-      categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory;
+    const labelFormat = language === 'en' ? "MMMM yyyy" : language === 'es' ? "MMMM 'de' yyyy" : "MMMM 'de' yyyy";
+    const monthLabel = format(monthDate, labelFormat, { locale: getLocale() });
+    const categoryLabel = selectedCategory === 'all' ? t('monthlyExpenses.allCategories') : 
+      translateCategoryName(categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory, language as 'pt' | 'en' | 'es');
     
     doc.setFontSize(12);
     doc.text(`Período: ${monthLabel}`, 14, 30);
@@ -338,7 +375,7 @@ if (selectedCategory !== "all") {
     const tableData = transactions.map(transaction => [
       formatDate(transaction.transaction_date),
       transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
-      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en'),
+      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
       getUserName(transaction.owner_user || 'user1'),
       getPaymentMethodText(transaction.payment_method),
       formatCurrency(transaction.amount)
@@ -352,7 +389,7 @@ if (selectedCategory !== "all") {
       headStyles: { fillColor: [66, 66, 66] },
     });
 
-    const fileName = `gastos-${format(monthDate, "MMMM-yyyy", { locale: ptBR })}-${categoryLabel.replace(/\s+/g, '-')}.pdf`;
+    const fileName = `gastos-${format(monthDate, "MMMM-yyyy", { locale: getLocale() })}-${categoryLabel.replace(/\s+/g, '-')}.pdf`;
     doc.save(fileName);
 
     toast({
@@ -385,7 +422,8 @@ if (selectedCategory !== "all") {
                       const date = new Date();
                       date.setMonth(date.getMonth() - i);
                       const value = format(date, "yyyy-MM");
-                      const label = format(date, "MMMM 'de' yyyy", { locale: ptBR });
+                      const labelFormat = language === 'en' ? "MMMM yyyy" : language === 'es' ? "MMMM 'de' yyyy" : "MMMM 'de' yyyy";
+                      const label = format(date, labelFormat, { locale: getLocale() });
                       return (
                         <SelectItem key={value} value={value}>
                           {label}
@@ -406,7 +444,7 @@ if (selectedCategory !== "all") {
                     <SelectItem value="all">{t('monthlyExpenses.allCategories')}</SelectItem>
                     {categoryOptions.map((opt) => (
                       <SelectItem key={opt.key} value={opt.key}>
-                        {opt.name}
+                        {translateCategoryName(opt.name, language as 'pt' | 'en' | 'es')}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -478,7 +516,7 @@ if (selectedCategory !== "all") {
                             {t('monthlyExpenses.performedBy')}: {getUserName(transaction.owner_user || 'user1')}
                           </span>
                         </p>
-                        <p>{t('monthlyExpenses.category')}: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
+                        <p>{t('monthlyExpenses.category')}: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es')}</p>
                         {transaction.subcategory && (
                           <p>{t('monthlyExpenses.subcategory')}: {transaction.subcategory}</p>
                         )}

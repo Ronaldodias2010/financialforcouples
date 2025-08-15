@@ -6,7 +6,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar as CalendarIcon, CreditCard, AlertCircle, DollarSign } from "lucide-react";
 import { format, parseISO, isSameDay } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS, es } from "date-fns/locale";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface FutureExpense {
   id: string;
@@ -31,6 +32,7 @@ export const FutureExpensesCalendar = ({
 }: FutureExpensesCalendarProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isOpen, setIsOpen] = useState(false);
+  const { t, language } = useLanguage();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -52,16 +54,24 @@ export const FutureExpensesCalendar = ({
     }
   };
 
+  const getLocale = () => {
+    switch (language) {
+      case 'en': return enUS;
+      case 'es': return es;
+      default: return ptBR;
+    }
+  };
+
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'installment':
-        return 'Parcela';
+        return t('installment');
       case 'recurring':
-        return 'Recorrente';
+        return t('recurring');
       case 'card_payment':
-        return 'Vencimento';
+        return t('cardPayment');
       default:
-        return 'Outro';
+        return t('other');
     }
   };
 
@@ -103,14 +113,14 @@ export const FutureExpensesCalendar = ({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />
-          Visualizar no Calendário
+          {t('viewInCalendar')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
-            Calendário de Gastos Futuros
+            {t('calendarTitle')}
           </DialogTitle>
         </DialogHeader>
         
@@ -121,7 +131,7 @@ export const FutureExpensesCalendar = ({
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              locale={ptBR}
+              locale={getLocale()}
               className="rounded-md border-0"
               modifiers={{
                 hasExpenses: datesWithExpenses
@@ -137,7 +147,7 @@ export const FutureExpensesCalendar = ({
             <div className="mt-4 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded bg-primary"></div>
-                <span>Dias com gastos</span>
+                <span>{t('daysWithExpenses')}</span>
               </div>
             </div>
           </Card>
@@ -149,11 +159,11 @@ export const FutureExpensesCalendar = ({
                 <>
                   <div className="border-b pb-3">
                     <h3 className="font-semibold text-lg">
-                      {format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      {format(selectedDate, language === 'en' ? "MMMM d, yyyy" : language === 'es' ? "d 'de' MMMM 'de' yyyy" : "d 'de' MMMM 'de' yyyy", { locale: getLocale() })}
                     </h3>
                     {selectedDateExpenses.length > 0 && (
                       <p className="text-sm text-muted-foreground">
-                        {selectedDateExpenses.length} gasto{selectedDateExpenses.length > 1 ? 's' : ''} • Total: {formatCurrency(totalForSelectedDate)}
+                        {selectedDateExpenses.length} {selectedDateExpenses.length > 1 ? t('expenses') : t('expense')} • Total: {formatCurrency(totalForSelectedDate)}
                       </p>
                     )}
                   </div>
@@ -161,7 +171,7 @@ export const FutureExpensesCalendar = ({
                   {selectedDateExpenses.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
                       <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Nenhum gasto nesta data</p>
+                      <p>{t('noExpensesOnDate')}</p>
                     </div>
                   ) : (
                     <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -203,7 +213,7 @@ export const FutureExpensesCalendar = ({
               ) : (
                 <div className="text-center text-muted-foreground py-8">
                   <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Clique em uma data no calendário para ver os gastos</p>
+                  <p>{t('clickDateToView')}</p>
                 </div>
               )}
             </div>

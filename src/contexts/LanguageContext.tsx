@@ -185,6 +185,32 @@ const translations = {
     'monthlyExpenses.dueDate': 'Vencimento',
     'monthlyExpenses.loading': 'Carregando gastos futuros...',
     
+    // Calendar
+    'viewInCalendar': 'Visualizar no Calendário',
+    'calendarTitle': 'Calendário de Gastos Futuros',
+    'daysWithExpenses': 'Dias com gastos',
+    'noExpensesOnDate': 'Nenhum gasto nesta data',
+    'clickDateToView': 'Clique em uma data no calendário para ver os gastos',
+    'expensesTotal': 'gastos • Total:',
+    'expense': 'gasto',
+    'expenses': 'gastos',
+    // Expense types
+    'installment': 'Parcela',
+    'recurring': 'Recorrente',
+    'cardPayment': 'Vencimento',
+    'other': 'Outro',
+    // Categories (commonly used)
+    'food': 'Alimentação',
+    'transportation': 'Transporte',
+    'health': 'Saúde',
+    'education': 'Educação',
+    'entertainment': 'Entretenimento',
+    'housing': 'Moradia',
+    'clothing': 'Vestuário',
+    'utilities': 'Utilidades',
+    'shopping': 'Compras',
+    'travel': 'Viagem',
+    
     // TransactionForm
     'transactionForm.title': 'Nova Transação',
     'transactionForm.income': 'Receita',
@@ -1029,6 +1055,32 @@ const translations = {
     'monthlyExpenses.dueDate': 'Due date',
     'monthlyExpenses.loading': 'Loading future expenses...',
     
+    // Calendar
+    'viewInCalendar': 'View in Calendar',
+    'calendarTitle': 'Future Expenses Calendar',
+    'daysWithExpenses': 'Days with expenses',
+    'noExpensesOnDate': 'No expenses on this date',
+    'clickDateToView': 'Click on a date in the calendar to view expenses',
+    'expensesTotal': 'expenses • Total:',
+    'expense': 'expense',
+    'expenses': 'expenses',
+    // Expense types
+    'installment': 'Installment',
+    'recurring': 'Recurring',
+    'cardPayment': 'Due Date',
+    'other': 'Other',
+    // Categories (commonly used)
+    'food': 'Food',
+    'transportation': 'Transportation',
+    'health': 'Health',
+    'education': 'Education',
+    'entertainment': 'Entertainment',
+    'housing': 'Housing',
+    'clothing': 'Clothing',
+    'utilities': 'Utilities',
+    'shopping': 'Shopping',
+    'travel': 'Travel',
+    
     // TransactionForm
     'transactionForm.title': 'New Transaction',
     'transactionForm.income': 'Income',
@@ -1872,6 +1924,32 @@ const translations = {
     'monthlyExpenses.noFutureExpenses': 'No se encontraron gastos futuros',
     'monthlyExpenses.dueDate': 'Fecha de vencimiento',
     'monthlyExpenses.loading': 'Cargando gastos futuros...',
+    
+    // Calendar
+    'viewInCalendar': 'Ver en Calendario',
+    'calendarTitle': 'Calendario de Gastos Futuros',
+    'daysWithExpenses': 'Días con gastos',
+    'noExpensesOnDate': 'Sin gastos en esta fecha',
+    'clickDateToView': 'Haga clic en una fecha del calendario para ver los gastos',
+    'expensesTotal': 'gastos • Total:',
+    'expense': 'gasto',
+    'expenses': 'gastos',
+    // Expense types
+    'installment': 'Cuota',
+    'recurring': 'Recurrente',
+    'cardPayment': 'Vencimiento',
+    'other': 'Otro',
+    // Categories (commonly used)
+    'food': 'Alimentación',
+    'transportation': 'Transporte',
+    'health': 'Salud',
+    'education': 'Educación',
+    'entertainment': 'Entretenimiento',
+    'housing': 'Vivienda',
+    'clothing': 'Ropa',
+    'utilities': 'Servicios',
+    'shopping': 'Compras',
+    'travel': 'Viaje',
     
     // TransactionForm
     'transactionForm.title': 'Nueva Transacción',
