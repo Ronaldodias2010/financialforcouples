@@ -97,27 +97,25 @@ export const MileageSystem = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      console.log('MileageSystem: useEffect triggered, user:', !!user, 'viewMode:', viewMode);
+    if (user && couple !== undefined) { // Wait for couple data to be loaded
+      console.log('MileageSystem: useEffect triggered, user:', !!user, 'viewMode:', viewMode, 'couple:', couple);
       loadData();
     }
-  }, [user, viewMode]);
+  }, [user, viewMode, couple]);
 
-  // Force reload when switching to "both" mode
+  // Force refresh when couple data changes
   useEffect(() => {
-    if (viewMode === "both" && isPartOfCouple && user) {
-      console.log('MileageSystem: Force reload for "both" mode');
-      setTimeout(() => {
-        loadData();
-      }, 100);
+    if (user && couple !== undefined) {
+      console.log('MileageSystem: Couple data changed, reloading data');
+      loadData();
     }
-  }, [viewMode, isPartOfCouple, user]);
+  }, [couple, user]);
 
   // Get user IDs to query based on view mode
   const getUserIdsToQuery = () => {
     if (!isPartOfCouple || !couple) {
       console.log('MileageSystem: Single user mode, returning current user ID:', user?.id);
-      return [user?.id];
+      return [user?.id].filter(Boolean);
     }
 
     console.log('MileageSystem: Couple mode, viewMode:', viewMode, 'couple:', couple);

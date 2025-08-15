@@ -13,7 +13,7 @@ interface CoupleData {
 
 export const useCouple = () => {
   const { user } = useAuth();
-  const [couple, setCouple] = useState<CoupleData | null>(null);
+  const [couple, setCouple] = useState<CoupleData | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [isPartOfCouple, setIsPartOfCouple] = useState(false);
 
