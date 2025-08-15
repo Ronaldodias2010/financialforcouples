@@ -192,11 +192,11 @@ export const FutureExpensesCalendar = ({
                                     </Badge>
                                   )}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {expense.category}
-                                  {expense.card_name && ` • ${expense.card_name}`}
-                                  {expense.owner_user && ` • ${getOwnerName(expense.owner_user)}`}
-                                </p>
+                                 <p className="text-xs text-muted-foreground mt-1">
+                                   {t(expense.category?.toLowerCase()) || expense.category}
+                                   {expense.card_name && ` • ${expense.card_name}`}
+                                   {expense.owner_user && ` • ${getOwnerName(expense.owner_user)}`}
+                                 </p>
                               </div>
                             </div>
                             <div className="text-right ml-2">

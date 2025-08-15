@@ -522,15 +522,15 @@ if (selectedCategory !== "all") {
                         )}
                         <p>{t('monthlyExpenses.payment')}: {getPaymentMethodText(transaction.payment_method)}</p>
                         {transaction.payment_method !== 'dinheiro' && transaction.account_id && transaction.accounts?.name && (
-                          <p>Conta bancária: {transaction.accounts.name}</p>
+                          <p>{t('monthlyExpenses.bankAccount')}: {transaction.accounts.name}</p>
                         )}
                         {transaction.cards?.name && (
-                          <p>Cartão: {transaction.cards.name}</p>
+                          <p>{t('monthlyExpenses.card')}: {transaction.cards.name}</p>
                         )}
                         {transaction.cards?.owner_user && (
-                          <p>Proprietário do cartão: {getCardOwnerName(transaction.cards.owner_user)}</p>
+                          <p>{t('monthlyExpenses.cardOwner')}: {getCardOwnerName(transaction.cards.owner_user)}</p>
                         )}
-                        <p>{transaction.payment_method === 'credit_card' ? 'Vencimento' : 'Data'}: {formatDate(transaction.transaction_date)}</p>
+                        <p>{transaction.payment_method === 'credit_card' ? t('monthlyExpenses.dueDate') : t('monthlyExpenses.date')}: {formatDate(transaction.transaction_date)}</p>
                       </div>
                     </div>
                     

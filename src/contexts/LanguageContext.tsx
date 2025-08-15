@@ -184,6 +184,10 @@ const translations = {
     'monthlyExpenses.noFutureExpenses': 'Nenhum gasto futuro encontrado',
     'monthlyExpenses.dueDate': 'Vencimento',
     'monthlyExpenses.loading': 'Carregando gastos futuros...',
+    'monthlyExpenses.card': 'Cartão',
+    'monthlyExpenses.cardOwner': 'Proprietário do Cartão',
+    'monthlyExpenses.bankAccount': 'Conta Bancária',
+    'monthlyExpenses.date': 'Data',
     
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
@@ -210,6 +214,11 @@ const translations = {
     'utilities': 'Utilidades',
     'shopping': 'Compras',
     'travel': 'Viagem',
+    'aposentadoria': 'Aposentadoria',
+    'combustivel': 'Combustível',
+    'conta basica': 'Conta Básica',
+    'presente ou doacao': 'Presente ou Doação',
+    'reembolso': 'Reembolso',
     
     // TransactionForm
     'transactionForm.title': 'Nova Transação',
@@ -1054,6 +1063,10 @@ const translations = {
     'monthlyExpenses.noFutureExpenses': 'No future expenses found',
     'monthlyExpenses.dueDate': 'Due date',
     'monthlyExpenses.loading': 'Loading future expenses...',
+    'monthlyExpenses.card': 'Card',
+    'monthlyExpenses.cardOwner': 'Card Owner',
+    'monthlyExpenses.bankAccount': 'Bank Account',
+    'monthlyExpenses.date': 'Date',
     
     // Calendar
     'viewInCalendar': 'View in Calendar',
@@ -1080,6 +1093,11 @@ const translations = {
     'utilities': 'Utilities',
     'shopping': 'Shopping',
     'travel': 'Travel',
+    'aposentadoria': 'Retirement',
+    'combustivel': 'Fuel',
+    'conta basica': 'Basic Account',
+    'presente ou doacao': 'Gift or Donation',
+    'reembolso': 'Refund',
     
     // TransactionForm
     'transactionForm.title': 'New Transaction',
@@ -1924,6 +1942,10 @@ const translations = {
     'monthlyExpenses.noFutureExpenses': 'No se encontraron gastos futuros',
     'monthlyExpenses.dueDate': 'Fecha de vencimiento',
     'monthlyExpenses.loading': 'Cargando gastos futuros...',
+    'monthlyExpenses.card': 'Tarjeta',
+    'monthlyExpenses.cardOwner': 'Propietario de la Tarjeta',
+    'monthlyExpenses.bankAccount': 'Cuenta Bancaria',
+    'monthlyExpenses.date': 'Fecha',
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',
@@ -1950,6 +1972,11 @@ const translations = {
     'utilities': 'Servicios',
     'shopping': 'Compras',
     'travel': 'Viaje',
+    'aposentadoria': 'Jubilación',
+    'combustivel': 'Combustible',
+    'conta basica': 'Cuenta Básica',
+    'presente ou doacao': 'Regalo o Donación',
+    'reembolso': 'Reembolso',
     
     // TransactionForm
     'transactionForm.title': 'Nueva Transacción',
