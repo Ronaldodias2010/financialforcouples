@@ -76,6 +76,7 @@ const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, Record<string, string>> = {
     'aposentadoria': 'Retirement',
     'combustivel': 'Fuel',
     'conta basica': 'Basic Bills',
+    'contas basicas': 'Basic Bills',
     'presente ou doacao': 'Gift or Donation',
     'reembolso': 'Refund',
   },
@@ -95,7 +96,7 @@ const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, Record<string, string>> = {
     'aposentadoria': 'Jubilación',
     'combustivel': 'Combustible',
     'conta basica': 'Cuenta Básica',
-    'presente ou doacao': 'Regalo o Donación',
+    'contas basicas': 'Cuentas Básicas',
     'reembolso': 'Reembolso',
   }
 };
