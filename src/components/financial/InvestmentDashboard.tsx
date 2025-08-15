@@ -541,12 +541,12 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
 
       {/* Navigation Tabs */}
       <div className="border-b">
-        <nav className="flex space-x-8 overflow-x-auto pb-px">
-          {/* Desktop layout - single line */}
+        <nav className="flex justify-center pb-px">
+          {/* Desktop layout - single line centered */}
           <div className="hidden sm:flex space-x-8">
             {[
               { id: "overview", label: t('investments.overview'), icon: TrendingUp },
-              { id: "investments", label: t('investments.investments'), icon: TrendingUp },
+              { id: "investments", label: t('investments.title'), icon: TrendingUp },
               { id: "goals", label: t('investments.goals'), icon: Target },
               { id: "charts", label: t('investments.portfolioChart'), icon: PieChart },
               { id: "simulator", label: t('investments.profitabilitySimulator'), icon: Calculator }
@@ -576,7 +576,7 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
             <div className="flex space-x-4 justify-center">
               {[
                 { id: "overview", label: t('investments.overview'), icon: TrendingUp },
-                { id: "investments", label: t('investments.investments'), icon: TrendingUp },
+                { id: "investments", label: t('investments.title'), icon: TrendingUp },
                 { id: "goals", label: t('investments.goals'), icon: Target }
               ].map((tab) => {
                 const Icon = tab.icon;
