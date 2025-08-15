@@ -474,11 +474,11 @@ export const FinancialDashboard = () => {
             {/* Desktop layout - single line centered */}
             <div className="hidden sm:flex space-x-8">
               {[
-                { id: "dashboard", label: t('dashboard.dashboard'), icon: TrendingUp },
-                { id: "transactions", label: t('dashboard.monthlyExpenses'), icon: Wallet },
-                { id: "income", label: t('dashboard.monthlyIncome'), icon: TrendingUp },
-                { id: "categories", label: t('categories.title'), icon: Settings },
-                { id: "recurring", label: t('dashboard.recurringExpenses'), icon: TrendingDown }
+                { id: "dashboard", label: "Dashboard", icon: TrendingUp },
+                { id: "transactions", label: "Gastos Mensais", icon: Wallet },
+                { id: "income", label: "Receitas Mensais", icon: TrendingUp },
+                { id: "categories", label: "Categorias", icon: Settings },
+                { id: "recurring", label: "Gastos Recorrentes", icon: TrendingDown }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -504,9 +504,9 @@ export const FinancialDashboard = () => {
             <div className="sm:hidden flex flex-col gap-2 w-full">
               <div className="flex space-x-4 justify-center">
                 {[
-                  { id: "dashboard", label: t('dashboard.dashboard'), icon: TrendingUp },
-                  { id: "transactions", label: t('dashboard.monthlyExpenses'), icon: Wallet },
-                  { id: "income", label: t('dashboard.monthlyIncome'), icon: TrendingUp }
+                  { id: "dashboard", label: "Dashboard", icon: TrendingUp },
+                  { id: "transactions", label: "Gastos Mensais", icon: Wallet },
+                  { id: "income", label: "Receitas Mensais", icon: TrendingUp }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -529,8 +529,8 @@ export const FinancialDashboard = () => {
               </div>
               <div className="flex space-x-4 justify-center">
                 {[
-                  { id: "categories", label: t('nav.categories'), icon: Settings },
-                  { id: "recurring", label: t('nav.recurring'), icon: TrendingDown }
+                  { id: "categories", label: "Categorias", icon: Settings },
+                  { id: "recurring", label: "Gastos Recorrentes", icon: TrendingDown }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
