@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +38,9 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
   const { names } = usePartnerNames();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [investmentTypes, setInvestmentTypes] = useState<{ id: string; name: string }[]>([]);
+  const [openTypeCombobox, setOpenTypeCombobox] = useState(false);
+  const [newTypeName, setNewTypeName] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -52,13 +59,73 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
     auto_calculate_yield: false
   });
 
-  const investmentTypes = [
-    { value: "renda_fixa", label: "Renda Fixa" },
-    { value: "renda_variavel", label: "Renda Variável" },
-    { value: "cripto", label: "Criptomoedas" },
-    { value: "fundos", label: "Fundos" },
-    { value: "tesouro_direto", label: "Tesouro Direto" }
-  ];
+  // Load investment types on component mount
+  useEffect(() => {
+    const loadInvestmentTypes = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("investment_types")
+          .select("id, name")
+          .order("name");
+
+        if (error) throw error;
+        setInvestmentTypes(data || []);
+      } catch (error) {
+        console.error("Error loading investment types:", error);
+      }
+    };
+
+    loadInvestmentTypes();
+  }, [user?.id]);
+
+  // Function to add new investment type
+  const addNewInvestmentType = async () => {
+    if (!newTypeName.trim() || !user?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("investment_types")
+        .insert({
+          user_id: user.id,
+          name: newTypeName.trim()
+        })
+        .select("id, name")
+        .single();
+
+      if (error) {
+        if (error.message.includes("duplicate key")) {
+          toast({
+            title: "Erro",
+            description: "Este tipo de investimento já existe",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
+
+      if (data) {
+        setInvestmentTypes(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+        setFormData(prev => ({ ...prev, type: data.name }));
+        setNewTypeName("");
+        setOpenTypeCombobox(false);
+        
+        toast({
+          title: "Sucesso",
+          description: "Novo tipo de investimento adicionado",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding investment type:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao adicionar tipo de investimento",
+        variant: "destructive",
+      });
+    }
+  };
 
   const currencies = [
     { value: "BRL", label: "Real (BRL)" },
@@ -78,7 +145,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
       return;
     }
 
-    if (formData.type === "cripto" && !formData.crypto_name) {
+    if (formData.type.toLowerCase().includes("cripto") && !formData.crypto_name) {
       toast({
         title: "Erro",
         description: "Nome da criptomoeda é obrigatório",
@@ -103,7 +170,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
           is_shared: formData.is_shared,
           owner_user: formData.owner_user,
           broker: formData.broker || null,
-          notes: formData.type === "cripto" && formData.crypto_name ? 
+          notes: formData.type.toLowerCase().includes("cripto") && formData.crypto_name ? 
             `${formData.crypto_name}${formData.notes ? ` - ${formData.notes}` : ''}` : 
             formData.notes || null,
           goal_id: formData.goal_id === "no_goal" ? null : formData.goal_id || null,
@@ -163,24 +230,88 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
 
             <div className="space-y-2">
               <Label htmlFor="type">{t('investments.type')} *</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) => setFormData({...formData, type: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('investments.selectTypePlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {investmentTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openTypeCombobox} onOpenChange={setOpenTypeCombobox}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openTypeCombobox}
+                    className="w-full justify-between"
+                  >
+                    {formData.type
+                      ? investmentTypes.find((type) => type.name === formData.type)?.name
+                      : t('investments.selectTypePlaceholder')}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput 
+                      placeholder="Buscar tipo..." 
+                      value={newTypeName}
+                      onValueChange={setNewTypeName}
+                    />
+                    <CommandList>
+                      <CommandEmpty>
+                        <div className="p-2">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Nenhum tipo encontrado.
+                          </p>
+                          {newTypeName.trim() && (
+                            <Button 
+                              onClick={addNewInvestmentType}
+                              className="w-full text-left justify-start"
+                              variant="outline"
+                              size="sm"
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Criar "{newTypeName.trim()}"
+                            </Button>
+                          )}
+                        </div>
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {investmentTypes.map((type) => (
+                          <CommandItem
+                            key={type.id}
+                            value={type.name}
+                            onSelect={(currentValue) => {
+                              setFormData(prev => ({ 
+                                ...prev, 
+                                type: currentValue === formData.type ? "" : currentValue 
+                              }));
+                              setOpenTypeCombobox(false);
+                              setNewTypeName("");
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.type === type.name ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {type.name}
+                          </CommandItem>
+                        ))}
+                        {newTypeName.trim() && !investmentTypes.some(type => 
+                          type.name.toLowerCase() === newTypeName.trim().toLowerCase()
+                        ) && (
+                          <CommandItem
+                            value={newTypeName}
+                            onSelect={() => addNewInvestmentType()}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Criar "{newTypeName.trim()}"
+                          </CommandItem>
+                        )}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
-            {formData.type === "cripto" && (
+            {formData.type.toLowerCase().includes("cripto") && (
               <div className="space-y-2">
                 <Label htmlFor="crypto_name">{t('investments.cryptoName')} *</Label>
                 <Input
