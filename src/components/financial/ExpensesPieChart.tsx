@@ -67,6 +67,12 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       'roupa': t('categories.clothing'),
       'utilidades': t('categories.utilities'),
       'contas': t('categories.utilities'),
+      'contas básicas': t('categories.basicBills'),
+      'contas basicas': t('categories.basicBills'),
+      'presente ou doação': t('categories.giftOrDonation'),
+      'presente ou doacao': t('categories.giftOrDonation'),
+      'aposentadoria': t('categories.retirement'),
+      'reembolso': t('categories.refund'),
       'outros': t('categories.other'),
       'outro': t('categories.other'),
       
@@ -83,6 +89,10 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       'housing': t('categories.housing'),
       'clothing': t('categories.clothing'),
       'utilities': t('categories.utilities'),
+      'basic bills': t('categories.basicBills'),
+      'gift or donation': t('categories.giftOrDonation'),
+      'retirement': t('categories.retirement'),
+      'refund': t('categories.refund'),
       'other': t('categories.other'),
       
       // Spanish variations
@@ -96,6 +106,12 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       'vivienda': t('categories.housing'),
       'ropa': t('categories.clothing'),
       'servicios': t('categories.utilities'),
+      'cuentas básicas': t('categories.basicBills'),
+      'cuentas basicas': t('categories.basicBills'),
+      'regalo o donación': t('categories.giftOrDonation'),
+      'regalo o donacion': t('categories.giftOrDonation'),
+      'jubilación': t('categories.retirement'),
+      'jubilacion': t('categories.retirement'),
       'otros': t('categories.other'),
     };
 
