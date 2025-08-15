@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
 import { format } from 'date-fns';
+import { FutureExpensesCalendar } from "./FutureExpensesCalendar";
 
 interface FutureExpense {
   id: string;
@@ -290,9 +291,15 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             <Calendar className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">Gastos Futuros</h3>
           </div>
-          <Badge variant="outline" className="text-lg px-3 py-1">
-            Total: {formatCurrency(totalAmount)}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <FutureExpensesCalendar 
+              expenses={filteredExpenses} 
+              getOwnerName={getOwnerName}
+            />
+            <Badge variant="outline" className="text-lg px-3 py-1">
+              Total: {formatCurrency(totalAmount)}
+            </Badge>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
