@@ -454,6 +454,7 @@ export const FinancialDashboard = () => {
                   {getUserLabel("user2")}
                 </Button>
               </div>
+            </div>
             {!isPartOfCouple && !coupleLoading && (
               <UserInviteCard
                 showCard={true}
@@ -463,7 +464,6 @@ export const FinancialDashboard = () => {
                 }}
               />
             )}
-            </div>
           </div>
         </div>
 

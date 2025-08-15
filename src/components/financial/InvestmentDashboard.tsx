@@ -444,33 +444,29 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
           </h1>
         </div>
         {/* Action buttons for desktop only */}
-        {!(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) && (
-          <div className="flex gap-2">
-            <Button onClick={() => setShowInvestmentForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('investments.newInvestment')}
-            </Button>
-            <Button variant="outline" onClick={() => setShowWithdrawForm(true)}>
-              <Minus className="h-4 w-4 mr-2" />
-              {t('investments.withdraw')}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Action buttons for PWA - below title */}
-      {(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) && (
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <Button onClick={() => setShowInvestmentForm(true)} className="w-full sm:w-auto">
+        <div className="hidden sm:flex gap-2">
+          <Button onClick={() => setShowInvestmentForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
             {t('investments.newInvestment')}
           </Button>
-          <Button variant="outline" onClick={() => setShowWithdrawForm(true)} className="w-full sm:w-auto">
+          <Button variant="outline" onClick={() => setShowWithdrawForm(true)}>
             <Minus className="h-4 w-4 mr-2" />
             {t('investments.withdraw')}
           </Button>
         </div>
-      )}
+      </div>
+
+      {/* Action buttons for mobile/PWA - below title */}
+      <div className="flex sm:hidden flex-col gap-2">
+        <Button onClick={() => setShowInvestmentForm(true)} className="w-full">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('investments.newInvestment')}
+        </Button>
+        <Button variant="outline" onClick={() => setShowWithdrawForm(true)} className="w-full">
+          <Minus className="h-4 w-4 mr-2" />
+          {t('investments.withdraw')}
+        </Button>
+      </div>
 
       {/* View Mode Selector - PWA simplified version */}
       <div className="flex items-center justify-center gap-4 py-4">
@@ -544,24 +540,24 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* PWA uses two-row layout, desktop uses single row */}
-        <TabsList className={`w-full ${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) 
-          ? 'grid grid-rows-2 grid-cols-3 gap-1 h-auto p-1' 
-          : 'grid grid-cols-5'}`}>
-          <TabsTrigger value="overview" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs' : ''}`}>
+        {/* Mobile uses two-row layout, desktop uses single row */}
+        <TabsList className="w-full grid grid-cols-5 sm:grid-cols-5 xs:grid-rows-2 xs:grid-cols-3 xs:gap-1 xs:h-auto xs:p-1">
+          <TabsTrigger value="overview" className="xs:text-xs">
             {t('investments.overview')}
           </TabsTrigger>
-          <TabsTrigger value="investments" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs' : ''}`}>
+          <TabsTrigger value="investments" className="xs:text-xs">
             {t('investments.title')}
           </TabsTrigger>
-          <TabsTrigger value="goals" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs' : ''}`}>
+          <TabsTrigger value="goals" className="xs:text-xs">
             {t('investments.goals')}
           </TabsTrigger>
-          <TabsTrigger value="charts" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs col-span-1' : ''}`}>
-            {(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'Gráficos' : t('investments.portfolioChart')}
+          <TabsTrigger value="charts" className="xs:text-xs xs:col-span-1">
+            <span className="hidden sm:inline">{t('investments.portfolioChart')}</span>
+            <span className="sm:hidden">Gráficos</span>
           </TabsTrigger>
-          <TabsTrigger value="simulator" className={`${(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'text-xs col-span-1' : ''}`}>
-            {(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) ? 'Simulador' : t('investments.profitabilitySimulator')}
+          <TabsTrigger value="simulator" className="xs:text-xs xs:col-span-1">
+            <span className="hidden sm:inline">{t('investments.profitabilitySimulator')}</span>
+            <span className="sm:hidden">Simulador</span>
           </TabsTrigger>
         </TabsList>
 

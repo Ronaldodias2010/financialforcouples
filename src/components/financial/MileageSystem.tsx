@@ -753,10 +753,10 @@ export const MileageSystem = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-semibold">{goal.name}</h4>
-                          {goal.description && (
-                            <p className="text-sm text-muted-foreground">{goal.description}</p>
-                          )}
-                        </div>
+                           {goal.description && (
+                             <p className="text-sm text-muted-foreground">{goal.description}</p>
+                           )}
+                         </div>
                         <div className="flex gap-2">
                           <Badge variant={goal.is_completed ? "default" : "secondary"}>
                             {goal.is_completed ? t('mileage.completed') : t('mileage.inProgress')}
