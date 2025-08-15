@@ -121,6 +121,58 @@ export const InvestmentEditForm = ({ investment, goals, onSuccess, onCancel }: I
 
       if (error) throw error;
 
+      // If a goal was added/changed, update the goal's current_amount
+      const goalId = formData.goal_id === "no_goal" ? null : formData.goal_id || null;
+      if (goalId) {
+        // Get all investments linked to this goal
+        const { data: linkedInvestments } = await supabase
+          .from("investments")
+          .select("current_value, currency")
+          .eq("goal_id", goalId);
+        
+        if (linkedInvestments) {
+          // Get the goal to know its currency
+          const { data: goalData } = await supabase
+            .from("investment_goals")
+            .select("currency")
+            .eq("id", goalId)
+            .single();
+          
+          if (goalData) {
+            // Calculate total current amount from all linked investments
+            const totalAmount = linkedInvestments.reduce((sum, inv) => {
+              // Use simple 1:1 conversion for now, or implement proper conversion
+              return sum + inv.current_value;
+            }, 0);
+            
+            // Update the goal
+            await supabase
+              .from("investment_goals")
+              .update({ current_amount: totalAmount })
+              .eq("id", goalId);
+          }
+        }
+      }
+
+      // If goal was removed, update the old goal
+      if (investment.goal_id && investment.goal_id !== goalId) {
+        const { data: oldLinkedInvestments } = await supabase
+          .from("investments")
+          .select("current_value, currency")
+          .eq("goal_id", investment.goal_id);
+        
+        if (oldLinkedInvestments) {
+          const totalAmount = oldLinkedInvestments.reduce((sum, inv) => {
+            return sum + inv.current_value;
+          }, 0);
+          
+          await supabase
+            .from("investment_goals")
+            .update({ current_amount: totalAmount })
+            .eq("id", investment.goal_id);
+        }
+      }
+
       toast({
         title: "Sucesso",
         description: "Investimento atualizado com sucesso!",

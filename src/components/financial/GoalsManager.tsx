@@ -54,7 +54,7 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
   const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { formatCurrency } = useCurrencyConverter();
+  const { formatCurrency, convertCurrency } = useCurrencyConverter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<InvestmentGoal | null>(null);
   const [loading, setLoading] = useState(false);
@@ -130,6 +130,23 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
           .eq("id", editingGoal.id);
 
         if (error) throw error;
+
+        // After updating goal, recalculate current_amount from linked investments
+        const { data: linkedInvestments } = await supabase
+          .from("investments")
+          .select("current_value, currency")
+          .eq("goal_id", editingGoal.id);
+        
+        if (linkedInvestments && linkedInvestments.length > 0) {
+          const currentAmount = linkedInvestments.reduce((sum, inv) => {
+            return sum + convertCurrency(inv.current_value, inv.currency as any, goalData.currency as any);
+          }, 0);
+          
+          await supabase
+            .from("investment_goals")
+            .update({ current_amount: currentAmount })
+            .eq("id", editingGoal.id);
+        }
 
         toast({
           title: "Sucesso",

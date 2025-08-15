@@ -98,9 +98,20 @@ export const MileageSystem = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('MileageSystem: useEffect triggered, user:', !!user, 'viewMode:', viewMode);
       loadData();
     }
   }, [user, viewMode]);
+
+  // Force reload when switching to "both" mode
+  useEffect(() => {
+    if (viewMode === "both" && isPartOfCouple && user) {
+      console.log('MileageSystem: Force reload for "both" mode');
+      setTimeout(() => {
+        loadData();
+      }, 100);
+    }
+  }, [viewMode, isPartOfCouple, user]);
 
   // Get user IDs to query based on view mode
   const getUserIdsToQuery = () => {

@@ -204,7 +204,34 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
         console.log('InvestmentDashboard: Filtered goals:', originalCount, '->', filteredData.length, 'for viewMode:', currentViewMode);
       }
       
-      setGoals(filteredData);
+      // Calculate current amount for each goal based on linked investments
+      const updatedGoals = await Promise.all(filteredData.map(async (goal) => {
+        const { data: linkedInvestments } = await supabase
+          .from("investments")
+          .select("current_value, currency")
+          .eq("goal_id", goal.id);
+        
+        if (linkedInvestments && linkedInvestments.length > 0) {
+          // Sum all investments linked to this goal, converted to goal currency
+          const currentAmount = linkedInvestments.reduce((sum, inv) => {
+            return sum + convertCurrency(inv.current_value, inv.currency as any, goal.currency as any);
+          }, 0);
+          
+          // Update the goal in database if current_amount has changed
+          if (Math.abs(currentAmount - goal.current_amount) > 0.01) {
+            await supabase
+              .from("investment_goals")
+              .update({ current_amount: currentAmount })
+              .eq("id", goal.id);
+            
+            goal.current_amount = currentAmount;
+          }
+        }
+        
+        return goal;
+      }));
+      
+      setGoals(updatedGoals);
     } catch (error) {
       console.error("Error fetching goals:", error);
     }
