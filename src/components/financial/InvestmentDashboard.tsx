@@ -539,27 +539,94 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
       </div>
 
 
+      {/* Navigation Tabs */}
+      <div className="border-b">
+        <nav className="flex space-x-8 overflow-x-auto pb-px">
+          {/* Desktop layout - single line */}
+          <div className="hidden sm:flex space-x-8">
+            {[
+              { id: "overview", label: t('investments.overview'), icon: TrendingUp },
+              { id: "investments", label: t('investments.investments'), icon: TrendingUp },
+              { id: "goals", label: t('investments.goals'), icon: Target },
+              { id: "charts", label: t('investments.portfolioChart'), icon: PieChart },
+              { id: "simulator", label: t('investments.profitabilitySimulator'), icon: Calculator }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    flex items-center gap-2 whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors
+                    ${activeTab === tab.id
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
+                    }
+                  `}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Mobile layout - two lines */}
+          <div className="sm:hidden flex flex-col gap-2 w-full">
+            <div className="flex space-x-4 justify-center">
+              {[
+                { id: "overview", label: t('investments.overview'), icon: TrendingUp },
+                { id: "investments", label: t('investments.investments'), icon: TrendingUp },
+                { id: "goals", label: t('investments.goals'), icon: Target }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-1 whitespace-nowrap border-b-2 px-1 py-2 text-xs font-medium transition-colors
+                      ${activeTab === tab.id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
+                      }
+                    `}
+                  >
+                    <Icon className="h-3 w-3" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex space-x-4 justify-center">
+              {[
+                { id: "charts", label: "Gráficos", icon: PieChart },
+                { id: "simulator", label: "Simulador", icon: Calculator }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-1 whitespace-nowrap border-b-2 px-1 py-2 text-xs font-medium transition-colors
+                      ${activeTab === tab.id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
+                      }
+                    `}
+                  >
+                    <Icon className="h-3 w-3" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </nav>
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* Mobile uses two-row layout, desktop uses single row */}
-        <TabsList className="w-full grid grid-cols-5 sm:grid-cols-5 xs:grid-rows-2 xs:grid-cols-3 xs:gap-1 xs:h-auto xs:p-1">
-          <TabsTrigger value="overview" className="xs:text-xs">
-            {t('investments.overview')}
-          </TabsTrigger>
-          <TabsTrigger value="investments" className="xs:text-xs">
-            {t('investments.title')}
-          </TabsTrigger>
-          <TabsTrigger value="goals" className="xs:text-xs">
-            {t('investments.goals')}
-          </TabsTrigger>
-          <TabsTrigger value="charts" className="xs:text-xs xs:col-span-1">
-            <span className="hidden sm:inline">{t('investments.portfolioChart')}</span>
-            <span className="sm:hidden">Gráficos</span>
-          </TabsTrigger>
-          <TabsTrigger value="simulator" className="xs:text-xs xs:col-span-1">
-            <span className="hidden sm:inline">{t('investments.profitabilitySimulator')}</span>
-            <span className="sm:hidden">Simulador</span>
-          </TabsTrigger>
-        </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -430,7 +430,8 @@ export const FinancialDashboard = () => {
           <div className="flex items-center justify-center gap-4 pt-4">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              {!isInstalled && <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>}
+              {/* Hide "Modo de visualização" on small screens */}
+              <span className="hidden sm:inline text-sm font-medium">{t('dashboard.viewMode')}:</span>
               <div className="flex gap-2">
                 <Button
                   variant={viewMode === "both" ? "default" : "outline"}
@@ -468,75 +469,90 @@ export const FinancialDashboard = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className={`flex justify-center gap-2 border-b ${isInstalled ? 'flex-wrap max-w-full' : 'gap-4'}`}>
-          <div className={`flex gap-2 ${isInstalled ? 'w-full justify-center' : ''}`}>
-            <Button
-              variant={activeTab === "dashboard" ? "default" : "ghost"}
-              onClick={() => setActiveTab("dashboard")}
-              className={`pb-2 ${isInstalled ? 'text-xs px-2' : ''}`}
-            >
-              {t('nav.dashboard')}
-            </Button>
-            <Button
-              variant={activeTab === "transactions" ? "default" : "ghost"}
-              onClick={() => setActiveTab("transactions")}
-              className={`pb-2 ${isInstalled ? 'text-xs px-2' : ''}`}
-            >
-              {t('nav.monthlyExpenses')}
-            </Button>
-            {!isInstalled && (
-              <Button
-                variant={activeTab === "income" ? "default" : "ghost"}
-                onClick={() => setActiveTab("income")}
-                className="pb-2"
-              >
-                {t('nav.monthlyIncome')}
-              </Button>
-            )}
-          </div>
-          {isInstalled && (
-            <div className="flex gap-2 w-full justify-center">
-              <Button
-                variant={activeTab === "income" ? "default" : "ghost"}
-                onClick={() => setActiveTab("income")}
-                className="pb-2 text-xs px-2"
-              >
-                {t('nav.monthlyIncome')}
-              </Button>
-              <Button
-                variant={activeTab === "categories" ? "default" : "ghost"}
-                onClick={() => setActiveTab("categories")}
-                className="pb-2 text-xs px-2"
-              >
-                {t('nav.categories')}
-              </Button>
-              <Button
-                variant={activeTab === "recurring" ? "default" : "ghost"}
-                onClick={() => setActiveTab("recurring")}
-                className="pb-2 text-xs px-2"
-              >
-                {t('nav.recurring')}
-              </Button>
+        <div className="border-b">
+          <nav className="flex space-x-8 overflow-x-auto pb-px">
+            {/* Desktop layout - single line */}
+            <div className="hidden sm:flex space-x-8">
+              {[
+                { id: "dashboard", label: t('nav.dashboard'), icon: TrendingUp },
+                { id: "transactions", label: t('nav.monthlyExpenses'), icon: Wallet },
+                { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp },
+                { id: "categories", label: t('nav.categories'), icon: Settings },
+                { id: "recurring", label: t('nav.recurring'), icon: TrendingDown }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-2 whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors
+                      ${activeTab === tab.id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
+                      }
+                    `}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
-          )}
-          {!isInstalled && (
-            <>
-              <Button
-                variant={activeTab === "categories" ? "default" : "ghost"}
-                onClick={() => setActiveTab("categories")}
-                className="pb-2"
-              >
-                {t('nav.categories')}
-              </Button>
-              <Button
-                variant={activeTab === "recurring" ? "default" : "ghost"}
-                onClick={() => setActiveTab("recurring")}
-                className="pb-2"
-              >
-                {t('nav.recurring')}
-              </Button>
-            </>
-          )}
+            
+            {/* Mobile layout - two lines */}
+            <div className="sm:hidden flex flex-col gap-2 w-full">
+              <div className="flex space-x-4 justify-center">
+                {[
+                  { id: "dashboard", label: t('nav.dashboard'), icon: TrendingUp },
+                  { id: "transactions", label: t('nav.monthlyExpenses'), icon: Wallet },
+                  { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp }
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`
+                        flex items-center gap-1 whitespace-nowrap border-b-2 px-1 py-2 text-xs font-medium transition-colors
+                        ${activeTab === tab.id
+                          ? "border-primary text-primary"
+                          : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
+                        }
+                      `}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex space-x-4 justify-center">
+                {[
+                  { id: "categories", label: t('nav.categories'), icon: Settings },
+                  { id: "recurring", label: t('nav.recurring'), icon: TrendingDown }
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`
+                        flex items-center gap-1 whitespace-nowrap border-b-2 px-1 py-2 text-xs font-medium transition-colors
+                        ${activeTab === tab.id
+                          ? "border-primary text-primary"
+                          : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
+                        }
+                      `}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </nav>
         </div>
 
         {renderTabContent()}

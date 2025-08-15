@@ -418,16 +418,12 @@ export const MileageSystem = () => {
         </p>
       </div>
 
-      {/* View Mode Selector - PWA simplified version */}
+      {/* View Mode Selector - simplified for small screens */}
       {isPartOfCouple && (
         <div className="flex items-center justify-center gap-2">
-          {/* Check if PWA mode to hide the label */}
-          {!(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) && (
-            <>
-              <User className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
-            </>
-          )}
+          <User className="h-4 w-4" />
+          {/* Hide "Modo de visualização" on small screens */}
+          <span className="hidden sm:inline text-sm font-medium">{t('dashboard.viewMode')}:</span>
           <div className="flex gap-2">
             <Button
               variant={viewMode === "both" ? "default" : "outline"}
