@@ -232,6 +232,39 @@ export type Database = {
         }
         Relationships: []
       }
+      default_categories: {
+        Row: {
+          category_type: string
+          color: string
+          created_at: string
+          icon: string | null
+          id: string
+          name_en: string
+          name_es: string
+          name_pt: string
+        }
+        Insert: {
+          category_type: string
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name_en: string
+          name_es: string
+          name_pt: string
+        }
+        Update: {
+          category_type?: string
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name_en?: string
+          name_es?: string
+          name_pt?: string
+        }
+        Relationships: []
+      }
       investment_goals: {
         Row: {
           created_at: string
@@ -1005,8 +1038,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_translate_category_name: {
+        Args: { from_lang?: string; input_name: string }
+        Returns: {
+          en_name: string
+          es_name: string
+          pt_name: string
+        }[]
+      }
       check_manual_premium_expiration: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_default_categories_for_user: {
+        Args: { user_id: string; user_language?: string }
         Returns: undefined
       }
       create_manual_premium_access: {
