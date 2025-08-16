@@ -271,6 +271,7 @@ export const CategoryManager = () => {
         return;
       }
 
+      // Verificar se o usuário já tem categorias
       const { count, error: countError } = await supabase
         .from('categories')
         .select('id', { count: 'exact', head: true })
@@ -282,52 +283,13 @@ export const CategoryManager = () => {
         return;
       }
 
-      const expensePt = [
-        'Alimentação',
-        'Combustível',
-        'Saúde',
-        'Educação',
-        'Vestuário',
-        'Viagem',
-        'Transporte',
-        'Moradia',
-      ];
-      const incomePt = ['Salário', 'Comissão', 'Renda Extra'];
+      // Usar a função do banco para criar categorias padrão
+      const { error: createError } = await supabase.rpc('create_default_categories_for_user', {
+        user_id: user.id,
+        user_language: language
+      });
 
-      const expenseEn = [
-        'Food',
-        'Fuel',
-        'Health',
-        'Education',
-        'Clothing',
-        'Travel',
-        'Transport',
-        'Housing',
-      ];
-      const incomeEn = ['Salary', 'Commission', 'Extra Income'];
-
-      const expense = language === 'en' ? expenseEn : expensePt;
-      const income = language === 'en' ? incomeEn : incomePt;
-
-      const payload = [
-        ...expense.map((name) => ({
-          name,
-          color: '#6366f1',
-          category_type: 'expense',
-          owner_user: 'user1',
-          user_id: user.id,
-        })),
-        ...income.map((name) => ({
-          name,
-          color: '#6366f1',
-          category_type: 'income',
-          owner_user: 'user1',
-          user_id: user.id,
-        })),
-      ];
-
-      const { error: insertError } = await supabase.from('categories').insert(payload);
-      if (insertError) throw insertError;
+      if (createError) throw createError;
 
       toast({
         title: language === 'en' ? 'Categories added' : 'Categorias adicionadas',
@@ -397,11 +359,32 @@ export const CategoryManager = () => {
           description: "Categoria atualizada com sucesso!",
         });
       } else {
-        // Create new category (owner_user left default; categories are per user)
+        // Create new category with automatic translation
+        // Primeiro, tentar obter traduções automáticas se disponíveis
+        let finalName = trimmedName;
+        
+        try {
+          const { data: translations } = await supabase.rpc('auto_translate_category_name', {
+            input_name: trimmedName,
+            from_lang: language
+          });
+          
+          if (translations && translations.length > 0) {
+            // Usar a tradução adequada baseada no idioma atual
+            const translation = translations[0];
+            finalName = language === 'en' ? translation.en_name :
+                      language === 'es' ? translation.es_name :
+                      translation.pt_name;
+          }
+        } catch (translationError) {
+          // Se falhou a tradução, usar o nome original
+          console.log('Translation failed, using original name');
+        }
+
         const { error } = await supabase
           .from('categories')
           .insert({
-            name: trimmedName,
+            name: finalName,
             color: newCategoryColor,
             category_type: newCategoryType,
             user_id: user.id,
