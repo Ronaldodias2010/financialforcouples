@@ -71,6 +71,7 @@ const categoryTranslations: CategoryTranslations = {
   'doacao': { pt: 'Doação', en: 'Donation', es: 'Donación' },
   'farmacia': { pt: 'Farmácia', en: 'Pharmacy', es: 'Farmacia' },
   'pagamento_cartao_credito': { pt: 'Pagamento de Cartão de Crédito', en: 'Credit Card Payment', es: 'Pago de Tarjeta de Crédito' },
+  'pagamento_de_cartao_de_credito': { pt: 'Pagamento de Cartão de Crédito', en: 'Credit Card Payment', es: 'Pago de Tarjeta de Crédito' },
   'restaurante': { pt: 'Restaurante', en: 'Restaurant', es: 'Restaurante' },
   'telefone': { pt: 'Telefone', en: 'Phone', es: 'Teléfono' },
   'supermercado': { pt: 'Supermercado', en: 'Supermarket', es: 'Supermercado' },
@@ -89,6 +90,9 @@ const normalize = (str: string): string => {
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '');
 };
+
+// Add debug logging to see what's being normalized
+console.log('Categoria normalizada "Pagamento de Cartão de Crédito":', normalize('Pagamento de Cartão de Crédito'));
 
 /**
  * Translates a category name to the specified language
