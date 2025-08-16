@@ -82,6 +82,15 @@ const computeSuasContasTotal = (accounts: AccountRow[]) => {
   return Number(total.toFixed(2));
 };
 
+const computeValorRealTotal = (accounts: AccountRow[]) => {
+  const total = accounts.reduce((sum, a) => {
+    const bal = Number(a.balance ?? 0);
+    const from = (a.currency ?? "BRL") as CurrencyCode;
+    return sum + convertCurrency(bal, from, displayCurrency);
+  }, 0);
+  return Number(total.toFixed(2));
+};
+
 const currentUserTotal = useMemo(() => {
   if (!user?.id) return 0;
   const acc = accountsData.filter(a => a.user_id === user.id);
@@ -94,8 +103,23 @@ const partnerTotal = useMemo(() => {
   return computeSuasContasTotal(acc);
 }, [accountsData, partnerId, convertCurrency]);
 
+const currentUserRealTotal = useMemo(() => {
+  if (!user?.id) return 0;
+  const acc = accountsData.filter(a => a.user_id === user.id);
+  return computeValorRealTotal(acc);
+}, [accountsData, user?.id, convertCurrency]);
+
+const partnerRealTotal = useMemo(() => {
+  if (!partnerId) return 0;
+  const acc = accountsData.filter(a => a.user_id === partnerId);
+  return computeValorRealTotal(acc);
+}, [accountsData, partnerId, convertCurrency]);
+
 const user1Total = isUserOne() ? currentUserTotal : partnerTotal;
 const user2Total = isUserOne() ? partnerTotal : currentUserTotal;
+
+const user1RealTotal = isUserOne() ? currentUserRealTotal : partnerRealTotal;
+const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 
   const handleAccountAdded = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -131,21 +155,39 @@ const user2Total = isUserOne() ? partnerTotal : currentUserTotal;
           </div>
         </div>
 {viewMode === 'both' ? (
-  <FinancialCard
-    title="Suas Contas — Ambos"
-    amount={user1Total + user2Total}
-    currency={displayCurrency}
-    icon={Wallet}
-    type="balance"
-  />
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FinancialCard
+      title="Suas Contas — Ambos"
+      amount={user1Total + user2Total}
+      currency={displayCurrency}
+      icon={Wallet}
+      type="balance"
+    />
+    <FinancialCard
+      title="Valor Real — Ambos"
+      amount={user1RealTotal + user2RealTotal}
+      currency={displayCurrency}
+      icon={Wallet}
+      type="balance"
+    />
+  </div>
 ) : (
-  <FinancialCard
-    title={`Suas Contas — ${getUserLabel(viewMode)}`}
-    amount={viewMode === 'user1' ? user1Total : user2Total}
-    currency={displayCurrency}
-    icon={Wallet}
-    type="balance"
-  />
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FinancialCard
+      title={`Suas Contas — ${getUserLabel(viewMode)}`}
+      amount={viewMode === 'user1' ? user1Total : user2Total}
+      currency={displayCurrency}
+      icon={Wallet}
+      type="balance"
+    />
+    <FinancialCard
+      title={`Valor Real — ${getUserLabel(viewMode)}`}
+      amount={viewMode === 'user1' ? user1RealTotal : user2RealTotal}
+      currency={displayCurrency}
+      icon={Wallet}
+      type="balance"
+    />
+  </div>
 )}
       </div>
 
