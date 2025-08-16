@@ -36,11 +36,36 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
   const { user } = useAuth();
   const { toast } = useToast();
   const { names } = usePartnerNames();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [investmentTypes, setInvestmentTypes] = useState<{ id: string; name: string }[]>([]);
   const [openTypeCombobox, setOpenTypeCombobox] = useState(false);
   const [newTypeName, setNewTypeName] = useState("");
+
+  // Predefined investment types based on language
+  const predefinedTypes = language === 'pt' ? [
+    'Poupança',
+    'Tesouro Direto', 
+    'CDB',
+    'LCI/LCA',
+    'Debêntures',
+    'Ações B3',
+    'Fundos Imobiliários (FIIs)',
+    'ETFs (Fundos de Índice)',
+    'Fundos de Investimento',
+    'Criptomoeda'
+  ] : [
+    'Treasury Bonds',
+    'Corporate Bonds',
+    'Bank Products (Certificados de Depósito)',
+    'Stocks',
+    'ETFs-S&P 500',
+    'Mutual Funds',
+    'REITs',
+    '401(k) e IRA',
+    '529 Plans',
+    'Cryptocurrencies'
+  ];
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -59,7 +84,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
     auto_calculate_yield: false
   });
 
-  // Load investment types on component mount
+  // Load investment types on component mount and combine with predefined types
   useEffect(() => {
     const loadInvestmentTypes = async () => {
       if (!user?.id) return;
@@ -71,14 +96,30 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
           .order("name");
 
         if (error) throw error;
-        setInvestmentTypes(data || []);
+        
+        // Combine predefined types with custom user types
+        const predefinedTypesFormatted = predefinedTypes.map((type, index) => ({
+          id: `predefined_${index}`,
+          name: type
+        }));
+        
+        const userTypes = data || [];
+        
+        // Remove duplicates between predefined and user types
+        const filteredUserTypes = userTypes.filter(userType => 
+          !predefinedTypes.some(predefined => 
+            predefined.toLowerCase() === userType.name.toLowerCase()
+          )
+        );
+        
+        setInvestmentTypes([...predefinedTypesFormatted, ...filteredUserTypes]);
       } catch (error) {
         console.error("Error loading investment types:", error);
       }
     };
 
     loadInvestmentTypes();
-  }, [user?.id]);
+  }, [user?.id, predefinedTypes]);
 
   // Function to add new investment type
   const addNewInvestmentType = async () => {
@@ -145,7 +186,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
       return;
     }
 
-    if (formData.type.toLowerCase().includes("cripto") && !formData.crypto_name) {
+    if ((formData.type.toLowerCase().includes("cripto") || formData.type.toLowerCase().includes("crypto")) && !formData.crypto_name) {
       toast({
         title: "Erro",
         description: "Nome da criptomoeda é obrigatório",
@@ -170,7 +211,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
           is_shared: formData.is_shared,
           owner_user: formData.owner_user,
           broker: formData.broker || null,
-          notes: formData.type.toLowerCase().includes("cripto") && formData.crypto_name ? 
+          notes: (formData.type.toLowerCase().includes("cripto") || formData.type.toLowerCase().includes("crypto")) && formData.crypto_name ? 
             `${formData.crypto_name}${formData.notes ? ` - ${formData.notes}` : ''}` : 
             formData.notes || null,
           goal_id: formData.goal_id === "no_goal" ? null : formData.goal_id || null,
@@ -311,7 +352,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
               </Popover>
             </div>
 
-            {formData.type.toLowerCase().includes("cripto") && (
+            {(formData.type.toLowerCase().includes("cripto") || formData.type.toLowerCase().includes("crypto")) && (
               <div className="space-y-2">
                 <Label htmlFor="crypto_name">{t('investments.cryptoName')} *</Label>
                 <Input
