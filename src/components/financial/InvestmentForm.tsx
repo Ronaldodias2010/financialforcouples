@@ -428,18 +428,18 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="yield_type">Tipo de Rentabilidade</Label>
+              <Label htmlFor="yield_type">{language === 'pt' ? 'Tipo de Rentabilidade' : 'Yield Type'}</Label>
               <Select
                 value={formData.yield_type}
                 onValueChange={(value) => setFormData({...formData, yield_type: value})}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo de rentabilidade" />
+                  <SelectValue placeholder={language === 'pt' ? 'Selecione o tipo de rentabilidade' : 'Select yield type'} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  <SelectItem value="percentage">Percentual (%)</SelectItem>
-                  <SelectItem value="fixed_amount">Valor Fixo</SelectItem>
+                  <SelectItem value="none">{language === 'pt' ? 'Nenhum' : 'None'}</SelectItem>
+                  <SelectItem value="percentage">{language === 'pt' ? 'Percentual (%)' : 'Percentage (%)'}</SelectItem>
+                  <SelectItem value="fixed_amount">{language === 'pt' ? 'Valor Fixo' : 'Fixed Amount'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -447,7 +447,9 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
             {formData.yield_type && formData.yield_type !== "none" && (
               <div className="space-y-2">
                 <Label htmlFor="yield_value">
-                  {formData.yield_type === 'percentage' ? 'Percentual Mensal (%)' : 'Valor Mensal'}
+                  {formData.yield_type === 'percentage' 
+                    ? (language === 'pt' ? 'Percentual Mensal (%)' : 'Monthly Percentage (%)') 
+                    : (language === 'pt' ? 'Valor Mensal' : 'Monthly Amount')}
                 </Label>
                 <Input
                   id="yield_value"
@@ -455,7 +457,9 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                   step={formData.yield_type === 'percentage' ? '0.01' : '0.01'}
                   value={formData.yield_value}
                   onChange={(e) => setFormData({...formData, yield_value: e.target.value})}
-                  placeholder={formData.yield_type === 'percentage' ? 'Ex: 1.5' : 'Ex: 100.00'}
+                  placeholder={formData.yield_type === 'percentage' 
+                    ? (language === 'pt' ? 'Ex: 1.5' : 'Ex: 1.5') 
+                    : (language === 'pt' ? 'Ex: 100.00' : 'Ex: 100.00')}
                 />
               </div>
             )}
@@ -498,7 +502,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
                   checked={formData.auto_calculate_yield}
                   onCheckedChange={(checked) => setFormData({...formData, auto_calculate_yield: checked})}
                 />
-                <Label htmlFor="auto_calculate_yield">Calcular rendimento automaticamente</Label>
+                <Label htmlFor="auto_calculate_yield">{language === 'pt' ? 'Calcular rendimento automaticamente' : 'Calculate yield automatically'}</Label>
               </div>
             )}
 
