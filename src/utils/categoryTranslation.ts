@@ -77,6 +77,7 @@ const categoryTranslations: CategoryTranslations = {
   'supermercado': { pt: 'Supermercado', en: 'Supermarket', es: 'Supermercado' },
   'utilidades': { pt: 'Utilidades', en: 'Utilities', es: 'Servicios Públicos' },
   'vestuarios': { pt: 'Vestuários', en: 'Clothing', es: 'Ropa' },
+  'vestuario': { pt: 'Vestuário', en: 'Clothing', es: 'Ropa' },
   'viagem': { pt: 'Viagem', en: 'Travel', es: 'Viaje' }
 };
 
