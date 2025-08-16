@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
+import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
   const { user } = useAuth();
   const { couple, isPartOfCouple } = useCouple();
   const { names } = usePartnerNames();
+  const { convertCurrency, formatCurrency: currencyFormat } = useCurrencyConverter();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -100,6 +102,21 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
       style: "currency",
       currency: currency,
     }).format(value);
+  };
+
+  const getConvertedValue = (value: number, cardCurrency: string) => {
+    if (!userProfile?.preferred_currency) return value;
+    
+    const preferredCurrency = userProfile.preferred_currency as CurrencyCode;
+    const cardCurrencyCode = cardCurrency as CurrencyCode;
+    
+    if (cardCurrencyCode === preferredCurrency) return value;
+    
+    return convertCurrency(value, cardCurrencyCode, preferredCurrency);
+  };
+
+  const getDisplayCurrency = (cardCurrency: string) => {
+    return userProfile?.preferred_currency || cardCurrency;
   };
 
 // Logos de bancos para cartões
@@ -191,11 +208,21 @@ const getOwnerNameForCard = (card: CardData) => {
                       {getOwnerNameForCard(card)}
                     </p>
                     <p className="text-sm">
-                      Limite Disponível: {formatCurrency(Number(card.initial_balance ?? 0), card.currency)}
+                      Limite Disponível: {formatCurrency(getConvertedValue(Number(card.initial_balance ?? 0), card.currency), getDisplayCurrency(card.currency))}
+                      {card.currency !== getDisplayCurrency(card.currency) && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (orig: {formatCurrency(Number(card.initial_balance ?? 0), card.currency)})
+                        </span>
+                      )}
                     </p>
                     {card.credit_limit && (
                       <p className="text-sm text-muted-foreground">
-                        Limite: {formatCurrency(card.credit_limit, card.currency)}
+                        Limite: {formatCurrency(getConvertedValue(card.credit_limit, card.currency), getDisplayCurrency(card.currency))}
+                        {card.currency !== getDisplayCurrency(card.currency) && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            (orig: {formatCurrency(card.credit_limit, card.currency)})
+                          </span>
+                        )}
                       </p>
                     )}
                     {card.closing_date && card.card_type === "credit" && (

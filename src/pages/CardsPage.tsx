@@ -10,6 +10,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
+import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 
 interface CardsPageProps {
   onBack: () => void;
@@ -31,10 +32,11 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { t } = useLanguage();
   const { names } = usePartnerNames();
+  const { convertCurrency } = useCurrencyConverter();
   
-
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [cardsData, setCardsData] = useState<CardRow[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const displayCurrency: CurrencyCode = "BRL";
 
   const { user } = useAuth();
@@ -43,9 +45,34 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
 
   const computeAvailable = (c: CardRow) => {
     if (c.card_type !== "credit") return 0;
-    return Number(c.initial_balance ?? 0);
+    const value = Number(c.initial_balance ?? 0);
+    
+    // Convert to user's preferred currency if different
+    if (userProfile?.preferred_currency && c.currency && c.currency !== userProfile.preferred_currency) {
+      return convertCurrency(value, c.currency as CurrencyCode, userProfile.preferred_currency as CurrencyCode);
+    }
+    
+    return value;
   };
+
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+
+        if (error) throw error;
+        setUserProfile(profile);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
     const fetchCards = async () => {
       const { data, error } = await supabase
         .from("cards")
@@ -65,8 +92,12 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
         );
       }
     };
-    fetchCards();
-  }, [refreshTrigger]);
+
+    if (user) {
+      fetchUserProfile();
+      fetchCards();
+    }
+  }, [refreshTrigger, user]);
 
   const currentUserTotal = useMemo(() => {
     if (!user?.id) return 0;
@@ -91,6 +122,10 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
 
   const getUserLabel = (which: "user1" | "user2") =>
     which === "user1" ? (names.user1Name || t("dashboard.user1")) : (names.user2Name || t("dashboard.user2"));
+
+  const getDisplayCurrency = () => {
+    return (userProfile?.preferred_currency as CurrencyCode) || displayCurrency;
+  };
 
   return (
     <div className="space-y-6">
@@ -122,7 +157,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
           <FinancialCard
             title="Seus Cartões — Ambos"
             amount={bothTotal}
-            currency={displayCurrency}
+            currency={getDisplayCurrency()}
             icon={CreditCard}
             type="balance"
           />
@@ -130,7 +165,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
           <FinancialCard
             title={`Seus Cartões — ${getUserLabel(viewMode)}`}
             amount={viewMode === 'user1' ? user1Total : user2Total}
-            currency={displayCurrency}
+            currency={getDisplayCurrency()}
             icon={CreditCard}
             type="balance"
           />
