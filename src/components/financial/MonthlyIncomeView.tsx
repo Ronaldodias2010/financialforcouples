@@ -10,6 +10,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { format } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/hooks/useLanguage";
+import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 
 
 interface Transaction {
@@ -130,7 +131,7 @@ const fetchCategories = async () => {
       const map = new Map<string, { key: string; name: string; ids: string[] }>();
       for (const it of items) {
         const key = normalize(it.name);
-        if (!map.has(key)) map.set(key, { key, name: translateCategoryName(it.name, language as 'pt' | 'en'), ids: [it.id] });
+        if (!map.has(key)) map.set(key, { key, name: translateCategoryUtil(it.name, language), ids: [it.id] });
         else map.get(key)!.ids.push(it.id);
       }
       setCategoryOptions(Array.from(map.values()));
@@ -331,7 +332,7 @@ if (selectedCategory !== "all") {
                         {t('monthlyIncome.receivedBy')}: {getUserName(transaction.owner_user || 'user1')}
                       </span>
                     </p>
-                    <p>{t('monthlyIncome.categoryLabel')}: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en')}</p>
+                    <p>{t('monthlyIncome.categoryLabel')}: {translateCategoryUtil(transaction.categories?.name || 'N/A', language)}</p>
                     {transaction.subcategory && (
                       <p>{t('monthlyIncome.subcategoryLabel')}: {transaction.subcategory}</p>
                     )}

@@ -15,6 +15,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useLanguage } from "@/hooks/useLanguage";
+import { translateCategoryName } from "@/utils/categoryTranslation";
 interface RecurringExpense {
   id: string;
   name: string;
@@ -62,9 +63,9 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [nextDueDate, setNextDueDate] = useState<Date>(new Date());
   const [contractDuration, setContractDuration] = useState("");
   
-const { toast } = useToast();
-const { names } = usePartnerNames();
-const { t } = useLanguage();
+  const { toast } = useToast();
+  const { names } = usePartnerNames();
+  const { t, language } = useLanguage();
 const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : names.user1Name;
   useEffect(() => {
     fetchRecurringExpenses();
@@ -368,7 +369,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                   <SelectContent>
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                        {translateCategoryName(cat.name, language)}
                       </SelectItem>
                     ))}
                   </SelectContent>

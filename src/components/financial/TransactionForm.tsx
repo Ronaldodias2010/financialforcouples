@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { TablesInsert, Enums } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
@@ -1122,7 +1123,7 @@ const invTxn: TablesInsert<'transactions'> = {
               <SelectContent>
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
-                    {translateCategoryName(cat.name, language as 'pt' | 'en')}
+                    {translateCategoryUtil(cat.name, language)}
                   </SelectItem>
                 ))}
               </SelectContent>

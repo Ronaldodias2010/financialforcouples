@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
+import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
@@ -455,7 +456,7 @@ if (selectedCategory !== "all") {
                     <SelectItem value="all">{t('monthlyExpenses.allCategories')}</SelectItem>
                     {categoryOptions.map((opt) => (
                       <SelectItem key={opt.key} value={opt.key}>
-                        {translateCategoryName(opt.name, language as 'pt' | 'en' | 'es')}
+                        {translateCategoryUtil(opt.name, language)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -527,7 +528,7 @@ if (selectedCategory !== "all") {
                             {t('monthlyExpenses.performedBy')}: {getUserName(transaction.owner_user || 'user1')}
                           </span>
                         </p>
-                        <p>{t('monthlyExpenses.category')}: {translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es')}</p>
+                        <p>{t('monthlyExpenses.category')}: {translateCategoryUtil(transaction.categories?.name || 'N/A', language)}</p>
                         {transaction.subcategory && (
                           <p>{t('monthlyExpenses.subcategory')}: {transaction.subcategory}</p>
                         )}
