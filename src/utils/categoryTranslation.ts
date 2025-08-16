@@ -13,16 +13,23 @@ interface CategoryTranslations {
 const categoryTranslations: CategoryTranslations = {
   // Income categories
   'salario': { pt: 'Salário', en: 'Salary', es: 'Salario' },
+  'salarios': { pt: 'Salários', en: 'Salaries', es: 'Salarios' },
   'freelance': { pt: 'Freelance', en: 'Freelance', es: 'Freelance' },
   'bonus': { pt: 'Bônus', en: 'Bonus', es: 'Bonificación' },
   'investimentos': { pt: 'Investimentos', en: 'Investments', es: 'Inversiones' },
+  'investimento': { pt: 'Investimento', en: 'Investment', es: 'Inversión' },
   'vendas': { pt: 'Vendas', en: 'Sales', es: 'Ventas' },
   'aluguel_recebido': { pt: 'Aluguel Recebido', en: 'Rental Income', es: 'Ingresos por Alquiler' },
   'juros': { pt: 'Juros', en: 'Interest', es: 'Intereses' },
   'dividendos': { pt: 'Dividendos', en: 'Dividends', es: 'Dividendos' },
+  'dividendo': { pt: 'Dividendo', en: 'Dividend', es: 'Dividendo' },
   'presente': { pt: 'Presente', en: 'Gift', es: 'Regalo' },
   'reembolso': { pt: 'Reembolso', en: 'Refund', es: 'Reembolso' },
   'outros_rendimentos': { pt: 'Outros Rendimentos', en: 'Other Income', es: 'Otros Ingresos' },
+  'comissao': { pt: 'Comissão', en: 'Commission', es: 'Comisión' },
+  'aposentadoria': { pt: 'Aposentadoria', en: 'Retirement', es: 'Jubilación' },
+  'pensao': { pt: 'Pensão', en: 'Pension', es: 'Pensión' },
+  'renda_extra': { pt: 'Renda Extra', en: 'Extra Income', es: 'Ingresos Extra' },
 
   // Expense categories
   'alimentacao': { pt: 'Alimentação', en: 'Food', es: 'Alimentación' },
