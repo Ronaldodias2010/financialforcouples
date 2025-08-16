@@ -57,7 +57,7 @@ export const InvestmentForm = ({ goals, onSuccess, onCancel }: InvestmentFormPro
   ] : [
     'Treasury Bonds',
     'Corporate Bonds',
-    'Bank Products (Certificados de Depósito)',
+    'Bank Products (Certificate of Deposit)',
     'Stocks',
     'ETFs-S&P 500',
     'Mutual Funds',
