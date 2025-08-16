@@ -55,7 +55,21 @@ const categoryTranslations: CategoryTranslations = {
   'reparos': { pt: 'Reparos', en: 'Repairs', es: 'Reparaciones' },
   'seguro': { pt: 'Seguro', en: 'Insurance', es: 'Seguro' },
   'impostos': { pt: 'Impostos', en: 'Taxes', es: 'Impuestos' },
-  'outros_gastos': { pt: 'Outros Gastos', en: 'Other Expenses', es: 'Otros Gastos' }
+  'outros_gastos': { pt: 'Outros Gastos', en: 'Other Expenses', es: 'Otros Gastos' },
+  
+  // Missing categories that need translation
+  'contas_basicas': { pt: 'Contas Básicas', en: 'Basic Bills', es: 'Cuentas Básicas' },
+  'assinatura': { pt: 'Assinatura', en: 'Subscription', es: 'Suscripción' },
+  'beleza': { pt: 'Beleza', en: 'Beauty', es: 'Belleza' },
+  'doacao': { pt: 'Doação', en: 'Donation', es: 'Donación' },
+  'farmacia': { pt: 'Farmácia', en: 'Pharmacy', es: 'Farmacia' },
+  'pagamento_cartao_credito': { pt: 'Pagamento de Cartão de Crédito', en: 'Credit Card Payment', es: 'Pago de Tarjeta de Crédito' },
+  'restaurante': { pt: 'Restaurante', en: 'Restaurant', es: 'Restaurante' },
+  'telefone': { pt: 'Telefone', en: 'Phone', es: 'Teléfono' },
+  'supermercado': { pt: 'Supermercado', en: 'Supermarket', es: 'Supermercado' },
+  'utilidades': { pt: 'Utilidades', en: 'Utilities', es: 'Servicios Públicos' },
+  'vestuarios': { pt: 'Vestuários', en: 'Clothing', es: 'Ropa' },
+  'viagem': { pt: 'Viagem', en: 'Travel', es: 'Viaje' }
 };
 
 // Function to normalize category names (same as used in CategoryManager)
