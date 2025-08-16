@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import App from './App';
 
