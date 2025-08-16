@@ -65,7 +65,12 @@ export const FinancialCard = ({
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-foreground">
+          <p className={cn(
+            "text-2xl font-bold",
+            className?.includes("text-destructive") && displayAmount < 0
+              ? "text-destructive"
+              : "text-foreground"
+          )}>
             {title.includes('%') 
               ? `${displayAmount >= 0 ? '+' : ''}${displayAmount.toFixed(2)}%`
               : formatCurrency(displayAmount, finalDisplayCurrency)

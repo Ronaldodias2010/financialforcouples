@@ -157,15 +157,16 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 {viewMode === 'both' ? (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <FinancialCard
-      title="Suas Contas — Ambos"
-      amount={user1Total + user2Total}
+      title={t('accounts.valorReal') || "Valor Real — Ambos"}
+      amount={user1RealTotal + user2RealTotal}
       currency={displayCurrency}
       icon={Wallet}
       type="balance"
+      className={(user1RealTotal + user2RealTotal) < 0 ? "text-destructive" : ""}
     />
     <FinancialCard
-      title="Valor Real — Ambos"
-      amount={user1RealTotal + user2RealTotal}
+      title={t('accounts.valorDisponivel') || "Valor Disponível — Ambos"}
+      amount={user1Total + user2Total}
       currency={displayCurrency}
       icon={Wallet}
       type="balance"
@@ -174,15 +175,16 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 ) : (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <FinancialCard
-      title={`Suas Contas — ${getUserLabel(viewMode)}`}
-      amount={viewMode === 'user1' ? user1Total : user2Total}
+      title={`${t('accounts.valorReal') || "Valor Real"} — ${getUserLabel(viewMode)}`}
+      amount={viewMode === 'user1' ? user1RealTotal : user2RealTotal}
       currency={displayCurrency}
       icon={Wallet}
       type="balance"
+      className={(viewMode === 'user1' ? user1RealTotal : user2RealTotal) < 0 ? "text-destructive" : ""}
     />
     <FinancialCard
-      title={`Valor Real — ${getUserLabel(viewMode)}`}
-      amount={viewMode === 'user1' ? user1RealTotal : user2RealTotal}
+      title={`${t('accounts.valorDisponivel') || "Valor Disponível"} — ${getUserLabel(viewMode)}`}
+      amount={viewMode === 'user1' ? user1Total : user2Total}
       currency={displayCurrency}
       icon={Wallet}
       type="balance"
