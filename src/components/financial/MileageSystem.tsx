@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
+import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User } from "lucide-react";
 import { format } from "date-fns";
@@ -57,6 +58,7 @@ interface MileageHistory {
   month_year: string;
   transaction_id?: string;
   card?: Card;
+  rule?: { currency: string; miles_per_amount: number; amount_threshold: number };
 }
 
 export const MileageSystem = () => {
@@ -65,6 +67,7 @@ export const MileageSystem = () => {
   const { toast } = useToast();
   const { couple, isPartOfCouple, getPartnerUserId } = useCouple();
   const { names } = usePartnerNames();
+  const { convertCurrency, getCurrencySymbol } = useCurrencyConverter();
   
   const [cards, setCards] = useState<Card[]>([]);
   const [mileageRules, setMileageRules] = useState<MileageRule[]>([]);
@@ -228,7 +231,8 @@ export const MileageSystem = () => {
         calculation_date,
         month_year,
         transaction_id,
-        cards:card_id (id, name, card_type, user_id)
+        cards:card_id (id, name, card_type, user_id),
+        rule:rule_id (currency, miles_per_amount, amount_threshold)
       `)
       .in("user_id", userIds.filter(Boolean))
       .order("calculation_date", { ascending: false })
@@ -828,6 +832,14 @@ export const MileageSystem = () => {
                 ? names.currentUserName || 'Você'
                 : names.partnerName || 'Parceiro(a)';
 
+              // Conversion and rule context for explanation
+              const ruleCurrency = (record.rule?.currency as CurrencyCode) || 'USD';
+              const convertedAmount = convertCurrency(record.amount_spent, 'BRL', ruleCurrency as CurrencyCode);
+              const currencySymbol = getCurrencySymbol(ruleCurrency as CurrencyCode);
+              const threshold = record.rule?.amount_threshold || 1;
+              const milesPerAmount = record.rule?.miles_per_amount || 1;
+              const milesCalc = (convertedAmount / threshold) * milesPerAmount;
+
               return (
                 <Card key={record.id}>
                   <CardContent className="pt-6">
@@ -844,6 +856,11 @@ export const MileageSystem = () => {
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {t('mileage.spent')}: R$ {record.amount_spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          ≈ {currencySymbol}{convertedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {' → '}{Math.round(milesCalc).toLocaleString()} milhas
+                          {' ('}regra: {milesPerAmount} milha(s) por {currencySymbol}{threshold}{')'}
                         </p>
                         {record.transaction_id && (
                           <p className="text-xs text-muted-foreground">
