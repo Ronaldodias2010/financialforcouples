@@ -117,12 +117,16 @@ export const UserExpenseChart = () => {
       console.log('UserExpenseChart: Using userIds for query:', userIds);
 
       // Fetch both income and expense transactions
-      const { data: transactions, error } = await supabase
+      const startStr = format(startDate, 'yyyy-MM-dd');
+      const endStr = format(endDate, 'yyyy-MM-dd');
+
+      let query = supabase
         .from('transactions')
-        .select('owner_user, user_id, amount, transaction_date, type')
+        .select('owner_user, user_id, amount, transaction_date, type, payment_method, created_at')
         .in('user_id', userIds)
-        .gte('transaction_date', format(startDate, 'yyyy-MM-dd'))
-        .lte('transaction_date', format(endDate, 'yyyy-MM-dd'));
+        .or(`and(transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startStr},created_at.lte.${endStr})`);
+
+      const { data: transactions, error } = await query;
 
       if (error) throw error;
       
@@ -176,7 +180,12 @@ export const UserExpenseChart = () => {
         const monthlyBreakdown: Record<string, { user1Income: number; user1Expense: number; user2Income: number; user2Expense: number }> = {};
         
         transactions?.forEach(transaction => {
-          const month = new Date(transaction.transaction_date).toLocaleDateString('pt-BR', { 
+          const baseDate = (transaction as any).type === 'expense' 
+            && (transaction as any).payment_method === 'credit_card' 
+            && (transaction as any).created_at
+            ? new Date((transaction as any).created_at)
+            : new Date(transaction.transaction_date);
+          const month = baseDate.toLocaleDateString('pt-BR', { 
             month: 'short', 
             year: '2-digit' 
           });

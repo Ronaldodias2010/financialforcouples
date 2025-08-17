@@ -181,7 +181,9 @@ export const MileageSystem = () => {
   };
 
   const loadMileageRules = async () => {
-    const userIds = getUserIdsToQuery();
+    const userIds = (isPartOfCouple && couple)
+      ? [couple.user1_id, couple.user2_id]
+      : getUserIdsToQuery();
     
     const { data, error } = await supabase
       .from("card_mileage_rules")
