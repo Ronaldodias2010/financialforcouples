@@ -221,6 +221,12 @@ const getAccountOwnerName = (account: Account) => {
       const map = new Map<string, { name: string; id: string }>();
       (data || []).forEach((c: any) => {
         const key = normalize(c.name);
+        
+        // Skip "Veículo" (singular) in favor of "Veículos" (plural)
+        if (key === 'veiculo' && data.some((cat: any) => normalize(cat.name) === 'veiculos')) {
+          return;
+        }
+        
         const preferred = map.get(key);
         if (!preferred) {
           map.set(key, { name: c.name, id: c.user_id === user.id ? c.id : c.id });
