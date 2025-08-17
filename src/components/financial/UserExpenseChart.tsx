@@ -118,7 +118,7 @@ export const UserExpenseChart = () => {
       // Fetch both income and expense transactions
       const { data: transactions, error } = await supabase
         .from('transactions')
-        .select('owner_user, amount, transaction_date, type')
+        .select('owner_user, user_id, amount, transaction_date, type')
         .in('user_id', userIds)
         .gte('transaction_date', format(startDate, 'yyyy-MM-dd'))
         .lte('transaction_date', format(endDate, 'yyyy-MM-dd'));
@@ -132,16 +132,18 @@ export const UserExpenseChart = () => {
       const expenseByUser = { user1: 0, user2: 0 };
 
       transactions?.forEach((transaction) => {
-        // Normalizar owner_user: se for um email ou não for 'user1' ou 'user2', tratar como 'user1'
-        let owner = transaction.owner_user || 'user1';
-        if (owner !== 'user1' && owner !== 'user2') {
-          owner = 'user1'; // Emails e outros valores são tratados como user1
+        // Determine owner based on user_id vs couple membership for reliability
+        let owner: 'user1' | 'user2' = 'user1';
+        if (coupleData) {
+          owner = transaction.user_id === coupleData.user1_id ? 'user1'
+            : transaction.user_id === coupleData.user2_id ? 'user2'
+            : 'user1';
         }
 
         if (transaction.type === 'income') {
-          incomeByUser[owner as 'user1' | 'user2'] += transaction.amount;
+          incomeByUser[owner] += transaction.amount;
         } else {
-          expenseByUser[owner as 'user1' | 'user2'] += transaction.amount;
+          expenseByUser[owner] += transaction.amount;
         }
       });
 
@@ -178,9 +180,11 @@ export const UserExpenseChart = () => {
             monthlyBreakdown[month] = { user1Income: 0, user1Expense: 0, user2Income: 0, user2Expense: 0 };
           }
           
-          let owner = transaction.owner_user || 'user1';
-          if (owner !== 'user1' && owner !== 'user2') {
-            owner = 'user1';
+          let owner: 'user1' | 'user2' = 'user1';
+          if (coupleData) {
+            owner = transaction.user_id === coupleData.user1_id ? 'user1'
+              : transaction.user_id === coupleData.user2_id ? 'user2'
+              : 'user1';
           }
 
           if (transaction.type === 'income') {

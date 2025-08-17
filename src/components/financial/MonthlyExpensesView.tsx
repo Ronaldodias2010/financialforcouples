@@ -225,11 +225,13 @@ if (selectedCategory !== "all") {
       
       let filteredData = data || [];
       
-      // Apply user filter based on viewMode
-      if (viewMode !== "both" && isPartOfCouple) {
+      // Apply user filter based on viewMode using user_id mapping to couple
+      if (viewMode !== "both" && couple) {
         filteredData = filteredData.filter(transaction => {
-          const ownerUser = transaction.owner_user || 'user1';
-          return ownerUser === viewMode;
+          let owner: 'user1' | 'user2' = 'user1';
+          if (transaction.user_id === couple.user1_id) owner = 'user1';
+          else if (transaction.user_id === couple.user2_id) owner = 'user2';
+          return owner === viewMode;
         });
       }
       

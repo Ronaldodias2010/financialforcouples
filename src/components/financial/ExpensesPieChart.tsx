@@ -166,9 +166,15 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         const categoryName = translateCategoryName(originalCategoryName);
         const categoryColor = transaction.categories?.color || '#6366f1';
         const amount = Number(transaction.amount);
-        
-        // Use the owner_user field that was already set correctly by triggers
-        const ownerUser = transaction.owner_user || 'user1';
+        // Determine which user this transaction belongs to using user_id mapping
+        let ownerUser = 'user1';
+        if (coupleData?.status === 'active') {
+          if (transaction.user_id === coupleData.user1_id) {
+            ownerUser = 'user1';
+          } else if (transaction.user_id === coupleData.user2_id) {
+            ownerUser = 'user2';
+          }
+        }
         
         // Add to "both" map
         if (categoryMapBoth.has(categoryName)) {
