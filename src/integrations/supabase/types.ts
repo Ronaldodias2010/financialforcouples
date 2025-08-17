@@ -1063,6 +1063,10 @@ export type Database = {
         }
         Returns: string
       }
+      determine_owner_user: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       fix_security_definer_views: {
         Args: Record<PropertyKey, never>
         Returns: string
