@@ -892,7 +892,7 @@ export const MileageSystem = () => {
       </div>
     </div>
   ) : (
-    mileageGoals.map((goal) => {
+    (isPartOfCouple && couple ? (viewMode === 'user1' ? mileageGoals.filter(g => g.user_id === couple.user1_id) : viewMode === 'user2' ? mileageGoals.filter(g => g.user_id === couple.user2_id) : mileageGoals) : mileageGoals).map((goal) => {
       const existingMilesFromCards = mileageRules
         .filter(rule => rule.is_active && rule.user_id === goal.user_id)
         .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);

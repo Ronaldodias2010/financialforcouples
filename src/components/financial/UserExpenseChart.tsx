@@ -122,12 +122,22 @@ export const UserExpenseChart = () => {
 
       let query = supabase
         .from('transactions')
-        .select('owner_user, user_id, amount, transaction_date, type, payment_method, created_at')
-        .in('user_id', userIds)
-        .or(`and(transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startStr},created_at.lte.${endStr})`);
+        .select('owner_user, user_id, amount, transaction_date, type, payment_method, created_at');
+
+      // Date filters: include transaction_date window and also credit card expenses by created_at
+      query = query.or(
+        `and(transaction_date.gte.${startStr},transaction_date.lte.${endStr}),` +
+        `and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startStr},created_at.lte.${endStr})`
+      );
+
+      // User filters: include both users when in couple
+      if (coupleData) {
+        query = query.or(`user_id.eq.${userIds[0]},user_id.eq.${userIds[1]}`);
+      } else if (user?.id) {
+        query = query.eq('user_id', user.id);
+      }
 
       const { data: transactions, error } = await query;
-
       if (error) throw error;
       
       console.log('Chart transactions fetched:', transactions);
