@@ -114,6 +114,7 @@ export const UserExpenseChart = () => {
         // Include both users' transactions
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
+      console.log('UserExpenseChart: Using userIds for query:', userIds);
 
       // Fetch both income and expense transactions
       const { data: transactions, error } = await supabase
