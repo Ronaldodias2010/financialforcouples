@@ -34,6 +34,7 @@ const SendConfirmationEmail = lazy(() => import("./pages/SendConfirmationEmail")
 const NotFound = lazy(() => import("./pages/NotFound"));
 const EmailTest = lazy(() => import("./pages/EmailTest"));
 const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
+const CleanupPastel = lazy(() => import("./pages/CleanupPastel"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 // PWAPrompt temporarily disabled to stabilize app
 
@@ -77,6 +78,7 @@ const App = () => {
                         <Route path="/subscription-success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
                         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                         <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+                        <Route path="/cleanup-pastel" element={<ProtectedRoute><CleanupPastel /></ProtectedRoute>} />
                         
                         <Route path="*" element={<NotFound />} />
                       </Routes>
