@@ -27,6 +27,7 @@ interface Card {
 
 interface MileageRule {
   id: string;
+  user_id?: string;
   card_id: string;
   bank_name: string;
   card_brand: string;
@@ -40,6 +41,7 @@ interface MileageRule {
 
 interface MileageGoal {
   id: string;
+  user_id: string;
   name: string;
   description: string;
   target_miles: number;
@@ -752,18 +754,23 @@ export const MileageSystem = () => {
             </Card>
           )}
 
-          <div className="grid gap-4">
-            {mileageGoals.map((goal) => {
-              // Calculate total existing miles from active card rules
+<div className="grid gap-4">
+  {isPartOfCouple && viewMode === 'both' && couple ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h4 className="font-semibold mb-2">{getUserLabel('user1')}</h4>
+        {mileageGoals.filter(g => g.user_id === couple.user1_id).length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('mileage.noGoals')}</p>
+        ) : (
+          mileageGoals
+            .filter(g => g.user_id === couple.user1_id)
+            .map((goal) => {
               const existingMilesFromCards = mileageRules
-                .filter(rule => rule.is_active)
+                .filter(rule => rule.is_active && rule.user_id === goal.user_id)
                 .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
-              
-              // Add existing miles to current progress
               const totalCurrentMiles = goal.current_miles + existingMilesFromCards;
               const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
               const progress = Math.min((totalCurrentMiles / goal.target_miles) * 100, 100);
-              
               return (
                 <Card key={goal.id}>
                   <CardContent className="pt-6">
@@ -771,24 +778,19 @@ export const MileageSystem = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-semibold">{goal.name}</h4>
-                           {goal.description && (
-                             <p className="text-sm text-muted-foreground">{goal.description}</p>
-                           )}
-                         </div>
+                          {goal.description && (
+                            <p className="text-sm text-muted-foreground">{goal.description}</p>
+                          )}
+                        </div>
                         <div className="flex gap-2">
-                          <Badge variant={progress >= 100 ? "default" : "secondary"}>
+                          <Badge variant={progress >= 100 ? 'default' : 'secondary'}>
                             {progress >= 100 ? t('mileage.completed') : t('mileage.inProgress')}
                           </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => deleteGoal(goal.id)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => deleteGoal(goal.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
-
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>{totalCurrentMiles.toLocaleString()} {t('mileage.milesEarned')}</span>
@@ -808,9 +810,7 @@ export const MileageSystem = () => {
                             </div>
                           )}
                           {goal.target_date && (
-                            <span className="block">
-                              • {t('mileage.target')}: {format(new Date(goal.target_date), "dd/MM/yyyy")}
-                            </span>
+                            <span className="block">• {t('mileage.target')}: {format(new Date(goal.target_date), 'dd/MM/yyyy')}</span>
                           )}
                         </div>
                       </div>
@@ -818,8 +818,132 @@ export const MileageSystem = () => {
                   </CardContent>
                 </Card>
               );
-            })}
-          </div>
+            })
+        )}
+      </div>
+      <div>
+        <h4 className="font-semibold mb-2">{getUserLabel('user2')}</h4>
+        {mileageGoals.filter(g => g.user_id === couple.user2_id).length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('mileage.noGoals')}</p>
+        ) : (
+          mileageGoals
+            .filter(g => g.user_id === couple.user2_id)
+            .map((goal) => {
+              const existingMilesFromCards = mileageRules
+                .filter(rule => rule.is_active && rule.user_id === goal.user_id)
+                .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+              const totalCurrentMiles = goal.current_miles + existingMilesFromCards;
+              const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
+              const progress = Math.min((totalCurrentMiles / goal.target_miles) * 100, 100);
+              return (
+                <Card key={goal.id}>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">{goal.name}</h4>
+                          {goal.description && (
+                            <p className="text-sm text-muted-foreground">{goal.description}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge variant={progress >= 100 ? 'default' : 'secondary'}>
+                            {progress >= 100 ? t('mileage.completed') : t('mileage.inProgress')}
+                          </Badge>
+                          <Button size="sm" variant="outline" onClick={() => deleteGoal(goal.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>{totalCurrentMiles.toLocaleString()} {t('mileage.milesEarned')}</span>
+                          <span>{goal.target_miles.toLocaleString()} {t('mileage.milesTarget')}</span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>{progress.toFixed(1)}% {t('mileage.progressText')}</div>
+                          {existingMilesFromCards > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              {t('mileage.includesExisting')}: {existingMilesFromCards.toLocaleString()} {t('mileage.milesEarned')}
+                            </div>
+                          )}
+                          {remainingMiles > 0 && (
+                            <div className="text-xs font-medium text-primary">
+                              {t('mileage.remaining')}: {remainingMiles.toLocaleString()} {t('mileage.milesEarned')}
+                            </div>
+                          )}
+                          {goal.target_date && (
+                            <span className="block">• {t('mileage.target')}: {format(new Date(goal.target_date), 'dd/MM/yyyy')}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+        )}
+      </div>
+    </div>
+  ) : (
+    mileageGoals.map((goal) => {
+      const existingMilesFromCards = mileageRules
+        .filter(rule => rule.is_active && rule.user_id === goal.user_id)
+        .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+      const totalCurrentMiles = goal.current_miles + existingMilesFromCards;
+      const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
+      const progress = Math.min((totalCurrentMiles / goal.target_miles) * 100, 100);
+      return (
+        <Card key={goal.id}>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold">{goal.name}</h4>
+                  {goal.description && (
+                    <p className="text-sm text-muted-foreground">{goal.description}</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Badge variant={progress >= 100 ? 'default' : 'secondary'}>
+                    {progress >= 100 ? t('mileage.completed') : t('mileage.inProgress')}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => deleteGoal(goal.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>{totalCurrentMiles.toLocaleString()} {t('mileage.milesEarned')}</span>
+                  <span>{goal.target_miles.toLocaleString()} {t('mileage.milesTarget')}</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <div>{progress.toFixed(1)}% {t('mileage.progressText')}</div>
+                  {existingMilesFromCards > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      {t('mileage.includesExisting')}: {existingMilesFromCards.toLocaleString()} {t('mileage.milesEarned')}
+                    </div>
+                  )}
+                  {remainingMiles > 0 && (
+                    <div className="text-xs font-medium text-primary">
+                      {t('mileage.remaining')}: {remainingMiles.toLocaleString()} {t('mileage.milesEarned')}
+                    </div>
+                  )}
+                  {goal.target_date && (
+                    <span className="block">• {t('mileage.target')}: {format(new Date(goal.target_date), 'dd/MM/yyyy')}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    })
+  )}
+</div>
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">

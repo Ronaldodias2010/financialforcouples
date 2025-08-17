@@ -56,21 +56,21 @@ export const UserExpenseChart = () => {
       fetchFinancialData();
       
       // Set up realtime listener for transactions
-      const channel = supabase
-        .channel('transaction-changes')
-        .on('postgres_changes', 
-          { 
-            event: '*', 
-            schema: 'public', 
-            table: 'transactions',
-            filter: `user_id=eq.${user.id}`
-          }, 
-          () => {
-            console.log('Transaction change detected, refreshing chart...');
-            fetchFinancialData();
-          }
-        )
-        .subscribe();
+        const channel = supabase
+          .channel('transaction-changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'transactions'
+            },
+            () => {
+              console.log('Transaction change detected, refreshing chart...');
+              fetchFinancialData();
+            }
+          )
+          .subscribe();
 
       return () => {
         supabase.removeChannel(channel);
@@ -132,18 +132,22 @@ export const UserExpenseChart = () => {
       const expenseByUser = { user1: 0, user2: 0 };
 
       transactions?.forEach((transaction) => {
-        // Determine owner based on user_id vs couple membership for reliability
-        let owner: 'user1' | 'user2' = 'user1';
-        if (coupleData) {
-          owner = transaction.user_id === coupleData.user1_id ? 'user1'
-            : transaction.user_id === coupleData.user2_id ? 'user2'
-            : 'user1';
-        }
+        // Determine owner: prefer owner_user when present, fallback to couple mapping
+        let owner: 'user1' | 'user2' =
+          (transaction as any).owner_user === 'user1' || (transaction as any).owner_user === 'user2'
+            ? (transaction as any).owner_user
+            : (coupleData
+                ? (transaction.user_id === coupleData.user1_id
+                    ? 'user1'
+                    : transaction.user_id === coupleData.user2_id
+                      ? 'user2'
+                      : 'user1')
+                : 'user1');
 
         if (transaction.type === 'income') {
           incomeByUser[owner] += transaction.amount;
         } else {
-          expenseByUser[owner] += transaction.amount;
+          expenseByUser[owner] += Math.abs(Number(transaction.amount));
         }
       });
 
@@ -190,7 +194,7 @@ export const UserExpenseChart = () => {
           if (transaction.type === 'income') {
             monthlyBreakdown[month][`${owner}Income` as keyof typeof monthlyBreakdown[string]] += transaction.amount;
           } else {
-            monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += transaction.amount;
+            monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += Math.abs(Number(transaction.amount));
           }
         });
 
