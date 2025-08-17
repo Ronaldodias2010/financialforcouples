@@ -741,7 +741,16 @@ export const MileageSystem = () => {
 
           <div className="grid gap-4">
             {mileageGoals.map((goal) => {
-              const progress = Math.min((goal.current_miles / goal.target_miles) * 100, 100);
+              // Calculate total existing miles from active card rules
+              const existingMilesFromCards = mileageRules
+                .filter(rule => rule.is_active)
+                .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+              
+              // Add existing miles to current progress
+              const totalCurrentMiles = goal.current_miles + existingMilesFromCards;
+              const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
+              const progress = Math.min((totalCurrentMiles / goal.target_miles) * 100, 100);
+              
               return (
                 <Card key={goal.id}>
                   <CardContent className="pt-6">
@@ -754,8 +763,8 @@ export const MileageSystem = () => {
                            )}
                          </div>
                         <div className="flex gap-2">
-                          <Badge variant={goal.is_completed ? "default" : "secondary"}>
-                            {goal.is_completed ? t('mileage.completed') : t('mileage.inProgress')}
+                          <Badge variant={progress >= 100 ? "default" : "secondary"}>
+                            {progress >= 100 ? t('mileage.completed') : t('mileage.inProgress')}
                           </Badge>
                           <Button
                             size="sm"
@@ -769,14 +778,24 @@ export const MileageSystem = () => {
 
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>{goal.current_miles.toLocaleString()} {t('mileage.milesEarned')}</span>
-                          <span>{goal.target_miles.toLocaleString()} {t('mileage.milesEarned')}</span>
+                          <span>{totalCurrentMiles.toLocaleString()} {t('mileage.milesEarned')}</span>
+                          <span>{goal.target_miles.toLocaleString()} {t('mileage.milesTarget')}</span>
                         </div>
                         <Progress value={progress} className="h-2" />
-                        <div className="text-sm text-muted-foreground">
-                          {progress.toFixed(1)}% {t('mileage.progressText')}
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>{progress.toFixed(1)}% {t('mileage.progressText')}</div>
+                          {existingMilesFromCards > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              {t('mileage.includesExisting')}: {existingMilesFromCards.toLocaleString()} {t('mileage.milesEarned')}
+                            </div>
+                          )}
+                          {remainingMiles > 0 && (
+                            <div className="text-xs font-medium text-primary">
+                              {t('mileage.remaining')}: {remainingMiles.toLocaleString()} {t('mileage.milesEarned')}
+                            </div>
+                          )}
                           {goal.target_date && (
-                            <span className="ml-2">
+                            <span className="block">
                               • {t('mileage.target')}: {format(new Date(goal.target_date), "dd/MM/yyyy")}
                             </span>
                           )}

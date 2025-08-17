@@ -4,13 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, CreditCard, AlertCircle, DollarSign } from "lucide-react";
+import { Calendar, CreditCard, AlertCircle, DollarSign, Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
 import { format } from 'date-fns';
 import { FutureExpensesCalendar } from "./FutureExpensesCalendar";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface FutureExpense {
   id: string;
@@ -305,6 +307,109 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
 
   const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
+  const exportToCSV = () => {
+    if (filteredExpenses.length === 0) {
+      toast.error("Não há dados para exportar");
+      return;
+    }
+
+    const headers = [
+      t('monthlyExpenses.description'),
+      t('monthlyExpenses.amount'),
+      t('monthlyExpenses.dueDate'),
+      t('monthlyExpenses.category'),
+      t('monthlyExpenses.type'),
+      t('monthlyExpenses.owner')
+    ];
+
+    const csvData = filteredExpenses.map(expense => [
+      expense.description,
+      formatCurrency(expense.amount),
+      formatDate(expense.due_date),
+      translateCategory(expense.category),
+      getTypeLabel(expense.type),
+      expense.owner_user ? getOwnerName(expense.owner_user) : ''
+    ]);
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const categoryLabel = selectedCategory === "all" ? "todas-categorias" : selectedCategory.toLowerCase().replace(/\s+/g, '-');
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `gastos-futuros-${categoryLabel}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success("Arquivo CSV exportado com sucesso");
+  };
+
+  const exportToPDF = () => {
+    if (filteredExpenses.length === 0) {
+      toast.error("Não há dados para exportar");
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Título
+    doc.setFontSize(18);
+    doc.text(t('monthlyExpenses.futureExpenses'), 20, 20);
+    
+    // Subtítulo com total
+    doc.setFontSize(12);
+    const categoryLabel = selectedCategory === "all" ? t('monthlyExpenses.allFilter') : translateCategory(selectedCategory);
+    doc.text(`${t('monthlyExpenses.category')}: ${categoryLabel}`, 20, 35);
+    doc.text(`${t('monthlyExpenses.totalFuture')}: ${formatCurrency(totalAmount)}`, 20, 45);
+    
+    // Tabela
+    const tableColumns = [
+      t('monthlyExpenses.description'),
+      t('monthlyExpenses.amount'),
+      t('monthlyExpenses.dueDate'),
+      t('monthlyExpenses.category'),
+      t('monthlyExpenses.type'),
+      t('monthlyExpenses.owner')
+    ];
+    
+    const tableRows = filteredExpenses.map(expense => [
+      expense.description,
+      formatCurrency(expense.amount),
+      formatDate(expense.due_date),
+      translateCategory(expense.category),
+      getTypeLabel(expense.type),
+      expense.owner_user ? getOwnerName(expense.owner_user) : ''
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumns],
+      body: tableRows,
+      startY: 55,
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [66, 102, 241],
+        textColor: 255,
+      },
+      alternateRowStyles: {
+        fillColor: [245, 247, 250],
+      },
+    });
+
+    doc.save(`gastos-futuros-${categoryLabel.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+    
+    toast.success("Arquivo PDF exportado com sucesso");
+  };
+
   if (loading) {
     return <div>{t('monthlyExpenses.loading')}</div>;
   }
@@ -318,6 +423,26 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             <h3 className="text-lg font-semibold">{t('monthlyExpenses.futureExpenses')}</h3>
           </div>
           <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToCSV}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                PDF
+              </Button>
+            </div>
             <FutureExpensesCalendar 
               expenses={filteredExpenses} 
               getOwnerName={getOwnerName}
