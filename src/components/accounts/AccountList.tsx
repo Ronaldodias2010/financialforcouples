@@ -226,11 +226,11 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                       )}
                     </p>
                     <p className="text-sm mt-1">
-                      <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
+                      <span className="font-medium">{t('accounts.limitUsed')}: </span>
                       {formatCurrency(getUsedLimit(account), account.currency)}
                     </p>
-                    <p className="text-sm">
-                      <span className="font-medium">{tr('accounts.remainingLimit', 'Limite Disponível')}: </span>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium">{t('accounts.remainingLimit')}: </span>
                       {formatCurrency(getRemainingLimit(account), account.currency)}
                     </p>
                     <p className="text-xs text-muted-foreground">

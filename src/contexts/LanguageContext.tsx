@@ -97,6 +97,17 @@ const translations = {
     'dashboard.both': 'Ambos',
     'dashboard.user1': 'Usuário 1',
     'dashboard.user2': 'Usuário 2',
+    
+    // Account model and form translations
+    'accounts.accountModel': 'Modelo da Conta',
+    'accounts.accountLimit': 'Limite da Conta',
+    'accounts.currentBalance': 'Saldo Atual',
+    'accounts.positive': 'Positivo',
+    'accounts.negative': 'Negativo',
+    'accounts.currency': 'Moeda',
+    'accounts.limitUsed': 'Limite Utilizado',
+    'accounts.remainingLimit': 'Limite Disponível',
+    'accounts.limit': 'Limite',
     'dashboard.sharedActiveBanner': 'Dashboard compartilhado ativo - mostrando dados de ambos os usuários',
     'dashboard.individualInviteBanner': 'Dashboard individual - convide seu parceiro(a) para compartilhar dados',
     
@@ -982,6 +993,17 @@ const translations = {
     'dashboard.both': 'Both',
     'dashboard.user1': 'User 1',
     'dashboard.user2': 'User 2',
+    
+    // Account model and form translations
+    'accounts.accountModel': 'Account Type',
+    'accounts.accountLimit': 'Account Limit',
+    'accounts.currentBalance': 'Current Balance',
+    'accounts.positive': 'Positive',
+    'accounts.negative': 'Negative',
+    'accounts.currency': 'Currency',
+    'accounts.limitUsed': 'Used Limit',
+    'accounts.remainingLimit': 'Available Limit',
+    'accounts.limit': 'Limit',
     'dashboard.sharedActiveBanner': 'Shared dashboard active - showing data from both users',
     'dashboard.individualInviteBanner': 'Individual dashboard - invite your partner to share data',
     
@@ -1867,6 +1889,17 @@ const translations = {
     'dashboard.both': 'Ambos',
     'dashboard.user1': 'Usuario 1',
     'dashboard.user2': 'Usuario 2',
+    
+    // Account model and form translations
+    'accounts.accountModel': 'Tipo de Cuenta',
+    'accounts.accountLimit': 'Límite de Cuenta',
+    'accounts.currentBalance': 'Saldo Actual',
+    'accounts.positive': 'Positivo',
+    'accounts.negative': 'Negativo',
+    'accounts.currency': 'Moneda',
+    'accounts.limitUsed': 'Límite Utilizado',
+    'accounts.remainingLimit': 'Límite Disponible',
+    'accounts.limit': 'Límite',
     'dashboard.sharedActiveBanner': 'Dashboard compartido activo - mostrando datos de ambos usuarios',
     'dashboard.individualInviteBanner': 'Dashboard individual - invita a tu pareja para compartir datos',
     

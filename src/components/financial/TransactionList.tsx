@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpCircle, ArrowDownCircle, User } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Transaction {
   id: string;
@@ -17,6 +18,7 @@ interface TransactionListProps {
 }
 
 export const TransactionList = ({ transactions }: TransactionListProps) => {
+  const { t } = useLanguage();
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -79,7 +81,7 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
                       </Badge>
                       <Badge className={`text-xs ${getUserColor(transaction.user)}`}>
                         <User className="h-3 w-3 mr-1" />
-                        {transaction.user === "user1" ? "Usuário 1" : "Usuário 2"}
+                        {transaction.user === "user1" ? t('dashboard.user1') : t('dashboard.user2')}
                       </Badge>
                     </div>
                   </div>

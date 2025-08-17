@@ -136,7 +136,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="account_model">Modelo da Conta</Label>
+            <Label htmlFor="account_model">{t('accounts.accountModel')}</Label>
             <div className="mt-2 inline-flex">
               <Badge variant="successSegmentFlatLeft" className="px-3 py-1">
                 {t('accounts.models.personal') || 'Pessoal'}
@@ -145,7 +145,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="overdraft_limit">Limite da Conta</Label>
+            <Label htmlFor="overdraft_limit">{t('accounts.accountLimit')}</Label>
             <Input
               id="overdraft_limit"
               type="number"
@@ -157,7 +157,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="balance">{tr('accounts.currentBalance', 'Saldo Atual')}</Label>
+            <Label htmlFor="balance">{t('accounts.currentBalance')}</Label>
             <Input
               id="balance"
               type="number"
@@ -171,17 +171,17 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
             <div className="mt-2 flex gap-2">
               <Button type="button" size="sm" variant={!isNegative ? "default" : "outline"} onClick={() => setIsNegative(false)}>
                 <Plus className="h-4 w-4 mr-1" />
-                {tr('accounts.positive', 'Positivo')}
+                {t('accounts.positive')}
               </Button>
               <Button type="button" size="sm" variant={isNegative ? "default" : "outline"} onClick={() => setIsNegative(true)}>
                 <Minus className="h-4 w-4 mr-1" />
-                {tr('accounts.negative', 'Negativo')}
+                {t('accounts.negative')}
               </Button>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="currency">Moeda</Label>
+            <Label htmlFor="currency">{t('accounts.currency')}</Label>
             <Select 
               value={accountData.currency} 
               onValueChange={(value) => setAccountData(prev => ({ ...prev, currency: value }))}
@@ -199,7 +199,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
       <div className="rounded-md bg-muted/30 p-3 text-sm">
         <div>
-          <span className="font-medium">{tr('accounts.limitUsed', 'Limite Utilizado')}: </span>
+          <span className="font-medium">{t('accounts.limitUsed')}: </span>
           {(() => {
             const limit = parseFloat(accountData.overdraft_limit) || 0;
             const raw = parseFloat(accountData.balance) || 0;
@@ -209,7 +209,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           })()}
         </div>
         <div className="mt-1 text-muted-foreground">
-          <span className="font-medium">{tr('accounts.remainingLimit', 'Limite Disponível')}: </span>
+          <span className="font-medium">{t('accounts.remainingLimit')}: </span>
           {(() => {
             const limit = parseFloat(accountData.overdraft_limit) || 0;
             const raw = parseFloat(accountData.balance) || 0;
