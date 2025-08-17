@@ -207,9 +207,7 @@ const fetchCategories = async () => {
           accounts(name)
         `)
         .in('user_id', userIds)
-        .gte('transaction_date', startDate)
-        .lte('transaction_date', endDate)
-        .eq('type', 'expense')
+        .or(`and(type.eq.expense,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startDate},created_at.lte.${endDate})`)
         .order('transaction_date', { ascending: false });
 
 if (selectedCategory !== "all") {
