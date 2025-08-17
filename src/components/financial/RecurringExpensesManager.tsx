@@ -133,6 +133,12 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
       const map = new Map<string, { id: string; name: string }>();
       (data || []).forEach((c: any) => {
         const key = normalize(c.name);
+        
+        // Skip "Veículo" (singular) in favor of "Veículos" (plural)
+        if (key === 'veiculo' && data.some((cat: any) => normalize(cat.name) === 'veiculos')) {
+          return;
+        }
+        
         const current = map.get(key);
         if (!current) {
           map.set(key, { id: c.user_id === user.id ? c.id : c.id, name: c.name });

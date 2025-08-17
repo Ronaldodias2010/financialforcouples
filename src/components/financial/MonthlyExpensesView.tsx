@@ -160,6 +160,12 @@ const fetchCategories = async () => {
       const map = new Map<string, { key: string; name: string; ids: string[] }>();
       for (const it of items) {
         const key = normalize(it.name);
+        
+        // Skip "Veículo" (singular) in favor of "Veículos" (plural)
+        if (key === 'veiculo' && items.some(item => normalize(item.name) === 'veiculos')) {
+          continue;
+        }
+        
         if (!map.has(key)) map.set(key, { key, name: it.name, ids: [it.id] });
         else map.get(key)!.ids.push(it.id);
       }
