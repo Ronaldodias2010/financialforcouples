@@ -180,6 +180,7 @@ const translations = {
     'common.all': 'Todos',
     'common.none': 'Nenhum',
     'common.select': 'Selecionar',
+    'common.refresh': 'Atualizar',
     'back': 'Voltar',
     
     // Monthly Expenses
@@ -1079,6 +1080,7 @@ const translations = {
     'common.all': 'All',
     'common.none': 'None',
     'common.select': 'Select',
+    'common.refresh': 'Refresh',
     'back': 'Back',
     
     // Monthly Expenses
@@ -1978,6 +1980,7 @@ const translations = {
     'common.all': 'Todos',
     'common.none': 'Ninguno',
     'common.select': 'Seleccionar',
+    'common.refresh': 'Actualizar',
     'back': 'Atrás',
     
     // Monthly Expenses

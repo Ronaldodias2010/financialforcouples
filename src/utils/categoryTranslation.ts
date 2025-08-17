@@ -80,6 +80,7 @@ const categoryTranslations: CategoryTranslations = {
   'vestuario': { pt: 'Vestuário', en: 'Clothing', es: 'Ropa' },
   'viagem': { pt: 'Viagem', en: 'Travel', es: 'Viaje' },
   'veiculos': { pt: 'Veículos', en: 'Vehicles', es: 'Vehículos' },
+  'veiculo': { pt: 'Veículo', en: 'Vehicle', es: 'Vehículo' },
   'consorcio': { pt: 'Consórcio', en: 'Consortium', es: 'Consorcio' }
 };
 
