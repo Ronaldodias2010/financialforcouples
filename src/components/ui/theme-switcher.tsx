@@ -14,17 +14,18 @@ export const ThemeSwitcher = () => {
       variant="outline"
       size="sm"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="gap-2 min-w-[100px]"
+      className="gap-2 sm:min-w-[100px]"
+      title={isDark ? (t('theme.light') || 'Claro') : (t('theme.dark') || 'Escuro')}
     >
       {isDark ? (
         <>
           <Sun className="h-4 w-4" />
-          {t('theme.light') || 'Claro'}
+          <span className="hidden sm:inline">{t('theme.light') || 'Claro'}</span>
         </>
       ) : (
         <>
           <Moon className="h-4 w-4" />
-          {t('theme.dark') || 'Escuro'}
+          <span className="hidden sm:inline">{t('theme.dark') || 'Escuro'}</span>
         </>
       )}
     </Button>
