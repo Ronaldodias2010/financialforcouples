@@ -134,6 +134,7 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         .select(`
           amount,
           user_id,
+          owner_user,
           categories!inner(name, color)
         `)
         .eq('type', 'expense')
@@ -160,21 +161,14 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       const categoryMapUser2 = new Map<string, { amount: number; color: string }>();
       const categoryMapBoth = new Map<string, { amount: number; color: string }>();
       
-      data?.forEach((transaction) => {
+        data?.forEach((transaction) => {
         const originalCategoryName = transaction.categories?.name || t('categories.uncategorized');
         const categoryName = translateCategoryName(originalCategoryName);
         const categoryColor = transaction.categories?.color || '#6366f1';
         const amount = Number(transaction.amount);
         
-        // Determine which user this transaction belongs to
-        let ownerUser = 'user1';
-        if (coupleData?.status === 'active') {
-          if (transaction.user_id === coupleData.user1_id) {
-            ownerUser = 'user1';
-          } else if (transaction.user_id === coupleData.user2_id) {
-            ownerUser = 'user2';
-          }
-        }
+        // Use the owner_user field that was already set correctly by triggers
+        const ownerUser = transaction.owner_user || 'user1';
         
         // Add to "both" map
         if (categoryMapBoth.has(categoryName)) {
