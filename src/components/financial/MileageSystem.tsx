@@ -49,11 +49,13 @@ interface MileageGoal {
 
 interface MileageHistory {
   id: string;
+  user_id: string;
   card_id: string;
   amount_spent: number;
   miles_earned: number;
   calculation_date: string;
   month_year: string;
+  transaction_id?: string;
   card?: Card;
 }
 
@@ -218,7 +220,14 @@ export const MileageSystem = () => {
     const { data, error } = await supabase
       .from("mileage_history")
       .select(`
-        *,
+        id,
+        user_id,
+        card_id,
+        amount_spent,
+        miles_earned,
+        calculation_date,
+        month_year,
+        transaction_id,
         cards:card_id (id, name, card_type, user_id)
       `)
       .in("user_id", userIds.filter(Boolean))
@@ -813,30 +822,45 @@ export const MileageSystem = () => {
           <h3 className="text-lg font-semibold">{t('mileage.historyTitle')}</h3>
           
           <div className="grid gap-4">
-            {mileageHistory.map((record) => (
-              <Card key={record.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold">{record.card?.name}</h4>
-                        <Badge variant="outline">
-                          +{record.miles_earned.toLocaleString()} {t('mileage.milesEarned')}
-                        </Badge>
+            {mileageHistory.map((record) => {
+              // Get user name for this record
+              const recordUserName = record.user_id === user?.id 
+                ? names.currentUserName || 'Você'
+                : names.partnerName || 'Parceiro(a)';
+
+              return (
+                <Card key={record.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold">{record.card?.name}</h4>
+                          <Badge variant="outline">
+                            +{record.miles_earned.toLocaleString()} {t('mileage.milesEarned')}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {recordUserName} ganhou {record.miles_earned.toLocaleString()} milhas
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t('mileage.spent')}: R$ {record.amount_spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                        {record.transaction_id && (
+                          <p className="text-xs text-muted-foreground">
+                            Transação: {record.transaction_id.substring(0, 8)}...
+                          </p>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('mileage.spent')}: R$ {record.amount_spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(record.calculation_date), "dd/MM/yyyy")}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(record.calculation_date), "dd/MM/yyyy")}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
       </Tabs>
