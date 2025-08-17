@@ -207,14 +207,6 @@ const getOwnerNameForCard = (card: CardData) => {
                     <p className="text-sm text-muted-foreground">
                       {getOwnerNameForCard(card)}
                     </p>
-                    <p className="text-sm">
-                      Limite Disponível: {formatCurrency(getConvertedValue(Number(card.initial_balance ?? 0), card.currency), getDisplayCurrency(card.currency))}
-                      {card.currency !== getDisplayCurrency(card.currency) && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          (orig: {formatCurrency(Number(card.initial_balance ?? 0), card.currency)})
-                        </span>
-                      )}
-                    </p>
                     {card.credit_limit && (
                       <p className="text-sm text-muted-foreground">
                         Limite: {formatCurrency(getConvertedValue(card.credit_limit, card.currency), getDisplayCurrency(card.currency))}
@@ -225,6 +217,14 @@ const getOwnerNameForCard = (card: CardData) => {
                         )}
                       </p>
                     )}
+                    <p className="text-sm">
+                      Limite Disponível: {formatCurrency(getConvertedValue(Number(card.initial_balance ?? 0), card.currency), getDisplayCurrency(card.currency))}
+                      {card.currency !== getDisplayCurrency(card.currency) && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (orig: {formatCurrency(Number(card.initial_balance ?? 0), card.currency)})
+                        </span>
+                      )}
+                    </p>
                     {card.closing_date && card.card_type === "credit" && (
                       <p className="text-sm text-muted-foreground">
                         Fechamento: dia {card.closing_date}

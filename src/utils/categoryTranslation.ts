@@ -78,7 +78,9 @@ const categoryTranslations: CategoryTranslations = {
   'utilidades': { pt: 'Utilidades', en: 'Utilities', es: 'Servicios Públicos' },
   'vestuarios': { pt: 'Vestuários', en: 'Clothing', es: 'Ropa' },
   'vestuario': { pt: 'Vestuário', en: 'Clothing', es: 'Ropa' },
-  'viagem': { pt: 'Viagem', en: 'Travel', es: 'Viaje' }
+  'viagem': { pt: 'Viagem', en: 'Travel', es: 'Viaje' },
+  'veiculos': { pt: 'Veículos', en: 'Vehicles', es: 'Vehículos' },
+  'consorcio': { pt: 'Consórcio', en: 'Consortium', es: 'Consorcio' }
 };
 
 // Function to normalize category names (same as used in CategoryManager)
