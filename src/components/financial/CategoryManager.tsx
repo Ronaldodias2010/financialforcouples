@@ -80,6 +80,8 @@ export const CategoryManager = () => {
       'gift or donation': 'Presente ou Doação',
       'refund': 'Reembolso',
       'reimbursement': 'Reembolso',
+      'veiculos': 'Veículos',
+      'consorcio': 'Consórcio',
     },
     en: {
       'alimentacao': 'Food',
@@ -121,6 +123,8 @@ export const CategoryManager = () => {
       'contas basicas': 'Basic Bills',
       'presente ou doacao': 'Gift or Donation',
       'reembolso': 'Refund',
+      'veiculos': 'Vehicles',
+      'consorcio': 'Consortium',
     },
     es: {
       'alimentacao': 'Comida',
@@ -197,6 +201,8 @@ export const CategoryManager = () => {
       'reembolso': 'Reembolso',
       'refund': 'Reembolso',
       'reimbursement': 'Reembolso',
+      'veiculos': 'Vehículos',
+      'consorcio': 'Consorcio',
     }
   };
 
