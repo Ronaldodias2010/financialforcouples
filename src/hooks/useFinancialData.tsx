@@ -12,6 +12,7 @@ interface Transaction {
   description: string;
   transaction_date: string;
   owner_user: string;
+  user_id: string;
   category_id: string;
   categories?: { name: string };
   cards?: { name: string };
@@ -40,6 +41,7 @@ export const useFinancialData = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>('BRL');
   const [loading, setLoading] = useState(true);
+  const [coupleIds, setCoupleIds] = useState<{ user1_id: string; user2_id: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -192,8 +194,10 @@ export const useFinancialData = () => {
         // Include both users' transactions for shared dashboard
         userIds = [coupleData.user1_id, coupleData.user2_id];
         isPartOfCouple = true;
+        setCoupleIds({ user1_id: coupleData.user1_id, user2_id: coupleData.user2_id });
         console.log('✅ User is part of a couple - fetching transactions for both users:', userIds);
       } else {
+        setCoupleIds(null);
         console.log('❌ User is not part of a couple - fetching only own transactions');
       }
 
@@ -407,8 +411,13 @@ export const useFinancialData = () => {
     }
     
     return transactions.filter(transaction => {
-      // Use owner_user field directly to match the view mode
-      const ownerUser = transaction.owner_user || 'user1';
+      // Prefer classifying by user_id vs couple membership to avoid stale owner_user
+      if (!coupleIds) {
+        return true; // single user context
+      }
+      const ownerUser: 'user1' | 'user2' = transaction.user_id === coupleIds.user1_id ? 'user1'
+        : transaction.user_id === coupleIds.user2_id ? 'user2'
+        : 'user1';
       return ownerUser === viewMode;
     });
   };
@@ -417,11 +426,11 @@ export const useFinancialData = () => {
     const allTransactions = viewMode === 'both' ? transactions : getTransactionsByUser(viewMode);
     
     const user1Expenses = allTransactions
-      .filter(t => t.type === 'expense' && (t.owner_user || 'user1') === 'user1')
+      .filter(t => t.type === 'expense' && (!coupleIds || t.user_id === coupleIds.user1_id))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
     
     const user2Expenses = allTransactions
-      .filter(t => t.type === 'expense' && (t.owner_user || 'user1') === 'user2')
+      .filter(t => t.type === 'expense' && (coupleIds ? t.user_id === coupleIds.user2_id : false))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
 
     return { user1Expenses, user2Expenses };

@@ -94,6 +94,13 @@ export default function Auth() {
         }
       }
       
+      // Limpeza robusta de sessão antes de tentar novo login
+      try {
+        const { cleanupAuthState } = await import('@/utils/authCleanup');
+        cleanupAuthState();
+        try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
+      } catch {}
+      
       // Se chegou aqui, fazer login normal com email/senha
       const { data, error } = await supabase.auth.signInWithPassword({
         email,

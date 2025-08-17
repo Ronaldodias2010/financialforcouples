@@ -134,7 +134,6 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         .select(`
           amount,
           user_id,
-          owner_user,
           categories!inner(name, color)
         `)
         .eq('type', 'expense')
