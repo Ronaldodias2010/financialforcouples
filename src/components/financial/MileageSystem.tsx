@@ -201,7 +201,10 @@ export const MileageSystem = () => {
   };
 
   const loadMileageGoals = async () => {
-    const userIds = getUserIdsToQuery();
+    // Sempre carregar metas de ambos os usuários quando for um casal
+    const userIds = (isPartOfCouple && couple)
+      ? [couple.user1_id, couple.user2_id]
+      : getUserIdsToQuery();
     console.log('MileageSystem: loadMileageGoals called with userIds:', userIds);
     
     const { data, error } = await supabase

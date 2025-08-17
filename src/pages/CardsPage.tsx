@@ -46,12 +46,12 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const computeAvailable = (c: CardRow) => {
     if (c.card_type !== "credit") return 0;
     const value = Number(c.initial_balance ?? 0);
-    
-    // Convert to user's preferred currency if different
-    if (userProfile?.preferred_currency && c.currency && c.currency !== userProfile.preferred_currency) {
-      return convertCurrency(value, c.currency as CurrencyCode, userProfile.preferred_currency as CurrencyCode);
+
+    // Sempre converter para BRL para somatório e exibição
+    if (c.currency && c.currency !== "BRL") {
+      return convertCurrency(value, c.currency as CurrencyCode, "BRL");
     }
-    
+
     return value;
   };
 
@@ -124,7 +124,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
     which === "user1" ? (names.user1Name || t("dashboard.user1")) : (names.user2Name || t("dashboard.user2"));
 
   const getDisplayCurrency = () => {
-    return (userProfile?.preferred_currency as CurrencyCode) || displayCurrency;
+    return displayCurrency; // Sempre BRL
   };
 
   return (

@@ -134,16 +134,16 @@ export const UserExpenseChart = () => {
 
       transactions?.forEach((transaction) => {
         // Determine owner: prefer owner_user when present, fallback to couple mapping
-        let owner: 'user1' | 'user2' =
-          (transaction as any).owner_user === 'user1' || (transaction as any).owner_user === 'user2'
-            ? (transaction as any).owner_user
-            : (coupleData
-                ? (transaction.user_id === coupleData.user1_id
-                    ? 'user1'
-                    : transaction.user_id === coupleData.user2_id
-                      ? 'user2'
-                      : 'user1')
-                : 'user1');
+        let owner: 'user1' | 'user2';
+        if (coupleData) {
+          owner = transaction.user_id === coupleData.user1_id
+            ? 'user1'
+            : transaction.user_id === coupleData.user2_id
+              ? 'user2'
+              : 'user1';
+        } else {
+          owner = (transaction as any).owner_user === 'user2' ? 'user2' : 'user1';
+        }
 
         if (transaction.type === 'income') {
           incomeByUser[owner] += transaction.amount;
