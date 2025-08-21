@@ -40,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Check if request has body
+    // Read body fast
     const requestText = await req.text();
     if (!requestText || requestText.trim() === '') {
       console.log('Empty request body received');
@@ -51,53 +51,52 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const payload: WebhookPayload = JSON.parse(requestText);
-    console.log('Webhook payload received:', JSON.stringify(payload, null, 2));
+    console.log('Webhook payload received (ack fast):', JSON.stringify({ user: payload.user.email }, null, 2));
 
-    const { user, email_data } = payload;
-    const { token_hash, redirect_to, email_action_type } = email_data;
+    // Start background email render/send to avoid 5s timeout
+    EdgeRuntime.waitUntil((async () => {
+      try {
+        const { user, email_data } = payload;
+        const { token_hash, redirect_to, email_action_type } = email_data;
 
-    // Determine user's language (default to Portuguese)
-    const language = 'pt'; // You can modify this logic based on user preferences
+        const language = 'pt';
+        const userName = user.user_metadata?.display_name ||
+                        user.user_metadata?.full_name || 
+                        user.user_metadata?.name || 
+                        user.email.split('@')[0];
 
-    // Get user's display name - prioritize user metadata display_name
-    const userName = user.user_metadata?.display_name ||
-                    user.user_metadata?.full_name || 
-                    user.user_metadata?.name || 
-                    user.email.split('@')[0];
+        const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
+        const emailHtml = language === 'en' 
+            ? await renderAsync(
+                React.createElement(EmailConfirmationEN, {
+                  userEmail: userName,
+                  loginUrl: confirmUrl
+                })
+              )
+            : await renderAsync(
+                React.createElement(EmailConfirmationPT, {
+                  userEmail: userName,
+                  loginUrl: confirmUrl
+                })
+              );
 
-    // Generate confirmation URL
-    const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
+        const emailResponse = await resend.emails.send({
+          from: "Couples Financials <noreply@couplesfinancials.com>",
+          to: [user.email],
+          subject: language === 'en' 
+            ? "🎉 Confirm your email address - Couples Financials"
+            : "🎉 Confirme seu endereço de email - Couples Financials",
+          html: emailHtml,
+        });
 
-    // Generate login URL for after confirmation
-    const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '')}.lovableproject.com/app`;
+        console.log("Confirmation email sent successfully:", emailResponse);
+      } catch (bgErr) {
+        console.error('Error sending confirmation email in background:', bgErr);
+      }
+    })());
 
-    // Choose template based on language
-    const emailHtml = language === 'en' 
-        ? await renderAsync(
-            React.createElement(EmailConfirmationEN, {
-              userEmail: userName,
-              loginUrl: confirmUrl // Use confirmation URL instead of login URL
-            })
-          )
-        : await renderAsync(
-            React.createElement(EmailConfirmationPT, {
-              userEmail: userName,
-              loginUrl: confirmUrl // Use confirmation URL instead of login URL
-            })
-          );
-
-    const emailResponse = await resend.emails.send({
-      from: "Couples Financials <noreply@couplesfinancials.com>",
-      to: [user.email],
-      subject: language === 'en' 
-        ? "🎉 Confirm your email address - Couples Financials"
-        : "🎉 Confirme seu endereço de email - Couples Financials",
-      html: emailHtml,
-    });
-
-    console.log("Confirmation email sent successfully:", emailResponse);
-
-    return new Response(JSON.stringify({ success: true }), {
+    // Immediate ACK to prevent timeout
+    return new Response(JSON.stringify({ accepted: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

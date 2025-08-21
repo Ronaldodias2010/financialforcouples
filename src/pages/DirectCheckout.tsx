@@ -230,7 +230,7 @@ const DirectCheckout = () => {
       // Tratar casos de erro ou sucesso no signup
       if (signUpError) {
         const lower = signUpError.message?.toLowerCase() || '';
-        if (lower.includes('hook') && lower.includes('timeout')) {
+        if (lower.includes('hook') && (lower.includes('timeout') || lower.includes('maximum time'))) {
           toast({
             title: t('directCheckout.accountCreated'),
             description: t('directCheckout.checkEmailToContinue'),
