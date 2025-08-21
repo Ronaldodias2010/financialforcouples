@@ -295,9 +295,15 @@ const getAccountOwnerName = (account: Account) => {
 
   const fetchCards = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // For expense transactions, only show current user's credit cards
       const { data, error } = await supabase
         .from('cards')
         .select('id, user_id, name, card_type, owner_user, closing_date, due_date, currency')
+        .eq('user_id', user.id)
+        .eq('card_type', 'credit') // Only credit cards for expenses
         .order('name');
 
       if (error) throw error;
