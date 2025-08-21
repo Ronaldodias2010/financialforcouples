@@ -48,6 +48,34 @@ const DirectCheckout = () => {
     });
   };
 
+  const proceedWithCheckout = async (user: any) => {
+    // 2. Criar sessão de checkout do Stripe
+    const priceId = selectedPlan === 'yearly' 
+      ? (isUSD ? 'price_yearly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP') // yearly price ID
+      : (isUSD ? 'price_monthly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price ID
+
+    const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+      body: { priceId }
+    });
+
+    if (checkoutError) throw checkoutError;
+
+    if (checkoutData?.url) {
+      // Redirecionar para o Stripe Checkout
+      window.open(checkoutData.url, '_blank');
+      
+      toast({
+        title: t('directCheckout.paymentProcessing'),
+        description: t('directCheckout.paymentRedirect'),
+      });
+      
+      // Redirecionar para login após um pequeno delay
+      setTimeout(() => {
+        navigate('/auth?message=checkout_initiated');
+      }, 2000);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -130,34 +158,6 @@ const DirectCheckout = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const proceedWithCheckout = async (user: any) => {
-    // 2. Criar sessão de checkout do Stripe
-    const priceId = selectedPlan === 'yearly' 
-      ? (isUSD ? 'price_yearly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP') // yearly price ID
-      : (isUSD ? 'price_monthly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price ID
-
-    const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-      body: { priceId }
-    });
-
-    if (checkoutError) throw checkoutError;
-
-    if (checkoutData?.url) {
-      // Redirecionar para o Stripe Checkout
-      window.open(checkoutData.url, '_blank');
-      
-      toast({
-        title: t('directCheckout.paymentProcessing'),
-        description: t('directCheckout.paymentRedirect'),
-      });
-      
-      // Redirecionar para login após um pequeno delay
-      setTimeout(() => {
-        navigate('/auth?message=checkout_initiated');
-      }, 2000);
     }
   };
 
