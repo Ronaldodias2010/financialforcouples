@@ -102,9 +102,11 @@ const HeroSection = () => {
                   <Download className="w-4 h-4 group-hover:animate-bounce" />
                   <span className="text-sm">Baixe gratuitamente PWA</span>
                 </Button>
-                <Button size="default" variant="ctaGradient" className="group flex-1 sm:flex-none" onClick={() => setAiBetaOpen(true)}>
-                  <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                  <span className="text-sm">{t('hero.cta.premium')}</span>
+                <Button asChild size="default" variant="ctaGradient" className="group flex-1 sm:flex-none">
+                  <Link to="/checkout-direto">
+                    <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                    <span className="text-sm">{t('hero.cta.premium')}</span>
+                  </Link>
                 </Button>
               </div>
               

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Sparkles, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import AIBetaModal from "@/components/landing/AIBetaModal";
 
 const FinalCTASection = () => {
@@ -64,10 +65,12 @@ const FinalCTASection = () => {
               {t('finalcta.free')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" className="bg-card text-card-foreground border border-white/20 hover:bg-card/90 min-w-64 group" onClick={() => setAiBetaOpen(true)}>
-              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-              {t('finalcta.premium')}
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            <Button asChild size="lg" className="bg-card text-card-foreground border border-white/20 hover:bg-card/90 min-w-64 group">
+              <Link to="/checkout-direto">
+                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                {t('finalcta.premium')}
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
           </div>
           

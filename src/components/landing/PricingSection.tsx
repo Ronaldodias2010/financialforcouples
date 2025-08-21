@@ -144,13 +144,15 @@ const PricingSection = () => {
                 </Button>
               ) : (
                 <Button 
+                  asChild
                   variant={plan.buttonVariant} 
                   size="lg" 
                   className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
-                  onClick={() => setAiBetaOpen(true)}
                 >
-                  <Sparkles className="w-4 h-4" />
-                  {plan.buttonText}
+                  <Link to="/checkout-direto">
+                    <Sparkles className="w-4 h-4" />
+                    {plan.buttonText}
+                  </Link>
                 </Button>
               )}
             </Card>

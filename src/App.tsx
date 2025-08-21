@@ -19,6 +19,7 @@ const PrivacyPolicy = lazy(() => import("./components/landing/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
 import Auth from "./pages/Auth";
 const Landing = lazy(() => import("./pages/Landing"));
+const DirectCheckout = lazy(() => import("./pages/DirectCheckout"));
 const AppDashboard = lazy(() => import("./pages/AppDashboard"));
 const AccountsPage = lazy(() => import("./pages/AccountsPage").then(m => ({ default: m.AccountsPage })));
 const CardsPage = lazy(() => import("./pages/CardsPage").then(m => ({ default: m.CardsPage })));
@@ -57,6 +58,7 @@ const App = () => {
                     <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
                       <Routes>
                         <Route path="/" element={<Landing />} />
+                        <Route path="/checkout-direto" element={<DirectCheckout />} />
                         <Route path="/landing-simple" element={<LandingSimple />} />
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/login" element={<Auth />} />
