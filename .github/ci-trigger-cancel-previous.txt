@@ -1,0 +1,4 @@
+Trigger: cancel previous run and start fresh
+Reason: Workflow stuck waiting for previous deployment due to concurrency
+Action: Set cancel-in-progress: true in deploy.yml
+Time: 2025-08-21 17:38 UTC
