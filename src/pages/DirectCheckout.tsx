@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Shield, CreditCard, Check, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const DirectCheckout = () => {
   const { t, language, inBrazil } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,6 +25,8 @@ const DirectCheckout = () => {
     password: "",
     confirmPassword: "",
   });
+  
+  const sessionToken = searchParams.get('token');
 
   const isUSD = language !== 'pt' || !inBrazil;
   const monthlyPrice = isUSD ? '$9.90' : 'R$19,90';
@@ -40,6 +43,57 @@ const DirectCheckout = () => {
     t('pricing.premium.feature7'),
     t('pricing.premium.feature8'),
   ];
+
+  // Verificar se o usuário está retornando da verificação de email
+  useEffect(() => {
+    if (sessionToken) {
+      // Usuário verificou email e voltou para completar checkout
+      const completeCheckoutFlow = async () => {
+        try {
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError || !sessionData.session) {
+            toast({
+              title: t('directCheckout.error'),
+              description: t('directCheckout.sessionExpired'),
+              variant: "destructive",
+            });
+            navigate('/auth');
+            return;
+          }
+
+          // Chamar edge function para completar checkout
+          const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+            'complete-checkout',
+            {
+              body: { sessionToken }
+            }
+          );
+
+          if (checkoutError) throw checkoutError;
+
+          if (checkoutData?.url) {
+            // Redirecionar para o Stripe Checkout
+            window.open(checkoutData.url, '_blank');
+            
+            toast({
+              title: t('directCheckout.paymentProcessing'),
+              description: t('directCheckout.paymentRedirect'),
+            });
+          }
+        } catch (error) {
+          console.error('Error completing checkout:', error);
+          toast({
+            title: t('directCheckout.error'),
+            description: t('directCheckout.unexpectedError'),
+            variant: "destructive",
+          });
+        }
+      };
+
+      completeCheckoutFlow();
+    }
+  }, [sessionToken, toast, t, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -135,12 +189,29 @@ const DirectCheckout = () => {
     setLoading(true);
 
     try {
-      // 1. Criar conta do usuário
+      // 1. Primeiro criar o checkout session para rastrear carrinho abandonado
+      const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: {
+            email: formData.email,
+            fullName: formData.fullName,
+            phone: formData.phone,
+            selectedPlan: selectedPlan,
+          }
+        }
+      );
+
+      if (sessionError) throw sessionError;
+
+      // 2. Criar conta do usuário com redirect personalizado
+      const checkoutRedirectUrl = `${window.location.origin}/checkout-direto?token=${sessionData.sessionToken}`;
+      
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: checkoutRedirectUrl,
           data: {
             full_name: formData.fullName,
             phone: formData.phone,
@@ -148,67 +219,35 @@ const DirectCheckout = () => {
         }
       });
 
-      // Tratar especificamente o erro de timeout do webhook
+      // Tratar casos de erro ou sucesso no signup
       if (signUpError) {
-        // Se for timeout do webhook, a conta pode ter sido criada mesmo assim
         const lower = signUpError.message?.toLowerCase() || '';
         if (lower.includes('hook') && lower.includes('timeout')) {
           toast({
             title: t('directCheckout.accountCreated'),
-            description: t('directCheckout.webhookTimeoutMessage'),
+            description: t('directCheckout.checkEmailToContinue'),
             variant: "default",
           });
-          
-          // Tentar fazer login para verificar se a conta foi criada
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
-          
-          if (signInData.user) {
-            // Conta foi criada com sucesso, continuar com checkout
-            await proceedWithCheckout(signInData.user);
-            return;
-          } else if (signInError?.message?.toLowerCase().includes('email not confirmed')) {
-            // Se o email ainda não está confirmado, orientar o usuário
-            navigate('/auth?message=verify_email');
-            return;
-          } else {
-            // Se não conseguiu fazer login, redirecionar para confirmar email
-            navigate('/auth?message=verify_email');
-            return;
-          }
+          navigate('/auth?message=verify_email_checkout');
+          return;
         } else {
           throw signUpError;
         }
       }
 
-      if (signUpData.session) {
-        await proceedWithCheckout(signUpData.user);
-      } else {
-        toast({
-          title: t('directCheckout.accountCreated'),
-          description: t('directCheckout.webhookTimeoutFallback'),
-          variant: 'default',
-        });
-        navigate('/auth?message=verify_email');
-        return;
-      }
+      // Se a conta foi criada com sucesso, mostrar mensagem para verificar email
+      toast({
+        title: t('directCheckout.accountCreated'),
+        description: t('directCheckout.checkEmailToContinue'),
+        variant: "default",
+      });
+      
+      navigate('/auth?message=verify_email_checkout');
+      
     } catch (error) {
       console.error('Error:', error);
       const message = error instanceof Error ? error.message : String(error);
       const lower = message.toLowerCase();
-
-      // Tratamento especial: timeout do webhook, email não confirmado ou não autenticado
-      if ((lower.includes('hook') && lower.includes('timeout')) || lower.includes('email not confirmed') || lower.includes('user not authenticated')) {
-        toast({
-          title: t('directCheckout.accountCreated'),
-          description: t('directCheckout.webhookTimeoutFallback'),
-          variant: "default",
-        });
-        navigate('/auth?message=verify_email');
-        return;
-      }
 
       let errorMessage = t('directCheckout.unexpectedError');
       if (lower.includes('user already registered')) {

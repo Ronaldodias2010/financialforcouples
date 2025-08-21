@@ -318,9 +318,13 @@ const translations = {
     'directCheckout.testimonial': '"Melhor app para organizar finanças em casal"',
     'directCheckout.passwordMismatch': 'As senhas não coincidem.',
     'directCheckout.accountCreated': 'Conta criada com sucesso!',
-    'directCheckout.paymentRedirect': 'Você será redirecionado para finalizar o pagamento.',
     'directCheckout.error': 'Erro',
     'directCheckout.unexpectedError': 'Ocorreu um erro inesperado.',
+    'directCheckout.checkEmailToContinue': 'Verifique seu email para continuar com o checkout.',
+    'directCheckout.sessionExpired': 'Sessão expirada. Tente novamente.',
+    'directCheckout.emailAlreadyExists': 'Este email já está em uso.',
+    'directCheckout.paymentProcessing': 'Processando pagamento',
+    'directCheckout.paymentRedirect': 'Redirecionando para finalizar pagamento...',
 
     // Auth
     'auth.appName': 'Couples Financials',

@@ -16,7 +16,7 @@ import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
-import { PremiumUsersList } from "@/components/admin/PremiumUsersList";
+import AbandonedCheckouts from "@/components/admin/AbandonedCheckouts";
 
 
 interface SubscriptionMetrics {
@@ -510,7 +510,7 @@ const AdminDashboardContent = () => {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger 
             value="users" 
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
@@ -531,6 +531,13 @@ const AdminDashboardContent = () => {
           >
             <CreditCard className="h-4 w-4 mr-2" />
             {t('admin.tabs.premiumAccess')}
+          </TabsTrigger>
+          <TabsTrigger 
+            value="abandoned"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Carrinho Abandonado
           </TabsTrigger>
           <TabsTrigger 
             value="alerts"
@@ -678,6 +685,10 @@ const AdminDashboardContent = () => {
           <div className="grid grid-cols-1 gap-6">
             <ManualPremiumAccess language={language === 'es' ? 'en' : language as 'pt' | 'en'} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="abandoned">
+          <AbandonedCheckouts />
         </TabsContent>
 
 
