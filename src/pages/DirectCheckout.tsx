@@ -20,6 +20,7 @@ const DirectCheckout = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -50,10 +51,10 @@ const DirectCheckout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
+      if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
+        title: t('directCheckout.error'),
+        description: t('directCheckout.passwordMismatch'),
         variant: "destructive",
       });
       return;
@@ -70,6 +71,7 @@ const DirectCheckout = () => {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: formData.fullName,
+            phone: formData.phone,
           }
         }
       });
@@ -93,8 +95,8 @@ const DirectCheckout = () => {
           window.open(checkoutData.url, '_blank');
           
           toast({
-            title: "Conta criada com sucesso!",
-            description: "Você será redirecionado para finalizar o pagamento.",
+            title: t('directCheckout.accountCreated'),
+            description: t('directCheckout.paymentRedirect'),
           });
           
           // Redirecionar para login após um pequeno delay
@@ -106,8 +108,8 @@ const DirectCheckout = () => {
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: "Erro",
-        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado.",
+        title: t('directCheckout.error'),
+        description: error instanceof Error ? error.message : t('directCheckout.unexpectedError'),
         variant: "destructive",
       });
     } finally {
@@ -125,7 +127,7 @@ const DirectCheckout = () => {
             <Button asChild variant="ghost" size="sm">
               <Link to="/">
                 <ArrowLeft className="w-4 h-4" />
-                Voltar
+                {t('directCheckout.back')}
               </Link>
             </Button>
             <div className="flex items-center gap-2">
@@ -144,10 +146,10 @@ const DirectCheckout = () => {
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-bold text-foreground mb-2">
-                  Experimente a versão Premium
+                  {t('directCheckout.title')}
                 </h1>
                 <p className="text-muted-foreground">
-                  Crie sua conta e tenha acesso imediato a todos os recursos premium
+                  {t('directCheckout.subtitle')}
                 </p>
               </div>
 
@@ -155,18 +157,18 @@ const DirectCheckout = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CreditCard className="w-5 h-5" />
-                    Criar Conta & Assinar
+                    {t('directCheckout.createAccountTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 gap-4">
-                      <div>
-                        <Label htmlFor="fullName">Nome completo</Label>
+                       <div>
+                        <Label htmlFor="fullName">{t('directCheckout.fullName')}</Label>
                         <Input
                           id="fullName"
                           type="text"
-                          placeholder="Seu nome completo"
+                          placeholder={t('directCheckout.fullNamePlaceholder')}
                           value={formData.fullName}
                           onChange={handleInputChange}
                           required
@@ -174,11 +176,11 @@ const DirectCheckout = () => {
                       </div>
                       
                       <div>
-                        <Label htmlFor="email">E-mail</Label>
+                        <Label htmlFor="email">{t('directCheckout.email')}</Label>
                         <Input
                           id="email"
                           type="email"
-                          placeholder="seu@email.com"
+                          placeholder={t('directCheckout.emailPlaceholder')}
                           value={formData.email}
                           onChange={handleInputChange}
                           required
@@ -186,11 +188,26 @@ const DirectCheckout = () => {
                       </div>
                       
                       <div>
-                        <Label htmlFor="password">Senha</Label>
+                        <Label htmlFor="phone">{t('directCheckout.phone')}</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder={t('directCheckout.phonePlaceholder')}
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          required
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('directCheckout.phoneHelp')}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="password">{t('directCheckout.password')}</Label>
                         <Input
                           id="password"
                           type="password"
-                          placeholder="Mínimo 6 caracteres"
+                          placeholder={t('directCheckout.passwordPlaceholder')}
                           value={formData.password}
                           onChange={handleInputChange}
                           required
@@ -199,11 +216,11 @@ const DirectCheckout = () => {
                       </div>
                       
                       <div>
-                        <Label htmlFor="confirmPassword">Confirmar senha</Label>
+                        <Label htmlFor="confirmPassword">{t('directCheckout.confirmPassword')}</Label>
                         <Input
                           id="confirmPassword"
                           type="password"
-                          placeholder="Digite a senha novamente"
+                          placeholder={t('directCheckout.confirmPasswordPlaceholder')}
                           value={formData.confirmPassword}
                           onChange={handleInputChange}
                           required
@@ -215,7 +232,7 @@ const DirectCheckout = () => {
 
                     {/* Plan Selection */}
                     <div className="space-y-4">
-                      <Label>Selecione seu plano:</Label>
+                      <Label>{t('directCheckout.selectPlan')}</Label>
                       
                       <div className="grid gap-3">
                         <div 
@@ -228,12 +245,12 @@ const DirectCheckout = () => {
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="font-semibold">Plano Mensal</div>
-                              <div className="text-sm text-muted-foreground">Renovação automática</div>
+                              <div className="font-semibold">{t('directCheckout.monthlyPlan')}</div>
+                              <div className="text-sm text-muted-foreground">{t('directCheckout.monthlyRenewal')}</div>
                             </div>
                             <div className="text-right">
                               <div className="font-bold text-xl">{monthlyPrice}</div>
-                              <div className="text-sm text-muted-foreground">/mês</div>
+                              <div className="text-sm text-muted-foreground">{t('directCheckout.perMonth')}</div>
                             </div>
                           </div>
                         </div>
@@ -249,16 +266,16 @@ const DirectCheckout = () => {
                           <div className="flex items-center justify-between">
                             <div>
                               <div className="font-semibold flex items-center gap-2">
-                                Plano Anual 
+                                {t('directCheckout.yearlyPlan')} 
                                 <Badge variant="secondary" className="bg-primary/10 text-primary">
                                   25% OFF
                                 </Badge>
                               </div>
-                              <div className="text-sm text-muted-foreground">Melhor valor</div>
+                              <div className="text-sm text-muted-foreground">{t('directCheckout.bestValue')}</div>
                             </div>
                             <div className="text-right">
                               <div className="font-bold text-xl">{yearlyPrice}</div>
-                              <div className="text-sm text-muted-foreground">/ano</div>
+                              <div className="text-sm text-muted-foreground">{t('directCheckout.perYear')}</div>
                             </div>
                           </div>
                         </div>
@@ -272,18 +289,18 @@ const DirectCheckout = () => {
                       disabled={loading}
                     >
                       {loading ? (
-                        "Processando..."
+                        t('directCheckout.processing')
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4 mr-2" />
-                          Criar conta e assinar {selectedPlan === 'monthly' ? monthlyPrice : yearlyPrice}
+                          {t('directCheckout.createAccountButton')} {selectedPlan === 'monthly' ? monthlyPrice : yearlyPrice}
                         </>
                       )}
                     </Button>
 
                     <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                       <Shield className="w-4 h-4" />
-                      Pagamento seguro processado pelo Stripe
+                      {t('directCheckout.securePayment')}
                     </div>
                   </form>
                 </CardContent>
@@ -296,7 +313,7 @@ const DirectCheckout = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-primary">
                     <Sparkles className="w-5 h-5" />
-                    Recursos Premium Inclusos
+                    {t('directCheckout.premiumFeatures')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -317,9 +334,9 @@ const DirectCheckout = () => {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Shield className="w-8 h-8 text-green-600" />
                   </div>
-                  <h3 className="font-semibold mb-2">Garantia de 30 dias</h3>
+                  <h3 className="font-semibold mb-2">{t('directCheckout.guarantee')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Se não ficar satisfeito, devolvemos 100% do seu dinheiro em até 30 dias.
+                    {t('directCheckout.guaranteeText')}
                   </p>
                 </CardContent>
               </Card>
@@ -334,12 +351,12 @@ const DirectCheckout = () => {
                       <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-background"></div>
                     </div>
                   </div>
-                  <h3 className="font-semibold mb-1">+500 casais satisfeitos</h3>
+                  <h3 className="font-semibold mb-1">{t('directCheckout.socialProof')}</h3>
                   <div className="flex justify-center mb-2">
                     ⭐⭐⭐⭐⭐
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    "Melhor app para organizar finanças em casal"
+                    {t('directCheckout.testimonial')}
                   </p>
                 </CardContent>
               </Card>
