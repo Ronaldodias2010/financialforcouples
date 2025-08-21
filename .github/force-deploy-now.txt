@@ -1,0 +1,9 @@
+FORCE DEPLOY - 2025-08-21 17:35 UTC
+
+Deploy deve rodar AGORA com:
+- Imports problemáticos removidos
+- Cancel-in-progress desabilitado  
+- Timeout webhook tratado
+- Máscara telefone BR implementada
+
+PUSH ESTE COMMIT PARA MAIN BRANCH!
