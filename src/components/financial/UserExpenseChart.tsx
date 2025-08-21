@@ -302,15 +302,15 @@ export const UserExpenseChart = () => {
     <Card className="p-6 h-full">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">
+          <div className="flex items-center gap-2 min-w-0">
+            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <h3 className="text-sm sm:text-lg font-semibold truncate">
               {t('charts.userAnalysisTitle')}
             </h3>
           </div>
-          <div className="flex gap-2">
+                  <div className="flex gap-2">
             <Select value={period} onValueChange={(value: "current" | "last3" | "last6") => setPeriod(value)}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-24 sm:w-32 text-xs sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -414,69 +414,68 @@ export const UserExpenseChart = () => {
                 </div>
                 
                 {/* Line Chart Legend */}
-                <div className="flex items-center justify-center gap-6 mt-3 text-sm">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-start gap-3 sm:gap-6 mt-3 text-xs sm:text-sm px-2 overflow-hidden">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     <div 
-                      className="w-4 h-0.5 rounded" 
+                      className="w-3 sm:w-4 h-0.5 rounded flex-shrink-0" 
                       style={{ backgroundColor: CHART_COLORS.expense.user1 }}
                     ></div>
-                    <span>{names.user1Name}</span>
+                    <span className="truncate max-w-[120px] sm:max-w-none">{names.user1Name}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     <div 
-                      className="w-4 h-0.5 rounded" 
+                      className="w-3 sm:w-4 h-0.5 rounded flex-shrink-0" 
                       style={{ backgroundColor: CHART_COLORS.expense.user2 }}
                     ></div>
-                    <span>{names.user2Name}</span>
+                    <span className="truncate max-w-[120px] sm:max-w-none">{names.user2Name}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Legenda personalizada com cores corretas */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
                   <span className="font-medium">{t('userAnalysis.income')}</span>
                 </div>
-                <div className="flex items-center gap-4 ml-6">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ml-5 sm:ml-6">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     <div 
-                      className="w-3 h-3 rounded-full" 
+                      className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
                       style={{ backgroundColor: CHART_COLORS.income.user1 }}
                     ></div>
-                     <span>{names.user1Name}</span>
+                    <span className="truncate max-w-[150px] sm:max-w-none">{names.user1Name}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     <div 
-                      className="w-3 h-3 rounded-full" 
+                      className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
                       style={{ backgroundColor: CHART_COLORS.income.user2 }}
                     ></div>
-                     <span>{names.user2Name}</span>
+                    <span className="truncate max-w-[150px] sm:max-w-none">{names.user2Name}</span>
                   </div>
                 </div>
               </div>
-              
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <TrendingDown className="h-4 w-4 text-red-600" />
+                  <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 flex-shrink-0" />
                   <span className="font-medium">{t('userAnalysis.expenses')}</span>
                 </div>
-                <div className="flex items-center gap-4 ml-6">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ml-5 sm:ml-6">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     <div 
-                      className="w-3 h-3 rounded-full" 
+                      className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
                       style={{ backgroundColor: CHART_COLORS.expense.user1 }}
                     ></div>
-                    <span>{names.user1Name}</span>
+                    <span className="truncate max-w-[150px] sm:max-w-none">{names.user1Name}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     <div 
-                      className="w-3 h-3 rounded-full" 
+                      className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
                       style={{ backgroundColor: CHART_COLORS.expense.user2 }}
                     ></div>
-                    <span>{names.user2Name}</span>
+                    <span className="truncate max-w-[150px] sm:max-w-none">{names.user2Name}</span>
                   </div>
                 </div>
               </div>
