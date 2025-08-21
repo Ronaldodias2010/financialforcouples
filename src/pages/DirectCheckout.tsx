@@ -51,7 +51,7 @@ const DirectCheckout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-      if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       toast({
         title: t('directCheckout.error'),
         description: t('directCheckout.passwordMismatch'),
@@ -76,44 +76,88 @@ const DirectCheckout = () => {
         }
       });
 
-      if (signUpError) throw signUpError;
-
-      if (signUpData.user) {
-        // 2. Criar sessão de checkout do Stripe
-        const priceId = selectedPlan === 'yearly' 
-          ? (isUSD ? 'price_yearly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP') // yearly price ID
-          : (isUSD ? 'price_monthly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price ID
-
-        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-          body: { priceId }
-        });
-
-        if (checkoutError) throw checkoutError;
-
-        if (checkoutData?.url) {
-          // Redirecionar para o Stripe Checkout
-          window.open(checkoutData.url, '_blank');
-          
+      // Tratar especificamente o erro de timeout do webhook
+      if (signUpError) {
+        // Se for timeout do webhook, a conta pode ter sido criada mesmo assim
+        if (signUpError.message?.includes('hook') && signUpError.message?.includes('timeout')) {
           toast({
             title: t('directCheckout.accountCreated'),
-            description: t('directCheckout.paymentRedirect'),
+            description: t('directCheckout.webhookTimeoutMessage'),
+            variant: "default",
           });
           
-          // Redirecionar para login após um pequeno delay
-          setTimeout(() => {
-            navigate('/auth?message=account_created');
-          }, 2000);
+          // Tentar fazer login para verificar se a conta foi criada
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+          
+          if (signInData.user) {
+            // Conta foi criada com sucesso, continuar com checkout
+            await proceedWithCheckout(signInData.user);
+            return;
+          } else {
+            // Se não conseguiu fazer login, mostrar erro
+            throw new Error(t('directCheckout.accountCreationFailed'));
+          }
+        } else {
+          throw signUpError;
         }
+      }
+
+      if (signUpData.user) {
+        await proceedWithCheckout(signUpData.user);
       }
     } catch (error) {
       console.error('Error:', error);
+      let errorMessage = t('directCheckout.unexpectedError');
+      
+      if (error instanceof Error) {
+        // Tratar mensagens específicas de erro
+        if (error.message.includes('hook') && error.message.includes('timeout')) {
+          errorMessage = t('directCheckout.webhookTimeoutFallback');
+        } else if (error.message.includes('User already registered')) {
+          errorMessage = t('directCheckout.emailAlreadyExists');
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: t('directCheckout.error'),
-        description: error instanceof Error ? error.message : t('directCheckout.unexpectedError'),
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const proceedWithCheckout = async (user: any) => {
+    // 2. Criar sessão de checkout do Stripe
+    const priceId = selectedPlan === 'yearly' 
+      ? (isUSD ? 'price_yearly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP') // yearly price ID
+      : (isUSD ? 'price_monthly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price ID
+
+    const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+      body: { priceId }
+    });
+
+    if (checkoutError) throw checkoutError;
+
+    if (checkoutData?.url) {
+      // Redirecionar para o Stripe Checkout
+      window.open(checkoutData.url, '_blank');
+      
+      toast({
+        title: t('directCheckout.paymentProcessing'),
+        description: t('directCheckout.paymentRedirect'),
+      });
+      
+      // Redirecionar para login após um pequeno delay
+      setTimeout(() => {
+        navigate('/auth?message=checkout_initiated');
+      }, 2000);
     }
   };
 
