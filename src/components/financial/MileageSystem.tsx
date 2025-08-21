@@ -770,23 +770,15 @@ export const MileageSystem = () => {
           mileageGoals
             .filter(g => g.user_id === couple.user1_id)
             .map((goal) => {
-              // No modo "both", considerar milhas de ambos os usuários do casal
-              const existingMilesFromCards = viewMode === 'both' && couple
-                ? mileageRules
-                    .filter(rule => rule.is_active && (rule.user_id === couple.user1_id || rule.user_id === couple.user2_id))
-                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0)
-                : mileageRules
-                    .filter(rule => rule.is_active && rule.user_id === goal.user_id)
-                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+              // Sempre calcular milhas individuais do usuário da meta
+              const existingMilesFromCards = mileageRules
+                .filter(rule => rule.is_active && rule.user_id === goal.user_id)
+                .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
               
-              // No modo "both", somar milhas do histórico de ambos os usuários
-              const historyMiles = viewMode === 'both' && couple
-                ? mileageHistory
-                    .filter(h => h.user_id === couple.user1_id || h.user_id === couple.user2_id)
-                    .reduce((total, h) => total + Number(h.miles_earned), 0)
-                : mileageHistory
-                    .filter(h => h.user_id === goal.user_id)
-                    .reduce((total, h) => total + Number(h.miles_earned), 0);
+              // Calcular milhas do histórico apenas do usuário da meta
+              const historyMiles = mileageHistory
+                .filter(h => h.user_id === goal.user_id)
+                .reduce((total, h) => total + Number(h.miles_earned), 0);
               
               const totalCurrentMiles = goal.current_miles + existingMilesFromCards + historyMiles;
               const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
@@ -849,22 +841,14 @@ export const MileageSystem = () => {
           mileageGoals
             .filter(g => g.user_id === couple.user2_id)
             .map((goal) => {
-              // No modo "both", considerar milhas de ambos os usuários do casal
-              const existingMilesFromCards = viewMode === 'both' && couple
-                ? mileageRules
-                    .filter(rule => rule.is_active && (rule.user_id === couple.user1_id || rule.user_id === couple.user2_id))
-                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0)
-                : mileageRules
-                    .filter(rule => rule.is_active && rule.user_id === goal.user_id)
-                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+              // Sempre calcular milhas individuais do usuário da meta
+              const existingMilesFromCards = mileageRules
+                .filter(rule => rule.is_active && rule.user_id === goal.user_id)
+                .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
               
-              // No modo "both", somar milhas do histórico de ambos os usuários
-              const historyMiles = viewMode === 'both' && couple
-                ? mileageHistory
-                    .filter(h => h.user_id === couple.user1_id || h.user_id === couple.user2_id)
-                    .reduce((total, h) => total + Number(h.miles_earned), 0)
-                : mileageHistory
-                    .filter(h => h.user_id === goal.user_id)
+              // Calcular milhas do histórico apenas do usuário da meta
+              const historyMiles = mileageHistory
+                .filter(h => h.user_id === goal.user_id)
                     .reduce((total, h) => total + Number(h.miles_earned), 0);
               
               const totalCurrentMiles = goal.current_miles + existingMilesFromCards + historyMiles;
