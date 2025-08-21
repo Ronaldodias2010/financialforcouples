@@ -8,7 +8,7 @@ const Footer = () => {
   
   const contactInfo = language === 'pt' ? {
     email: 'contato@couplesfinancials.com',
-    phone: '(11) 27247564',
+    phone: '(11) 2724-7564',
     location: 'São Paulo, Brasil'
   } : {
     email: 'contact@couplesfinancials.com',
@@ -67,7 +67,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-green-500" />
-                <span className="text-green-400">WhatsApp Inteligente (11)98806-6403</span>
+                <span className="text-green-400">WhatsApp Inteligente (11) 98806-6403</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
