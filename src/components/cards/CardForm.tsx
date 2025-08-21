@@ -93,6 +93,25 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
 
     setLoading(true);
     try {
+        // Check for duplicate cards
+        if (cardData.card_type && cardData.last_four_digits && (cardData.card_type === "credit" || cardData.card_type === "debit")) {
+          const { data: existingCards, error: checkError } = await supabase
+            .from("cards")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("card_type", cardData.card_type)
+            .eq("last_four_digits", cardData.last_four_digits);
+
+          if (checkError) throw checkError;
+
+          if (existingCards && existingCards.length > 0) {
+            const cardTypeText = cardData.card_type === "credit" ? "crédito" : "débito";
+            toast.error(`Já existe um cartão de ${cardTypeText} com os últimos 4 dígitos ${cardData.last_four_digits}`);
+            setLoading(false);
+            return;
+          }
+        }
+
         // Determinar o dono com base no relacionamento do casal
         let ownerUser: "user1" | "user2" = "user1";
         if (isPartOfCouple && couple) {
