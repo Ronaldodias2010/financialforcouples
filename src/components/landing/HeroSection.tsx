@@ -101,7 +101,7 @@ const HeroSection = () => {
                 <Button asChild size="default" variant="secondary" className="group flex-1 sm:flex-none">
                   <Link to="/auth">
                     <Download className="w-4 h-4 group-hover:animate-bounce" />
-                    <span className="text-sm">Acesse gratuitamente</span>
+                    <span className="text-sm">{t('hero.cta.access')}</span>
                   </Link>
                 </Button>
                 <Button asChild size="default" variant="ctaGradient" className="group flex-1 sm:flex-none">

@@ -21,6 +21,7 @@ const translations = {
     'hero.subtitle': 'Controle suas finanças de forma inteligente',
     'hero.description': 'Idealizado para casais, mas recomendamos para todos. Planeje, economize e invista com ajuda da IA.',
     'hero.cta.free': 'Baixe Gratuitamente (PWA)',
+    'hero.cta.access': 'Acesse gratuitamente',
     'hero.cta.premium': 'Experimente a versão com IA',
     
     // Header
@@ -983,6 +984,7 @@ const translations = {
     'hero.subtitle': 'Control your finances intelligently',
     'hero.description': 'Designed for couples, but we recommend it for everyone. Plan, save and invest with AI help.',
     'hero.cta.free': 'Download for Free (PWA)',
+    'hero.cta.access': 'Access for free',
     'hero.cta.premium': 'Try AI Version',
     
     // Header
@@ -1945,6 +1947,7 @@ const translations = {
     'hero.subtitle': 'Controla tus finanzas de forma inteligente',
     'hero.description': 'Diseñado para parejas, pero lo recomendamos para todos. Planifica, ahorra e invierte con ayuda de IA.',
     'hero.cta.free': 'Descargar Gratis (PWA)',
+    'hero.cta.access': 'Acceder gratis',
     'hero.cta.premium': 'Probar Versión con IA',
     
     // Header
