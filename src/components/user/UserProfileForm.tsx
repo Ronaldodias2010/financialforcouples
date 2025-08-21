@@ -81,9 +81,9 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
         .from("profiles")
         .select("display_name, phone_number, preferred_currency, second_user_name, second_user_email")
         .eq("user_id", user?.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         console.error("Error fetching profile:", error);
         return;
       }
@@ -95,6 +95,15 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
           preferred_currency: data.preferred_currency || "BRL",
           second_user_name: data.second_user_name || "",
           second_user_email: data.second_user_email || ""
+        });
+      } else {
+        // No profile found, keep default values
+        setProfile({
+          display_name: "",
+          phone_number: "",
+          preferred_currency: "BRL",
+          second_user_name: "",
+          second_user_email: ""
         });
       }
     } catch (error) {
