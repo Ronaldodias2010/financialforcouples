@@ -177,8 +177,9 @@ const DirectCheckout = () => {
         // Não bloquear o fluxo de signup caso falhe o registro do carrinho
       }
 
-      // 2. Criar conta do usuário com redirect personalizado
-      const checkoutRedirectUrl = `${window.location.origin}/checkout-direto${createdToken ? `?token=${createdToken}` : ''}`;
+      // 2. Criar conta do usuário com redirect personalizado para página de confirmação
+      const emailParam = encodeURIComponent(formData.email);
+      const checkoutRedirectUrl = `${window.location.origin}/checkout-email-confirmation?email=${emailParam}${createdToken ? `&token=${createdToken}` : ''}`;
       
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -201,7 +202,9 @@ const DirectCheckout = () => {
             description: t('directCheckout.checkEmailToContinue'),
             variant: "default",
           });
-          navigate('/auth?message=verify_email_checkout');
+          // Redirecionar para a página específica de confirmação de email do checkout
+          const redirectUrl = `/checkout-email-confirmation?email=${emailParam}${createdToken ? `&token=${createdToken}` : ''}`;
+          navigate(redirectUrl);
           return;
         } else {
           throw signUpError;
@@ -215,7 +218,9 @@ const DirectCheckout = () => {
         variant: "default",
       });
       
-      navigate('/auth?message=verify_email_checkout');
+      // Redirecionar para a página específica de confirmação de email do checkout
+      const redirectUrl = `/checkout-email-confirmation?email=${emailParam}${createdToken ? `&token=${createdToken}` : ''}`;
+      navigate(redirectUrl);
       
     } catch (error) {
       console.error('Error:', error);
