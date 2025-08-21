@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
 
@@ -33,23 +34,31 @@ export const useCurrencyConverter = () => {
     try {
       setLoading(true);
       
-      // Using a free API for exchange rates
-      // In production, consider using a more reliable paid service
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/BRL');
+      // Fetch centralized exchange rates from Supabase
+      const { data, error } = await supabase
+        .from('exchange_rates')
+        .select('base_currency, target_currency, rate')
+        .eq('base_currency', 'BRL');
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch exchange rates');
+      if (error) {
+        console.error('Error fetching exchange rates from Supabase:', error);
+        throw error;
       }
       
-      const data = await response.json();
-      
-      setExchangeRates({
-        BRL: 1, // Base currency
-        USD: data.rates.USD || 0.19,
-        EUR: data.rates.EUR || 0.17
-      });
-      
-      setLastUpdated(new Date());
+      if (data && data.length > 0) {
+        const rates: ExchangeRates = { BRL: 1, USD: 0.19, EUR: 0.17 };
+        
+        data.forEach((rate) => {
+          if (rate.target_currency === 'USD') {
+            rates.USD = Number(rate.rate);
+          } else if (rate.target_currency === 'EUR') {
+            rates.EUR = Number(rate.rate);
+          }
+        });
+        
+        setExchangeRates(rates);
+        setLastUpdated(new Date());
+      }
     } catch (error) {
       console.error('Error fetching exchange rates:', error);
       // Keep using fallback rates
@@ -83,11 +92,15 @@ export const useCurrencyConverter = () => {
     }
     
     // Convert from BRL to target currency
+    let result: number;
     if (toCurrency === 'BRL') {
-      return amountInBRL;
+      result = amountInBRL;
     } else {
-      return amountInBRL * exchangeRates[toCurrency];
+      result = amountInBRL * exchangeRates[toCurrency];
     }
+    
+    // Apply consistent rounding to 2 decimal places
+    return Math.round(result * 100) / 100;
   };
 
   const formatCurrency = (amount: number, currency: CurrencyCode): string => {

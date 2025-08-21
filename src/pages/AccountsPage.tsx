@@ -79,7 +79,8 @@ const computeSuasContasTotal = (accounts: AccountRow[]) => {
       return sum + convertCurrency(remaining, from, displayCurrency);
     }
   }, 0);
-  return Number(total.toFixed(2));
+  // Apply consistent rounding to ensure all users see same value
+  return Math.round(total * 100) / 100;
 };
 
 const computeValorRealTotal = (accounts: AccountRow[]) => {
@@ -88,7 +89,8 @@ const computeValorRealTotal = (accounts: AccountRow[]) => {
     const from = (a.currency ?? "BRL") as CurrencyCode;
     return sum + convertCurrency(bal, from, displayCurrency);
   }, 0);
-  return Number(total.toFixed(2));
+  // Apply consistent rounding to ensure all users see same value
+  return Math.round(total * 100) / 100;
 };
 
 const currentUserTotal = useMemo(() => {
@@ -158,7 +160,7 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <FinancialCard
       title={t('accounts.valorReal') || "Valor Real — Ambos"}
-      amount={user1RealTotal + user2RealTotal}
+      amount={Math.round((user1RealTotal + user2RealTotal) * 100) / 100}
       currency={displayCurrency}
       icon={Wallet}
       type="balance"
@@ -166,7 +168,7 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
     />
     <FinancialCard
       title={t('accounts.valorDisponivel') || "Valor Disponível — Ambos"}
-      amount={user1Total + user2Total}
+      amount={Math.round((user1Total + user2Total) * 100) / 100}
       currency={displayCurrency}
       icon={Wallet}
       type="balance"

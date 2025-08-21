@@ -276,6 +276,33 @@ export type Database = {
         }
         Relationships: []
       }
+      exchange_rates: {
+        Row: {
+          base_currency: string
+          created_at: string
+          id: string
+          last_updated: string
+          rate: number
+          target_currency: string
+        }
+        Insert: {
+          base_currency?: string
+          created_at?: string
+          id?: string
+          last_updated?: string
+          rate: number
+          target_currency: string
+        }
+        Update: {
+          base_currency?: string
+          created_at?: string
+          id?: string
+          last_updated?: string
+          rate?: number
+          target_currency?: string
+        }
+        Relationships: []
+      }
       investment_goals: {
         Row: {
           created_at: string
@@ -1134,6 +1161,14 @@ export type Database = {
       normalize_text_simple: {
         Args: { input: string }
         Returns: string
+      }
+      update_exchange_rate: {
+        Args: {
+          p_base_currency: string
+          p_rate: number
+          p_target_currency: string
+        }
+        Returns: undefined
       }
       verify_temp_password: {
         Args: { hash: string; password: string }
