@@ -15,6 +15,9 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isCodeSent, setIsCodeSent] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
   const [isInviteAccess, setIsInviteAccess] = useState(false);
   
@@ -150,12 +153,68 @@ export default function Auth() {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
+  const sendVerificationCode = async () => {
+    if (!phoneNumber) {
+      toast({
+        variant: "destructive",
+        title: "Telefone obrigatório",
+        description: "Por favor, informe seu número de telefone.",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
+      const { error } = await supabase.functions.invoke('send-phone-verification', {
+        body: {
+          phoneNumber: phoneNumber,
+          language: language
+        }
+      });
+
+      if (error) throw error;
+
+      setIsCodeSent(true);
+      toast({
+        title: "Código enviado!",
+        description: "Verificamos seu telefone via SMS. Digite o código recebido.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar código",
+        description: error.message || "Não foi possível enviar o código de verificação.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password || !phoneNumber || !verificationCode) {
+      toast({
+        variant: "destructive",
+        title: "Campos obrigatórios",
+        description: "Preencha todos os campos e verifique seu telefone.",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Verificar código SMS primeiro
+      const { data: verificationData, error: verificationError } = await supabase.functions.invoke('verify-phone-code', {
+        body: {
+          phoneNumber: phoneNumber,
+          code: verificationCode
+        }
+      });
+
+      if (verificationError || !verificationData?.verified) {
+        throw new Error('Código de verificação inválido');
+      }
+
       const redirectUrl = `${window.location.origin}/email-confirmation`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -164,7 +223,8 @@ export default function Auth() {
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            display_name: displayName || email.split('@')[0]
+            display_name: displayName || email.split('@')[0],
+            phone_number: phoneNumber
           }
         }
       });
@@ -193,6 +253,9 @@ export default function Auth() {
         setEmail('');
         setPassword('');
         setDisplayName('');
+        setPhoneNumber('');
+        setVerificationCode('');
+        setIsCodeSent(false);
       }
     } catch (error: any) {
       toast({
@@ -417,6 +480,49 @@ export default function Auth() {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-phone">
+                    Telefone (WhatsApp) <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="signup-phone"
+                      type="tel"
+                      placeholder="+55 11 99999-9999"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={sendVerificationCode}
+                      disabled={isLoading || !phoneNumber || isCodeSent}
+                    >
+                      {isCodeSent ? "Enviado" : "Verificar"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Usaremos seu WhatsApp para enviar informações importantes
+                  </p>
+                </div>
+                {isCodeSent && (
+                  <div className="space-y-2">
+                    <Label htmlFor="verification-code">
+                      Código de Verificação <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="verification-code"
+                      type="text"
+                      placeholder="Digite o código recebido por SMS"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      required
+                      maxLength={6}
+                    />
+                  </div>
+                )}
                <div className="space-y-2">
                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
                  <div className="relative">

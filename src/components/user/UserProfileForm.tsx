@@ -27,6 +27,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   const [openingPortal, setOpeningPortal] = useState(false);
   const [profile, setProfile] = useState({
     display_name: "",
+    phone_number: "",
     preferred_currency: "BRL",
     second_user_name: "",
     second_user_email: ""
@@ -78,7 +79,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, preferred_currency, second_user_name, second_user_email")
+        .select("display_name, phone_number, preferred_currency, second_user_name, second_user_email")
         .eq("user_id", user?.id)
         .single();
 
@@ -90,6 +91,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
       if (data) {
         setProfile({
           display_name: data.display_name || "",
+          phone_number: data.phone_number || "",
           preferred_currency: data.preferred_currency || "BRL",
           second_user_name: data.second_user_name || "",
           second_user_email: data.second_user_email || ""
@@ -109,6 +111,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
         .from("profiles")
         .update({
           display_name: profile.display_name,
+          phone_number: profile.phone_number,
           preferred_currency: profile.preferred_currency as "BRL" | "USD" | "EUR",
           second_user_name: profile.second_user_name,
           second_user_email: profile.second_user_email
@@ -321,6 +324,20 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                   onChange={(e) => setProfile(prev => ({ ...prev, display_name: e.target.value }))}
                   placeholder="Como você gostaria de ser chamado"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="phone_number">Telefone (WhatsApp)</Label>
+                <Input
+                  id="phone_number"
+                  type="tel"
+                  value={profile.phone_number}
+                  onChange={(e) => setProfile(prev => ({ ...prev, phone_number: e.target.value }))}
+                  placeholder="+55 11 99999-9999"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Número usado para receber notificações importantes via WhatsApp
+                </p>
               </div>
 
               <div>
