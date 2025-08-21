@@ -770,10 +770,25 @@ export const MileageSystem = () => {
           mileageGoals
             .filter(g => g.user_id === couple.user1_id)
             .map((goal) => {
-              const existingMilesFromCards = mileageRules
-                .filter(rule => rule.is_active && rule.user_id === goal.user_id)
-                .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
-              const totalCurrentMiles = goal.current_miles + existingMilesFromCards;
+              // No modo "both", considerar milhas de ambos os usuários do casal
+              const existingMilesFromCards = viewMode === 'both' && couple
+                ? mileageRules
+                    .filter(rule => rule.is_active && (rule.user_id === couple.user1_id || rule.user_id === couple.user2_id))
+                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0)
+                : mileageRules
+                    .filter(rule => rule.is_active && rule.user_id === goal.user_id)
+                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+              
+              // No modo "both", somar milhas do histórico de ambos os usuários
+              const historyMiles = viewMode === 'both' && couple
+                ? mileageHistory
+                    .filter(h => h.user_id === couple.user1_id || h.user_id === couple.user2_id)
+                    .reduce((total, h) => total + Number(h.miles_earned), 0)
+                : mileageHistory
+                    .filter(h => h.user_id === goal.user_id)
+                    .reduce((total, h) => total + Number(h.miles_earned), 0);
+              
+              const totalCurrentMiles = goal.current_miles + existingMilesFromCards + historyMiles;
               const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
               const progress = Math.min((totalCurrentMiles / goal.target_miles) * 100, 100);
               return (
@@ -834,10 +849,25 @@ export const MileageSystem = () => {
           mileageGoals
             .filter(g => g.user_id === couple.user2_id)
             .map((goal) => {
-              const existingMilesFromCards = mileageRules
-                .filter(rule => rule.is_active && rule.user_id === goal.user_id)
-                .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
-              const totalCurrentMiles = goal.current_miles + existingMilesFromCards;
+              // No modo "both", considerar milhas de ambos os usuários do casal
+              const existingMilesFromCards = viewMode === 'both' && couple
+                ? mileageRules
+                    .filter(rule => rule.is_active && (rule.user_id === couple.user1_id || rule.user_id === couple.user2_id))
+                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0)
+                : mileageRules
+                    .filter(rule => rule.is_active && rule.user_id === goal.user_id)
+                    .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+              
+              // No modo "both", somar milhas do histórico de ambos os usuários
+              const historyMiles = viewMode === 'both' && couple
+                ? mileageHistory
+                    .filter(h => h.user_id === couple.user1_id || h.user_id === couple.user2_id)
+                    .reduce((total, h) => total + Number(h.miles_earned), 0)
+                : mileageHistory
+                    .filter(h => h.user_id === goal.user_id)
+                    .reduce((total, h) => total + Number(h.miles_earned), 0);
+              
+              const totalCurrentMiles = goal.current_miles + existingMilesFromCards + historyMiles;
               const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
               const progress = Math.min((totalCurrentMiles / goal.target_miles) * 100, 100);
               return (
@@ -893,10 +923,25 @@ export const MileageSystem = () => {
     </div>
   ) : (
     (isPartOfCouple && couple ? (viewMode === 'user1' ? mileageGoals.filter(g => g.user_id === couple.user1_id) : viewMode === 'user2' ? mileageGoals.filter(g => g.user_id === couple.user2_id) : mileageGoals) : mileageGoals).map((goal) => {
-      const existingMilesFromCards = mileageRules
-        .filter(rule => rule.is_active && rule.user_id === goal.user_id)
-        .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
-      const totalCurrentMiles = goal.current_miles + existingMilesFromCards;
+      // No modo "both", considerar milhas de ambos os usuários do casal
+      const existingMilesFromCards = viewMode === 'both' && couple
+        ? mileageRules
+            .filter(rule => rule.is_active && (rule.user_id === couple.user1_id || rule.user_id === couple.user2_id))
+            .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0)
+        : mileageRules
+            .filter(rule => rule.is_active && rule.user_id === goal.user_id)
+            .reduce((total, rule) => total + (Number(rule.existing_miles) || 0), 0);
+      
+      // No modo "both", somar milhas do histórico de ambos os usuários
+      const historyMiles = viewMode === 'both' && couple
+        ? mileageHistory
+            .filter(h => h.user_id === couple.user1_id || h.user_id === couple.user2_id)
+            .reduce((total, h) => total + Number(h.miles_earned), 0)
+        : mileageHistory
+            .filter(h => h.user_id === goal.user_id)
+            .reduce((total, h) => total + Number(h.miles_earned), 0);
+      
+      const totalCurrentMiles = goal.current_miles + existingMilesFromCards + historyMiles;
       const remainingMiles = Math.max(0, goal.target_miles - totalCurrentMiles);
       const progress = Math.min((totalCurrentMiles / goal.target_miles) * 100, 100);
       return (
