@@ -14,7 +14,7 @@ import { GlobalErrorLogger } from "./components/system/GlobalErrorLogger";
 import { PerformanceMonitor } from "./components/system/PerformanceMonitor";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { RouteSEO } from "./components/seo/RouteSEO";
-import { LanguageProvider } from "@/contexts/LanguageContext";
+
 import LandingSimple from "./pages/LandingSimple";
 const PrivacyPolicy = lazy(() => import("./components/landing/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
@@ -52,7 +52,6 @@ const App = () => {
         disableTransitionOnChange
       >
         <AuthProvider>
-          <LanguageProvider>
             <ClientOnly>
               <SafeTooltipProvider>
                 <SubscriptionProvider>
@@ -96,7 +95,7 @@ const App = () => {
                  </SubscriptionProvider>
                </SafeTooltipProvider>
              </ClientOnly>
-           </LanguageProvider>
+           
          </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
