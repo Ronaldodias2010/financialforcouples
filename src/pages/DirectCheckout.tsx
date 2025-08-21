@@ -82,6 +82,18 @@ const DirectCheckout = () => {
   };
 
   const proceedWithCheckout = async (user: any) => {
+    // Garantir que há sessão ativa antes de chamar a Edge Function
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      toast({
+        title: t('directCheckout.accountCreated'),
+        description: t('directCheckout.webhookTimeoutFallback'),
+        variant: 'default',
+      });
+      navigate('/auth?message=verify_email');
+      return;
+    }
+
     // 2. Criar sessão de checkout do Stripe
     const priceId = selectedPlan === 'yearly' 
       ? (isUSD ? 'price_yearly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP') // yearly price ID
@@ -108,7 +120,6 @@ const DirectCheckout = () => {
       }, 2000);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -172,16 +183,24 @@ const DirectCheckout = () => {
         }
       }
 
-      if (signUpData.user) {
+      if (signUpData.session) {
         await proceedWithCheckout(signUpData.user);
+      } else {
+        toast({
+          title: t('directCheckout.accountCreated'),
+          description: t('directCheckout.webhookTimeoutFallback'),
+          variant: 'default',
+        });
+        navigate('/auth?message=verify_email');
+        return;
       }
     } catch (error) {
       console.error('Error:', error);
       const message = error instanceof Error ? error.message : String(error);
       const lower = message.toLowerCase();
 
-      // Tratamento especial: timeout do webhook ou email não confirmado
-      if ((lower.includes('hook') && lower.includes('timeout')) || lower.includes('email not confirmed')) {
+      // Tratamento especial: timeout do webhook, email não confirmado ou não autenticado
+      if ((lower.includes('hook') && lower.includes('timeout')) || lower.includes('email not confirmed') || lower.includes('user not authenticated')) {
         toast({
           title: t('directCheckout.accountCreated'),
           description: t('directCheckout.webhookTimeoutFallback'),
