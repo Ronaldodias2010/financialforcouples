@@ -36,29 +36,29 @@ export const UserInviteCard = ({ onInviteClick, showCard }: UserInviteCardProps)
 
   return (
     <Card 
-      className="ml-2 border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 to-secondary/5 cursor-pointer hover:border-primary/60 transition-all duration-200 animate-pulse"
+      className="ml-1 xs:ml-2 border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 to-secondary/5 cursor-pointer hover:border-primary/60 transition-all duration-200 animate-pulse"
       onClick={onInviteClick}
     >
-      <CardContent className="p-3 relative">
+      <CardContent className="p-2 xs:p-3 relative">
         <Button
           variant="ghost"
           size="sm"
-          className="absolute -top-1 -right-1 h-6 w-6 p-0 hover:bg-destructive/10"
+          className="absolute -top-1 -right-1 h-5 w-5 xs:h-6 xs:w-6 p-0 hover:bg-destructive/10"
           onClick={handleDismiss}
         >
-          <X className="h-3 w-3" />
+          <X className="h-2.5 w-2.5 xs:h-3 xs:w-3" />
         </Button>
         
-        <div className="flex items-center gap-2 pr-4">
-          <div className="flex items-center gap-1">
-            <UserPlus className="h-4 w-4 text-primary" />
-            <Mail className="h-3 w-3 text-secondary" />
+        <div className="flex items-center gap-1 xs:gap-2 pr-3 xs:pr-4">
+          <div className="flex items-center gap-0.5 xs:gap-1 shrink-0">
+            <UserPlus className="h-3 w-3 xs:h-4 xs:w-4 text-primary" />
+            <Mail className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-secondary" />
           </div>
-          <div className="text-xs">
-            <div className="font-medium text-primary">
+          <div className="text-xs min-w-0 flex-1">
+            <div className="font-medium text-primary truncate">
               {t('inviteCard')}
             </div>
-            <div className="text-muted-foreground">
+            <div className="text-muted-foreground text-[10px] xs:text-xs truncate">
               {t('inviteSubtext')}
             </div>
           </div>
