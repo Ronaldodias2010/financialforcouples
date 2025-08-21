@@ -417,39 +417,48 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   return (
     <Card className="p-6">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">{t('monthlyExpenses.futureExpenses')}</h3>
           </div>
-          <div className="flex items-center gap-3">
+          
+          {/* Actions - Responsive layout */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* Export buttons */}
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={exportToCSV}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-xs sm:text-sm"
               >
                 <Download className="h-4 w-4" />
-                CSV
+                <span className="hidden xs:inline">CSV</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={exportToPDF}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-xs sm:text-sm"
               >
                 <FileText className="h-4 w-4" />
-                PDF
+                <span className="hidden xs:inline">PDF</span>
               </Button>
             </div>
-            <FutureExpensesCalendar 
-              expenses={filteredExpenses} 
-              getOwnerName={getOwnerName}
-            />
-            <Badge variant="outline" className="text-lg px-3 py-1">
-              {t('monthlyExpenses.totalFuture')}: {formatCurrency(totalAmount)}
-            </Badge>
+            
+            {/* Calendar and total */}
+            <div className="flex items-center gap-3 justify-between sm:justify-start">
+              <FutureExpensesCalendar 
+                expenses={filteredExpenses} 
+                getOwnerName={getOwnerName}
+              />
+              <Badge variant="outline" className="text-sm sm:text-lg px-2 py-1 sm:px-3 truncate max-w-[200px] sm:max-w-none">
+                <span className="hidden sm:inline">{t('monthlyExpenses.totalFuture')}: </span>
+                <span className="sm:hidden">{t('monthlyExpenses.total')}: </span>
+                {formatCurrency(totalAmount)}
+              </Badge>
+            </div>
           </div>
         </div>
 
