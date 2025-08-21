@@ -327,16 +327,16 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
               </div>
 
               <div>
-                <Label htmlFor="phone_number">Telefone (WhatsApp)</Label>
+                <Label htmlFor="phone_number">{t('userProfile.phone')}</Label>
                 <Input
                   id="phone_number"
                   type="tel"
                   value={profile.phone_number}
                   onChange={(e) => setProfile(prev => ({ ...prev, phone_number: e.target.value }))}
-                  placeholder="+55 11 99999-9999"
+                  placeholder={t('userProfile.phonePlaceholder')}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Número usado para receber notificações importantes via WhatsApp
+                  {t('userProfile.phoneHelp')}
                 </p>
               </div>
 

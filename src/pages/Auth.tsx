@@ -157,8 +157,8 @@ export default function Auth() {
     if (!phoneNumber) {
       toast({
         variant: "destructive",
-        title: "Telefone obrigatório",
-        description: "Por favor, informe seu número de telefone.",
+        title: t('auth.phoneRequired'),
+        description: t('auth.phoneRequiredDesc'),
       });
       return;
     }
@@ -176,14 +176,14 @@ export default function Auth() {
 
       setIsCodeSent(true);
       toast({
-        title: "Código enviado!",
-        description: "Verificamos seu telefone via SMS. Digite o código recebido.",
+        title: t('auth.codeSent'),
+        description: t('auth.codeSentDesc'),
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro ao enviar código",
-        description: error.message || "Não foi possível enviar o código de verificação.",
+        title: t('auth.codeSendError'),
+        description: error.message || t('auth.codeSendErrorDesc'),
       });
     } finally {
       setIsLoading(false);
@@ -195,8 +195,8 @@ export default function Auth() {
     if (!email || !password || !phoneNumber || !verificationCode) {
       toast({
         variant: "destructive",
-        title: "Campos obrigatórios",
-        description: "Preencha todos os campos e verifique seu telefone.",
+        title: t('auth.fieldsRequired'),
+        description: t('auth.fieldsRequiredDesc'),
       });
       return;
     }
@@ -212,7 +212,7 @@ export default function Auth() {
       });
 
       if (verificationError || !verificationData?.verified) {
-        throw new Error('Código de verificação inválido');
+        throw new Error(t('auth.invalidCode'));
       }
 
       const redirectUrl = `${window.location.origin}/email-confirmation`;
@@ -481,48 +481,57 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-phone">
-                    Telefone (WhatsApp) <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="flex gap-2">
+                  <Label htmlFor="signup-phone">{t('auth.phone')} *</Label>
+                  <div className="space-y-2">
                     <Input
                       id="signup-phone"
                       type="tel"
-                      placeholder="+55 11 99999-9999"
+                      placeholder={t('auth.phonePlaceholder')}
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       required
-                      className="flex-1"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={sendVerificationCode}
-                      disabled={isLoading || !phoneNumber || isCodeSent}
-                    >
-                      {isCodeSent ? "Enviado" : "Verificar"}
-                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      {t('auth.phoneVerificationRequired')}
+                    </p>
+                    {!isCodeSent ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={sendVerificationCode}
+                        disabled={isLoading || !phoneNumber}
+                        className="w-full"
+                      >
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {t('auth.sendCode')}
+                      </Button>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor="verification-code">{t('auth.verificationCode')} *</Label>
+                        <Input
+                          id="verification-code"
+                          type="text"
+                          placeholder={t('auth.verificationCodePlaceholder')}
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value)}
+                          maxLength={6}
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => {
+                            setIsCodeSent(false);
+                            setVerificationCode('');
+                          }}
+                          className="text-sm w-full"
+                        >
+                          Enviar novo código
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Usaremos seu WhatsApp para enviar informações importantes
-                  </p>
                 </div>
-                {isCodeSent && (
-                  <div className="space-y-2">
-                    <Label htmlFor="verification-code">
-                      Código de Verificação <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="verification-code"
-                      type="text"
-                      placeholder="Digite o código recebido por SMS"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      required
-                      maxLength={6}
-                    />
-                  </div>
-                )}
                <div className="space-y-2">
                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
                  <div className="relative">
