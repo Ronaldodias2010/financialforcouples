@@ -93,7 +93,29 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [activeGrants, setActiveGrants] = useState<any[]>([]);
+  const [tempPasswords, setTempPasswords] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
+
+  const getTempPassword = async (recordId: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_temp_password_for_invite', { p_record_id: recordId });
+      
+      if (error) throw error;
+      
+      setTempPasswords(prev => ({
+        ...prev,
+        [recordId]: data
+      }));
+    } catch (error) {
+      console.error('Error getting temp password:', error);
+      toast({
+        title: 'Error',
+        description: 'Could not retrieve temporary password',
+        variant: 'destructive',
+      });
+    }
+  };
   const t = texts[language];
 
   const form = useForm<ManualAccessForm>({
@@ -125,7 +147,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
           start_date,
           end_date,
           status,
-          temp_password
+          temp_password_hash
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
@@ -158,6 +180,12 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
 
       // Insert manual access for the target user
       const tempPasswordMain = generateTempPassword();
+      
+      // Hash the password using the database function
+      const { data: hashedPasswordMain, error: hashError1 } = await supabase
+        .rpc('hash_temp_password', { password: tempPasswordMain });
+      if (hashError1) throw hashError1;
+      
       const { error: insertMainErr } = await supabase
         .from('manual_premium_access')
         .insert({
@@ -165,7 +193,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
           email: targetSub.email,
           start_date: data.startDate,
           end_date: data.endDate,
-          temp_password: tempPasswordMain,
+          temp_password_hash: hashedPasswordMain,
           created_by_admin_id: session.user.id,
         });
       if (insertMainErr) throw insertMainErr;
@@ -191,6 +219,12 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
 
           if (partnerSub?.email) {
             const tempPasswordPartner = generateTempPassword();
+            
+            // Hash the password using the database function
+            const { data: hashedPasswordPartner, error: hashError2 } = await supabase
+              .rpc('hash_temp_password', { password: tempPasswordPartner });
+            if (hashError2) throw hashError2;
+            
             const { error: insertPartnerErr } = await supabase
               .from('manual_premium_access')
               .insert({
@@ -198,7 +232,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                 email: partnerSub.email,
                 start_date: data.startDate,
                 end_date: data.endDate,
-                temp_password: tempPasswordPartner,
+                temp_password_hash: hashedPasswordPartner,
                 created_by_admin_id: session.user.id,
               });
             if (insertPartnerErr) throw insertPartnerErr;
@@ -247,6 +281,9 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
   };
 
   const togglePasswordVisibility = (id: string) => {
+    if (!showPassword[id] && !tempPasswords[id]) {
+      getTempPassword(id);
+    }
     setShowPassword(prev => ({
       ...prev,
       [id]: !prev[id]
@@ -364,7 +401,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="font-mono">
-                          {showPassword[grant.id] ? grant.temp_password : '••••••••'}
+                          {showPassword[grant.id] ? (tempPasswords[grant.id] || 'Loading...') : '••••••••'}
                         </span>
                         <Button
                           variant="ghost"

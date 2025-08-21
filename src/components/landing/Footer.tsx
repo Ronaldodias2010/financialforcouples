@@ -1,4 +1,4 @@
-import { Heart, Mail, Phone, MapPin } from "lucide-react";
+import { Heart, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import logo from "/lovable-uploads/4e601a03-6175-4cab-82d2-bbe463a775dc.png";
@@ -64,6 +64,10 @@ const Footer = () => {
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
                 <span>{contactInfo.phone}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-green-500" />
+                <span className="text-green-400">WhatsApp Inteligente (11)98806-6403</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
