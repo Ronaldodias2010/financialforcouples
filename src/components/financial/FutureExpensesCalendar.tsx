@@ -113,7 +113,8 @@ export const FutureExpensesCalendar = ({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />
-          {t('viewInCalendar')}
+          <span className="hidden sm:inline">{t('viewInCalendar')}</span>
+          <span className="sm:hidden">{t('calendar')}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">

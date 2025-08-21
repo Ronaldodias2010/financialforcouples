@@ -212,6 +212,7 @@ const translations = {
     
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
+    'calendar': 'Calendário',
     'calendarTitle': 'Calendário de Gastos Futuros',
     'daysWithExpenses': 'Dias com gastos',
     'noExpensesOnDate': 'Nenhum gasto nesta data',
@@ -1203,6 +1204,7 @@ const translations = {
     
     // Calendar
     'viewInCalendar': 'View in Calendar',
+    'calendar': 'Calendar',
     'calendarTitle': 'Future Expenses Calendar',
     'daysWithExpenses': 'Days with expenses',
     'noExpensesOnDate': 'No expenses on this date',
@@ -2194,6 +2196,7 @@ const translations = {
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',
+    'calendar': 'Calendario',
     'calendarTitle': 'Calendario de Gastos Futuros',
     'daysWithExpenses': 'Días con gastos',
     'noExpensesOnDate': 'Sin gastos en esta fecha',
