@@ -1,0 +1,3 @@
+Trigger para forçar rebuild do deploy - 2025-08-21 17:32 UTC
+Motivo: Deploy travado, não entra em fila
+Alterações: Máscara telefone BR + tratamento timeout webhook
