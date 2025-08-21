@@ -98,9 +98,11 @@ const HeroSection = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col gap-3 sm:gap-4 justify-center lg:justify-start">
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <Button size="default" variant="secondary" className="group flex-1 sm:flex-none">
-                  <Download className="w-4 h-4 group-hover:animate-bounce" />
-                  <span className="text-sm">Baixe gratuitamente PWA</span>
+                <Button asChild size="default" variant="secondary" className="group flex-1 sm:flex-none">
+                  <Link to="/auth">
+                    <Download className="w-4 h-4 group-hover:animate-bounce" />
+                    <span className="text-sm">Acesse gratuitamente</span>
+                  </Link>
                 </Button>
                 <Button asChild size="default" variant="ctaGradient" className="group flex-1 sm:flex-none">
                   <Link to="/checkout-direto">
