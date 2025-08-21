@@ -42,9 +42,42 @@ const DirectCheckout = () => {
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    let newValue = value;
+
+    if (id === 'phone') {
+      const digits = value.replace(/\D/g, '');
+      if (inBrazil) {
+        // Format BR phone as (##) #####-####
+        const d = digits.slice(0, 11);
+        const part1 = d.slice(0, 2);
+        const part2 = d.length > 2 ? d.slice(2, 7) : '';
+        const part3 = d.length > 7 ? d.slice(7, 11) : '';
+        newValue = part1 ? `(${part1}${part1.length === 2 ? ') ' : ''}` : '';
+        newValue += part2;
+        newValue += part3 ? `-${part3}` : '';
+        // Ensure closing parenthesis when area code is complete
+        if (newValue && !newValue.includes(')') && part1.length === 2) {
+          newValue = `(${part1}) ${part2}${part3 ? `-${part3}` : ''}`;
+        }
+      } else {
+        // Format US phone as (###) ###-####
+        const d = digits.slice(0, 10);
+        const a = d.slice(0, 3);
+        const b = d.length > 3 ? d.slice(3, 6) : '';
+        const c = d.length > 6 ? d.slice(6, 10) : '';
+        newValue = a ? `(${a}${a.length === 3 ? ') ' : ''}` : '';
+        newValue += b;
+        newValue += c ? `-${c}` : '';
+        if (newValue && !newValue.includes(')') && a.length === 3) {
+          newValue = `(${a}) ${b}${c ? `-${c}` : ''}`;
+        }
+      }
+    }
+
     setFormData({
       ...formData,
-      [e.target.id]: e.target.value,
+      [id]: newValue,
     });
   };
 
@@ -107,7 +140,8 @@ const DirectCheckout = () => {
       // Tratar especificamente o erro de timeout do webhook
       if (signUpError) {
         // Se for timeout do webhook, a conta pode ter sido criada mesmo assim
-        if (signUpError.message?.includes('hook') && signUpError.message?.includes('timeout')) {
+        const lower = signUpError.message?.toLowerCase() || '';
+        if (lower.includes('hook') && lower.includes('timeout')) {
           toast({
             title: t('directCheckout.accountCreated'),
             description: t('directCheckout.webhookTimeoutMessage'),
@@ -124,9 +158,14 @@ const DirectCheckout = () => {
             // Conta foi criada com sucesso, continuar com checkout
             await proceedWithCheckout(signInData.user);
             return;
+          } else if (signInError?.message?.toLowerCase().includes('email not confirmed')) {
+            // Se o email ainda não está confirmado, orientar o usuário
+            navigate('/auth?message=verify_email');
+            return;
           } else {
-            // Se não conseguiu fazer login, mostrar erro
-            throw new Error(t('directCheckout.accountCreationFailed'));
+            // Se não conseguiu fazer login, redirecionar para confirmar email
+            navigate('/auth?message=verify_email');
+            return;
           }
         } else {
           throw signUpError;
@@ -138,19 +177,27 @@ const DirectCheckout = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      let errorMessage = t('directCheckout.unexpectedError');
-      
-      if (error instanceof Error) {
-        // Tratar mensagens específicas de erro
-        if (error.message.includes('hook') && error.message.includes('timeout')) {
-          errorMessage = t('directCheckout.webhookTimeoutFallback');
-        } else if (error.message.includes('User already registered')) {
-          errorMessage = t('directCheckout.emailAlreadyExists');
-        } else {
-          errorMessage = error.message;
-        }
+      const message = error instanceof Error ? error.message : String(error);
+      const lower = message.toLowerCase();
+
+      // Tratamento especial: timeout do webhook ou email não confirmado
+      if ((lower.includes('hook') && lower.includes('timeout')) || lower.includes('email not confirmed')) {
+        toast({
+          title: t('directCheckout.accountCreated'),
+          description: t('directCheckout.webhookTimeoutFallback'),
+          variant: "default",
+        });
+        navigate('/auth?message=verify_email');
+        return;
       }
-      
+
+      let errorMessage = t('directCheckout.unexpectedError');
+      if (lower.includes('user already registered')) {
+        errorMessage = t('directCheckout.emailAlreadyExists');
+      } else if (message) {
+        errorMessage = message;
+      }
+
       toast({
         title: t('directCheckout.error'),
         description: errorMessage,
@@ -236,10 +283,12 @@ const DirectCheckout = () => {
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder={t('directCheckout.phonePlaceholder')}
+                          inputMode="tel"
+                          placeholder={inBrazil ? "(11) 98765-4321" : t('directCheckout.phonePlaceholder')}
                           value={formData.phone}
                           onChange={handleInputChange}
                           required
+                          maxLength={inBrazil ? 15 : 14}
                         />
                         <p className="text-xs text-muted-foreground mt-1">
                           {t('directCheckout.phoneHelp')}
