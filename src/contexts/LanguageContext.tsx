@@ -710,6 +710,12 @@ const translations = {
     'subscription.planActive': 'Plano Ativo:',
     'subscription.premiumAccess': 'Acesso completo aos recursos premium',
     'subscription.nextRenewal': 'Próxima renovação',
+    
+    // Billing
+    'billing.cardLabel': 'Cartão',
+    'billing.planLabel': 'Plano',
+    'billing.interval.monthly': 'mensal',
+    'billing.interval.yearly': 'anual',
     'subscription.manageSubscription': 'Gerenciar Assinatura',
     'subscription.redirectingToPortal': 'Redirecionando para o portal...',
     'subscription.subscribeMonthly': 'Assinar Mensalmente',
@@ -1629,6 +1635,12 @@ const translations = {
     'subscription.planActive': 'Active Plan:',
     'subscription.premiumAccess': 'Full access to premium features',
     'subscription.nextRenewal': 'Next renewal',
+    
+    // Billing  
+    'billing.cardLabel': 'Card',
+    'billing.planLabel': 'Plan',
+    'billing.interval.monthly': 'monthly',
+    'billing.interval.yearly': 'yearly',
     'subscription.manageSubscription': 'Manage Subscription',
     'subscription.redirectingToPortal': 'Redirecting to portal...',
     'subscription.subscribeMonthly': 'Subscribe Monthly',
@@ -2548,6 +2560,12 @@ const translations = {
     'subscription.planActive': 'Plan Activo:',
     'subscription.premiumAccess': 'Acceso completo a características premium',
     'subscription.nextRenewal': 'Próxima renovación',
+    
+    // Billing
+    'billing.cardLabel': 'Tarjeta',
+    'billing.planLabel': 'Plan',
+    'billing.interval.monthly': 'mensual',
+    'billing.interval.yearly': 'anual',
     'subscription.manageSubscription': 'Gestionar Suscripción',
     'subscription.redirectingToPortal': 'Redirigiendo al portal...',
     'subscription.subscribeMonthly': 'Suscribirse Mensualmente',
