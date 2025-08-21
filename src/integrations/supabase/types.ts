@@ -210,6 +210,51 @@ export type Database = {
         }
         Relationships: []
       }
+      checkout_sessions: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          selected_plan: string
+          session_token: string | null
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          selected_plan?: string
+          session_token?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          selected_plan?: string
+          session_token?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       couple_relationship_requests: {
         Row: {
           created_at: string | null
@@ -695,6 +740,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          checkout_session_id: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -711,6 +757,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          checkout_session_id?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -727,6 +774,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          checkout_session_id?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
