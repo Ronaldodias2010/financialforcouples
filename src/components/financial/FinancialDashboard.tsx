@@ -437,44 +437,92 @@ export const FinancialDashboard = () => {
           )}
           
           {/* User Controls */}
-          <div className="flex items-center justify-center gap-4 pt-4">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              {/* Hide "Modo de visualização" on small screens */}
-              <span className="hidden sm:inline text-sm font-medium">{t('dashboard.viewMode')}:</span>
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === "both" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("both")}
-                >
-                  {t('dashboard.both')}
-                </Button>
-                <Button
-                  variant={viewMode === "user1" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("user1")}
-                >
-                  {getUserLabel("user1")}
-                </Button>
-                <Button
-                  variant={viewMode === "user2" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("user2")}
-                >
-                  {getUserLabel("user2")}
-                </Button>
+          <div className="pt-4 space-y-3">
+            {/* Desktop: inline layout */}
+            <div className="hidden sm:flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
+                <div className="flex gap-2">
+                  <Button
+                    variant={viewMode === "both" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("both")}
+                  >
+                    {t('dashboard.both')}
+                  </Button>
+                  <Button
+                    variant={viewMode === "user1" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("user1")}
+                  >
+                    {getUserLabel("user1")}
+                  </Button>
+                  <Button
+                    variant={viewMode === "user2" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("user2")}
+                  >
+                    {getUserLabel("user2")}
+                  </Button>
+                </div>
               </div>
+              {!isPartOfCouple && !coupleLoading && (
+                <UserInviteCard
+                  showCard={true}
+                  onInviteClick={() => {
+                    setActiveTabForProfile("users");
+                    setCurrentPage("profile");
+                  }}
+                />
+              )}
             </div>
-            {!isPartOfCouple && !coupleLoading && (
-              <UserInviteCard
-                showCard={true}
-                onInviteClick={() => {
-                  setActiveTabForProfile("users");
-                  setCurrentPage("profile");
-                }}
-              />
-            )}
+
+            {/* Mobile: stacked layout */}
+            <div className="sm:hidden space-y-2">
+              <div className="flex items-center justify-center gap-2">
+                <User className="h-4 w-4" />
+                <div className="flex gap-1.5">
+                  <Button
+                    variant={viewMode === "both" ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs px-2"
+                    onClick={() => setViewMode("both")}
+                  >
+                    {t('dashboard.both')}
+                  </Button>
+                  <Button
+                    variant={viewMode === "user1" ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs px-2"
+                    onClick={() => setViewMode("user1")}
+                  >
+                    {getUserLabel("user1")}
+                  </Button>
+                  <Button
+                    variant={viewMode === "user2" ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs px-2"
+                    onClick={() => setViewMode("user2")}
+                  >
+                    {getUserLabel("user2")}
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Invite card below buttons on mobile */}
+              {!isPartOfCouple && !coupleLoading && (
+                <div className="flex justify-center">
+                  <UserInviteCard
+                    showCard={true}
+                    onInviteClick={() => {
+                      setActiveTabForProfile("users");
+                      setCurrentPage("profile");
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
