@@ -272,9 +272,14 @@ const getAccountOwnerName = (account: Account) => {
 
   const fetchAccounts = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // For income/expense transactions, only show current user's accounts
       const { data, error } = await supabase
         .from('accounts')
         .select('id, user_id, name, account_type, balance, currency, owner_user, overdraft_limit')
+        .eq('user_id', user.id)
         .order('name');
 
       if (error) throw error;
@@ -351,8 +356,18 @@ const getAccountOwnerName = (account: Account) => {
       return;
     }
 
-  // Validar conta para despesas com débito/transferência de pagamento
-        if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && !accountId) {
+    // Para débito, sempre requer seleção de conta (débito = conta corrente)
+    if (type === "expense" && paymentMethod === "debit_card" && !accountId) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma conta para o débito (débito = conta corrente)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+  // Validar conta para despesas com transferência de pagamento
+        if (type === "expense" && paymentMethod === "payment_transfer" && !accountId) {
           toast({
             title: t('transactionForm.error'),
             description: t('transactionForm.selectAccountError'),
