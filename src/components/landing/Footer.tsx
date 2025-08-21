@@ -8,7 +8,7 @@ const Footer = () => {
   
   const contactInfo = language === 'pt' ? {
     email: 'contato@couplesfinancials.com',
-    phone: '(11) 94532-2930',
+    phone: '(11) 27247564',
     location: 'São Paulo, Brasil'
   } : {
     email: 'contact@couplesfinancials.com',
