@@ -27,7 +27,7 @@ const translations = {
     // Header
     'header.login': 'Entrar',
     'header.comingSoon': 'Funcionalidade em breve.',
-    'header.socialProof': '+10k casais já usam',
+    'header.socialProof': '+500 casais já usam',
     
     // Benefits Section
     'benefits.title': 'Por que escolher o',
@@ -520,7 +520,7 @@ const translations = {
     'finalcta.benefit2.description': 'Insights personalizados para você',
     'finalcta.benefit3.title': 'Resultados Reais',
     'finalcta.benefit3.description': 'Melhore suas finanças rapidamente',
-    'finalcta.socialProof.users': '+10.000 usuários',
+    'finalcta.socialProof.users': '+500 usuários',
     'finalcta.socialProof.rating': '4.9/5 estrelas',
     'finalcta.socialProof.secure': '100% seguro',
     'finalcta.disclaimer': 'Sem compromisso • Cancele quando quiser • Suporte em português',
@@ -990,7 +990,7 @@ const translations = {
     // Header
     'header.login': 'Sign in',
     'header.comingSoon': 'Feature coming soon.',
-    'header.socialProof': '+10k couples already use',
+    'header.socialProof': '+500 couples already use',
     
     // Benefits Section
     'benefits.title': 'Why choose',
@@ -1483,7 +1483,7 @@ const translations = {
     'finalcta.benefit2.description': 'Personalized insights for you',
     'finalcta.benefit3.title': 'Real Results',
     'finalcta.benefit3.description': 'Improve your finances quickly',
-    'finalcta.socialProof.users': '+10,000 users',
+    'finalcta.socialProof.users': '+500 users',
     'finalcta.socialProof.rating': '4.9/5 stars',
     'finalcta.socialProof.secure': '100% secure',
     'finalcta.disclaimer': 'No commitment • Cancel anytime • English support',
@@ -1953,7 +1953,7 @@ const translations = {
     // Header
     'header.login': 'Iniciar sesión',
     'header.comingSoon': 'Funcionalidad próximamente.',
-    'header.socialProof': '+10k parejas ya usan',
+    'header.socialProof': '+500 parejas ya usan',
     
     // Benefits Section
     'benefits.title': 'Por qué elegir',
@@ -2446,7 +2446,7 @@ const translations = {
     'finalcta.benefit2.description': 'Insights personalizados para ti',
     'finalcta.benefit3.title': 'Resultados Reales',
     'finalcta.benefit3.description': 'Mejora tus finanzas rápidamente',
-    'finalcta.socialProof.users': '+10,000 usuarios',
+    'finalcta.socialProof.users': '+500 usuarios',
     'finalcta.socialProof.rating': '4.9/5 estrellas',
     'finalcta.socialProof.secure': '100% seguro',
     'finalcta.disclaimer': 'Sin compromiso • Cancela cuando quieras • Soporte en español',
