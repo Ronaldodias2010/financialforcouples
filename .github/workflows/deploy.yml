@@ -10,7 +10,7 @@ on:
 
 concurrency:
   group: deploy-${{ github.ref_name }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   AWS_REGION: us-east-1
@@ -24,6 +24,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     
     steps:
     - name: Checkout code
@@ -57,6 +58,7 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: test
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
     
@@ -109,6 +111,7 @@ jobs:
   deploy-infrastructure:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: build-and-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
     
@@ -249,6 +252,7 @@ jobs:
   deploy-application:
     name: Deploy Application to ECS
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: [build-and-push, deploy-infrastructure]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
     
@@ -303,6 +307,7 @@ jobs:
   post-deploy-tests:
     name: Post-deployment Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: deploy-application
     if: github.ref == 'refs/heads/main'
     
