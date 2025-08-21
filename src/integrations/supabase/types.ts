@@ -111,6 +111,7 @@ export type Database = {
       }
       cards: {
         Row: {
+          account_id: string | null
           card_type: Database["public"]["Enums"]["card_type"]
           closing_date: number | null
           created_at: string
@@ -128,6 +129,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_id?: string | null
           card_type: Database["public"]["Enums"]["card_type"]
           closing_date?: number | null
           created_at?: string
@@ -145,6 +147,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_id?: string | null
           card_type?: Database["public"]["Enums"]["card_type"]
           closing_date?: number | null
           created_at?: string
@@ -161,7 +164,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
@@ -630,6 +641,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          phone_number: string | null
           preferred_currency:
             | Database["public"]["Enums"]["currency_type"]
             | null
@@ -645,6 +657,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          phone_number?: string | null
           preferred_currency?:
             | Database["public"]["Enums"]["currency_type"]
             | null
@@ -660,6 +673,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          phone_number?: string | null
           preferred_currency?:
             | Database["public"]["Enums"]["currency_type"]
             | null

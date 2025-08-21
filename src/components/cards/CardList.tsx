@@ -23,6 +23,7 @@ interface CardData {
   due_date: number | null;
   closing_date: number | null;
   owner_user: string;
+  account_id: string | null;
 }
 
 interface CardListProps {
@@ -37,11 +38,13 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [accounts, setAccounts] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (user) {
       fetchUserProfile();
       fetchCards();
+      fetchAccounts();
     }
   }, [user, refreshTrigger]);
 
@@ -62,11 +65,32 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
     }
   };
 
+  const fetchAccounts = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("accounts")
+        .select("id, name")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      
+      const accountMap: Record<string, string> = {};
+      data?.forEach(account => {
+        accountMap[account.id] = account.name;
+      });
+      setAccounts(accountMap);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
+
   const fetchCards = async () => {
     try {
       const { data, error } = await supabase
         .from("cards")
-        .select("*")
+        .select("*, accounts(name)")
         .eq("user_id", user?.id)
         .order("created_at", { ascending: false });
 
@@ -207,6 +231,11 @@ const getOwnerNameForCard = (card: CardData) => {
                     <p className="text-sm text-muted-foreground">
                       {getOwnerNameForCard(card)}
                     </p>
+                    {card.card_type === "debit" && card.account_id && (
+                      <p className="text-sm text-muted-foreground">
+                        Conta: {accounts[card.account_id] || "Conta não encontrada"}
+                      </p>
+                    )}
                     {card.credit_limit && (
                       <p className="text-sm text-muted-foreground">
                         Limite: {formatCurrency(getConvertedValue(card.credit_limit, card.currency), getDisplayCurrency(card.currency))}

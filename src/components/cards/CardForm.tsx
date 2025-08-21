@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +15,17 @@ interface CardFormProps {
   onCardAdded: () => void;
 }
 
+interface Account {
+  id: string;
+  name: string;
+}
+
 export const CardForm = ({ onCardAdded }: CardFormProps) => {
   const { user } = useAuth();
   const { couple, isPartOfCouple } = useCouple();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [cardData, setCardData] = useState({
     name: "",
     card_type: "",
@@ -28,12 +34,42 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
     current_balance: "",
     currency: "BRL",
     due_date: "",
-    closing_date: ""
+    closing_date: "",
+    account_id: ""
   });
+
+  useEffect(() => {
+    if (user) {
+      fetchAccounts();
+    }
+  }, [user]);
+
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("accounts")
+        .select("id, name")
+        .eq("user_id", user?.id)
+        .order("name");
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Validate required fields for debit cards
+    if (cardData.card_type === "debit") {
+      if (!cardData.account_id) {
+        toast.error('Selecione uma conta para o cartão de débito.');
+        return;
+      }
+    }
 
     // Validate required fields for credit cards
     if (cardData.card_type === "credit") {
@@ -79,7 +115,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
               : 0, // Garante que qualquer trigger de recálculo resulte exatamente no disponível informado
             currency: cardData.currency as "BRL" | "USD" | "EUR",
             closing_date: cardData.card_type === "credit" && cardData.closing_date ? parseInt(cardData.closing_date) : null,
-            due_date: cardData.card_type === "credit" && cardData.due_date ? parseInt(cardData.due_date) : null
+            due_date: cardData.card_type === "credit" && cardData.due_date ? parseInt(cardData.due_date) : null,
+            account_id: cardData.card_type === "debit" && cardData.account_id ? cardData.account_id : null
           });
 
       if (error) throw error;
@@ -93,7 +130,8 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
         current_balance: "",
         currency: "BRL",
         due_date: "",
-        closing_date: ""
+        closing_date: "",
+        account_id: ""
       });
       onCardAdded();
     } catch (error) {
@@ -140,7 +178,7 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
             </Select>
           </div>
 
-          <div>
+           <div>
             <Label htmlFor="last_four_digits">{t('cards.lastFourDigits')}</Label>
             <Input
               id="last_four_digits"
@@ -150,6 +188,27 @@ export const CardForm = ({ onCardAdded }: CardFormProps) => {
               maxLength={4}
             />
           </div>
+
+          {cardData.card_type === "debit" && (
+            <div>
+              <Label htmlFor="account_id">Conta Vinculada</Label>
+              <Select 
+                value={cardData.account_id} 
+                onValueChange={(value) => setCardData(prev => ({ ...prev, account_id: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a conta" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {cardData.card_type === "credit" && (
             <>
