@@ -188,24 +188,32 @@ const DirectCheckout = () => {
 
     setLoading(true);
 
-    try {
-      // 1. Primeiro criar o checkout session para rastrear carrinho abandonado
-      const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
-        'create-checkout-session',
-        {
-          body: {
-            email: formData.email,
-            fullName: formData.fullName,
-            phone: formData.phone,
-            selectedPlan: selectedPlan,
-          }
-        }
-      );
+    let createdToken: string | undefined;
 
-      if (sessionError) throw sessionError;
+    try {
+        const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
+          'create-checkout-session',
+          {
+            body: {
+              email: formData.email,
+              fullName: formData.fullName,
+              phone: formData.phone,
+              selectedPlan: selectedPlan,
+            }
+          }
+        );
+        if (sessionError) {
+          console.error('create-checkout-session error:', sessionError);
+        } else {
+          createdToken = sessionData?.sessionToken;
+        }
+      } catch (err) {
+        console.error('create-checkout-session exception:', err);
+        // Não bloquear o fluxo de signup caso falhe o registro do carrinho
+      }
 
       // 2. Criar conta do usuário com redirect personalizado
-      const checkoutRedirectUrl = `${window.location.origin}/checkout-direto?token=${sessionData.sessionToken}`;
+      const checkoutRedirectUrl = `${window.location.origin}/checkout-direto${createdToken ? `?token=${createdToken}` : ''}`;
       
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
