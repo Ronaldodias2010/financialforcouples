@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Shield, CreditCard, Check, ArrowLeft } from "lucide-react";
+import { Sparkles, Shield, CreditCard, Check, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -18,6 +18,8 @@ const DirectCheckout = () => {
   const [searchParams] = useSearchParams();
   
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -135,45 +137,6 @@ const DirectCheckout = () => {
     });
   };
 
-  const proceedWithCheckout = async (user: any) => {
-    // Garantir que há sessão ativa antes de chamar a Edge Function
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      toast({
-        title: t('directCheckout.accountCreated'),
-        description: t('directCheckout.webhookTimeoutFallback'),
-        variant: 'default',
-      });
-      navigate('/auth?message=verify_email');
-      return;
-    }
-
-    // 2. Criar sessão de checkout do Stripe
-    const priceId = selectedPlan === 'yearly' 
-      ? (isUSD ? 'price_yearly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP') // yearly price ID
-      : (isUSD ? 'price_monthly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price ID
-
-    const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-      body: { priceId }
-    });
-
-    if (checkoutError) throw checkoutError;
-
-    if (checkoutData?.url) {
-      // Redirecionar para o Stripe Checkout
-      window.open(checkoutData.url, '_blank');
-      
-      toast({
-        title: t('directCheckout.paymentProcessing'),
-        description: t('directCheckout.paymentRedirect'),
-      });
-      
-      // Redirecionar para login após um pequeno delay
-      setTimeout(() => {
-        navigate('/auth?message=checkout_initiated');
-      }, 2000);
-    }
-  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -191,6 +154,8 @@ const DirectCheckout = () => {
     let createdToken: string | undefined;
 
     try {
+      // 1. Primeiro criar o checkout session para rastrear carrinho abandonado
+      try {
         const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
           'create-checkout-session',
           {
@@ -345,46 +310,66 @@ const DirectCheckout = () => {
                       </div>
                       
                       <div>
-                        <Label htmlFor="phone">{t('directCheckout.phone')}</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          inputMode="tel"
-                          placeholder={inBrazil ? "(11) 98765-4321" : t('directCheckout.phonePlaceholder')}
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          required
-                          maxLength={inBrazil ? 15 : 14}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t('directCheckout.phoneHelp')}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="password">{t('directCheckout.password')}</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder={t('directCheckout.passwordPlaceholder')}
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          required
-                          minLength={6}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="confirmPassword">{t('directCheckout.confirmPassword')}</Label>
-                        <Input
-                          id="confirmPassword"
-                          type="password"
-                          placeholder={t('directCheckout.confirmPasswordPlaceholder')}
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
+                       <Label htmlFor="phone">{t('directCheckout.phone')}</Label>
+                       <Input
+                         id="phone"
+                         type="tel"
+                         inputMode="tel"
+                         placeholder={inBrazil ? "(11) 98765-4321" : t('directCheckout.phonePlaceholder')}
+                         value={formData.phone}
+                         onChange={handleInputChange}
+                         required
+                         maxLength={inBrazil ? 15 : 14}
+                       />
+                       <p className="text-xs text-muted-foreground mt-1">
+                         {inBrazil ? "Formato: (11) 98765-4321" : t('directCheckout.phoneHelp')}
+                       </p>
+                     </div>
+                     
+                     <div>
+                       <Label htmlFor="password">{t('directCheckout.password')}</Label>
+                       <div className="relative">
+                         <Input
+                           id="password"
+                           type={showPassword ? "text" : "password"}
+                           placeholder={t('directCheckout.passwordPlaceholder')}
+                           value={formData.password}
+                           onChange={handleInputChange}
+                           required
+                           minLength={6}
+                           className="pr-10"
+                         />
+                         <button
+                           type="button"
+                           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                           onClick={() => setShowPassword(!showPassword)}
+                         >
+                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                         </button>
+                       </div>
+                     </div>
+                     
+                     <div>
+                       <Label htmlFor="confirmPassword">{t('directCheckout.confirmPassword')}</Label>
+                       <div className="relative">
+                         <Input
+                           id="confirmPassword"
+                           type={showConfirmPassword ? "text" : "password"}
+                           placeholder={t('directCheckout.confirmPasswordPlaceholder')}
+                           value={formData.confirmPassword}
+                           onChange={handleInputChange}
+                           required
+                           className="pr-10"
+                         />
+                         <button
+                           type="button"
+                           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                         >
+                           {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                         </button>
+                       </div>
+                     </div>
                     </div>
 
                     <Separator />
