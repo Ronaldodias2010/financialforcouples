@@ -26,7 +26,7 @@ interface EmailConfirmationProps {
 const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) => 
   React.createElement(Html, null,
     React.createElement(Head),
-    React.createElement(Preview, null, "Bem-vindo ao Couples Financials! Sua conta foi confirmada com sucesso"),
+    React.createElement(Preview, null, "Confirme seu endereço de email para ativar sua conta no Couples Financials"),
     React.createElement(Body, { style: main },
       React.createElement(Container, { style: container },
         React.createElement(Img, {
@@ -37,30 +37,34 @@ const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) =>
           style: logo
         }),
         
-        React.createElement(Heading, { style: h1 }, "Conta Confirmada com Sucesso!"),
+        React.createElement(Heading, { style: h1 }, "Confirme seu endereço de email"),
         
         React.createElement(Text, { style: text }, 
-          "Olá! Sua conta no ",
+          "Olá! Obrigado por se cadastrar no ",
           React.createElement("strong", null, "Couples Financials"),
-          " foi confirmada com sucesso."
+          ". Para ativar sua conta, confirme seu endereço de email."
         ),
         
         React.createElement(Text, { style: text },
-          "Email confirmado: ",
+          "Email a ser confirmado: ",
           React.createElement("strong", null, userEmail)
         ),
         
-        React.createElement(Text, { style: text },
-          "Agora você pode acessar todas as funcionalidades da nossa plataforma de gestão financeira para casais."
+        React.createElement(Button, { style: button, href: loginUrl },
+          "Confirmar Email"
         ),
         
-        React.createElement(Button, { style: button, href: loginUrl },
-          "Acessar Minha Conta"
+        React.createElement(Text, { style: text },
+          "Ou copie e cole este link no seu navegador:"
+        ),
+        
+        React.createElement(Text, { style: { ...text, wordBreak: 'break-all', fontSize: '14px' } },
+          loginUrl
         ),
         
         React.createElement(Hr, { style: hr }),
         
-        React.createElement(Text, { style: subtitle }, "O que você pode fazer agora:"),
+        React.createElement(Text, { style: subtitle }, "Após confirmar seu email, você poderá:"),
         
         React.createElement("ul", { style: list },
           React.createElement("li", { style: listItem }, "Gerenciar suas contas bancárias"),
@@ -177,7 +181,8 @@ const corsHeaders = {
 };
 
 interface ConfirmationEmailRequest {
-  email: string;
+  userEmail: string;
+  language?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -187,13 +192,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email }: ConfirmationEmailRequest = await req.json();
+    const { userEmail, language = 'pt' }: ConfirmationEmailRequest = await req.json();
     
-    const loginUrl = "https://elxttabdtddlavhseipz.supabase.co/auth/v1/verify?type=signup&redirect_to=https://your-app-url.com/auth";
+    const loginUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?type=signup&redirect_to=https://couples-financials.lovableproject.com/checkout-email-confirmation?email=${encodeURIComponent(userEmail)}`;
 
     const html = await renderAsync(
       React.createElement(EmailConfirmationPT, {
-        userEmail: email,
+        userEmail: userEmail,
         loginUrl: loginUrl
       })
     );
@@ -201,9 +206,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Generated HTML:", html);
 
     const emailResponse = await resend.emails.send({
-      from: "Couples Financials <onboarding@resend.dev>",
-      to: [email],
-      subject: "🎉 Conta confirmada - Bem-vindo ao Couples Financials!",
+      from: "Couples Financials <noreply@couplesfinancials.com>",
+      to: [userEmail],
+      subject: "🎉 Confirme seu endereço de email - Couples Financials",
       html: html,
     });
 

@@ -131,6 +131,36 @@ const CheckoutEmailConfirmation = () => {
   const resendEmail = async () => {
     setIsChecking(true);
     try {
+      // Primeiro tentar via função manual do Supabase
+      try {
+        const { data, error: manualError } = await supabase.functions.invoke(
+          'send-confirmation-manual',
+          {
+            body: {
+              userEmail: userEmail,
+              language: 'pt'
+            }
+          }
+        );
+        
+        if (manualError) {
+          console.log('Manual send failed, trying auth.resend:', manualError);
+          throw manualError;
+        }
+        
+        console.log('Manual confirmation email sent:', data);
+        
+        toast({
+          title: t('emailConfirmation.emailResent'),
+          description: t('emailConfirmation.checkInbox'),
+        });
+        return;
+        
+      } catch (manualErr) {
+        console.log('Fallback to auth.resend due to:', manualErr);
+      }
+      
+      // Fallback para método padrão do Supabase
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: userEmail,
