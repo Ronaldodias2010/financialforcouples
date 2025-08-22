@@ -103,9 +103,8 @@ const CheckoutEmailConfirmation = () => {
   const checkEmailStatus = async () => {
     setIsChecking(true);
     try {
-      // Force refresh the session to get latest data
-      const { data: { session }, error } = await supabase.auth.refreshSession();
-      if (error) throw error;
+      // Get current session (não force refresh se não houver sessão)
+      const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user?.email_confirmed_at) {
         setIsEmailConfirmed(true);
