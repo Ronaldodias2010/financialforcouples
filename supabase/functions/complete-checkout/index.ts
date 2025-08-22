@@ -78,11 +78,13 @@ serve(async (req) => {
       logStep("Created new customer", { customerId });
     }
 
-    // Determine price ID based on plan
-    // Using the same price for all regions for now - you should create specific prices in Stripe
+    // Determine price ID based on plan and region (using same logic as the main system)
+    // Simple region detection based on user language preference and context
+    const isEnglishPricing = !user.email.includes('.br') && !user.email.includes('brasil');
+    
     const priceId = checkoutSession.selected_plan === 'yearly' 
-      ? 'price_1RsLL5FOhUY5r0H1WIXv7yuP' // yearly price ID 
-      : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'; // monthly price ID - same for now, create separate in Stripe
+      ? (isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn') // yearly price IDs
+      : (isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price IDs
 
     // Create Stripe checkout session
     const stripeSession = await stripe.checkout.sessions.create({
