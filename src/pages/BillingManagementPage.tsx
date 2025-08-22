@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CreditCard, Calendar, Receipt, ExternalLink } from "lucide-react";
+import { ArrowLeft, CreditCard, Calendar, Receipt, ExternalLink, Download } from "lucide-react";
 import { toast } from "sonner";
+import { SubscriptionManager } from "@/components/subscription/SubscriptionManager";
+import { PaymentMethodManager } from "@/components/subscription/PaymentMethodManager";
 
 interface PaymentRecord {
   id: string;
@@ -32,6 +34,8 @@ interface PaymentRecord {
 interface BillingDetails {
   subscribed: boolean;
   renewal_date?: string;
+  subscription_id?: string;
+  cancel_at_period_end?: boolean;
   plan?: {
     amount: number;
     interval: string;
@@ -41,6 +45,14 @@ interface BillingDetails {
     brand: string;
     last4: string;
   };
+  payment_methods?: Array<{
+    id: string;
+    brand: string;
+    last4: string;
+    exp_month: number;
+    exp_year: number;
+    is_default: boolean;
+  }>;
 }
 
 interface BillingManagementPageProps {
@@ -110,6 +122,31 @@ export const BillingManagementPage = ({ onBack }: BillingManagementPageProps) =>
       toast.error('Erro ao abrir portal do cliente');
     } finally {
       setOpeningPortal(false);
+    }
+  };
+
+  const handleDownloadInvoice = async (invoiceId: string) => {
+    if (!session) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: { 
+          action: 'download_invoice',
+          invoiceId 
+        }
+      });
+
+      if (error) throw error;
+
+      // Open PDF in new tab
+      window.open(data.download_url, '_blank');
+      toast.success('Fatura baixada com sucesso!');
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      toast.error('Erro ao baixar fatura');
     }
   };
 
@@ -225,15 +262,24 @@ export const BillingManagementPage = ({ onBack }: BillingManagementPageProps) =>
                 </div>
               )}
 
-              <Button 
-                onClick={handleOpenCustomerPortal}
-                disabled={openingPortal}
-                variant="outline"
-                className="w-full"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                {openingPortal ? 'Abrindo portal...' : 'Gerenciar no Portal Stripe'}
-              </Button>
+              <div className="space-y-3">
+                <SubscriptionManager
+                  subscriptionId={billingDetails?.subscription_id}
+                  currentPlan={{
+                    name: "Premium",
+                    amount: billingDetails?.plan?.amount || 0,
+                    interval: billingDetails?.plan?.interval || 'month',
+                    currency: billingDetails?.plan?.currency || 'BRL'
+                  }}
+                  isCancelled={billingDetails?.cancel_at_period_end}
+                  onUpdate={fetchBillingData}
+                />
+                
+                <PaymentMethodManager
+                  paymentMethods={billingDetails?.payment_methods || []}
+                  onUpdate={fetchBillingData}
+                />
+              </div>
             </>
           ) : (
             <div className="text-center py-4">
@@ -284,8 +330,17 @@ export const BillingManagementPage = ({ onBack }: BillingManagementPageProps) =>
                       <div className="font-semibold">
                         {formatMoney(payment.amount, payment.currency)}
                       </div>
-                      <div className="mt-1">
+                      <div className="mt-1 flex items-center gap-2">
                         {getStatusBadge(payment.status)}
+                        {payment.invoice_number && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDownloadInvoice(payment.id)}
+                          >
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
