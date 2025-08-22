@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, Loader2, CheckCircle, Clock, RefreshCw } from "lucide-react";
@@ -15,9 +15,9 @@ const CheckoutEmailConfirmation = () => {
   const [userEmail, setUserEmail] = useState("");
   const [isEmailConfirmed, setIsEmailConfirmed] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const pollIntervalRef = useRef<number | null>(null);
   
   const sessionToken = searchParams.get('token');
-
   useEffect(() => {
     // Tentar obter email do usuário
     const urlParams = new URLSearchParams(window.location.search);
@@ -48,19 +48,64 @@ const CheckoutEmailConfirmation = () => {
     // Configurar listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
-          setIsEmailConfirmed(true);
-          if (sessionToken) {
-            setTimeout(() => {
-              completeCheckoutFlow();
-            }, 1000);
+        // Handle multiple possible events after confirmation
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.email_confirmed_at) {
+              setIsEmailConfirmed(true);
+              if (sessionToken) {
+                setTimeout(() => {
+                  completeCheckoutFlow();
+                }, 800);
+              }
+            }
+          } catch (e) {
+            console.error('Auth state check failed:', e);
           }
         }
       }
     );
-
     return () => subscription.unsubscribe();
   }, [sessionToken]);
+
+  // Poll for confirmation in case it happened in another tab/origin
+  useEffect(() => {
+    if (isEmailConfirmed) return;
+
+    let attempts = 0;
+    const maxAttempts = 20; // ~60s at 3s interval
+    pollIntervalRef.current = window.setInterval(async () => {
+      attempts += 1;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email_confirmed_at) {
+          setIsEmailConfirmed(true);
+          if (sessionToken) {
+            completeCheckoutFlow();
+          }
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+          }
+        }
+      } catch (e) {
+        console.log('Polling email confirmation failed:', e);
+      } finally {
+        if (attempts >= maxAttempts && pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+      }
+    }, 3000);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [isEmailConfirmed, sessionToken]);
 
   const completeCheckoutFlow = async () => {
     if (!sessionToken || isProcessingPayment) return;
@@ -103,10 +148,20 @@ const CheckoutEmailConfirmation = () => {
   const checkEmailStatus = async () => {
     setIsChecking(true);
     try {
-      // Get current session (não force refresh se não houver sessão)
       const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user?.email_confirmed_at) {
+
+      // If we already have confirmation in session, proceed
+      const currentUserConfirmed = !!session?.user?.email_confirmed_at;
+
+      if (!currentUserConfirmed && session) {
+        // Try to refresh tokens to get latest user metadata
+        try { await supabase.auth.refreshSession(); } catch {}
+      }
+
+      // Fetch fresh user from server
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user?.email_confirmed_at) {
         setIsEmailConfirmed(true);
         if (sessionToken) {
           await completeCheckoutFlow();
