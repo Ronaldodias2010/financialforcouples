@@ -1,0 +1,14 @@
+
+Deploy Trigger - 2025-08-22 18:00 UTC
+
+Reason: User requested deploy with updated AWS and Supabase credentials
+Branch: main
+Status: All environment variables and secrets updated
+
+Changes since last deploy:
+- Fixed invite partner component responsive layout
+- Adjusted positioning for small screens
+- Updated AWS credentials and Supabase keys
+- All CI/CD secrets refreshed
+
+This commit will trigger the GitHub Actions workflow for a complete deploy to AWS ECS.
