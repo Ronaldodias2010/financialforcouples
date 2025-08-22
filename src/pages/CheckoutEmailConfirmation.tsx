@@ -323,13 +323,9 @@ const CheckoutEmailConfirmation = () => {
           </CardContent>
         </Card>
 
-        {/* Back link */}
-        <div className="text-center">
-          <Button variant="ghost" asChild>
-            <a href="/checkout-direto" className="text-sm text-muted-foreground hover:text-foreground">
-              ← {t('directCheckout.back')}
-            </a>
-          </Button>
+        {/* Close page instruction */}
+        <div className="text-center text-xs text-muted-foreground">
+          {t('emailConfirmation.closeThisPage')}
         </div>
       </div>
     </div>
