@@ -172,11 +172,38 @@ const CheckoutEmailConfirmation = () => {
           variant: "default",
         });
       } else {
-        toast({
-          title: t('emailConfirmation.notYetConfirmed'),
-          description: t('emailConfirmation.pleaseCheck'),
-          variant: "default",
-        });
+        // Se não há sessão válida neste navegador, enviar link mágico automaticamente
+        if (!session && userEmail) {
+          console.log('No valid session found, sending magic link to:', userEmail);
+          
+          const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+            email: userEmail,
+            options: {
+              emailRedirectTo: `${window.location.origin}/checkout-email-confirmation${sessionToken ? `?token=${sessionToken}` : ''}`
+            }
+          });
+
+          if (magicLinkError) {
+            console.error('Magic link error:', magicLinkError);
+            toast({
+              title: t('emailConfirmation.notYetConfirmed'),
+              description: t('emailConfirmation.pleaseCheck'),
+              variant: "default",
+            });
+          } else {
+            toast({
+              title: t('emailConfirmation.magicLinkSent'),
+              description: t('emailConfirmation.checkInboxForLogin'),
+              variant: "default",
+            });
+          }
+        } else {
+          toast({
+            title: t('emailConfirmation.notYetConfirmed'),
+            description: t('emailConfirmation.pleaseCheck'),
+            variant: "default",
+          });
+        }
       }
     } catch (error) {
       console.error('Error checking email status:', error);

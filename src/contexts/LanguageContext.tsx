@@ -350,6 +350,8 @@ const translations = {
      'emailConfirmation.checkInbox': 'Verifique sua caixa de entrada para o novo email.',
      'emailConfirmation.resendError': 'Erro ao reenviar email. Tente novamente.',
      'emailConfirmation.troubleshooting': 'Não recebeu o email? Verifique sua pasta de spam.',
+     'emailConfirmation.magicLinkSent': 'Link de acesso enviado!',
+     'emailConfirmation.checkInboxForLogin': 'Verifique sua caixa de entrada para fazer login.',
      'emailConfirmation.closeThisPage': 'Feche esta página.',
 
     // Auth
@@ -1343,6 +1345,8 @@ const translations = {
      'emailConfirmation.checkInbox': 'Check your inbox for the new email.',
      'emailConfirmation.resendError': 'Error resending email. Please try again.',
      'emailConfirmation.troubleshooting': "Didn't receive the email? Check your spam folder.",
+     'emailConfirmation.magicLinkSent': 'Magic link sent!',
+     'emailConfirmation.checkInboxForLogin': 'Check your inbox to log in.',
      'emailConfirmation.closeThisPage': 'Close this page.',
 
     // Auth
@@ -2335,6 +2339,8 @@ const translations = {
      'emailConfirmation.emailResent': '¡Email reenviado!',
      'emailConfirmation.checkInbox': 'Revise su bandeja de entrada para el nuevo email.',
      'emailConfirmation.resendError': 'Error al reenviar email. Inténtelo de nuevo.',
+     'emailConfirmation.magicLinkSent': '¡Enlace mágico enviado!',
+     'emailConfirmation.checkInboxForLogin': 'Revise su bandeja de entrada para iniciar sesión.',
      'emailConfirmation.closeThisPage': 'Cierre esta página.',
      'emailConfirmation.troubleshooting': '¿No recibió el email? Revise su carpeta de spam.',
     
