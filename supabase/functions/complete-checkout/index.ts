@@ -79,12 +79,26 @@ serve(async (req) => {
     }
 
     // Determine price ID based on plan and region (using same logic as the main system)
-    // Simple region detection based on user language preference and context
-    const isEnglishPricing = !user.email.includes('.br') && !user.email.includes('brasil');
+    // Region detection: consider both email domain and checkout session context
+    // The main system uses: `const isEnglishPricing = !inBrazil || language === 'en';`
+    const isInternationalUser = !user.email.includes('.br') && 
+                               !user.email.includes('brasil') &&
+                               !user.email.includes('brazil');
+    
+    // Use USD pricing for international users 
+    const isEnglishPricing = isInternationalUser;
     
     const priceId = checkoutSession.selected_plan === 'yearly' 
-      ? (isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn') // yearly price IDs
-      : (isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price IDs
+      ? (isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn') // yearly: USD vs BRL
+      : (isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly: USD vs BRL
+    
+    logStep("Determined pricing", { 
+      isInternationalUser, 
+      isEnglishPricing, 
+      plan: checkoutSession.selected_plan, 
+      priceId,
+      userEmail: user.email
+    });
 
     // Create Stripe checkout session
     const stripeSession = await stripe.checkout.sessions.create({
