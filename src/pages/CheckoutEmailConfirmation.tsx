@@ -122,7 +122,7 @@ const CheckoutEmailConfirmation = () => {
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         'complete-checkout',
         {
-          body: { sessionToken }
+          body: { sessionToken, language }
         }
       );
 

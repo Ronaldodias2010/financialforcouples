@@ -5,6 +5,9 @@ import React from 'npm:react@18.3.1';
 import { EmailConfirmationPT } from './_templates/email-confirmation-pt.tsx';
 import { EmailConfirmationEN } from './_templates/email-confirmation-en.tsx';
 import { EmailConfirmationES } from './_templates/email-confirmation-es.tsx';
+import { MagicLinkPT } from './_templates/email-magiclink-pt.tsx';
+import { MagicLinkEN } from './_templates/email-magiclink-en.tsx';
+import { MagicLinkES } from './_templates/email-magiclink-es.tsx';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -84,10 +87,13 @@ const handler = async (req: Request): Promise<Response> => {
 
         const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
         
-        const EmailComponent = language === 'en' ? EmailConfirmationEN : 
-                             language === 'es' ? EmailConfirmationES : 
-                             EmailConfirmationPT;
-        
+        const action = (email_action_type || '').toLowerCase();
+        const isMagicLink = action.includes('magic') || action === 'email_link';
+
+        const EmailComponent = isMagicLink
+          ? (language === 'en' ? MagicLinkEN : language === 'es' ? MagicLinkES : MagicLinkPT)
+          : (language === 'en' ? EmailConfirmationEN : language === 'es' ? EmailConfirmationES : EmailConfirmationPT);
+
         const emailHtml = await renderAsync(
           React.createElement(EmailComponent, {
             userEmail: userName,
@@ -95,14 +101,22 @@ const handler = async (req: Request): Promise<Response> => {
           })
         );
 
+        const subject = isMagicLink
+          ? (language === 'en'
+              ? '✅ Email verified — continue to secure payment'
+              : language === 'es'
+              ? '✅ Email verificado — continúa al pago seguro'
+              : '✅ Email verificado — continue para o pagamento com segurança')
+          : (language === 'en'
+              ? '🎉 Confirm your email address - Couples Financials'
+              : language === 'es'
+              ? '🎉 Confirma tu dirección de email - Couples Financials'
+              : '🎉 Confirme seu endereço de email - Couples Financials');
+
         const emailResponse = await resend.emails.send({
           from: "Couples Financials <noreply@couplesfinancials.com>",
           to: [user.email],
-          subject: language === 'en' 
-            ? "🎉 Confirm your email address - Couples Financials"
-            : language === 'es'
-            ? "🎉 Confirma tu dirección de email - Couples Financials"
-            : "🎉 Confirme seu endereço de email - Couples Financials",
+          subject,
           html: emailHtml,
         });
 

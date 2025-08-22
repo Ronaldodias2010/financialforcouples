@@ -42,8 +42,10 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { sessionToken } = await req.json();
+    const { sessionToken, language, inBrazil } = await req.json();
     if (!sessionToken) throw new Error("Session token required");
+
+    logStep("Checkout context", { language, inBrazil });
 
     // Find checkout session
     const { data: checkoutSession, error: sessionError } = await supabaseService
@@ -78,26 +80,23 @@ serve(async (req) => {
       logStep("Created new customer", { customerId });
     }
 
-    // Determine price ID based on plan and region (using same logic as the main system)
-    // Region detection: consider both email domain and checkout session context
-    // The main system uses: `const isEnglishPricing = !inBrazil || language === 'en';`
-    const isInternationalUser = !user.email.includes('.br') && 
-                               !user.email.includes('brasil') &&
-                               !user.email.includes('brazil');
-    
-    // Use USD pricing for international users 
-    const isEnglishPricing = isInternationalUser;
-    
+    // Determine price ID based on plan and region (aligned with app logic)
+    // Prefer região (IP/GPS) e idioma da sessão/cliente, nunca pelo email
+    const selectedLanguage = (language || checkoutSession.language || 'pt') as string;
+    const inBr = typeof inBrazil === 'boolean' ? inBrazil : (checkoutSession.in_brazil ?? false);
+
+    const isEnglishPricing = !inBr || selectedLanguage === 'en' || selectedLanguage === 'es';
+
     const priceId = checkoutSession.selected_plan === 'yearly' 
-      ? (isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn') // yearly: USD vs BRL
-      : (isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly: USD vs BRL
-    
+      ? (isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn') // anual: USD vs BRL
+      : (isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // mensal: USD vs BRL
+
     logStep("Determined pricing", { 
-      isInternationalUser, 
+      selectedLanguage,
+      inBr,
       isEnglishPricing, 
       plan: checkoutSession.selected_plan, 
-      priceId,
-      userEmail: user.email
+      priceId
     });
 
     // Create Stripe checkout session
