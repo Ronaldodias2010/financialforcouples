@@ -4,6 +4,7 @@ import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import React from 'npm:react@18.3.1';
 import { EmailConfirmationPT } from './_templates/email-confirmation-pt.tsx';
 import { EmailConfirmationEN } from './_templates/email-confirmation-en.tsx';
+import { EmailConfirmationES } from './_templates/email-confirmation-es.tsx';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -59,32 +60,48 @@ const handler = async (req: Request): Promise<Response> => {
         const { user, email_data } = payload;
         const { token_hash, redirect_to, email_action_type } = email_data;
 
-        const language = 'pt';
+        // Detect language from redirect_to URL or default to Portuguese
+        const detectLanguage = (redirectTo: string): 'pt' | 'en' | 'es' => {
+          const url = new URL(redirectTo);
+          const hostname = url.hostname;
+          
+          // Check for specific language domains or paths
+          if (hostname.includes('couples-financials') || hostname.includes('lovableproject')) {
+            // For now, use Portuguese as default for our main domains
+            // Later we can detect language from URL params or user agent
+            return 'pt';
+          }
+          
+          // Default fallback
+          return 'pt';
+        };
+
+        const language = detectLanguage(redirect_to);
         const userName = user.user_metadata?.display_name ||
                         user.user_metadata?.full_name || 
                         user.user_metadata?.name || 
                         user.email.split('@')[0];
 
         const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
-        const emailHtml = language === 'en' 
-            ? await renderAsync(
-                React.createElement(EmailConfirmationEN, {
-                  userEmail: userName,
-                  loginUrl: confirmUrl
-                })
-              )
-            : await renderAsync(
-                React.createElement(EmailConfirmationPT, {
-                  userEmail: userName,
-                  loginUrl: confirmUrl
-                })
-              );
+        
+        const EmailComponent = language === 'en' ? EmailConfirmationEN : 
+                             language === 'es' ? EmailConfirmationES : 
+                             EmailConfirmationPT;
+        
+        const emailHtml = await renderAsync(
+          React.createElement(EmailComponent, {
+            userEmail: userName,
+            loginUrl: confirmUrl
+          })
+        );
 
         const emailResponse = await resend.emails.send({
           from: "Couples Financials <noreply@couplesfinancials.com>",
           to: [user.email],
           subject: language === 'en' 
             ? "🎉 Confirm your email address - Couples Financials"
+            : language === 'es'
+            ? "🎉 Confirma tu dirección de email - Couples Financials"
             : "🎉 Confirme seu endereço de email - Couples Financials",
           html: emailHtml,
         });

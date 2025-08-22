@@ -156,6 +156,72 @@ const EmailConfirmationEN = ({ userEmail, loginUrl }: EmailConfirmationProps) =>
     )
   );
 
+const EmailConfirmationES = ({ userEmail, loginUrl }: EmailConfirmationProps) => 
+  React.createElement(Html, null,
+    React.createElement(Head),
+    React.createElement(Preview, null, "Confirma tu dirección de email para activar tu cuenta de Couples Financials"),
+    React.createElement(Body, { style: main },
+      React.createElement(Container, { style: container },
+        React.createElement(Img, {
+          src: "https://elxttabdtddlavhseipz.supabase.co/storage/v1/object/public/app-assets/couples-financials-logo.png",
+          width: "200",
+          height: "60",
+          alt: "Couples Financials",
+          style: logo
+        }),
+        
+        React.createElement(Heading, { style: h1 }, "Confirma tu dirección de email"),
+        
+        React.createElement(Text, { style: text }, 
+          "¡Hola! Gracias por registrarte en ",
+          React.createElement("strong", null, "Couples Financials"),
+          ". Para activar tu cuenta, confirma tu dirección de email."
+        ),
+        
+        React.createElement(Text, { style: text },
+          "Email a confirmar: ",
+          React.createElement("strong", null, userEmail)
+        ),
+        
+        React.createElement(Button, { style: button, href: loginUrl },
+          "Confirmar Email"
+        ),
+        
+        React.createElement(Text, { style: text },
+          "O copia y pega este enlace en tu navegador:"
+        ),
+        
+        React.createElement(Text, { style: { ...text, wordBreak: 'break-all', fontSize: '14px' } },
+          loginUrl
+        ),
+        
+        React.createElement(Hr, { style: hr }),
+        
+        React.createElement(Text, { style: subtitle }, "Después de confirmar tu email, podrás:"),
+        
+        React.createElement("ul", { style: list },
+          React.createElement("li", { style: listItem }, "Gestionar tus cuentas bancarias"),
+          React.createElement("li", { style: listItem }, "Controlar gastos con tarjetas"),
+          React.createElement("li", { style: listItem }, "Ver reportes detallados"),
+          React.createElement("li", { style: listItem }, "Definir metas financieras"),
+          React.createElement("li", { style: listItem }, "Seguir millas y puntos"),
+          React.createElement("li", { style: listItem }, "Invitar a tu pareja")
+        ),
+        
+        React.createElement(Hr, { style: hr }),
+        
+        React.createElement(Text, { style: footer },
+          "Si no creaste esta cuenta, puedes ignorar este email con seguridad."
+        ),
+        
+        React.createElement(Text, { style: footer },
+          React.createElement("strong", null, "Couples Financials"),
+          " - Gestión financiera inteligente para parejas"
+        )
+      )
+    )
+  );
+
 // Styles
 const main = {
   backgroundColor: '#f6f9fc',
@@ -263,7 +329,9 @@ const handler = async (req: Request): Promise<Response> => {
     
     const loginUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?type=signup&redirect_to=https://couples-financials.lovableproject.com/checkout-email-confirmation?email=${encodeURIComponent(userEmail)}`;
 
-    const EmailComponent = language === 'en' ? EmailConfirmationEN : EmailConfirmationPT;
+    const EmailComponent = language === 'en' ? EmailConfirmationEN : 
+                        language === 'es' ? EmailConfirmationES : 
+                        EmailConfirmationPT;
     
     const html = await renderAsync(
       React.createElement(EmailComponent, {
@@ -277,6 +345,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const subject = language === 'en' 
       ? "🎉 Confirm your email address - Couples Financials"
+      : language === 'es'
+      ? "🎉 Confirma tu dirección de email - Couples Financials"
       : "🎉 Confirme seu endereço de email - Couples Financials";
 
     const emailResponse = await resend.emails.send({
