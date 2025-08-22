@@ -79,10 +79,10 @@ serve(async (req) => {
     }
 
     // Determine price ID based on plan
-    const isUSD = !user.email.endsWith('.br'); // Simple detection, can be improved
+    // Using the same price for all regions for now - you should create specific prices in Stripe
     const priceId = checkoutSession.selected_plan === 'yearly' 
-      ? (isUSD ? 'price_yearly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP') // yearly price ID
-      : (isUSD ? 'price_monthly_usd' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // monthly price ID
+      ? 'price_1RsLL5FOhUY5r0H1WIXv7yuP' // yearly price ID 
+      : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'; // monthly price ID - same for now, create separate in Stripe
 
     // Create Stripe checkout session
     const stripeSession = await stripe.checkout.sessions.create({

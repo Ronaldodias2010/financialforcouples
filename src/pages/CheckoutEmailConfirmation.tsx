@@ -193,7 +193,7 @@ const CheckoutEmailConfirmation = () => {
           } else {
             toast({
               title: t('emailConfirmation.magicLinkSent'),
-              description: t('emailConfirmation.checkInboxForLogin'),
+              description: t('emailConfirmation.checkInboxForStripe'),
               variant: "default",
             });
           }
