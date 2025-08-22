@@ -184,7 +184,7 @@ jobs:
          echo "Importing existing AWS resources to avoid recreation..."
          
          # ECS Cluster
-         terraform import aws_ecs_cluster.app couples-financials-cluster || true
+         terraform import aws_ecs_cluster.main couples-financials-cluster || true
          
          # CloudWatch Log Group
          terraform import aws_cloudwatch_log_group.ecs /ecs/couples-financials || true
@@ -216,9 +216,20 @@ jobs:
            terraform import aws_lb_target_group.app "$TG_ARN" || true
          fi
 
+         # ECS Service
+         terraform import aws_ecs_service.app couples-financials-cluster/couples-financials || true
+
          # IAM Roles
          terraform import aws_iam_role.ecs_execution_role couples-financials-ecs-execution-role || true
          terraform import aws_iam_role.ecs_task_role couples-financials-ecs-task-role || true
+
+         # IAM Managed Policy for secrets access
+         ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)
+         if [ -n "$ACCOUNT_ID" ]; then
+           POLICY_ARN="arn:aws:iam::$ACCOUNT_ID:policy/couples-financials-secrets-access"
+           terraform import aws_iam_policy.secrets_access "$POLICY_ARN" || true
+           terraform import aws_iam_role_policy_attachment.ecs_secrets_access "couples-financials-ecs-execution-role/$POLICY_ARN" || true
+         fi
 
          # Secrets Manager Secrets
          terraform import aws_secretsmanager_secret.supabase_credentials couples-financials-supabase-credentials || true
