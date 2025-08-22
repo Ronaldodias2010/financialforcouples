@@ -15,9 +15,10 @@ import { User, CreditCard, Lock, DollarSign } from "lucide-react";
 interface UserProfileFormProps {
   onBack?: () => void;
   activeTab?: string;
+  onNavigateToBilling?: () => void;
 }
 
-export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => {
+export const UserProfileForm = ({ onBack, activeTab, onNavigateToBilling }: UserProfileFormProps) => {
   const { user, session } = useAuth();
   const { t, language } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading: subscriptionLoading } = useSubscription();
@@ -263,15 +264,23 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
     }
   };
 
-  const handleManageSubscription = async () => {
-    setOpeningPortal(true);
-    try {
-      await openCustomerPortal();
-    } catch (error) {
-      console.error("Error opening customer portal:", error);
-      toast.error("Erro ao abrir portal de gerenciamento. Tente novamente.");
-    } finally {
-      setOpeningPortal(false);
+  const handleManageSubscription = () => {
+    if (onNavigateToBilling) {
+      onNavigateToBilling();
+    } else {
+      // Fallback to original behavior if no navigation handler
+      setOpeningPortal(true);
+      openCustomerPortal()
+        .then(() => {
+          // Success handled in the hook
+        })
+        .catch((error) => {
+          console.error("Error opening customer portal:", error);
+          toast.error("Erro ao abrir portal de gerenciamento. Tente novamente.");
+        })
+        .finally(() => {
+          setOpeningPortal(false);
+        });
     }
   };
 
