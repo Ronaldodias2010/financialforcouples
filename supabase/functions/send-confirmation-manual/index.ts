@@ -21,6 +21,7 @@ import {
 interface EmailConfirmationProps {
   userEmail: string;
   loginUrl: string;
+  language: string;
 }
 
 const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) => 
@@ -84,6 +85,72 @@ const EmailConfirmationPT = ({ userEmail, loginUrl }: EmailConfirmationProps) =>
         React.createElement(Text, { style: footer },
           React.createElement("strong", null, "Couples Financials"),
           " - Gestão financeira inteligente para casais"
+        )
+      )
+    )
+  );
+
+const EmailConfirmationEN = ({ userEmail, loginUrl }: EmailConfirmationProps) => 
+  React.createElement(Html, null,
+    React.createElement(Head),
+    React.createElement(Preview, null, "Confirm your email address to activate your Couples Financials account"),
+    React.createElement(Body, { style: main },
+      React.createElement(Container, { style: container },
+        React.createElement(Img, {
+          src: "https://elxttabdtddlavhseipz.supabase.co/storage/v1/object/public/app-assets/couples-financials-logo.png",
+          width: "200",
+          height: "60",
+          alt: "Couples Financials",
+          style: logo
+        }),
+        
+        React.createElement(Heading, { style: h1 }, "Confirm your email address"),
+        
+        React.createElement(Text, { style: text }, 
+          "Hello! Thank you for signing up for ",
+          React.createElement("strong", null, "Couples Financials"),
+          ". To activate your account, please confirm your email address."
+        ),
+        
+        React.createElement(Text, { style: text },
+          "Email to be confirmed: ",
+          React.createElement("strong", null, userEmail)
+        ),
+        
+        React.createElement(Button, { style: button, href: loginUrl },
+          "Confirm Email"
+        ),
+        
+        React.createElement(Text, { style: text },
+          "Or copy and paste this link into your browser:"
+        ),
+        
+        React.createElement(Text, { style: { ...text, wordBreak: 'break-all', fontSize: '14px' } },
+          loginUrl
+        ),
+        
+        React.createElement(Hr, { style: hr }),
+        
+        React.createElement(Text, { style: subtitle }, "After confirming your email, you'll be able to:"),
+        
+        React.createElement("ul", { style: list },
+          React.createElement("li", { style: listItem }, "Manage your bank accounts"),
+          React.createElement("li", { style: listItem }, "Track credit card expenses"),
+          React.createElement("li", { style: listItem }, "View detailed reports"),
+          React.createElement("li", { style: listItem }, "Set financial goals"),
+          React.createElement("li", { style: listItem }, "Track miles and points"),
+          React.createElement("li", { style: listItem }, "Invite your partner")
+        ),
+        
+        React.createElement(Hr, { style: hr }),
+        
+        React.createElement(Text, { style: footer },
+          "If you didn't create this account, you can safely ignore this email."
+        ),
+        
+        React.createElement(Text, { style: footer },
+          React.createElement("strong", null, "Couples Financials"),
+          " - Smart financial management for couples"
         )
       )
     )
@@ -196,19 +263,26 @@ const handler = async (req: Request): Promise<Response> => {
     
     const loginUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?type=signup&redirect_to=https://couples-financials.lovableproject.com/checkout-email-confirmation?email=${encodeURIComponent(userEmail)}`;
 
+    const EmailComponent = language === 'en' ? EmailConfirmationEN : EmailConfirmationPT;
+    
     const html = await renderAsync(
-      React.createElement(EmailConfirmationPT, {
+      React.createElement(EmailComponent, {
         userEmail: userEmail,
-        loginUrl: loginUrl
+        loginUrl: loginUrl,
+        language: language
       })
     );
     
     console.log("Generated HTML:", html);
 
+    const subject = language === 'en' 
+      ? "🎉 Confirm your email address - Couples Financials"
+      : "🎉 Confirme seu endereço de email - Couples Financials";
+
     const emailResponse = await resend.emails.send({
       from: "Couples Financials <noreply@couplesfinancials.com>",
       to: [userEmail],
-      subject: "🎉 Confirme seu endereço de email - Couples Financials",
+      subject: subject,
       html: html,
     });
 

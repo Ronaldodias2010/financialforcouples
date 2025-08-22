@@ -8,7 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const CheckoutEmailConfirmation = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [isChecking, setIsChecking] = useState(false);
@@ -103,12 +103,20 @@ const CheckoutEmailConfirmation = () => {
   const checkEmailStatus = async () => {
     setIsChecking(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email_confirmed_at) {
+      // Force refresh the session to get latest data
+      const { data: { session }, error } = await supabase.auth.refreshSession();
+      if (error) throw error;
+      
+      if (session?.user?.email_confirmed_at) {
         setIsEmailConfirmed(true);
         if (sessionToken) {
           await completeCheckoutFlow();
         }
+        toast({
+          title: t('emailConfirmation.emailConfirmed'),
+          description: t('emailConfirmation.accountReady'),
+          variant: "default",
+        });
       } else {
         toast({
           title: t('emailConfirmation.notYetConfirmed'),
@@ -138,7 +146,7 @@ const CheckoutEmailConfirmation = () => {
           {
             body: {
               userEmail: userEmail,
-              language: 'pt'
+              language: language
             }
           }
         );

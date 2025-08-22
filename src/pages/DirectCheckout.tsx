@@ -193,21 +193,7 @@ const DirectCheckout = () => {
         }
       });
 
-      // Tentar enviar email de confirmação manualmente após signup
-      if (signUpData?.user && !signUpData.user.email_confirmed_at) {
-        try {
-          await supabase.functions.invoke('send-confirmation-manual', {
-            body: {
-              userEmail: formData.email,
-              language: 'pt'
-            }
-          });
-          console.log('Manual confirmation email sent after signup');
-        } catch (emailError) {
-          console.log('Failed to send manual confirmation email:', emailError);
-          // Não bloquear o fluxo se o email manual falhar
-        }
-      }
+      // O email de confirmação é enviado automaticamente via webhook
 
       // Tratar casos de erro ou sucesso no signup
       if (signUpError) {
