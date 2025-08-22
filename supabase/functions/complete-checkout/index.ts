@@ -81,20 +81,21 @@ serve(async (req) => {
     }
 
     // Determine price ID based on plan and region (aligned with app logic)
-    // Prefer região (IP/GPS) e idioma da sessão/cliente, nunca pelo email
+    // Português no Brasil = BRL, outros idiomas ou fora do Brasil = USD
     const selectedLanguage = (language || checkoutSession.language || 'pt') as string;
-    const inBr = typeof inBrazil === 'boolean' ? inBrazil : (checkoutSession.in_brazil ?? false);
-
-    const isEnglishPricing = !inBr || selectedLanguage === 'en' || selectedLanguage === 'es';
+    const inBr = typeof inBrazil === 'boolean' ? inBrazil : (checkoutSession.in_brazil ?? true);
+    
+    // Se português E no Brasil = BRL (Real), senão USD (Dólar)
+    const useBRL = selectedLanguage === 'pt' && inBr;
 
     const priceId = checkoutSession.selected_plan === 'yearly' 
-      ? (isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn') // anual: USD vs BRL
-      : (isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1RsLL5FOhUY5r0H1WIXv7yuP'); // mensal: USD vs BRL
+      ? (useBRL ? 'price_1Ruie7FOhUY5r0H1qXXFouNn' : 'price_1RuutYFOhUY5r0H1VSEQO2oI') // anual: BRL vs USD
+      : (useBRL ? 'price_1RsLL5FOhUY5r0H1WIXv7yuP' : 'price_1Ruut0FOhUY5r0H1vV43Vj4L'); // mensal: BRL vs USD
 
     logStep("Determined pricing", { 
       selectedLanguage,
       inBr,
-      isEnglishPricing, 
+      useBRL,
       plan: checkoutSession.selected_plan, 
       priceId
     });

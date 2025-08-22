@@ -8,7 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const CheckoutEmailConfirmation = () => {
-  const { t, language } = useLanguage();
+  const { t, language, inBrazil } = useLanguage();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [isChecking, setIsChecking] = useState(false);
@@ -122,7 +122,7 @@ const CheckoutEmailConfirmation = () => {
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         'complete-checkout',
         {
-          body: { sessionToken, language }
+          body: { sessionToken, language, inBrazil }
         }
       );
 
