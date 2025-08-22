@@ -181,15 +181,50 @@ jobs:
     - name: Import critical resources only
       working-directory: terraform
       run: |
-        echo "Importing only essential resources to avoid timeouts..."
-        
-        # Import ECS Cluster (essential)
-        terraform import aws_ecs_cluster.app couples-financials-cluster || true
-        
-        # Import CloudWatch Log Group (essential)
-        terraform import aws_cloudwatch_log_group.ecs /ecs/couples-financials || true
-        
-        echo "Critical imports completed"
+         echo "Importing existing AWS resources to avoid recreation..."
+         
+         # ECS Cluster
+         terraform import aws_ecs_cluster.app couples-financials-cluster || true
+         
+         # CloudWatch Log Group
+         terraform import aws_cloudwatch_log_group.ecs /ecs/couples-financials || true
+         
+         # Application Load Balancer (needs ARN)
+         ALB_ARN=$(aws elbv2 describe-load-balancers \
+           --names couples-financials-alb \
+           --query 'LoadBalancers[0].LoadBalancerArn' \
+           --output text 2>/dev/null || true)
+         if [ -n "$ALB_ARN" ] && [ "$ALB_ARN" != "None" ]; then
+           terraform import aws_lb.app "$ALB_ARN" || true
+
+           # Import HTTP listener (port 80)
+           LISTENER80_ARN=$(aws elbv2 describe-listeners \
+             --load-balancer-arn "$ALB_ARN" \
+             --query 'Listeners[?Port==`80`].ListenerArn' \
+             --output text 2>/dev/null || true)
+           if [ -n "$LISTENER80_ARN" ] && [ "$LISTENER80_ARN" != "None" ]; then
+             terraform import aws_lb_listener.app "$LISTENER80_ARN" || true
+           fi
+         fi
+
+         # Target Group (needs ARN)
+         TG_ARN=$(aws elbv2 describe-target-groups \
+           --names couples-financials-tg \
+           --query 'TargetGroups[0].TargetGroupArn' \
+           --output text 2>/dev/null || true)
+         if [ -n "$TG_ARN" ] && [ "$TG_ARN" != "None" ]; then
+           terraform import aws_lb_target_group.app "$TG_ARN" || true
+         fi
+
+         # IAM Roles
+         terraform import aws_iam_role.ecs_execution_role couples-financials-ecs-execution-role || true
+         terraform import aws_iam_role.ecs_task_role couples-financials-ecs-task-role || true
+
+         # Secrets Manager Secrets
+         terraform import aws_secretsmanager_secret.supabase_credentials couples-financials-supabase-credentials || true
+         terraform import aws_secretsmanager_secret.app_config couples-financials-app-config || true
+
+         echo "Import step finished"
 
     - name: Terraform Apply
       working-directory: terraform
