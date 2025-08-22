@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json yarn.lock ./
 
 # Instalar dependências (incluindo dev dependencies para o build)
-RUN yarn install --frozen-lockfile
+RUN yarn install --no-progress
 
 # Copiar código fonte
 COPY . .
