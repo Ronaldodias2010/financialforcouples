@@ -258,31 +258,20 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
 
   const deleteUser = async (userId: string, userEmail: string) => {
     try {
-      console.log('🗑️ Deleting user:', { userId, userEmail });
-      
-      // Delete from profiles table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', userId);
-      if (profileError) throw profileError;
+      console.log('🗑️ Deleting user via edge function:', { userId, userEmail });
 
-      // Delete from subscribers table
-      const { error: subscriberError } = await supabase
-        .from('subscribers')
-        .delete()
-        .eq('user_id', userId);
-      if (subscriberError) throw subscriberError;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
 
-      // Delete couple relationships
-      const { error: coupleError } = await supabase
-        .from('user_couples')
-        .delete()
-        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
-      // Don't throw error for couples - user might not be coupled
+      const { data, error } = await supabase.functions.invoke('admin-delete-essential-user', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: { userId },
+      });
+
+      if (error) throw error;
 
       toast({ title: t.deleteSuccess, variant: 'default' });
-      fetchUsers();
+      setUsers((prev) => prev.filter((u) => u.user_id !== userId));
     } catch (error) {
       console.error('❌ Error deleting user:', error);
       let errorMessage = 'Erro desconhecido';
@@ -294,7 +283,6 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
       toast({ title: t.deleteError, description: errorMessage, variant: 'destructive' });
     }
   };
-
   useEffect(() => {
     fetchUsers();
     
