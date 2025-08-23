@@ -67,7 +67,12 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-green-500" />
-                <span className="text-green-400">WhatsApp Inteligente (11) 98806-6403</span>
+                <span className="text-green-400">
+                  {language === 'pt' 
+                    ? 'WhatsApp Inteligente (11) 98806-6403'
+                    : 'WhatsApp Smart +55(11) 98806-6403'
+                  }
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
