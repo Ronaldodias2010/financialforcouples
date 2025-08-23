@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users } from 'lucide-react';
+import { Loader2, Users, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserData {
@@ -39,7 +39,10 @@ const text = {
     actions: 'Actions',
     active: 'Active',
     inactive: 'Inactive',
-    coupled: 'Coupled'
+    coupled: 'Coupled',
+    deleteUser: 'Delete User',
+    deleteSuccess: 'User deleted successfully',
+    deleteError: 'Error deleting user'
   },
   pt: {
     title: 'Lista de Usuários Essential',
@@ -59,7 +62,10 @@ const text = {
     actions: 'Ações',
     active: 'Ativo',
     inactive: 'Inativo',
-    coupled: 'Casal'
+    coupled: 'Casal',
+    deleteUser: 'Excluir Usuário',
+    deleteSuccess: 'Usuário excluído com sucesso',
+    deleteError: 'Erro ao excluir usuário'
   }
 };
 
@@ -250,6 +256,45 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
     }
   };
 
+  const deleteUser = async (userId: string, userEmail: string) => {
+    try {
+      console.log('🗑️ Deleting user:', { userId, userEmail });
+      
+      // Delete from profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId);
+      if (profileError) throw profileError;
+
+      // Delete from subscribers table
+      const { error: subscriberError } = await supabase
+        .from('subscribers')
+        .delete()
+        .eq('user_id', userId);
+      if (subscriberError) throw subscriberError;
+
+      // Delete couple relationships
+      const { error: coupleError } = await supabase
+        .from('user_couples')
+        .delete()
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+      // Don't throw error for couples - user might not be coupled
+
+      toast({ title: t.deleteSuccess, variant: 'default' });
+      fetchUsers();
+    } catch (error) {
+      console.error('❌ Error deleting user:', error);
+      let errorMessage = 'Erro desconhecido';
+      if (error && typeof error === 'object') {
+        errorMessage = (error as any).message || (error as any).details || JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({ title: t.deleteError, description: errorMessage, variant: 'destructive' });
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
     
@@ -309,6 +354,9 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     {t.plan}
                   </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    {t.actions}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -341,6 +389,16 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                       <Badge variant="outline">
                         {user.subscribed ? t.premium : t.essential}
                       </Badge>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="bg-red-500 hover:bg-red-600 text-white"
+                        onClick={() => deleteUser(user.user_id, user.email)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </td>
                   </tr>
                 ))}

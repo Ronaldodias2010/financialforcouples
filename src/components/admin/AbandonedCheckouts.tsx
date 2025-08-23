@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Clock, Mail, Phone, Calendar, DollarSign } from "lucide-react";
+import { ShoppingCart, Clock, Mail, Phone, Calendar, DollarSign, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -19,11 +19,63 @@ interface CheckoutSession {
   expires_at: string;
 }
 
+const text = {
+  pt: {
+    title: 'Carrinhos Abandonados',
+    loading: 'Carregando...',
+    noCheckouts: 'Nenhum carrinho abandonado encontrado.',
+    created: 'Criado',
+    expires: 'Expira',
+    contact: 'Contatar',
+    whatsapp: 'WhatsApp',
+    update: 'Atualizar',
+    delete: 'Excluir',
+    deleteSuccess: 'Carrinho excluído com sucesso',
+    deleteError: 'Erro ao excluir carrinho',
+    expired: 'Expirado',
+    pendingVerification: 'Aguardando verificação',
+    pendingPayment: 'Aguardando pagamento'
+  },
+  en: {
+    title: 'Abandoned Checkouts',
+    loading: 'Loading...',
+    noCheckouts: 'No abandoned checkouts found.',
+    created: 'Created',
+    expires: 'Expires',
+    contact: 'Contact',
+    whatsapp: 'WhatsApp',
+    update: 'Update',
+    delete: 'Delete',
+    deleteSuccess: 'Checkout deleted successfully',
+    deleteError: 'Error deleting checkout',
+    expired: 'Expired',
+    pendingVerification: 'Awaiting verification',
+    pendingPayment: 'Awaiting payment'
+  },
+  es: {
+    title: 'Carritos Abandonados',
+    loading: 'Cargando...',
+    noCheckouts: 'No se encontraron carritos abandonados.',
+    created: 'Creado',
+    expires: 'Expira',
+    contact: 'Contactar',
+    whatsapp: 'WhatsApp',
+    update: 'Actualizar',
+    delete: 'Eliminar',
+    deleteSuccess: 'Carrito eliminado exitosamente',
+    deleteError: 'Error al eliminar carrito',
+    expired: 'Expirado',
+    pendingVerification: 'Esperando verificación',
+    pendingPayment: 'Esperando pago'
+  }
+};
+
 const AbandonedCheckouts = () => {
   const [sessions, setSessions] = useState<CheckoutSession[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const t = text[language as keyof typeof text] || text.pt;
 
   const fetchAbandonedCheckouts = async () => {
     try {
@@ -38,8 +90,8 @@ const AbandonedCheckouts = () => {
     } catch (error) {
       console.error('Error fetching abandoned checkouts:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao carregar carrinhos abandonados",
+        title: t.deleteError,
+        description: t.deleteError,
         variant: "destructive",
       });
     } finally {
@@ -61,16 +113,40 @@ const AbandonedCheckouts = () => {
 
   const getStatusBadge = (status: string, expiresAt: string) => {
     if (isExpired(expiresAt)) {
-      return <Badge variant="destructive">Expirado</Badge>;
+      return <Badge variant="default" className="bg-red-500 text-white">{t.expired}</Badge>;
     }
     
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary">Aguardando verificação</Badge>;
+        return <Badge variant="secondary">{t.pendingVerification}</Badge>;
       case 'payment_pending':
-        return <Badge variant="outline">Aguardando pagamento</Badge>;
+        return <Badge variant="outline">{t.pendingPayment}</Badge>;
       default:
         return <Badge>{status}</Badge>;
+    }
+  };
+
+  const deleteCheckout = async (sessionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('checkout_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      toast({
+        title: t.deleteSuccess,
+        variant: "default",
+      });
+      
+      fetchAbandonedCheckouts();
+    } catch (error) {
+      console.error('Error deleting checkout:', error);
+      toast({
+        title: t.deleteError,
+        variant: "destructive",
+      });
     }
   };
 
@@ -84,11 +160,11 @@ const AbandonedCheckouts = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
-            Carrinhos Abandonados
+            {t.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Carregando...</p>
+          <p>{t.loading}</p>
         </CardContent>
       </Card>
     );
@@ -99,12 +175,12 @@ const AbandonedCheckouts = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShoppingCart className="w-5 h-5" />
-          Carrinhos Abandonados ({sessions.length})
+          {t.title} ({sessions.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
         {sessions.length === 0 ? (
-          <p className="text-muted-foreground">Nenhum carrinho abandonado encontrado.</p>
+          <p className="text-muted-foreground">{t.noCheckouts}</p>
         ) : (
           <div className="space-y-4">
             {sessions.map((session) => (
@@ -138,11 +214,11 @@ const AbandonedCheckouts = () => {
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    Criado: {formatDate(session.created_at)}
+                    {t.created}: {formatDate(session.created_at)}
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    Expira: {formatDate(session.expires_at)}
+                    {t.expires}: {formatDate(session.expires_at)}
                   </div>
                 </div>
 
@@ -153,7 +229,7 @@ const AbandonedCheckouts = () => {
                     onClick={() => window.open(`mailto:${session.email}`, '_blank')}
                   >
                     <Mail className="w-4 h-4 mr-1" />
-                    Contatar
+                    {t.contact}
                   </Button>
                   {session.phone && (
                     <Button
@@ -162,9 +238,18 @@ const AbandonedCheckouts = () => {
                       onClick={() => window.open(`https://wa.me/${session.phone.replace(/\D/g, '')}`, '_blank')}
                     >
                       <Phone className="w-4 h-4 mr-1" />
-                      WhatsApp
+                      {t.whatsapp}
                     </Button>
                   )}
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="bg-red-500 hover:bg-red-600 text-white"
+                    onClick={() => deleteCheckout(session.id)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    {t.delete}
+                  </Button>
                 </div>
               </div>
             ))}
@@ -173,7 +258,7 @@ const AbandonedCheckouts = () => {
         
         <div className="mt-4">
           <Button onClick={fetchAbandonedCheckouts} variant="outline" size="sm">
-            Atualizar
+            {t.update}
           </Button>
         </div>
       </CardContent>

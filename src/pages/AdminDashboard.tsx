@@ -537,7 +537,7 @@ const AdminDashboardContent = () => {
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
           >
             <Search className="h-4 w-4 mr-2" />
-            Carrinho Abandonado
+            {language === 'pt' ? 'Carrinho Abandonado' : language === 'en' ? 'Abandoned Checkouts' : 'Carritos Abandonados'}
           </TabsTrigger>
           <TabsTrigger 
             value="alerts"
