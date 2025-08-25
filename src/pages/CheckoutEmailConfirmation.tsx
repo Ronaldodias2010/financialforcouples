@@ -310,9 +310,9 @@ const CheckoutEmailConfirmation = () => {
         {/* Header with logo */}
         <div className="text-center">
           <img
-            src="/lovable-uploads/2f7e7907-5cf5-4262-adbd-04f4dbd3151b.png"
+            src="/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png"
             alt="Couples Financials"
-            className="w-16 h-16 mx-auto mb-4"
+            className="w-20 h-20 mx-auto mb-4"
           />
           <h1 className="text-xl font-bold text-foreground">Couples Financials</h1>
         </div>

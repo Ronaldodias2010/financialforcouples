@@ -7,7 +7,7 @@ const urlsToCache = [
   '/auth',
   '/app',
   '/lovable-uploads/7334c1f2-b2ea-42c6-8031-74d75d699133.png',
-  '/lovable-uploads/a3413c4f-0329-4c0f-8e9d-4a6a7447c4dd.png'
+  '/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png'
 ];
 
 const API_URLS = [

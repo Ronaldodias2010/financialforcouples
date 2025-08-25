@@ -1,7 +1,7 @@
 import { Heart, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
-import logo from "/lovable-uploads/4e601a03-6175-4cab-82d2-bbe463a775dc.png";
+import logo from "/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
 
 const Footer = () => {
   const { t, language } = useLanguage();

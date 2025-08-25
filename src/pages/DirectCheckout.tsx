@@ -261,9 +261,9 @@ const DirectCheckout = () => {
             </Button>
             <div className="flex items-center gap-2">
               <img
-                src="/lovable-uploads/2f7e7907-5cf5-4262-adbd-04f4dbd3151b.png"
+                src="/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png"
                 alt="Couples Financials"
-                className="w-8 h-8"
+                className="w-10 h-10"
               />
               <span className="font-bold text-lg">Couples Financials</span>
             </div>

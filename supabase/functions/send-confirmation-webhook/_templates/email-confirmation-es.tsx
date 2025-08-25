@@ -28,9 +28,9 @@ export const EmailConfirmationES = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src="https://elxttabdtddlavhseipz.supabase.co/storage/v1/object/public/app-assets/couples-financials-logo.png"
-          width="200"
-          height="60"
+          src="https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png"
+          width="250"
+          height="80"
           alt="Couples Financials"
           style={logo}
         />

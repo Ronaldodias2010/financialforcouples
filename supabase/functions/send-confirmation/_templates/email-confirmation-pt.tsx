@@ -34,9 +34,9 @@ export const EmailConfirmationPT = ({
           <Row>
             <Column align="center">
               <Img
-                src="https://raw.githubusercontent.com/user-attachments/assets/505b28f4-fde0-468f-9b60-0b0854ed0538"
-                width="120"
-                height="120"
+                src="https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png"
+                width="140"
+                height="140"
                 alt="Couples Financials Logo"
                 style={logo}
               />

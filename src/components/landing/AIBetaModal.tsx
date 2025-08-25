@@ -24,7 +24,7 @@ const AIBetaModal = ({ open, onOpenChange }: AIBetaModalProps) => {
             {/* Logo */}
             <div className="mx-auto w-24 h-24 relative mb-2">
               <img
-                src="/lovable-uploads/2f7e7907-5cf5-4262-adbd-04f4dbd3151b.png"
+                src="/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png"
                 alt="Couples Financials Logo"
                 className="w-full h-full object-contain relative z-10"
               />
