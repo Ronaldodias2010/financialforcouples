@@ -550,7 +550,7 @@ if (selectedCategory !== "all") {
                         )}
                         <p>{t('monthlyExpenses.purchaseDate')}: {formatDate(transaction.transaction_date)}</p>
                         {transaction.payment_method === 'credit_card' && transaction.cards?.due_date && (
-                          <p>{t('monthlyExpenses.dueDate')}: {transaction.cards.due_date}/{selectedMonth.split('-')[1]}/{selectedMonth.split('-')[0]}</p>
+                          <p>{t('monthlyExpenses.dueDate')}: {transaction.cards.due_date}</p>
                         )}
                       </div>
                     </div>
