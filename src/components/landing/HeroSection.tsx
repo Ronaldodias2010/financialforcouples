@@ -53,7 +53,7 @@ const HeroSection = () => {
             <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-2 sm:px-4">
             <div className="flex justify-center lg:justify-start mb-4 lg:mb-6">
               <div
-                className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40"
+                className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56"
                 style={{
                   filter:
                     "drop-shadow(0 6px 22px hsl(var(--cherry-light) / 0.15)) drop-shadow(0 3px 12px hsl(var(--blue-soft) / 0.15))",
