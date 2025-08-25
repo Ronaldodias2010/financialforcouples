@@ -76,7 +76,7 @@ const HeroSection = () => {
             
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full backdrop-blur-sm text-white text-xs sm:text-sm font-medium border border-white/20 mx-auto lg:mx-0" style={{backgroundColor: 'hsl(8 85% 72% / 0.2)'}}>
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
               {t('hero.badge')}
             </div>
             
@@ -100,13 +100,13 @@ const HeroSection = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Button asChild size="default" variant="secondary" className="group flex-1 sm:flex-none">
                   <Link to="/auth">
-                    <Download className="w-4 h-4 group-hover:animate-bounce" />
+                    <Download className="w-6 h-6 group-hover:animate-bounce" />
                     <span className="text-sm">{t('hero.cta.access')}</span>
                   </Link>
                 </Button>
                 <Button asChild size="default" variant="ctaGradient" className="group flex-1 sm:flex-none">
                   <Link to="/checkout-direto">
-                    <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                    <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                     <span className="text-sm">{t('hero.cta.premium')}</span>
                   </Link>
                 </Button>

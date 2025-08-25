@@ -19,12 +19,12 @@ export const ThemeSwitcher = () => {
     >
       {isDark ? (
         <>
-          <Sun className="h-4 w-4" />
+          <Sun className="h-6 w-6" />
           <span className="hidden sm:inline">{t('theme.light') || 'Claro'}</span>
         </>
       ) : (
         <>
-          <Moon className="h-4 w-4" />
+          <Moon className="h-6 w-6" />
           <span className="hidden sm:inline">{t('theme.dark') || 'Escuro'}</span>
         </>
       )}

@@ -23,7 +23,7 @@ export const LanguageSwitcher = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 min-w-[100px]">
-          <Languages className="h-4 w-4" />
+          <Languages className="h-6 w-6" />
           <span>{currentLanguage?.flag}</span>
           <span className="hidden sm:inline">{currentLanguage?.name}</span>
           <span className="sm:hidden">{language.toUpperCase()}</span>
