@@ -118,12 +118,14 @@ export const UserExpenseChart = () => {
       const startStr = format(startDate, 'yyyy-MM-dd');
       const endStr = format(endDate, 'yyyy-MM-dd');
 
-      // Fetch expenses using the same logic as MonthlyExpensesView
+      // Fetch expenses - sempre usar transaction_date (data da compra)
       const { data: expenseTransactions, error: expenseError } = await supabase
         .from('transactions')
         .select('user_id, owner_user, amount, transaction_date, created_at, payment_method')
         .in('user_id', userIds)
-        .or(`and(type.eq.expense,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startStr},created_at.lte.${endStr})`);
+        .eq('type', 'expense')
+        .gte('transaction_date', startStr)
+        .lte('transaction_date', endStr);
 
       if (expenseError) throw expenseError;
 

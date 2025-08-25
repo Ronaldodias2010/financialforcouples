@@ -548,7 +548,10 @@ if (selectedCategory !== "all") {
                         {transaction.cards?.owner_user && (
                           <p>{t('monthlyExpenses.cardOwner')}: {getCardOwnerName(transaction.cards.owner_user)}</p>
                         )}
-                        <p>{transaction.payment_method === 'credit_card' ? t('monthlyExpenses.dueDate') : t('monthlyExpenses.date')}: {formatDate(transaction.transaction_date)}</p>
+                        <p>{t('monthlyExpenses.purchaseDate')}: {formatDate(transaction.transaction_date)}</p>
+                        {transaction.payment_method === 'credit_card' && transaction.cards?.due_date && (
+                          <p>{t('monthlyExpenses.dueDate')}: {transaction.cards.due_date}/{selectedMonth.split('-')[1]}/{selectedMonth.split('-')[0]}</p>
+                        )}
                       </div>
                     </div>
                     
