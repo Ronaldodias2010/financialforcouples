@@ -45,14 +45,17 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
 
   const computeAvailable = (c: CardRow) => {
     if (c.card_type !== "credit") return 0;
-    const value = Number(c.initial_balance ?? 0);
+    
+    // initial_balance já representa o limite disponível calculado pelo trigger
+    // (credit_limit - initial_balance_original - gastos_realizados)
+    const availableLimit = Number(c.initial_balance ?? 0);
 
     // Sempre converter para BRL para somatório e exibição
     if (c.currency && c.currency !== "BRL") {
-      return convertCurrency(value, c.currency as CurrencyCode, "BRL");
+      return convertCurrency(availableLimit, c.currency as CurrencyCode, "BRL");
     }
 
-    return value;
+    return availableLimit;
   };
 
   useEffect(() => {
