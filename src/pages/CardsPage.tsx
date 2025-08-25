@@ -76,25 +76,27 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
       }
     };
 
-    const fetchCards = async () => {
-      const { data, error } = await supabase
-        .from("cards")
-        .select("user_id, owner_user, card_type, credit_limit, currency, current_balance, initial_balance_original, initial_balance");
-      if (!error && data) {
-        setCardsData(
-          data.map((c) => ({
-            user_id: (c as any).user_id as string,
-            owner_user: (c as any).owner_user as ("user1" | "user2" | null),
-            card_type: (c as any).card_type as ("credit" | "debit" | null),
-            currency: ((c as any).currency as CurrencyCode) ?? "BRL",
-            credit_limit: (c as any).credit_limit !== null ? Number((c as any).credit_limit) : null,
-            current_balance: Number((c as any).current_balance ?? 0),
-            initial_balance_original: (c as any).initial_balance_original !== null ? Number((c as any).initial_balance_original) : null,
-            initial_balance: (c as any).initial_balance !== null && (c as any).initial_balance !== undefined ? Number((c as any).initial_balance) : null,
-          }))
-        );
-      }
-    };
+  const fetchCards = async () => {
+    const { data, error } = await supabase
+      .from("cards")
+      .select("user_id, owner_user, card_type, credit_limit, currency, current_balance, initial_balance_original, initial_balance")
+      .eq("card_type", "credit"); // Apenas cartões de crédito para o cálculo de limite disponível
+    if (!error && data) {
+      console.log("Cards data from DB:", data); // Debug para verificar os valores
+      setCardsData(
+        data.map((c) => ({
+          user_id: (c as any).user_id as string,
+          owner_user: (c as any).owner_user as ("user1" | "user2" | null),
+          card_type: (c as any).card_type as ("credit" | "debit" | null),
+          currency: ((c as any).currency as CurrencyCode) ?? "BRL",
+          credit_limit: (c as any).credit_limit !== null ? Number((c as any).credit_limit) : null,
+          current_balance: Number((c as any).current_balance ?? 0),
+          initial_balance_original: (c as any).initial_balance_original !== null ? Number((c as any).initial_balance_original) : null,
+          initial_balance: (c as any).initial_balance !== null && (c as any).initial_balance !== undefined ? Number((c as any).initial_balance) : null,
+        }))
+      );
+    }
+  };
 
     if (user) {
       fetchUserProfile();
