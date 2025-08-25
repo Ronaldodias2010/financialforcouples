@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Clock, Mail, Phone, Calendar, DollarSign, Trash2 } from "lucide-react";
+import { ShoppingCart, Clock, Mail, Phone, Calendar, DollarSign, Trash2, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,7 +34,11 @@ const text = {
     deleteError: 'Erro ao excluir carrinho',
     expired: 'Expirado',
     pendingVerification: 'Aguardando verificação',
-    pendingPayment: 'Aguardando pagamento'
+    pendingPayment: 'Aguardando pagamento',
+    sendEmail: 'Enviar Email',
+    emailSent: 'Email enviado com sucesso',
+    emailError: 'Erro ao enviar email',
+    sendingEmail: 'Enviando...'
   },
   en: {
     title: 'Abandoned Checkouts',
@@ -50,7 +54,11 @@ const text = {
     deleteError: 'Error deleting checkout',
     expired: 'Expired',
     pendingVerification: 'Awaiting verification',
-    pendingPayment: 'Awaiting payment'
+    pendingPayment: 'Awaiting payment',
+    sendEmail: 'Send Email',
+    emailSent: 'Email sent successfully',
+    emailError: 'Error sending email',
+    sendingEmail: 'Sending...'
   },
   es: {
     title: 'Carritos Abandonados',
@@ -66,13 +74,18 @@ const text = {
     deleteError: 'Error al eliminar carrito',
     expired: 'Expirado',
     pendingVerification: 'Esperando verificación',
-    pendingPayment: 'Esperando pago'
+    pendingPayment: 'Esperando pago',
+    sendEmail: 'Enviar Email',
+    emailSent: 'Email enviado exitosamente',
+    emailError: 'Error al enviar email',
+    sendingEmail: 'Enviando...'
   }
 };
 
 const AbandonedCheckouts = () => {
   const [sessions, setSessions] = useState<CheckoutSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sendingEmails, setSendingEmails] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = text[language as keyof typeof text] || text.pt;
@@ -154,6 +167,42 @@ const AbandonedCheckouts = () => {
     return plan === 'yearly' ? 'R$ 179,80/ano' : 'R$ 19,90/mês';
   };
 
+  const sendAbandonedCartEmail = async (session: CheckoutSession) => {
+    setSendingEmails(prev => new Set(prev).add(session.id));
+    
+    try {
+      const { error } = await supabase.functions.invoke('send-abandoned-cart-email', {
+        body: {
+          customerName: session.full_name,
+          customerEmail: session.email,
+          selectedPlan: session.selected_plan,
+          checkoutUrl: "https://elxttabdtddlavhseipz.lovableproject.com"
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: t.emailSent,
+        description: `Email enviado para ${session.email}`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error sending abandoned cart email:', error);
+      toast({
+        title: t.emailError,
+        description: `Erro ao enviar email para ${session.email}`,
+        variant: "destructive",
+      });
+    } finally {
+      setSendingEmails(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(session.id);
+        return newSet;
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -222,7 +271,7 @@ const AbandonedCheckouts = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button
                     size="sm"
                     variant="outline"
@@ -230,6 +279,16 @@ const AbandonedCheckouts = () => {
                   >
                     <Mail className="w-4 h-4 mr-1" />
                     {t.contact}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={() => sendAbandonedCartEmail(session)}
+                    disabled={sendingEmails.has(session.id)}
+                  >
+                    <Send className="w-4 h-4 mr-1" />
+                    {sendingEmails.has(session.id) ? t.sendingEmail : t.sendEmail}
                   </Button>
                   {session.phone && (
                     <Button
