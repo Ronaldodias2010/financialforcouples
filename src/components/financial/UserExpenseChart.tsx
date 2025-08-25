@@ -163,6 +163,9 @@ export const UserExpenseChart = () => {
         expenseByUser[owner] += Math.abs(Number(transaction.amount));
       });
 
+      console.log('Processed expense by user:', expenseByUser);
+      console.log('Processed income by user:', incomeByUser);
+
       const chartData: FinancialData[] = [
         {
           category: t('userAnalysis.income'),
