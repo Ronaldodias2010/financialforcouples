@@ -36,6 +36,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { isPartOfCouple } = useCouple();
   const { t } = useLanguage();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
+  const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -51,7 +52,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     try {
       const now = new Date();
       const futureDate = new Date();
-      futureDate.setMonth(futureDate.getMonth() + 12); // 12 meses no futuro para mostrar todas as parcelas
+      futureDate.setMonth(futureDate.getMonth() + 12); // 12 meses no futuro para o calendário
+      
+      // Data limite para a lista de gastos futuros (final do próximo mês)
+      const listLimitDate = new Date();
+      listLimitDate.setMonth(listLimitDate.getMonth() + 1);
+      listLimitDate.setDate(new Date(listLimitDate.getFullYear(), listLimitDate.getMonth() + 1, 0).getDate()); // Último dia do próximo mês
 
       // Check if user is part of a couple to include partner's transactions
       const { data: coupleData } = await supabase
@@ -179,13 +185,20 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Gastos recorrentes já foram filtrados individualmente, então não precisamos filtrar novamente
-      let filteredExpenses = expenses;
+      // Filtrar gastos para lista (apenas até final do próximo mês)
+      // Separar gastos para lista e para calendário
+      const expensesForList = expenses.filter(expense => 
+        new Date(expense.due_date) <= listLimitDate
+      );
+      
+      const expensesForCalendar = expenses; // Todos os gastos para o calendário
 
       // Ordenar por data
-      filteredExpenses.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+      expensesForList.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
-      setFutureExpenses(filteredExpenses);
+      // Armazenar ambos os conjuntos
+      setFutureExpenses(expensesForList);
+      setAllFutureExpenses(expensesForCalendar);
     } catch (error) {
       console.error("Error fetching future expenses:", error);
       toast.error("Erro ao carregar gastos futuros");
@@ -463,10 +476,10 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             
             {/* Calendar and total */}
             <div className="flex items-center gap-3 justify-between sm:justify-start">
-              <FutureExpensesCalendar 
-                expenses={filteredExpenses} 
-                getOwnerName={getOwnerName}
-              />
+            <FutureExpensesCalendar 
+              expenses={allFutureExpenses} 
+              getOwnerName={getOwnerName}
+            />
               <Badge variant="outline" className="text-sm sm:text-lg px-2 py-1 sm:px-3 truncate max-w-[200px] sm:max-w-none">
                 <span className="hidden sm:inline">{t('monthlyExpenses.totalFuture')}: </span>
                 <span className="sm:hidden">{t('monthlyExpenses.total')}: </span>
