@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Clock, Mail, Phone, Calendar, DollarSign, Trash2, Send } from "lucide-react";
+import { ShoppingCart, Clock, Mail, Phone, Calendar, DollarSign, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,11 +34,7 @@ const text = {
     deleteError: 'Erro ao excluir carrinho',
     expired: 'Expirado',
     pendingVerification: 'Aguardando verificação',
-    pendingPayment: 'Aguardando pagamento',
-    sendEmail: 'Enviar Email',
-    emailSent: 'Email enviado com sucesso',
-    emailError: 'Erro ao enviar email',
-    sendingEmail: 'Enviando...'
+    pendingPayment: 'Aguardando pagamento'
   },
   en: {
     title: 'Abandoned Checkouts',
@@ -54,11 +50,7 @@ const text = {
     deleteError: 'Error deleting checkout',
     expired: 'Expired',
     pendingVerification: 'Awaiting verification',
-    pendingPayment: 'Awaiting payment',
-    sendEmail: 'Send Email',
-    emailSent: 'Email sent successfully',
-    emailError: 'Error sending email',
-    sendingEmail: 'Sending...'
+    pendingPayment: 'Awaiting payment'
   },
   es: {
     title: 'Carritos Abandonados',
@@ -74,18 +66,13 @@ const text = {
     deleteError: 'Error al eliminar carrito',
     expired: 'Expirado',
     pendingVerification: 'Esperando verificación',
-    pendingPayment: 'Esperando pago',
-    sendEmail: 'Enviar Email',
-    emailSent: 'Email enviado exitosamente',
-    emailError: 'Error al enviar email',
-    sendingEmail: 'Enviando...'
+    pendingPayment: 'Esperando pago'
   }
 };
 
 const AbandonedCheckouts = () => {
   const [sessions, setSessions] = useState<CheckoutSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sendingEmails, setSendingEmails] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = text[language as keyof typeof text] || text.pt;
@@ -167,40 +154,40 @@ const AbandonedCheckouts = () => {
     return plan === 'yearly' ? 'R$ 179,80/ano' : 'R$ 19,90/mês';
   };
 
-  const sendAbandonedCartEmail = async (session: CheckoutSession) => {
-    setSendingEmails(prev => new Set(prev).add(session.id));
+  const generateEmailTemplate = (session: CheckoutSession) => {
+    const planPrice = getPlanPrice(session.selected_plan);
+    const planName = session.selected_plan === 'yearly' ? 'Plano Anual Premium' : 'Plano Mensal Premium';
     
-    try {
-      const { error } = await supabase.functions.invoke('send-abandoned-cart-email', {
-        body: {
-          customerName: session.full_name,
-          customerEmail: session.email,
-          selectedPlan: session.selected_plan,
-          checkoutUrl: "https://elxttabdtddlavhseipz.lovableproject.com"
-        }
-      });
+    const subject = `🚀 Não perca sua chance de ter o Premium - Couples Financials`;
+    
+    const body = `Olá ${session.full_name}!
 
-      if (error) throw error;
+Notamos que você estava interessado em nosso ${planName} (${planPrice}), mas não finalizou sua assinatura. Que tal aproveitar esta oportunidade para revolucionar sua gestão financeira?
 
-      toast({
-        title: t.emailSent,
-        description: `Email enviado para ${session.email}`,
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error sending abandoned cart email:', error);
-      toast({
-        title: t.emailError,
-        description: `Erro ao enviar email para ${session.email}`,
-        variant: "destructive",
-      });
-    } finally {
-      setSendingEmails(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(session.id);
-        return newSet;
-      });
-    }
+Com o Plano Premium, você terá acesso a funcionalidades exclusivas que vão transformar sua experiência financeira:
+
+🤖 IA INTELIGENTE
+Nossa IA analisa seus gastos e oferece insights personalizados para otimizar suas finanças.
+
+📱 WHATSAPP INTELIGENTE
+Registre suas transações via áudio, texto ou imagem diretamente pelo WhatsApp. Receba notificações automáticas de suas movimentações financeiras.
+
+✈️ SISTEMA DE MILHAGEM CONECTADO
+Conecte-se às principais companhias aéreas e acompanhe suas milhas em tempo real. Maximize seus benefícios e viaje mais!
+
+🚀 NOVOS RECURSOS EM DESENVOLVIMENTO
+Estamos constantemente desenvolvendo novos recursos exclusivos para assinantes Premium.
+
+⏰ Esta oferta é por tempo limitado. Não perca a oportunidade de revolucionar sua gestão financeira!
+
+Acesse: https://elxttabdtddlavhseipz.lovableproject.com
+
+Tem dúvidas? Respondemos este email ou entre em contato conosco.
+
+Atenciosamente,
+Equipe Couples Financials`;
+
+    return { subject, body };
   };
 
   if (loading) {
@@ -275,20 +262,14 @@ const AbandonedCheckouts = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(`mailto:${session.email}`, '_blank')}
+                    onClick={() => {
+                      const { subject, body } = generateEmailTemplate(session);
+                      const mailtoUrl = `mailto:${session.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                      window.open(mailtoUrl, '_blank');
+                    }}
                   >
                     <Mail className="w-4 h-4 mr-1" />
                     {t.contact}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="bg-primary hover:bg-primary/90"
-                    onClick={() => sendAbandonedCartEmail(session)}
-                    disabled={sendingEmails.has(session.id)}
-                  >
-                    <Send className="w-4 h-4 mr-1" />
-                    {sendingEmails.has(session.id) ? t.sendingEmail : t.sendEmail}
                   </Button>
                   {session.phone && (
                     <Button
