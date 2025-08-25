@@ -321,7 +321,7 @@ export default function Auth() {
           </div>
           <div className="flex justify-center">
             <img 
-              src="/lovable-uploads/13ca0846-97a1-42b6-a0b8-232573bff76d.png" 
+              src="/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png" 
               alt="Financial App Logo" 
               className="h-28 w-28 object-contain"
             />
