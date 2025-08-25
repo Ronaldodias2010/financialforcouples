@@ -160,11 +160,18 @@ const AbandonedCheckouts = () => {
     
     const subject = `🚀 Não perca sua chance de ter o Premium - Couples Financials`;
     
-    const body = `Olá ${session.full_name}!
+    const body = `
+═══════════════════════════════════════════════════
+💰 COUPLES FINANCIALS 💰
+═══════════════════════════════════════════════════
+
+Olá ${session.full_name}! 👋
 
 Notamos que você estava interessado em nosso ${planName} (${planPrice}), mas não finalizou sua assinatura. Que tal aproveitar esta oportunidade para revolucionar sua gestão financeira?
 
-Com o Plano Premium, você terá acesso a funcionalidades exclusivas que vão transformar sua experiência financeira:
+═══════════════════════════════════════════════════
+🌟 FUNCIONALIDADES EXCLUSIVAS DO PLANO PREMIUM 🌟
+═══════════════════════════════════════════════════
 
 🤖 IA INTELIGENTE
 Nossa IA analisa seus gastos e oferece insights personalizados para otimizar suas finanças.
@@ -178,14 +185,21 @@ Conecte-se às principais companhias aéreas e acompanhe suas milhas em tempo re
 🚀 NOVOS RECURSOS EM DESENVOLVIMENTO
 Estamos constantemente desenvolvendo novos recursos exclusivos para assinantes Premium.
 
+═══════════════════════════════════════════════════
+🎯 COMO FINALIZAR SUA ASSINATURA 🎯
+═══════════════════════════════════════════════════
+
+Entre na plataforma e se direcione para PLANOS e assegure o melhor para suas Finanças pessoais ou conjuntas.
+
 ⏰ Esta oferta é por tempo limitado. Não perca a oportunidade de revolucionar sua gestão financeira!
 
-Acesse: https://elxttabdtddlavhseipz.lovableproject.com
+═══════════════════════════════════════════════════
 
 Tem dúvidas? Respondemos este email ou entre em contato conosco.
 
 Atenciosamente,
-Equipe Couples Financials`;
+Equipe Couples Financials
+💰 Transformando sua relação com o dinheiro 💰`;
 
     return { subject, body };
   };
