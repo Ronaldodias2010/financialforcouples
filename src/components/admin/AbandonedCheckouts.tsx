@@ -277,9 +277,31 @@ Equipe Couples Financials
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      const { subject, body } = generateEmailTemplate(session);
-                      const mailtoUrl = `mailto:${session.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                      window.open(mailtoUrl, '_blank');
+                      try {
+                        const { subject, body } = generateEmailTemplate(session);
+                        const mailtoUrl = `mailto:${session.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                        
+                        // Criar um link temporário para garantir que funcione em todos os navegadores
+                        const link = document.createElement('a');
+                        link.href = mailtoUrl;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        toast({
+                          title: "Email preparado",
+                          description: "O Outlook deve abrir com o template preenchido.",
+                        });
+                      } catch (error) {
+                        console.error('Erro ao abrir email:', error);
+                        toast({
+                          title: "Erro",
+                          description: "Não foi possível abrir o cliente de email.",
+                          variant: "destructive",
+                        });
+                      }
                     }}
                   >
                     <Mail className="w-4 h-4 mr-1" />
