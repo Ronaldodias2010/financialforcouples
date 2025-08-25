@@ -27,6 +27,8 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UserInviteCard } from "@/components/ui/user-invite-card";
+import { PremiumReminderCard } from "@/components/ui/premium-reminder-card";
+import { usePremiumReminder } from "@/hooks/usePremiumReminder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Transaction {
@@ -49,6 +51,7 @@ export const FinancialDashboard = () => {
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
   const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
+  const { shouldShow: shouldShowPremiumReminder, dismissReminder } = usePremiumReminder();
   const { isInstalled } = usePWA();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
@@ -434,9 +437,22 @@ export const FinancialDashboard = () => {
                 </div>
               )}
             </>
-          )}
-          
-          {/* User Controls */}
+           )}
+           
+           {/* Premium Reminder Card */}
+           {shouldShowPremiumReminder && (
+             <div className="flex justify-center">
+               <PremiumReminderCard
+                 onDismiss={dismissReminder}
+                 onUpgradeClick={() => {
+                   setActiveTabForProfile("subscription");
+                   setCurrentPage("profile");
+                 }}
+               />
+             </div>
+           )}
+           
+           {/* User Controls */}
           <div className="pt-4 space-y-3">
             {/* Desktop: inline layout */}
             <div className="hidden sm:flex items-center justify-center gap-4">

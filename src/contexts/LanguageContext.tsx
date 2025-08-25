@@ -656,6 +656,11 @@ const translations = {
     'inviteCard': 'Convidar Parceiro(a)',
     'inviteSubtext': 'Compartilhe suas finanças',
     
+    // Premium Reminder Card
+    'premiumReminder.title': 'Upgrade para Premium',
+    'premiumReminder.description': 'Altere seu Status para Premium e libere funcionalidades de IA, Milhagem conectadas às principais Cia. Aéreas e WhatsApp Inteligente, que lhe manterá informado das suas movimentações e receberá seus gastos via áudio, texto ou imagem.',
+    'premiumReminder.mileage': 'Milhagem',
+    
     // Mileage
     'mileage.title': 'Sistema de Milhagem',
     'mileage.subtitle': 'Gerencie suas milhas de cartão de crédito e metas de viagem',
@@ -1651,6 +1656,11 @@ const translations = {
     'inviteCard': 'Invite Partner',
     'inviteSubtext': 'Share your finances',
     
+    // Premium Reminder Card
+    'premiumReminder.title': 'Upgrade to Premium',
+    'premiumReminder.description': 'Change your Status to Premium and unlock AI functionalities, Mileage connected to major Airlines and Smart WhatsApp, which will keep you informed of your transactions and receive your expenses via audio, text or image.',
+    'premiumReminder.mileage': 'Mileage',
+    
     // Mileage
     'mileage.title': 'Mileage System',
     'mileage.subtitle': 'Manage your credit card miles and travel goals',
@@ -2645,6 +2655,11 @@ const translations = {
     // Invite Card
     'inviteCard': 'Invitar Pareja',
     'inviteSubtext': 'Comparte tus finanzas',
+    
+    // Premium Reminder Card
+    'premiumReminder.title': 'Actualizar a Premium',
+    'premiumReminder.description': 'Cambia tu Estado a Premium y desbloquea funcionalidades de IA, Millaje conectado a las principales Aerolíneas y WhatsApp Inteligente, que te mantendrá informado de tus movimientos y recibirás tus gastos por audio, texto o imagen.',
+    'premiumReminder.mileage': 'Millaje',
     
     // Mileage
     'mileage.title': 'Sistema de Millaje',
