@@ -49,10 +49,19 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
     // initial_balance já representa o limite disponível calculado pelo trigger
     // (credit_limit - initial_balance_original - gastos_realizados)
     const availableLimit = Number(c.initial_balance ?? 0);
+    
+    console.log(`Card available limit calculation:`, {
+      cardType: c.card_type,
+      currency: c.currency,
+      availableLimit,
+      userId: c.user_id
+    });
 
     // Sempre converter para BRL para somatório e exibição
     if (c.currency && c.currency !== "BRL") {
-      return convertCurrency(availableLimit, c.currency as CurrencyCode, "BRL");
+      const convertedValue = convertCurrency(availableLimit, c.currency as CurrencyCode, "BRL");
+      console.log(`Converting ${availableLimit} ${c.currency} to BRL: ${convertedValue}`);
+      return convertedValue;
     }
 
     return availableLimit;
