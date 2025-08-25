@@ -121,7 +121,7 @@ export const UserExpenseChart = () => {
       // Fetch expenses using the same logic as MonthlyExpensesView
       const { data: expenseTransactions, error: expenseError } = await supabase
         .from('transactions')
-        .select('user_id, amount, transaction_date, created_at, payment_method')
+        .select('user_id, owner_user, amount, transaction_date, created_at, payment_method')
         .in('user_id', userIds)
         .or(`and(type.eq.expense,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startStr},created_at.lte.${endStr})`);
 
@@ -130,7 +130,7 @@ export const UserExpenseChart = () => {
       // Fetch income using the same logic as MonthlyIncomeView  
       const { data: incomeTransactions, error: incomeError } = await supabase
         .from('transactions')
-        .select('user_id, amount, transaction_date')
+        .select('user_id, owner_user, amount, transaction_date')
         .in('user_id', userIds)
         .eq('type', 'income')
         .gte('transaction_date', startStr)
@@ -147,18 +147,26 @@ export const UserExpenseChart = () => {
 
       // Process income transactions
       incomeTransactions?.forEach((transaction) => {
-        let owner: 'user1' | 'user2' = 'user1';
-        if (coupleData) {
+        let owner: 'user1' | 'user2';
+        if (transaction.owner_user === 'user1' || transaction.owner_user === 'user2') {
+          owner = transaction.owner_user;
+        } else if (coupleData) {
           owner = transaction.user_id === coupleData.user1_id ? 'user1' : 'user2';
+        } else {
+          owner = 'user1';
         }
-        incomeByUser[owner] += transaction.amount;
+        incomeByUser[owner] += Number(transaction.amount);
       });
 
       // Process expense transactions
       expenseTransactions?.forEach((transaction) => {
-        let owner: 'user1' | 'user2' = 'user1';
-        if (coupleData) {
+        let owner: 'user1' | 'user2';
+        if (transaction.owner_user === 'user1' || transaction.owner_user === 'user2') {
+          owner = transaction.owner_user;
+        } else if (coupleData) {
           owner = transaction.user_id === coupleData.user1_id ? 'user1' : 'user2';
+        } else {
+          owner = 'user1';
         }
         expenseByUser[owner] += Math.abs(Number(transaction.amount));
       });
@@ -200,12 +208,15 @@ export const UserExpenseChart = () => {
             monthlyBreakdown[month] = { user1Income: 0, user1Expense: 0, user2Income: 0, user2Expense: 0 };
           }
           
-          let owner: 'user1' | 'user2' = 'user1';
-          if (coupleData) {
+          let owner: 'user1' | 'user2';
+          if (transaction.owner_user === 'user1' || transaction.owner_user === 'user2') {
+            owner = transaction.owner_user;
+          } else if (coupleData) {
             owner = transaction.user_id === coupleData.user1_id ? 'user1' : 'user2';
+          } else {
+            owner = 'user1';
           }
-          
-          monthlyBreakdown[month][`${owner}Income` as keyof typeof monthlyBreakdown[string]] += transaction.amount;
+          monthlyBreakdown[month][`${owner}Income` as keyof typeof monthlyBreakdown[string]] += Number(transaction.amount);
         });
 
         // Process expenses by month
@@ -222,9 +233,13 @@ export const UserExpenseChart = () => {
             monthlyBreakdown[month] = { user1Income: 0, user1Expense: 0, user2Income: 0, user2Expense: 0 };
           }
           
-          let owner: 'user1' | 'user2' = 'user1';
-          if (coupleData) {
+          let owner: 'user1' | 'user2';
+          if (transaction.owner_user === 'user1' || transaction.owner_user === 'user2') {
+            owner = transaction.owner_user;
+          } else if (coupleData) {
             owner = transaction.user_id === coupleData.user1_id ? 'user1' : 'user2';
+          } else {
+            owner = 'user1';
           }
 
           monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += Math.abs(Number(transaction.amount));
