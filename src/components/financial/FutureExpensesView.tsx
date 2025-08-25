@@ -51,7 +51,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     try {
       const now = new Date();
       const futureDate = new Date();
-      futureDate.setMonth(futureDate.getMonth() + 6); // 6 meses no futuro
+      futureDate.setMonth(futureDate.getMonth() + 12); // 12 meses no futuro para mostrar todas as parcelas
 
       // Check if user is part of a couple to include partner's transactions
       const { data: coupleData } = await supabase
@@ -81,7 +81,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .lte("transaction_date", format(futureDate, 'yyyy-MM-dd'))
         .order("transaction_date", { ascending: true });
 
-      // Buscar gastos recorrentes ativos
+      // Buscar TODOS os gastos recorrentes ativos (sem filtro de data para calcular todas as parcelas)
       const { data: recurring, error: recurringError } = await supabase
         .from("recurring_expenses")
         .select(`
@@ -92,8 +92,6 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         `)
         .in("user_id", userIds)
         .eq("is_active", true)
-        .gte("next_due_date", format(now, 'yyyy-MM-dd'))
-        .lte("next_due_date", format(futureDate, 'yyyy-MM-dd'))
         .order("next_due_date", { ascending: true });
 
       // Buscar vencimentos de cartões de crédito
@@ -125,18 +123,40 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         });
       });
 
-      // Adicionar gastos recorrentes
+      // Adicionar gastos recorrentes - CALCULAR TODAS AS PARCELAS FUTURAS
       recurring?.forEach(recur => {
-        expenses.push({
-          id: recur.id,
-          description: recur.name,
-          amount: recur.amount,
-          due_date: recur.next_due_date,
-          type: 'recurring',
-          category: recur.categories?.name || 'Sem categoria',
-          card_name: recur.cards?.name || recur.accounts?.name,
-          owner_user: recur.cards?.owner_user || recur.owner_user
-        });
+        // Filtrar por viewMode se necessário
+        const shouldInclude = viewMode === "both" || 
+          (viewMode === "user1" && recur.owner_user === 'user1') ||
+          (viewMode === "user2" && recur.owner_user === 'user2');
+          
+        if (!shouldInclude) return;
+
+        // Calcular todas as ocorrências futuras para os próximos 12 meses
+        let currentDueDate = new Date(recur.next_due_date);
+        let installmentCount = 0;
+        const maxInstallments = recur.contract_duration_months || 120; // Default para 10 anos se não houver duração
+        
+        while (currentDueDate <= futureDate && installmentCount < maxInstallments) {
+          // Só adicionar se a data é no futuro ou hoje
+          if (currentDueDate >= now) {
+            expenses.push({
+              id: `${recur.id}-installment-${installmentCount}`,
+              description: recur.name,
+              amount: recur.amount,
+              due_date: format(currentDueDate, 'yyyy-MM-dd'),
+              type: 'recurring',
+              category: recur.categories?.name || 'Sem categoria',
+              card_name: recur.cards?.name || recur.accounts?.name,
+              owner_user: recur.cards?.owner_user || recur.owner_user
+            });
+          }
+          
+          // Calcular próxima data de vencimento
+          currentDueDate = new Date(currentDueDate);
+          currentDueDate.setDate(currentDueDate.getDate() + recur.frequency_days);
+          installmentCount++;
+        }
       });
 
       // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento
@@ -159,14 +179,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Filtrar por viewMode se necessário
+      // Gastos recorrentes já foram filtrados individualmente, então não precisamos filtrar novamente
       let filteredExpenses = expenses;
-      if (viewMode !== "both" && isPartOfCouple) {
-        filteredExpenses = expenses.filter(expense => {
-          const ownerUser = expense.owner_user || 'user1';
-          return ownerUser === viewMode;
-        });
-      }
 
       // Ordenar por data
       filteredExpenses.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
