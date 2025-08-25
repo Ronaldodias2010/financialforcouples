@@ -53,7 +53,7 @@ export const PWAPrompt = () => {
                 <img 
                   src="/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png" 
                   alt="Couples Financials" 
-                  className="w-10 h-10 rounded"
+                  className="w-16 h-16 rounded-lg"
                 />
                 <CardTitle className="text-sm">Instalar App</CardTitle>
               </div>
