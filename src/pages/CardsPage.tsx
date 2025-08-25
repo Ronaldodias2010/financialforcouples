@@ -116,16 +116,36 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const currentUserTotal = useMemo(() => {
     if (!user?.id) return 0;
     const mine = cardsData.filter(c => c.user_id === user.id);
-    return mine.reduce((sum, c) => sum + computeAvailable(c), 0);
+    const total = mine.reduce((sum, c) => sum + computeAvailable(c), 0);
+    console.log(`Current User (${user.id}) cards:`, mine.map(c => ({
+      user_id: c.user_id,
+      currency: c.currency,
+      initial_balance: c.initial_balance,
+      converted: computeAvailable(c)
+    })));
+    console.log(`Current User Total: R$ ${total}`);
+    return total;
   }, [cardsData, user?.id]);
 
   const partnerTotal = useMemo(() => {
     if (!partnerId) return 0;
     const theirs = cardsData.filter(c => c.user_id === partnerId);
-    return theirs.reduce((sum, c) => sum + computeAvailable(c), 0);
+    const total = theirs.reduce((sum, c) => sum + computeAvailable(c), 0);
+    console.log(`Partner User (${partnerId}) cards:`, theirs.map(c => ({
+      user_id: c.user_id,
+      currency: c.currency,
+      initial_balance: c.initial_balance,
+      converted: computeAvailable(c)
+    })));
+    console.log(`Partner Total: R$ ${total}`);
+    return total;
   }, [cardsData, partnerId]);
 
-  const bothTotal = useMemo(() => currentUserTotal + partnerTotal, [currentUserTotal, partnerTotal]);
+  const bothTotal = useMemo(() => {
+    const total = currentUserTotal + partnerTotal;
+    console.log(`Both Total Calculation: ${currentUserTotal} + ${partnerTotal} = ${total}`);
+    return total;
+  }, [currentUserTotal, partnerTotal]);
 
   const user1Total = isUserOne() ? currentUserTotal : partnerTotal;
   const user2Total = isUserOne() ? partnerTotal : currentUserTotal;
