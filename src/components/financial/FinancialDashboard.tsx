@@ -439,16 +439,16 @@ export const FinancialDashboard = () => {
             </>
            )}
            
-           {/* Premium Reminder Card */}
-           {shouldShowPremiumReminder && (
-             <div className="flex justify-center">
-               <PremiumReminderCard
-                 onDismiss={dismissReminder}
-                 onUpgradeClick={() => {
-                   setActiveTabForProfile("subscription");
-                   setCurrentPage("profile");
-                 }}
-               />
+            {/* Premium Reminder Card */}
+            {shouldShowPremiumReminder && (
+              <div className="flex justify-center">
+                <PremiumReminderCard
+                  onDismiss={dismissReminder}
+                  onUpgradeClick={() => {
+                    setActiveTabForProfile("billing");
+                    setCurrentPage("profile");
+                  }}
+                />
              </div>
            )}
            
