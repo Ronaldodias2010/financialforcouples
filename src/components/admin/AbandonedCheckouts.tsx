@@ -276,29 +276,30 @@ Equipe Couples Financials
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
+onClick={() => {
                       try {
                         const { subject, body } = generateEmailTemplate(session);
                         const mailtoUrl = `mailto:${session.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                        
-                        // Criar um link temporário para garantir que funcione em todos os navegadores
-                        const link = document.createElement('a');
-                        link.href = mailtoUrl;
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
+
+                        // Método mais confiável: redirecionar a janela atual
+                        window.location.href = mailtoUrl;
+
+                        // Fallback: tentar abrir novamente logo em seguida
+                        setTimeout(() => {
+                          try {
+                            window.open(mailtoUrl, '_self');
+                          } catch {}
+                        }, 150);
+
                         toast({
-                          title: "Email preparado",
-                          description: "O Outlook deve abrir com o template preenchido.",
+                          title: "Abrindo Outlook…",
+                          description: "Caso não abra, verifique o app padrão para links de email (mailto).",
                         });
                       } catch (error) {
                         console.error('Erro ao abrir email:', error);
                         toast({
-                          title: "Erro",
-                          description: "Não foi possível abrir o cliente de email.",
+                          title: "Erro ao abrir Outlook",
+                          description: "Configure o Outlook como padrão para links 'mailto:' no sistema.",
                           variant: "destructive",
                         });
                       }
