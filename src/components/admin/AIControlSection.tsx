@@ -160,11 +160,27 @@ export const AIControlSection = () => {
         .from('ai_usage_tracking')
         .select(`
           *,
-          profiles!inner(display_name, subscription_tier),
-          auth.users!inner(email)
+          profiles!inner(display_name, subscription_tier)
         `)
         .eq('date', new Date().toISOString().split('T')[0])
         .order('tokens_used', { ascending: false });
+
+      // Get subscriber emails for each user
+      let subscriberEmails: { [key: string]: string } = {};
+      if (usage && usage.length > 0) {
+        const userIds = usage.map((item: any) => item.user_id);
+        const { data: subscribersData } = await supabase
+          .from('subscribers')
+          .select('user_id, email')
+          .in('user_id', userIds);
+        
+        if (subscribersData) {
+          subscriberEmails = subscribersData.reduce((acc: any, sub: any) => {
+            acc[sub.user_id] = sub.email;
+            return acc;
+          }, {});
+        }
+      }
 
       if (usageError) throw usageError;
 
@@ -179,7 +195,7 @@ export const AIControlSection = () => {
       // Process usage data
       const processedUsage: UsageData[] = (usage || []).map((item: any) => ({
         user_id: item.user_id,
-        user_email: item.profiles?.auth?.users?.email || 'N/A',
+        user_email: subscriberEmails[item.user_id] || 'N/A',
         display_name: item.profiles?.display_name || 'N/A',
         requests_count: item.requests_count,
         tokens_used: item.tokens_used,
