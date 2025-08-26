@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, Loader2, Lock, AlertCircle, Users } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
@@ -18,14 +19,18 @@ import { EducationalContentSection } from "@/components/educational/EducationalC
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserNames } from "@/hooks/useUserNames";
+import { useAuth } from "@/hooks/useAuth";
+import { exportCashFlow, exportConsolidatedExpenses, exportConsolidatedRevenues, exportTaxReport } from "@/utils/exportUtils";
 
 const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { userNames } = useUserNames();
+  const { user } = useAuth();
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>(); 
   const [viewMode, setViewMode] = useState<'both' | 'user1' | 'user2'>('both');
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'csv'>('pdf');
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'ai', message: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -107,17 +112,63 @@ const AIRecommendationsContent = () => {
     }
   };
 
-  const handleExportData = (type: string) => {
-    // Enhanced export functionality with view mode filter
-    const userModeText = viewMode === 'both' ? 'Ambos' : 
-                        viewMode === 'user1' ? userNames.user1 : userNames.user2;
-    
-    console.log(`Exporting ${type} data from ${dateFrom} to ${dateTo} for ${userModeText}`);
-    
-    toast({
-      title: "Exportação iniciada",
-      description: `Exportando dados de ${type} para ${userModeText}`,
-    });
+  const handleExportData = async (dataType: string) => {
+    if (!dateFrom || !dateTo) {
+      toast({
+        title: "Erro na exportação",
+        description: "Por favor, selecione um período válido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user?.id) {
+      toast({
+        title: "Erro na exportação",
+        description: "Usuário não autenticado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Exportando dados...",
+        description: `Gerando ${exportFormat.toUpperCase()} para ${dataType}`,
+      });
+
+      const dateFromStr = format(dateFrom, 'yyyy-MM-dd');
+      const dateToStr = format(dateTo, 'yyyy-MM-dd');
+
+      switch (dataType) {
+        case 'cashflow':
+          await exportCashFlow(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
+          break;
+        case 'expenses':
+          await exportConsolidatedExpenses(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
+          break;
+        case 'income':
+          await exportConsolidatedRevenues(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
+          break;
+        case 'taxes':
+          await exportTaxReport(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
+          break;
+        default:
+          throw new Error('Tipo de exportação não reconhecido');
+      }
+
+      toast({
+        title: "Exportação concluída!",
+        description: `Arquivo ${exportFormat.toUpperCase()} gerado com sucesso`,
+      });
+    } catch (error) {
+      console.error('Erro na exportação:', error);
+      toast({
+        title: "Erro na exportação",
+        description: "Ocorreu um erro ao gerar o arquivo",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -256,19 +307,34 @@ const AIRecommendationsContent = () => {
             </div>
 
             {/* View Mode Selection */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Modo de Visualização:</span>
-              <Select value={viewMode} onValueChange={(value: 'both' | 'user1' | 'user2') => setViewMode(value)}>
-                <SelectTrigger className="w-[240px]">
-                  <Users className="mr-2 h-4 w-4" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both">Ambos</SelectItem>
-                  <SelectItem value="user1">{userNames.user1}</SelectItem>
-                  <SelectItem value="user2">{userNames.user2}</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Modo de Visualização:</span>
+                <Select value={viewMode} onValueChange={(value: 'both' | 'user1' | 'user2') => setViewMode(value)}>
+                  <SelectTrigger className="w-[240px]">
+                    <Users className="mr-2 h-4 w-4" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="both">Ambos</SelectItem>
+                    <SelectItem value="user1">{userNames.user1}</SelectItem>
+                    <SelectItem value="user2">{userNames.user2}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Label htmlFor="export-format" className="text-sm font-medium">Formato:</Label>
+                <Select value={exportFormat} onValueChange={(value: 'pdf' | 'csv') => setExportFormat(value)}>
+                  <SelectTrigger id="export-format" className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pdf">PDF</SelectItem>
+                    <SelectItem value="csv">CSV</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -293,7 +359,7 @@ const AIRecommendationsContent = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              {t('aiRecommendations.export')}
+              Exportar {exportFormat.toUpperCase()}
             </Button>
           </CardContent>
         </Card>
@@ -315,7 +381,7 @@ const AIRecommendationsContent = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              {t('aiRecommendations.export')}
+              Exportar {exportFormat.toUpperCase()}
             </Button>
           </CardContent>
         </Card>
@@ -337,7 +403,7 @@ const AIRecommendationsContent = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              {t('aiRecommendations.export')}
+              Exportar {exportFormat.toUpperCase()}
             </Button>
           </CardContent>
         </Card>
@@ -359,7 +425,7 @@ const AIRecommendationsContent = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              {t('aiRecommendations.export')}
+              Exportar {exportFormat.toUpperCase()}
             </Button>
           </CardContent>
         </Card>

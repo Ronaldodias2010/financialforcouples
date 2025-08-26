@@ -1,0 +1,250 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+export type ExportFormat = 'pdf' | 'csv';
+export type ViewMode = 'both' | 'user1' | 'user2';
+
+interface ExportData {
+  cashFlow: any[];
+  expenses: any[];
+  revenues: any[];
+  taxReport: any[];
+}
+
+export async function fetchExportData(
+  dateFrom: string,
+  dateTo: string,
+  viewMode: ViewMode,
+  userId: string
+): Promise<ExportData> {
+  // Build user filter based on viewMode
+  let userFilter = '';
+  if (viewMode === 'user1') {
+    userFilter = `owner_user.eq.user1`;
+  } else if (viewMode === 'user2') {
+    userFilter = `owner_user.eq.user2`;
+  }
+
+  // Fetch transactions
+  let transactionsQuery = supabase
+    .from('transactions')
+    .select(`
+      *,
+      categories(name, category_type),
+      cards(name),
+      accounts(name)
+    `)
+    .gte('transaction_date', dateFrom)
+    .lte('transaction_date', dateTo);
+
+  if (userFilter) {
+    transactionsQuery = transactionsQuery.or(userFilter);
+  }
+
+  const { data: transactions } = await transactionsQuery;
+
+  // Fetch accounts
+  let accountsQuery = supabase
+    .from('accounts')
+    .select('*');
+
+  if (userFilter) {
+    accountsQuery = accountsQuery.or(userFilter);
+  }
+
+  const { data: accounts } = await accountsQuery;
+
+  // Process data
+  const expenses = transactions?.filter(t => t.type === 'expense') || [];
+  const revenues = transactions?.filter(t => t.type === 'income') || [];
+
+  // Group expenses by category
+  const expensesByCategory = expenses.reduce((acc, expense) => {
+    const categoryName = expense.categories?.name || 'Sem categoria';
+    if (!acc[categoryName]) {
+      acc[categoryName] = { total: 0, items: [] };
+    }
+    acc[categoryName].total += expense.amount;
+    acc[categoryName].items.push(expense);
+    return acc;
+  }, {});
+
+  // Group revenues by category
+  const revenuesByCategory = revenues.reduce((acc, revenue) => {
+    const categoryName = revenue.categories?.name || 'Sem categoria';
+    if (!acc[categoryName]) {
+      acc[categoryName] = { total: 0, items: [] };
+    }
+    acc[categoryName].total += revenue.amount;
+    acc[categoryName].items.push(revenue);
+    return acc;
+  }, {});
+
+  // Calculate cash flow by month
+  const cashFlowByMonth = transactions?.reduce((acc, transaction) => {
+    const month = format(new Date(transaction.transaction_date), 'yyyy-MM');
+    if (!acc[month]) {
+      acc[month] = { income: 0, expense: 0, balance: 0 };
+    }
+    if (transaction.type === 'income') {
+      acc[month].income += transaction.amount;
+    } else {
+      acc[month].expense += transaction.amount;
+    }
+    acc[month].balance = acc[month].income - acc[month].expense;
+    return acc;
+  }, {});
+
+  return {
+    cashFlow: Object.entries(cashFlowByMonth || {}).map(([month, data]: [string, any]) => ({
+      month,
+      income: data.income,
+      expense: data.expense,
+      balance: data.balance
+    })),
+    expenses: Object.entries(expensesByCategory).map(([category, data]: [string, any]) => ({
+      category,
+      total: data.total,
+      items: data.items
+    })),
+    revenues: Object.entries(revenuesByCategory).map(([category, data]: [string, any]) => ({
+      category,
+      total: data.total,
+      items: data.items
+    })),
+    taxReport: [
+      {
+        totalrevenues: revenues.reduce((sum, r) => sum + r.amount, 0),
+        totalexpenses: expenses.reduce((sum, e) => sum + e.amount, 0),
+        saldocontas: accounts?.reduce((sum, a) => sum + a.balance, 0) || 0
+      }
+    ]
+  };
+}
+
+export function exportToPDF(data: any[], title: string, columns: string[], filename: string) {
+  const doc = new jsPDF();
+  
+  // Add title
+  doc.setFontSize(16);
+  doc.text(title, 20, 20);
+  
+  // Add date
+  doc.setFontSize(10);
+  doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`, 20, 30);
+
+  // Add table
+  autoTable(doc, {
+    head: [columns],
+    body: data.map(row => columns.map(col => {
+      const value = row[col.toLowerCase().replace(/\s+/g, '')];
+      if (typeof value === 'number') {
+        return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      }
+      return value || '';
+    })),
+    startY: 40,
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [99, 102, 241] }
+  });
+
+  doc.save(`${filename}.pdf`);
+}
+
+export function exportToCSV(data: any[], columns: string[], filename: string) {
+  const headers = columns.join(',');
+  const rows = data.map(row => 
+    columns.map(col => {
+      const value = row[col.toLowerCase().replace(/\s+/g, '')];
+      if (typeof value === 'number') {
+        return value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+      return `"${value || ''}"`;
+    }).join(',')
+  ).join('\n');
+
+  const csvContent = `${headers}\n${rows}`;
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+
+export async function exportCashFlow(
+  format: ExportFormat,
+  dateFrom: string,
+  dateTo: string,
+  viewMode: ViewMode,
+  userId: string
+) {
+  const data = await fetchExportData(dateFrom, dateTo, viewMode, userId);
+  const columns = ['Mês', 'Receitas', 'Despesas', 'Saldo'];
+  
+  if (format === 'pdf') {
+    exportToPDF(data.cashFlow, 'Relatório de Fluxo de Caixa', columns, 'fluxo-de-caixa');
+  } else {
+    exportToCSV(data.cashFlow, columns, 'fluxo-de-caixa');
+  }
+}
+
+export async function exportConsolidatedExpenses(
+  format: ExportFormat,
+  dateFrom: string,
+  dateTo: string,
+  viewMode: ViewMode,
+  userId: string
+) {
+  const data = await fetchExportData(dateFrom, dateTo, viewMode, userId);
+  const columns = ['Categoria', 'Total'];
+  
+  if (format === 'pdf') {
+    exportToPDF(data.expenses, 'Relatório de Gastos Consolidados', columns, 'gastos-consolidados');
+  } else {
+    exportToCSV(data.expenses, columns, 'gastos-consolidados');
+  }
+}
+
+export async function exportConsolidatedRevenues(
+  format: ExportFormat,
+  dateFrom: string,
+  dateTo: string,
+  viewMode: ViewMode,
+  userId: string
+) {
+  const data = await fetchExportData(dateFrom, dateTo, viewMode, userId);
+  const columns = ['Categoria', 'Total'];
+  
+  if (format === 'pdf') {
+    exportToPDF(data.revenues, 'Relatório de Receitas Consolidadas', columns, 'receitas-consolidadas');
+  } else {
+    exportToCSV(data.revenues, columns, 'receitas-consolidadas');
+  }
+}
+
+export async function exportTaxReport(
+  format: ExportFormat,
+  dateFrom: string,
+  dateTo: string,
+  viewMode: ViewMode,
+  userId: string
+) {
+  const data = await fetchExportData(dateFrom, dateTo, viewMode, userId);
+  const columns = ['Total Receitas', 'Total Despesas', 'Saldo Contas'];
+  
+  if (format === 'pdf') {
+    exportToPDF(data.taxReport, 'Relatório para Imposto de Renda', columns, 'relatorio-imposto-renda');
+  } else {
+    exportToCSV(data.taxReport, columns, 'relatorio-imposto-renda');
+  }
+}
