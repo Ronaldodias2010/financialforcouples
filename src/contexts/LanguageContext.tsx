@@ -48,7 +48,7 @@ const translations = {
     // Dashboard
     'dashboard.title': 'Gestão Financeira para Casais',
     'dashboard.subtitle': 'Controle suas finanças de forma inteligente',
-    'dashboard.balance': 'Saldo Total',
+'dashboard.balance': 'Saldo de Movimentação Mensal',
     'dashboard.income': 'Receitas',
     'dashboard.expenses': 'Despesas',
     'dashboard.expensesByCategory': 'Gastos por Categoria',
@@ -1194,7 +1194,7 @@ const translations = {
     // Dashboard
     'dashboard.title': 'Financial Management for Couples',
     'dashboard.subtitle': 'Control your finances intelligently',
-    'dashboard.balance': 'Total Balance',
+    'dashboard.balance': 'Monthly Transaction Balance',
     'dashboard.income': 'Income',
     'dashboard.expenses': 'Expenses',
     'dashboard.expensesByCategory': 'Expenses by Category',
@@ -2339,7 +2339,7 @@ const translations = {
     // Dashboard
     'dashboard.title': 'Gestión Financiera para Parejas',
     'dashboard.subtitle': 'Controla tus finanzas de forma inteligente',
-    'dashboard.balance': 'Saldo Total',
+    'dashboard.balance': 'Saldo de Movimiento Mensual',
     'dashboard.income': 'Ingresos',
     'dashboard.expenses': 'Gastos',
     'dashboard.expensesByCategory': 'Gastos por Categoría',
