@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { History, AlertTriangle, TrendingUp, Calendar, ChevronDown, ChevronRight } from "lucide-react";
+import { History, AlertTriangle, TrendingUp, Calendar, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface AIHistoryEntry {
   id: string;
@@ -49,6 +51,24 @@ export const AIHistorySection = () => {
       console.error('Error fetching AI history:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteHistoryEntry = async (entryId: string) => {
+    try {
+      const { error } = await supabase
+        .from('ai_history')
+        .delete()
+        .eq('id', entryId);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setHistoryEntries(prev => prev.filter(entry => entry.id !== entryId));
+      toast.success("Histórico excluído com sucesso");
+    } catch (error) {
+      console.error('Error deleting AI history entry:', error);
+      toast.error("Erro ao excluir histórico");
     }
   };
 
@@ -151,39 +171,53 @@ export const AIHistorySection = () => {
               return (
                 <Collapsible key={entry.id} open={isExpanded} onOpenChange={() => toggleExpanded(entry.id)}>
                   <div className="border rounded-lg hover:bg-accent/30 transition-colors">
-                    <CollapsibleTrigger className="w-full p-4 text-left">
-                      <div className="space-y-2">
-                        {/* Header line with analysis type, context and date */}
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            {getEntryIcon(entry.entry_type)}
-                            <Badge variant="outline" className="text-xs">
-                              {getEntryTypeLabel(entry.entry_type)}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">•</span>
-                            <span className="text-sm text-muted-foreground">
-                              {getContextInfo(entry)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(entry.created_at), 'dd/MM HH:mm', { locale: dateLocale })}
-                            </div>
-                            {isExpanded ? (
-                              <ChevronDown className="h-4 w-4 text-muted-foreground ml-2" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 text-muted-foreground ml-2" />
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Preview line */}
-                        <div className="text-sm text-foreground/80 text-left">
-                          {getMessagePreview(entry.message)}
-                        </div>
-                      </div>
-                    </CollapsibleTrigger>
+                     <div className="flex items-start gap-2 p-4">
+                       <CollapsibleTrigger className="flex-1 text-left">
+                         <div className="space-y-2">
+                           {/* Header line with analysis type, context and date */}
+                           <div className="flex items-center justify-between gap-2">
+                             <div className="flex items-center gap-2">
+                               {getEntryIcon(entry.entry_type)}
+                               <Badge variant="outline" className="text-xs">
+                                 {getEntryTypeLabel(entry.entry_type)}
+                               </Badge>
+                               <span className="text-sm text-muted-foreground">•</span>
+                               <span className="text-sm text-muted-foreground">
+                                 {getContextInfo(entry)}
+                               </span>
+                             </div>
+                             <div className="flex items-center gap-1">
+                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                 <Calendar className="h-3 w-3" />
+                                 {format(new Date(entry.created_at), 'dd/MM HH:mm', { locale: dateLocale })}
+                               </div>
+                               {isExpanded ? (
+                                 <ChevronDown className="h-4 w-4 text-muted-foreground ml-2" />
+                               ) : (
+                                 <ChevronRight className="h-4 w-4 text-muted-foreground ml-2" />
+                               )}
+                             </div>
+                           </div>
+                           
+                           {/* Preview line */}
+                           <div className="text-sm text-foreground/80 text-left">
+                             {getMessagePreview(entry.message)}
+                           </div>
+                         </div>
+                       </CollapsibleTrigger>
+                       
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           deleteHistoryEntry(entry.id);
+                         }}
+                         className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                       >
+                         <Trash2 className="h-4 w-4" />
+                       </Button>
+                     </div>
                     
                     <CollapsibleContent>
                       <div className="px-4 pb-4 border-t bg-muted/20">
