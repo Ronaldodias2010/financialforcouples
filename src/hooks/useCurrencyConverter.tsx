@@ -24,8 +24,8 @@ export const CURRENCY_INFO: Record<CurrencyCode, CurrencyInfo> = {
 export const useCurrencyConverter = () => {
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
     BRL: 1,
-    USD: 5.2, // Default fallback rates
-    EUR: 5.8
+    USD: 0.19, // Fallback: 1 BRL -> 0.19 USD
+    EUR: 0.17 // Fallback: 1 BRL -> 0.17 EUR
   });
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -48,14 +48,17 @@ export const useCurrencyConverter = () => {
       if (data && data.length > 0) {
         const rates: ExchangeRates = { BRL: 1, USD: 0.19, EUR: 0.17 };
         
-        data.forEach((rate) => {
-          if (rate.target_currency === 'USD') {
-            rates.USD = Number(rate.rate);
-          } else if (rate.target_currency === 'EUR') {
-            rates.EUR = Number(rate.rate);
+        data.forEach((row) => {
+          const raw = Number(row.rate);
+          const normalized = raw > 1 ? 1 / raw : raw; // ensure rate = BRL->currency
+          if (row.target_currency === 'USD') {
+            rates.USD = normalized;
+          } else if (row.target_currency === 'EUR') {
+            rates.EUR = normalized;
           }
         });
         
+        console.log('[FX] Using exchange rates (BRL->currency):', rates);
         setExchangeRates(rates);
         setLastUpdated(new Date());
       }
