@@ -155,20 +155,36 @@ export const AIControlSection = () => {
     try {
       setRefreshing(true);
       
-      // Load today's usage data with user info
+      // Load today's usage data
       const { data: usage, error: usageError } = await supabase
         .from('ai_usage_tracking')
-        .select(`
-          *,
-          profiles!inner(display_name, subscription_tier)
-        `)
+        .select('*')
         .eq('date', new Date().toISOString().split('T')[0])
         .order('tokens_used', { ascending: false });
 
-      // Get subscriber emails for each user
+      if (usageError) throw usageError;
+
+      // Get user profiles and subscriber emails for each user
+      let userProfiles: { [key: string]: any } = {};
       let subscriberEmails: { [key: string]: string } = {};
+      
       if (usage && usage.length > 0) {
         const userIds = usage.map((item: any) => item.user_id);
+        
+        // Get profiles
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, subscription_tier')
+          .in('user_id', userIds);
+        
+        if (profilesData) {
+          userProfiles = profilesData.reduce((acc: any, profile: any) => {
+            acc[profile.user_id] = profile;
+            return acc;
+          }, {});
+        }
+        
+        // Get subscriber emails
         const { data: subscribersData } = await supabase
           .from('subscribers')
           .select('user_id, email')
@@ -182,8 +198,6 @@ export const AIControlSection = () => {
         }
       }
 
-      if (usageError) throw usageError;
-
       // Load limits
       const { data: limitsData, error: limitsError } = await supabase
         .from('ai_usage_limits')
@@ -196,11 +210,11 @@ export const AIControlSection = () => {
       const processedUsage: UsageData[] = (usage || []).map((item: any) => ({
         user_id: item.user_id,
         user_email: subscriberEmails[item.user_id] || 'N/A',
-        display_name: item.profiles?.display_name || 'N/A',
+        display_name: userProfiles[item.user_id]?.display_name || 'N/A',
         requests_count: item.requests_count,
         tokens_used: item.tokens_used,
         estimated_cost_brl: item.estimated_cost_brl,
-        subscription_tier: item.profiles?.subscription_tier || 'essential',
+        subscription_tier: userProfiles[item.user_id]?.subscription_tier || 'essential',
         last_used: item.updated_at
       }));
 
