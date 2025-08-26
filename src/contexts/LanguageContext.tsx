@@ -223,6 +223,9 @@ const translations = {
     'common.none': 'Nenhum',
     'common.select': 'Selecionar',
     'common.refresh': 'Atualizar',
+    'common.success': 'Sucesso',
+    'common.error': 'Erro',
+    'common.locale': 'pt-BR',
     'back': 'Voltar',
     
     // Monthly Expenses
@@ -887,6 +890,21 @@ const translations = {
     'admin.content.error.delete': 'Erro ao excluir conteúdo',
     'admin.content.error.load': 'Erro ao carregar conteúdo educacional',
     
+    // Educational Content Section
+    'educational.exclusiveContent': 'Conteúdo educacional exclusivo para usuários premium',
+    'educational.accessMaterials': 'Acesse materiais educativos sobre planejamento financeiro, investimentos, reserva de emergência e análise de gastos.',
+    'educational.upgradeToPremium': 'Fazer Upgrade para Premium',
+    'educational.loading': 'Carregando conteúdo educacional...',
+    'educational.materialsDescription': 'Materiais educativos para aprimorar seu conhecimento financeiro',
+    'educational.noContent': 'Nenhum conteúdo disponível nesta categoria ainda.',
+    'educational.newMaterials': 'Novos materiais serão adicionados em breve!',
+    'educational.watch': 'Assistir',
+    'educational.download': 'Baixar',
+    'educational.categories.planningDesc': 'Aprenda a criar um orçamento eficiente e alcançar suas metas financeiras.',
+    'educational.categories.investmentsDesc': 'Guia completo para iniciantes em investimentos e diversificação.',
+    'educational.categories.emergencyDesc': 'Como construir e manter uma reserva de emergência sólida.',
+    'educational.categories.analysisDesc': 'Técnicas para analisar e otimizar seus gastos mensais.',
+    
     // Subscription
     'subscription.title': 'Planos e Assinaturas',
     'subscription.planActive': 'Plano Ativo:',
@@ -1329,6 +1347,9 @@ const translations = {
     'common.none': 'None',
     'common.select': 'Select',
     'common.refresh': 'Refresh',
+    'common.success': 'Success',
+    'common.error': 'Error',
+    'common.locale': 'en-US',
     'back': 'Back',
     
     // Monthly Expenses
@@ -1992,6 +2013,21 @@ const translations = {
     'admin.content.error.statusToggle': 'Error changing content status',
     'admin.content.error.delete': 'Error deleting content',
     'admin.content.error.load': 'Error loading educational content',
+    
+    // Educational Content Section
+    'educational.exclusiveContent': 'Educational content exclusive for premium users',
+    'educational.accessMaterials': 'Access educational materials about financial planning, investments, emergency reserve and expense analysis.',
+    'educational.upgradeToPremium': 'Upgrade to Premium',
+    'educational.loading': 'Loading educational content...',
+    'educational.materialsDescription': 'Educational materials to improve your financial knowledge',
+    'educational.noContent': 'No content available in this category yet.',
+    'educational.newMaterials': 'New materials will be added soon!',
+    'educational.watch': 'Watch',
+    'educational.download': 'Download',
+    'educational.categories.planningDesc': 'Learn to create an efficient budget and achieve your financial goals.',
+    'educational.categories.investmentsDesc': 'Complete guide for beginners in investments and diversification.',
+    'educational.categories.emergencyDesc': 'How to build and maintain a solid emergency reserve.',
+    'educational.categories.analysisDesc': 'Techniques to analyze and optimize your monthly expenses.',
     
     // Subscription
     'subscription.title': 'Plans and Subscriptions',
@@ -3098,6 +3134,21 @@ const translations = {
     'admin.content.error.statusToggle': 'Error al cambiar el estado del contenido',
     'admin.content.error.delete': 'Error al eliminar contenido',
     'admin.content.error.load': 'Error al cargar contenido educativo',
+    
+    // Educational Content Section
+    'educational.exclusiveContent': 'Contenido educativo exclusivo para usuarios premium',
+    'educational.accessMaterials': 'Accede a materiales educativos sobre planificación financiera, inversiones, reserva de emergencia y análisis de gastos.',
+    'educational.upgradeToPremium': 'Actualizar a Premium',
+    'educational.loading': 'Cargando contenido educativo...',
+    'educational.materialsDescription': 'Materiales educativos para mejorar tu conocimiento financiero',
+    'educational.noContent': 'Aún no hay contenido disponible en esta categoría.',
+    'educational.newMaterials': '¡Nuevos materiales se agregarán pronto!',
+    'educational.watch': 'Ver',
+    'educational.download': 'Descargar',
+    'educational.categories.planningDesc': 'Aprende a crear un presupuesto eficiente y alcanzar tus metas financieras.',
+    'educational.categories.investmentsDesc': 'Guía completa para principiantes en inversiones y diversificación.',
+    'educational.categories.emergencyDesc': 'Cómo construir y mantener una reserva de emergencia sólida.',
+    'educational.categories.analysisDesc': 'Técnicas para analizar y optimizar tus gastos mensuales.',
     
     // Subscription
     'subscription.title': 'Planes y Suscripciones',

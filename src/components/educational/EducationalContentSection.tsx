@@ -20,36 +20,36 @@ interface EducationalContent {
   created_at: string;
 }
 
-const categories = [
-  { 
-    value: 'planning', 
-    label: 'Planejamento Financeiro',
-    description: 'Aprenda a criar um orçamento eficiente e alcançar suas metas financeiras.',
-    icon: '📊'
-  },
-  { 
-    value: 'investments', 
-    label: 'Investimentos Básicos',
-    description: 'Guia completo para iniciantes em investimentos e diversificação.',
-    icon: '📈'
-  },
-  { 
-    value: 'emergency', 
-    label: 'Reserva de Emergência',
-    description: 'Como construir e manter uma reserva de emergência sólida.',
-    icon: '🛡️'
-  },
-  { 
-    value: 'analysis', 
-    label: 'Análise de Gastos',
-    description: 'Técnicas para analisar e otimizar seus gastos mensais.',
-    icon: '🔍'
-  }
-];
-
 export const EducationalContentSection = () => {
   const { t } = useLanguage();
   const { hasAccess } = useSubscription();
+  
+  const categories = [
+    { 
+      value: 'planning', 
+      label: t('admin.content.categories.planning'),
+      description: t('educational.categories.planningDesc'),
+      icon: '📊'
+    },
+    { 
+      value: 'investments', 
+      label: t('admin.content.categories.investments'),
+      description: t('educational.categories.investmentsDesc'),
+      icon: '📈'
+    },
+    { 
+      value: 'emergency', 
+      label: t('admin.content.categories.emergency'),
+      description: t('educational.categories.emergencyDesc'),
+      icon: '🛡️'
+    },
+    { 
+      value: 'analysis', 
+      label: t('admin.content.categories.analysis'),
+      description: t('educational.categories.analysisDesc'),
+      icon: '🔍'
+    }
+  ];
   const [contents, setContents] = useState<EducationalContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('planning');
@@ -118,16 +118,15 @@ export const EducationalContentSection = () => {
             {t('aiRecommendations.educationalContent')}
           </CardTitle>
           <CardDescription>
-            Conteúdo educacional exclusivo para usuários premium
+            {t('educational.exclusiveContent')}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-muted-foreground mb-4">
-            Acesse materiais educativos sobre planejamento financeiro, investimentos, 
-            reserva de emergência e análise de gastos.
+            {t('educational.accessMaterials')}
           </p>
           <Button className="bg-gradient-to-r from-primary to-primary-glow">
-            Fazer Upgrade para Premium
+            {t('educational.upgradeToPremium')}
           </Button>
         </CardContent>
       </Card>
@@ -138,7 +137,7 @@ export const EducationalContentSection = () => {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <div className="text-muted-foreground">Carregando conteúdo educacional...</div>
+          <div className="text-muted-foreground">{t('educational.loading')}</div>
         </CardContent>
       </Card>
     );
@@ -152,7 +151,7 @@ export const EducationalContentSection = () => {
           {t('aiRecommendations.educationalContent')}
         </CardTitle>
         <CardDescription>
-          Materiais educativos para aprimorar seu conhecimento financeiro
+          {t('educational.materialsDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -180,8 +179,8 @@ export const EducationalContentSection = () => {
                 {getContentsByCategory(category.value).length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Nenhum conteúdo disponível nesta categoria ainda.</p>
-                    <p className="text-sm">Novos materiais serão adicionados em breve!</p>
+                    <p>{t('educational.noContent')}</p>
+                    <p className="text-sm">{t('educational.newMaterials')}</p>
                   </div>
                 ) : (
                   <div className="grid gap-4">
@@ -205,7 +204,9 @@ export const EducationalContentSection = () => {
                               )}
                               
                               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                <span>📅 {new Date(content.created_at).toLocaleDateString('pt-BR')}</span>
+                                <span>📅 {new Date(content.created_at).toLocaleDateString(
+                                  t('common.locale') || 'pt-BR'
+                                )}</span>
                                 <span>📄 {content.file_name}</span>
                               </div>
                             </div>
@@ -217,7 +218,7 @@ export const EducationalContentSection = () => {
                                 className="bg-gradient-to-r from-primary to-primary-glow"
                               >
                                 <Download className="h-4 w-4 mr-1" />
-                                {content.content_type === 'video' ? 'Assistir' : 'Baixar'}
+                                {content.content_type === 'video' ? t('educational.watch') : t('educational.download')}
                               </Button>
                             </div>
                           </div>
