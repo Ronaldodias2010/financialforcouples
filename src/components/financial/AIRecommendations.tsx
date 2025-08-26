@@ -104,6 +104,63 @@ const AIRecommendationsContent = () => {
         </p>
       </div>
 
+      {/* AI Chat Interface */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            {t('aiRecommendations.aiConsultant')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Chat History */}
+            <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/30">
+              {chatHistory.length === 0 ? (
+                <div className="text-center text-muted-foreground">
+                  <Brain className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>{t('aiRecommendations.askAnything')}</p>
+                  <p className="text-sm">{t('aiRecommendations.exampleQuestion')}</p>
+                </div>
+              ) : (
+                chatHistory.map((chat, index) => (
+                  <div key={index} className={`flex ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] p-3 rounded-lg ${
+                      chat.role === 'user' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-secondary text-secondary-foreground'
+                    }`}>
+                      {chat.message}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Chat Input */}
+            <div className="flex gap-2">
+              <Textarea
+                placeholder={t('aiRecommendations.typePlaceholder')}
+                value={chatMessage}
+                onChange={(e) => setChatMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
+                className="flex-1 min-h-[40px] max-h-[120px]"
+              />
+              <Button onClick={handleSendMessage} disabled={!chatMessage.trim() || isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MessageSquare className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* History Section */}
+      <AIHistorySection />
+
       {/* Date Range Selector */}
       <Card>
         <CardHeader>
@@ -259,63 +316,6 @@ const AIRecommendationsContent = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* AI Chat Interface */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            {t('aiRecommendations.aiConsultant')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Chat History */}
-            <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/30">
-              {chatHistory.length === 0 ? (
-                <div className="text-center text-muted-foreground">
-                  <Brain className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>{t('aiRecommendations.askAnything')}</p>
-                  <p className="text-sm">{t('aiRecommendations.exampleQuestion')}</p>
-                </div>
-              ) : (
-                chatHistory.map((chat, index) => (
-                  <div key={index} className={`flex ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] p-3 rounded-lg ${
-                      chat.role === 'user' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-secondary text-secondary-foreground'
-                    }`}>
-                      {chat.message}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Chat Input */}
-            <div className="flex gap-2">
-              <Textarea
-                placeholder={t('aiRecommendations.typePlaceholder')}
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
-                className="flex-1 min-h-[40px] max-h-[120px]"
-              />
-              <Button onClick={handleSendMessage} disabled={!chatMessage.trim() || isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <MessageSquare className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* History Section */}
-      <AIHistorySection />
 
       {/* Educational Content */}
       <EducationalContentSection />
