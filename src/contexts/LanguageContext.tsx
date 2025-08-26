@@ -211,6 +211,14 @@ const translations = {
     'monthlyExpenses.bankAccount': 'Conta Bancária',
     'monthlyExpenses.date': 'Data',
     
+    // Future Expenses PDF/CSV Export
+    'futureExpenses.description': 'Descrição',
+    'futureExpenses.amount': 'Valor',
+    'futureExpenses.dueDate': 'Vencimento',
+    'futureExpenses.category': 'Categoria',
+    'futureExpenses.type': 'Tipo',
+    'futureExpenses.owner': 'Responsável',
+    
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
     'calendar': 'Calendário',
@@ -1212,6 +1220,14 @@ const translations = {
     'monthlyExpenses.bankAccount': 'Bank Account',
     'monthlyExpenses.date': 'Date',
     
+    // Future Expenses PDF/CSV Export
+    'futureExpenses.description': 'Description',
+    'futureExpenses.amount': 'Amount',
+    'futureExpenses.dueDate': 'Due Date',
+    'futureExpenses.category': 'Category',
+    'futureExpenses.type': 'Type',
+    'futureExpenses.owner': 'Owner',
+    
     // Calendar
     'viewInCalendar': 'View in Calendar',
     'calendar': 'Calendar',
@@ -2212,6 +2228,14 @@ const translations = {
     'monthlyExpenses.cardOwner': 'Propietario de la Tarjeta',
     'monthlyExpenses.bankAccount': 'Cuenta Bancaria',
     'monthlyExpenses.date': 'Fecha',
+    
+    // Future Expenses PDF/CSV Export
+    'futureExpenses.description': 'Descripción',
+    'futureExpenses.amount': 'Importe',
+    'futureExpenses.dueDate': 'Vencimiento',
+    'futureExpenses.category': 'Categoría',
+    'futureExpenses.type': 'Tipo',
+    'futureExpenses.owner': 'Propietario',
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',

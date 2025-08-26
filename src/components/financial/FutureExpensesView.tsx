@@ -11,6 +11,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
 import { format } from 'date-fns';
 import { FutureExpensesCalendar } from "./FutureExpensesCalendar";
+import { translateCategoryName } from '@/utils/categoryTranslation';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -304,27 +305,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   };
 
   const translateCategory = (category: string) => {
-    // Mapping common categories to translation keys
-    const categoryMap: { [key: string]: string } = {
-      'Alimentação': 'food',
-      'Transporte': 'transportation', 
-      'Entretenimento': 'entertainment',
-      'Saúde': 'health',
-      'Educação': 'education',
-      'Moradia': 'housing',
-      'Vestuário': 'clothing',
-      'Utilidades': 'utilities',
-      'Compras': 'shopping',
-      'Viagem': 'travel',
-      'Aposentadoria': 'aposentadoria',
-      'Combustível': 'combustivel',
-      'Conta Básica': 'conta basica',
-      'Presente ou Doação': 'presente ou doacao',
-      'Reembolso': 'reembolso',
-      'Cartão de Crédito': 'transactionForm.creditCard'
-    };
-    
-    return categoryMap[category] ? t(categoryMap[category]) : category;
+    // Use the centralized category translation utility
+    const { language } = useLanguage();
+    return translateCategoryName(category, language);
   };
 
   const categories = Array.from(new Set(futureExpenses.map(expense => expense.category)));
@@ -341,12 +324,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     }
 
     const headers = [
-      t('monthlyExpenses.description'),
-      t('monthlyExpenses.amount'),
-      t('monthlyExpenses.dueDate'),
-      t('monthlyExpenses.category'),
-      t('monthlyExpenses.type'),
-      t('monthlyExpenses.owner')
+      t('futureExpenses.description'),
+      t('futureExpenses.amount'),
+      t('futureExpenses.dueDate'),
+      t('futureExpenses.category'),
+      t('futureExpenses.type'),
+      t('futureExpenses.owner')
     ];
 
     const csvData = filteredExpenses.map(expense => [
@@ -398,12 +381,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     
     // Tabela
     const tableColumns = [
-      t('monthlyExpenses.description'),
-      t('monthlyExpenses.amount'),
-      t('monthlyExpenses.dueDate'),
-      t('monthlyExpenses.category'),
-      t('monthlyExpenses.type'),
-      t('monthlyExpenses.owner')
+      t('futureExpenses.description'),
+      t('futureExpenses.amount'),
+      t('futureExpenses.dueDate'),
+      t('futureExpenses.category'),
+      t('futureExpenses.type'),
+      t('futureExpenses.owner')
     ];
     
     const tableRows = filteredExpenses.map(expense => [
