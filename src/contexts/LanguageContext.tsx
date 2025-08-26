@@ -218,6 +218,15 @@ const translations = {
     'futureExpenses.category': 'Categoria',
     'futureExpenses.type': 'Tipo',
     'futureExpenses.owner': 'Responsável',
+    'futureExpenses.pdfTitle': 'Relatório de Gastos Futuros',
+    'futureExpenses.total': 'Total de Gastos Futuros',
+    
+    // Monthly Expenses PDF translations
+    'monthlyExpenses.pdfTitle': 'Relatório de Gastos Mensais',
+    'monthlyExpenses.pdfPeriod': 'Período',
+    'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
+    'monthlyExpenses.pdfUser': 'Usuário',
+    'monthlyExpenses.pdfPaymentMethod': 'Forma de Pagamento',
     
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
@@ -1227,6 +1236,15 @@ const translations = {
     'futureExpenses.category': 'Category',
     'futureExpenses.type': 'Type',
     'futureExpenses.owner': 'Owner',
+    'futureExpenses.pdfTitle': 'Future Expenses Report',
+    'futureExpenses.total': 'Total Future Expenses',
+    
+    // Monthly Expenses PDF translations
+    'monthlyExpenses.pdfTitle': 'Monthly Expenses Report',
+    'monthlyExpenses.pdfPeriod': 'Period',
+    'monthlyExpenses.pdfTotalExpenses': 'Total Expenses',
+    'monthlyExpenses.pdfUser': 'User',
+    'monthlyExpenses.pdfPaymentMethod': 'Payment Method',
     
     // Calendar
     'viewInCalendar': 'View in Calendar',
@@ -2236,6 +2254,15 @@ const translations = {
     'futureExpenses.category': 'Categoría',
     'futureExpenses.type': 'Tipo',
     'futureExpenses.owner': 'Propietario',
+    'futureExpenses.pdfTitle': 'Informe de Gastos Futuros',
+    'futureExpenses.total': 'Total de Gastos Futuros',
+    
+    // Monthly Expenses PDF translations
+    'monthlyExpenses.pdfTitle': 'Informe de Gastos Mensuales',
+    'monthlyExpenses.pdfPeriod': 'Período',
+    'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
+    'monthlyExpenses.pdfUser': 'Usuario',
+    'monthlyExpenses.pdfPaymentMethod': 'Método de Pago',
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',

@@ -374,7 +374,7 @@ if (selectedCategory !== "all") {
     
     // Título
     doc.setFontSize(16);
-    doc.text('Relatório de Gastos Mensais', 14, 20);
+    doc.text(t('monthlyExpenses.pdfTitle'), 14, 20);
     
     // Informações do período
     const [year, month] = selectedMonth.split('-').map(Number);
@@ -385,11 +385,20 @@ if (selectedCategory !== "all") {
       translateCategoryName(categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory, language as 'pt' | 'en' | 'es');
     
     doc.setFontSize(12);
-    doc.text(`Período: ${monthLabel}`, 14, 30);
-    doc.text(`Categoria: ${categoryLabel}`, 14, 38);
-    doc.text(`Total de Gastos: ${formatCurrency(totalExpenses)}`, 14, 46);
+    doc.text(`${t('monthlyExpenses.pdfPeriod')}: ${monthLabel}`, 14, 30);
+    doc.text(`${t('monthlyExpenses.category')}: ${categoryLabel}`, 14, 38);
+    doc.text(`${t('monthlyExpenses.pdfTotalExpenses')}: ${formatCurrency(totalExpenses)}`, 14, 46);
     
-    // Tabela
+    // Tabela com cabeçalhos traduzidos
+    const tableHeaders = [
+      t('monthlyExpenses.date'),
+      t('monthlyExpenses.description'),
+      t('monthlyExpenses.category'),
+      t('monthlyExpenses.pdfUser'),
+      t('monthlyExpenses.pdfPaymentMethod'),
+      t('monthlyExpenses.amount')
+    ];
+    
     const tableData = transactions.map(transaction => [
       formatDate(transaction.transaction_date),
       transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
@@ -400,7 +409,7 @@ if (selectedCategory !== "all") {
     ]);
 
     autoTable(doc, {
-      head: [['Data', 'Descrição', 'Categoria', 'Usuário', 'Pagamento', 'Valor']],
+      head: [tableHeaders],
       body: tableData,
       startY: 55,
       styles: { fontSize: 8 },

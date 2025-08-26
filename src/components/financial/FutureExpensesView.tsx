@@ -371,13 +371,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     
     // Título
     doc.setFontSize(18);
-    doc.text(t('monthlyExpenses.futureExpenses'), 20, 20);
+    doc.text(t('futureExpenses.pdfTitle'), 20, 20);
     
     // Subtítulo com total
     doc.setFontSize(12);
     const categoryLabel = selectedCategory === "all" ? t('monthlyExpenses.allFilter') : translateCategory(selectedCategory);
-    doc.text(`${t('monthlyExpenses.category')}: ${categoryLabel}`, 20, 35);
-    doc.text(`${t('monthlyExpenses.totalFuture')}: ${formatCurrency(totalAmount)}`, 20, 45);
+    doc.text(`${t('futureExpenses.category')}: ${categoryLabel}`, 20, 35);
+    doc.text(`${t('futureExpenses.total')}: ${formatCurrency(totalAmount)}`, 20, 45);
     
     // Tabela
     const tableColumns = [
