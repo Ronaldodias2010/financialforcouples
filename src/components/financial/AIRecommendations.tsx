@@ -50,10 +50,10 @@ export const AIRecommendations = () => {
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
           <Brain className="h-8 w-8 text-primary" />
-          <h2 className="text-3xl font-bold">{t('nav.aiRecommendations')}</h2>
+          <h2 className="text-3xl font-bold">{t('aiRecommendations.title')}</h2>
         </div>
         <p className="text-muted-foreground">
-          Análise inteligente das suas finanças e recomendações personalizadas
+          {t('aiRecommendations.subtitle')}
         </p>
       </div>
 
@@ -62,13 +62,13 @@ export const AIRecommendations = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
-            Período de Análise
+            {t('aiRecommendations.analysisPanel')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">De:</span>
+              <span className="text-sm font-medium">{t('aiRecommendations.from')}</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -79,7 +79,7 @@ export const AIRecommendations = () => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateFrom ? format(dateFrom, "PPP", { locale: getDateLocale() }) : "Selecionar data"}
+                    {dateFrom ? format(dateFrom, "PPP", { locale: getDateLocale() }) : t('aiRecommendations.selectDate')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -94,7 +94,7 @@ export const AIRecommendations = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Até:</span>
+              <span className="text-sm font-medium">{t('aiRecommendations.to')}</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -105,7 +105,7 @@ export const AIRecommendations = () => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateTo ? format(dateTo, "PPP", { locale: getDateLocale() }) : "Selecionar data"}
+                    {dateTo ? format(dateTo, "PPP", { locale: getDateLocale() }) : t('aiRecommendations.selectDate')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -128,12 +128,12 @@ export const AIRecommendations = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <TrendingUp className="h-5 w-5" />
-              Fluxo de Caixa
+              {t('aiRecommendations.cashflow')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Extração completa do fluxo de caixa consolidado
+              {t('aiRecommendations.cashflowDesc')}
             </p>
             <Button 
               onClick={() => handleExportData('cashflow')} 
@@ -141,7 +141,7 @@ export const AIRecommendations = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              {t('aiRecommendations.export')}
             </Button>
           </CardContent>
         </Card>
@@ -150,12 +150,12 @@ export const AIRecommendations = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <PieChart className="h-5 w-5" />
-              Gastos Consolidados
+              {t('aiRecommendations.expensesConsolidated')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Relatório detalhado de todas as despesas
+              {t('aiRecommendations.expensesDesc')}
             </p>
             <Button 
               onClick={() => handleExportData('expenses')} 
@@ -163,7 +163,7 @@ export const AIRecommendations = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              {t('aiRecommendations.export')}
             </Button>
           </CardContent>
         </Card>
@@ -172,12 +172,12 @@ export const AIRecommendations = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <TrendingUp className="h-5 w-5" />
-              Receitas Consolidadas
+              {t('aiRecommendations.incomeConsolidated')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Compilado de todas as receitas do período
+              {t('aiRecommendations.incomeDesc')}
             </p>
             <Button 
               onClick={() => handleExportData('income')} 
@@ -185,7 +185,7 @@ export const AIRecommendations = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              {t('aiRecommendations.export')}
             </Button>
           </CardContent>
         </Card>
@@ -194,12 +194,12 @@ export const AIRecommendations = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Receipt className="h-5 w-5" />
-              Imposto de Renda
+              {t('aiRecommendations.taxReport')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Dados organizados para declaração do IR
+              {t('aiRecommendations.taxDesc')}
             </p>
             <Button 
               onClick={() => handleExportData('taxes')} 
@@ -207,7 +207,7 @@ export const AIRecommendations = () => {
               disabled={!dateFrom || !dateTo}
             >
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              {t('aiRecommendations.export')}
             </Button>
           </CardContent>
         </Card>
@@ -218,7 +218,7 @@ export const AIRecommendations = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Consultor Financeiro IA
+            {t('aiRecommendations.aiConsultant')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -228,8 +228,8 @@ export const AIRecommendations = () => {
               {chatHistory.length === 0 ? (
                 <div className="text-center text-muted-foreground">
                   <Brain className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Pergunte qualquer coisa sobre suas finanças!</p>
-                  <p className="text-sm">Ex: "Como está meu orçamento este mês?"</p>
+                  <p>{t('aiRecommendations.askAnything')}</p>
+                  <p className="text-sm">{t('aiRecommendations.exampleQuestion')}</p>
                 </div>
               ) : (
                 chatHistory.map((chat, index) => (
@@ -249,7 +249,7 @@ export const AIRecommendations = () => {
             {/* Chat Input */}
             <div className="flex gap-2">
               <Textarea
-                placeholder="Digite sua pergunta sobre finanças..."
+                placeholder={t('aiRecommendations.typePlaceholder')}
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
@@ -268,36 +268,36 @@ export const AIRecommendations = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Conteúdo Educacional
+            {t('aiRecommendations.educationalContent')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">📊 Planejamento Financeiro</h4>
+              <h4 className="font-semibold mb-2">📊 {t('aiRecommendations.planning')}</h4>
               <p className="text-sm text-muted-foreground">
-                Aprenda a criar um orçamento eficiente e alcançar suas metas financeiras.
+                {t('aiRecommendations.planningDesc')}
               </p>
             </div>
             
             <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">💰 Investimentos Básicos</h4>
+              <h4 className="font-semibold mb-2">💰 {t('aiRecommendations.investments')}</h4>
               <p className="text-sm text-muted-foreground">
-                Guia completo para iniciantes em investimentos e diversificação.
+                {t('aiRecommendations.investmentsDesc')}
               </p>
             </div>
             
             <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">🏠 Reserva de Emergência</h4>
+              <h4 className="font-semibold mb-2">🏠 {t('aiRecommendations.emergency')}</h4>
               <p className="text-sm text-muted-foreground">
-                Como construir e manter uma reserva de emergência sólida.
+                {t('aiRecommendations.emergencyDesc')}
               </p>
             </div>
             
             <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">📈 Análise de Gastos</h4>
+              <h4 className="font-semibold mb-2">📈 {t('aiRecommendations.analysis')}</h4>
               <p className="text-sm text-muted-foreground">
-                Técnicas para identificar e otimizar seus padrões de gastos.
+                {t('aiRecommendations.analysisDesc')}
               </p>
             </div>
           </div>
