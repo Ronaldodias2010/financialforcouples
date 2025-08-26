@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Download, X, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import { Document, Page, pdfjs } from 'react-pdf';
 
+// Configure PDF.js worker (avoids Chrome iframe blocking by rendering inline)
+pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.worker.min.js';
 interface ContentViewerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,6 +27,10 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [iframeBlocked, setIframeBlocked] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [scale, setScale] = useState(1.1);
 
   if (!content) return null;
 
@@ -99,7 +106,7 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
     }
 
     if (isPDF) {
-      if (iframeBlocked) {
+      if (pdfError) {
         return (
           <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
             <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
@@ -122,37 +129,57 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
       }
 
       return (
-        <div className="relative w-full h-[80vh]">
+        <div className="relative w-full">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-muted/50 rounded-lg z-10">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           )}
-          <iframe
-            src={getPDFViewerUrl()}
-            className="w-full h-full rounded-lg border"
-            onLoad={() => setLoading(false)}
-            onError={() => {
-              console.log('PDF iframe failed, trying direct URL...');
-              setLoading(false);
-              setIframeBlocked(true);
-            }}
-            title={content.title}
-            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-          />
-          {/* Fallback com iframe direto */}
-          {!loading && !iframeBlocked && (
-            <iframe
-              src={content.file_url}
-              className="w-full h-full rounded-lg border absolute top-0 left-0"
-              style={{ display: iframeBlocked ? 'none' : 'block' }}
-              onError={() => {
-                console.log('Direct PDF iframe also failed');
-                setIframeBlocked(true);
+
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-muted-foreground">
+              {numPages ? (
+                <span>
+                  Página {pageNumber} / {numPages}
+                </span>
+              ) : (
+                <span>Carregando...</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setScale((s) => Math.max(0.5, s - 0.1))}>-</Button>
+              <Button size="sm" variant="outline" onClick={() => setScale((s) => Math.min(2, s + 0.1))}>+</Button>
+              <Button size="sm" variant="outline" onClick={() => setPageNumber((p) => Math.max(1, p - 1))} disabled={pageNumber <= 1}>Anterior</Button>
+              <Button size="sm" variant="outline" onClick={() => setPageNumber((p) => Math.min(numPages || 1, p + 1))} disabled={!numPages || pageNumber >= numPages}>Próximo</Button>
+              <Button size="sm" variant="outline" onClick={openInNewTab}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                {t('educational.viewer.openInNewTab')}
+              </Button>
+            </div>
+          </div>
+
+          <div className="w-full max-h-[80vh] overflow-auto rounded-lg border p-2">
+            <Document
+              file={content.file_url}
+              onLoadSuccess={({ numPages }) => {
+                setNumPages(numPages);
+                setLoading(false);
+                setPdfError(false);
               }}
-              title={`${content.title} - Direct`}
-            />
-          )}
+              onLoadError={(err) => {
+                console.error('PDF render error', err);
+                setLoading(false);
+                setPdfError(true);
+              }}
+            >
+              <Page
+                pageNumber={pageNumber}
+                scale={scale}
+                renderTextLayer={false}
+                renderAnnotationLayer={false}
+              />
+            </Document>
+          </div>
         </div>
       );
     }
