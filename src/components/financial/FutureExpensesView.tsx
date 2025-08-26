@@ -35,7 +35,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { user } = useAuth();
   const { names } = usePartnerNames();
   const { isPartOfCouple } = useCouple();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -174,7 +174,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             const nextDueDate = getNextDueDate(card.due_date);
             expenses.push({
               id: `card-${card.id}`,
-              description: `Pagamento ${card.name}`,
+              description: `${t('transactionForm.creditCardPayment')} ${card.name}`,
               amount: paymentAmount,
               due_date: nextDueDate,
               type: 'card_payment',
@@ -305,9 +305,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   };
 
   const translateCategory = (category: string) => {
-    // Use the centralized category translation utility
-    const { language } = useLanguage();
-    return translateCategoryName(category, language);
+    return translateCategoryName(category, language as 'pt' | 'en' | 'es');
   };
 
   const categories = Array.from(new Set(futureExpenses.map(expense => expense.category)));
