@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, Loader2, Lock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
+import { PremiumFeatureGuard } from '@/components/subscription/PremiumFeatureGuard';
+import { useSubscription } from '@/hooks/useSubscription';
 import { AIHistorySection } from "./AIHistorySection";
 import { EducationalContentSection } from "@/components/educational/EducationalContentSection";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,7 +58,22 @@ const AIRecommendationsContent = () => {
 
       if (error) {
         console.error('AI Consultant error:', error);
-        throw error;
+        
+        // Handle specific error cases
+        if (error.message === 'AI_ACCESS_DENIED') {
+          setChatHistory(prev => [...prev, { 
+            role: 'ai', 
+            message: 'Acesso negado: Esta funcionalidade está disponível apenas para usuários Premium. Faça upgrade do seu plano para continuar.'
+          }]);
+        } else if (error.message === 'DAILY_LIMIT_REACHED') {
+          setChatHistory(prev => [...prev, { 
+            role: 'ai', 
+            message: 'Limite diário de IA atingido. Você pode tentar novamente amanhã ou fazer upgrade do seu plano para ter mais acesso.'
+          }]);
+        } else {
+          throw error;
+        }
+        return;
       }
 
       setChatHistory(prev => [...prev, { 

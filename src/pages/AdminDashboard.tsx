@@ -18,6 +18,7 @@ import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
 import AbandonedCheckouts from "@/components/admin/AbandonedCheckouts";
 import { EducationalContentManager } from "@/components/admin/EducationalContentManager";
+import { AIControlSection } from '@/components/admin/AIControlSection';
 
 
 interface SubscriptionMetrics {
@@ -449,12 +450,13 @@ const AdminDashboardContent = () => {
 
       {/* Main Admin Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">📊 {t('admin.tabs.overview')}</TabsTrigger>
           <TabsTrigger value="users">👥 {t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="alerts">🚨 {t('admin.tabs.alerts')}</TabsTrigger>
           <TabsTrigger value="content">📚 {t('admin.tabs.content')}</TabsTrigger>
           <TabsTrigger value="premium">👑 Premium</TabsTrigger>
+          <TabsTrigger value="ai-control">🤖 Controle de IA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -748,6 +750,10 @@ const AdminDashboardContent = () => {
           <EducationalContentManager />
         </TabsContent>
 
+        <TabsContent value="ai-control">
+          <AIControlSection />
+        </TabsContent>
+        
         <TabsContent value="premium">
           <div className="grid grid-cols-1 gap-6">
             <ManualPremiumAccess language={language === 'es' ? 'en' : language as 'pt' | 'en'} />
