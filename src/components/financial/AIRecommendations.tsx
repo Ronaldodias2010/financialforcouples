@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt } from "lucide-react";
+import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 
-export const AIRecommendations = () => {
+const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
@@ -304,5 +305,41 @@ export const AIRecommendations = () => {
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+const PremiumUpgradeFallback = () => {
+  const { t } = useLanguage();
+  
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <Card className="max-w-md mx-auto text-center">
+        <CardContent className="pt-8 pb-6">
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <div className="relative">
+                <Brain className="h-16 w-16 text-primary" />
+                <Sparkles className="h-6 w-6 text-primary absolute -top-1 -right-1 animate-pulse" />
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold">{t('aiRecommendations.premiumTitle')}</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              {t('aiRecommendations.premiumMessage')}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export const AIRecommendations = () => {
+  return (
+    <PremiumFeatureGuard 
+      feature="aiPlanning"
+      fallback={<PremiumUpgradeFallback />}
+    >
+      <AIRecommendationsContent />
+    </PremiumFeatureGuard>
   );
 };
