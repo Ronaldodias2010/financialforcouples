@@ -28,6 +28,32 @@ interface FinancialData {
   investments: any[];
   categories: any[];
   recurringExpenses: any[];
+  relationshipInfo?: {
+    isCouple: boolean;
+    currentUserName: string;
+    partnerName?: string;
+    partnerUserId?: string;
+  };
+  segmentedData?: {
+    currentUser: {
+      transactions: any[];
+      accounts: any[];
+      cards: any[];
+      investments: any[];
+    };
+    partner?: {
+      transactions: any[];
+      accounts: any[];
+      cards: any[];
+      investments: any[];
+    };
+    combined: {
+      transactions: any[];
+      accounts: any[];
+      cards: any[];
+      investments: any[];
+    };
+  };
 }
 
 interface ChatMessage {
@@ -132,14 +158,21 @@ serve(async (req) => {
     const messages: ChatMessage[] = [
       {
         role: 'user',
-        content: `Você é um consultor financeiro especialista. Analise os dados financeiros do usuário e responda de forma profissional e útil.
+        content: `Você é um consultor financeiro especialista especializado em atendimento personalizado para casais e indivíduos. 
 
-DADOS FINANCEIROS DO USUÁRIO:
+IMPORTANTE: Analise o contexto do relacionamento e seja inteligente na interpretação das solicitações:
+
 ${financialContext}
 
 PERGUNTA DO USUÁRIO: ${message}
 
-Forneça uma resposta detalhada, com insights específicos baseados nos dados reais do usuário. Seja prático e ofereça recomendações acionáveis.`
+INSTRUÇÕES ESPECÍFICAS DE INTERPRETAÇÃO:
+- Se o usuário fizer uma pergunta ambígua sobre "saldo", "gastos", "receitas" e ele for parte de um casal, pergunte especificamente se ele quer ver dados próprios, do parceiro, ou combinados
+- Use sempre os nomes reais dos usuários para personalizar as respostas
+- Para usuários individuais, sempre forneça dados próprios sem perguntar sobre outros
+- Seja prático e ofereça recomendações acionáveis baseadas nos dados reais
+
+Forneça uma resposta detalhada, personalizada e profissional.`
       }
     ];
 
@@ -258,6 +291,37 @@ async function collectFinancialData(
   const fromDate = dateRange?.from || new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const toDate = dateRange?.to || new Date().toISOString().split('T')[0];
 
+  // Check if user is part of a couple
+  const { data: coupleData } = await supabase
+    .from('user_couples')
+    .select('user1_id, user2_id, status')
+    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  // Get user profile and partner profile if applicable
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('display_name, user_id')
+    .eq('user_id', userId)
+    .single();
+
+  let partnerProfile = null;
+  let partnerUserId = null;
+  
+  if (coupleData) {
+    partnerUserId = coupleData.user1_id === userId ? coupleData.user2_id : coupleData.user1_id;
+    const { data: partner } = await supabase
+      .from('profiles')
+      .select('display_name, user_id')
+      .eq('user_id', partnerUserId)
+      .single();
+    partnerProfile = partner;
+  }
+
+  // Collect financial data (including partner's data if in a couple)
+  const userIds = coupleData ? [userId, partnerUserId] : [userId];
+  
   const [
     { data: transactions = [] },
     { data: accounts = [] },
@@ -269,16 +333,50 @@ async function collectFinancialData(
     supabase
       .from('transactions')
       .select('*')
+      .in('user_id', userIds)
       .gte('transaction_date', fromDate)
       .lte('transaction_date', toDate)
       .order('transaction_date', { ascending: false }),
     
-    supabase.from('accounts').select('*'),
-    supabase.from('cards').select('*'),
-    supabase.from('investments').select('*'),
-    supabase.from('categories').select('*'),
-    supabase.from('recurring_expenses').select('*').eq('is_active', true)
+    supabase.from('accounts').select('*').in('user_id', userIds),
+    supabase.from('cards').select('*').in('user_id', userIds),
+    supabase.from('investments').select('*').in('user_id', userIds),
+    supabase.from('categories').select('*').in('user_id', userIds),
+    supabase.from('recurring_expenses').select('*').in('user_id', userIds).eq('is_active', true)
   ]);
+
+  // Build relationship info
+  const relationshipInfo = {
+    isCouple: !!coupleData,
+    currentUserName: userProfile?.display_name || 'Usuário',
+    partnerName: partnerProfile?.display_name || undefined,
+    partnerUserId: partnerUserId || undefined
+  };
+
+  // Segment data by user if couple
+  let segmentedData = undefined;
+  if (coupleData && partnerUserId) {
+    segmentedData = {
+      currentUser: {
+        transactions: transactions.filter(t => t.user_id === userId),
+        accounts: accounts.filter(a => a.user_id === userId),
+        cards: cards.filter(c => c.user_id === userId),
+        investments: investments.filter(i => i.user_id === userId)
+      },
+      partner: {
+        transactions: transactions.filter(t => t.user_id === partnerUserId),
+        accounts: accounts.filter(a => a.user_id === partnerUserId),
+        cards: cards.filter(c => c.user_id === partnerUserId),
+        investments: investments.filter(i => i.user_id === partnerUserId)
+      },
+      combined: {
+        transactions,
+        accounts,
+        cards,
+        investments
+      }
+    };
+  }
 
   return {
     transactions,
@@ -286,14 +384,47 @@ async function collectFinancialData(
     cards,
     investments,
     categories,
-    recurringExpenses
+    recurringExpenses,
+    relationshipInfo,
+    segmentedData
   };
 }
 
 function generateFinancialContext(data: FinancialData): string {
-  const { transactions, accounts, cards, investments, categories, recurringExpenses } = data;
+  const { transactions, accounts, cards, investments, categories, recurringExpenses, relationshipInfo, segmentedData } = data;
 
-  // Calculate key metrics
+  let context = '';
+
+  // Add relationship context for intelligent interpretation
+  if (relationshipInfo) {
+    context += `
+INFORMAÇÕES DO RELACIONAMENTO:
+- Status: ${relationshipInfo.isCouple ? 'CASAL_ATIVO' : 'USUÁRIO_INDIVIDUAL'}
+- Nome do usuário atual: ${relationshipInfo.currentUserName}`;
+    
+    if (relationshipInfo.partnerName) {
+      context += `
+- Nome do parceiro(a): ${relationshipInfo.partnerName}`;
+    }
+
+    context += `
+
+INSTRUÇÕES DE INTERPRETAÇÃO INTELIGENTE:
+${relationshipInfo.isCouple ? 
+  `- Este usuário faz parte de um casal. Quando o usuário fizer perguntas ambíguas sobre "saldo", "gastos", "receitas" sem especificar de quem, pergunte especificamente se ele quer ver:
+  1) Apenas seus dados pessoais (${relationshipInfo.currentUserName})
+  2) Apenas os dados do parceiro (${relationshipInfo.partnerName})
+  3) Dados combinados de ambos
+  
+- Use os nomes reais nas interações para personalizar as respostas
+- Ofereça insights comparativos entre os parceiros quando apropriado` :
+  '- Este é um usuário individual. Sempre forneça dados próprios sem perguntar sobre outros usuários'
+}
+
+`;
+  }
+
+  // Calculate metrics for combined data
   const totalIncome = transactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -308,6 +439,61 @@ function generateFinancialContext(data: FinancialData): string {
   const totalInvestments = investments
     .reduce((sum, i) => sum + Number(i.current_value), 0);
 
+  const cardDebt = cards
+    .reduce((sum, c) => sum + Number(c.current_balance || 0), 0);
+
+  // Add segmented data for couples
+  if (segmentedData && relationshipInfo?.isCouple) {
+    // Current user metrics
+    const userIncome = segmentedData.currentUser.transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const userExpenses = segmentedData.currentUser.transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const userAccountBalance = segmentedData.currentUser.accounts
+      .reduce((sum, a) => sum + Number(a.balance), 0);
+    const userInvestments = segmentedData.currentUser.investments
+      .reduce((sum, i) => sum + Number(i.current_value), 0);
+
+    // Partner metrics
+    const partnerIncome = segmentedData.partner!.transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const partnerExpenses = segmentedData.partner!.transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const partnerAccountBalance = segmentedData.partner!.accounts
+      .reduce((sum, a) => sum + Number(a.balance), 0);
+    const partnerInvestments = segmentedData.partner!.investments
+      .reduce((sum, i) => sum + Number(i.current_value), 0);
+
+    context += `
+DADOS SEGMENTADOS POR USUÁRIO:
+
+=== DADOS DE ${relationshipInfo.currentUserName.toUpperCase()} ===
+- Receitas no período: R$ ${userIncome.toFixed(2)}
+- Gastos no período: R$ ${userExpenses.toFixed(2)}
+- Saldo líquido: R$ ${(userIncome - userExpenses).toFixed(2)}
+- Saldo em contas: R$ ${userAccountBalance.toFixed(2)}
+- Total em investimentos: R$ ${userInvestments.toFixed(2)}
+
+Contas de ${relationshipInfo.currentUserName}:
+${segmentedData.currentUser.accounts.map(a => `- ${a.name}: R$ ${Number(a.balance).toFixed(2)}`).join('\n') || '- Nenhuma conta cadastrada'}
+
+=== DADOS DE ${relationshipInfo.partnerName?.toUpperCase()} ===
+- Receitas no período: R$ ${partnerIncome.toFixed(2)}
+- Gastos no período: R$ ${partnerExpenses.toFixed(2)}
+- Saldo líquido: R$ ${(partnerIncome - partnerExpenses).toFixed(2)}
+- Saldo em contas: R$ ${partnerAccountBalance.toFixed(2)}
+- Total em investimentos: R$ ${partnerInvestments.toFixed(2)}
+
+Contas de ${relationshipInfo.partnerName}:
+${segmentedData.partner!.accounts.map(a => `- ${a.name}: R$ ${Number(a.balance).toFixed(2)}`).join('\n') || '- Nenhuma conta cadastrada'}
+
+=== DADOS COMBINADOS (AMBOS) ===`;
+  }
+
   // Expense by category
   const expensesByCategory = transactions
     .filter(t => t.type === 'expense' && t.category_id)
@@ -318,12 +504,8 @@ function generateFinancialContext(data: FinancialData): string {
       return acc;
     }, {} as Record<string, number>);
 
-  // Card debt analysis
-  const cardDebt = cards
-    .reduce((sum, c) => sum + Number(c.current_balance || 0), 0);
-
-  const context = `
-RESUMO FINANCEIRO:
+  context += `
+RESUMO FINANCEIRO ${segmentedData ? '(COMBINADO)' : ''}:
 - Receitas no período: R$ ${totalIncome.toFixed(2)}
 - Gastos no período: R$ ${totalExpenses.toFixed(2)}
 - Saldo líquido: R$ ${(totalIncome - totalExpenses).toFixed(2)}
