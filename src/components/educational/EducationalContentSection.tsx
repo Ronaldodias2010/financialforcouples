@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, FileText, Video, Image, Download, Lock } from "lucide-react";
+import { BookOpen, FileText, Video, Image, Download, Lock, Eye } from "lucide-react";
+import { ContentViewer } from "./ContentViewer";
 
 interface EducationalContent {
   id: string;
@@ -53,6 +54,8 @@ export const EducationalContentSection = () => {
   const [contents, setContents] = useState<EducationalContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('planning');
+  const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const isPremium = hasAccess('premium');
 
@@ -104,6 +107,16 @@ export const EducationalContentSection = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleViewContent = (content: EducationalContent) => {
+    setSelectedContent(content);
+    setViewerOpen(true);
+  };
+
+  const closeViewer = () => {
+    setViewerOpen(false);
+    setSelectedContent(null);
   };
 
   if (!isPremium) {
@@ -217,14 +230,22 @@ export const EducationalContentSection = () => {
                               </div>
                             </div>
                             
-                            <div className="ml-4">
+                            <div className="ml-4 flex gap-2">
                               <Button
                                 size="sm"
+                                onClick={() => handleViewContent(content)}
+                                className="bg-gradient-to-r from-blue-500 to-blue-600"
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                {t('educational.view')}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={() => handleDownload(content.file_url, content.file_name)}
-                                className="bg-gradient-to-r from-primary to-primary-glow"
                               >
                                 <Download className="h-4 w-4 mr-1" />
-                                {content.content_type === 'video' ? t('educational.watch') : t('educational.download')}
+                                {t('educational.download')}
                               </Button>
                             </div>
                           </div>
@@ -238,6 +259,12 @@ export const EducationalContentSection = () => {
           ))}
         </Tabs>
       </CardContent>
+
+      <ContentViewer
+        isOpen={viewerOpen}
+        onClose={closeViewer}
+        content={selectedContent}
+      />
     </Card>
   );
 };
