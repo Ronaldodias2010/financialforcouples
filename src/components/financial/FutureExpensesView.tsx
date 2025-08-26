@@ -434,7 +434,20 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       const fileName = `gastos-futuros-${categoryLabel.toLowerCase().replace(/\s+/g, '-')}.pdf`;
       console.log('📁 Nome do arquivo PDF:', fileName);
       
-      doc.save(fileName);
+      try {
+        doc.save(fileName);
+      } catch (e) {
+        console.warn('doc.save falhou, tentando fallback com Blob URL...', e);
+        const pdfBlob = doc.output('blob');
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      }
       
       console.log('✅ PDF exportado com sucesso');
       toast.success("Arquivo PDF exportado com sucesso");
