@@ -147,8 +147,30 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
     return total;
   }, [currentUserTotal, partnerTotal]);
 
-  const user1Total = isUserOne() ? currentUserTotal : partnerTotal;
-  const user2Total = isUserOne() ? partnerTotal : currentUserTotal;
+  // Calcular totais diretamente por user1/user2 para garantir consistência
+  const user1Total = useMemo(() => {
+    if (!user?.id || !partnerId) return 0;
+    
+    // Identificar quem é user1 baseado na relação do casal
+    const user1Id = isUserOne() ? user.id : partnerId;
+    const user1Cards = cardsData.filter(c => c.user_id === user1Id);
+    const total = user1Cards.reduce((sum, c) => sum + computeAvailable(c), 0);
+    
+    console.log(`User1 (${user1Id}) total: R$ ${total}`);
+    return total;
+  }, [cardsData, user?.id, partnerId, isUserOne]);
+
+  const user2Total = useMemo(() => {
+    if (!user?.id || !partnerId) return 0;
+    
+    // Identificar quem é user2 baseado na relação do casal
+    const user2Id = isUserOne() ? partnerId : user.id;
+    const user2Cards = cardsData.filter(c => c.user_id === user2Id);
+    const total = user2Cards.reduce((sum, c) => sum + computeAvailable(c), 0);
+    
+    console.log(`User2 (${user2Id}) total: R$ ${total}`);
+    return total;
+  }, [cardsData, user?.id, partnerId, isUserOne]);
 
   const handleCardAdded = () => {
     setRefreshTrigger(prev => prev + 1);
