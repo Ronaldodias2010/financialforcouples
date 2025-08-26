@@ -450,10 +450,10 @@ const AdminDashboardContent = () => {
       {/* Main Admin Tabs */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">📊 Visão Geral</TabsTrigger>
-          <TabsTrigger value="users">👥 Usuários</TabsTrigger>
-          <TabsTrigger value="alerts">🚨 Alertas</TabsTrigger>
-          <TabsTrigger value="content">📚 Conteúdo</TabsTrigger>
+          <TabsTrigger value="overview">📊 {t('admin.tabs.overview')}</TabsTrigger>
+          <TabsTrigger value="users">👥 {t('admin.tabs.users')}</TabsTrigger>
+          <TabsTrigger value="alerts">🚨 {t('admin.tabs.alerts')}</TabsTrigger>
+          <TabsTrigger value="content">📚 {t('admin.tabs.content')}</TabsTrigger>
           <TabsTrigger value="premium">👑 Premium</TabsTrigger>
         </TabsList>
 

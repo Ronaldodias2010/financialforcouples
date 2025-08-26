@@ -25,22 +25,23 @@ interface EducationalContent {
   created_at: string;
 }
 
-const categories = [
-  { value: 'planning', label: 'Planejamento Financeiro' },
-  { value: 'investments', label: 'Investimentos Básicos' },
-  { value: 'emergency', label: 'Reserva de Emergência' },
-  { value: 'analysis', label: 'Análise de Gastos' }
-];
-
-const contentTypes = [
-  { value: 'pdf', label: 'PDF', icon: FileText },
-  { value: 'video', label: 'Vídeo', icon: Video },
-  { value: 'article', label: 'Artigo', icon: FileText },
-  { value: 'image', label: 'Imagem', icon: Image }
-];
-
 export const EducationalContentManager = () => {
   const { t } = useLanguage();
+  
+  const categories = [
+    { value: 'planning', label: t('admin.content.categories.planning') },
+    { value: 'investments', label: t('admin.content.categories.investments') },
+    { value: 'emergency', label: t('admin.content.categories.emergency') },
+    { value: 'analysis', label: t('admin.content.categories.analysis') }
+  ];
+
+  const contentTypes = [
+    { value: 'pdf', label: t('admin.content.types.pdf'), icon: FileText },
+    { value: 'video', label: t('admin.content.types.video'), icon: Video },
+    { value: 'article', label: t('admin.content.types.article'), icon: FileText },
+    { value: 'image', label: t('admin.content.types.image'), icon: Image }
+  ];
+
   const [contents, setContents] = useState<EducationalContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -70,8 +71,8 @@ export const EducationalContentManager = () => {
     } catch (error) {
       console.error('Error fetching contents:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao carregar conteúdo educacional",
+        title: t('common.error'),
+        description: t('admin.content.error.load'),
         variant: "destructive"
       });
     } finally {
@@ -103,8 +104,8 @@ export const EducationalContentManager = () => {
     
     if (!selectedFile || !formData.title || !formData.category || !formData.content_type) {
       toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
+        title: t('common.error'),
+        description: t('admin.content.error.fields'),
         variant: "destructive"
       });
       return;
@@ -147,8 +148,8 @@ export const EducationalContentManager = () => {
       if (insertError) throw insertError;
 
       toast({
-        title: "Sucesso",
-        description: "Conteúdo educacional adicionado com sucesso"
+        title: t('common.success'),
+        description: t('admin.content.success.upload')
       });
 
       // Reset form
@@ -167,8 +168,8 @@ export const EducationalContentManager = () => {
     } catch (error) {
       console.error('Error uploading content:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao fazer upload do conteúdo",
+        title: t('common.error'),
+        description: t('admin.content.error.upload'),
         variant: "destructive"
       });
     } finally {
@@ -186,16 +187,16 @@ export const EducationalContentManager = () => {
       if (error) throw error;
       
       toast({
-        title: "Sucesso",
-        description: `Conteúdo ${!currentStatus ? 'ativado' : 'desativado'} com sucesso`
+        title: t('common.success'),
+        description: t('admin.content.success.statusToggle')
       });
       
       fetchContents();
     } catch (error) {
       console.error('Error toggling status:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao alterar status do conteúdo",
+        title: t('common.error'),
+        description: t('admin.content.error.statusToggle'),
         variant: "destructive"
       });
     }
@@ -221,16 +222,16 @@ export const EducationalContentManager = () => {
       if (error) throw error;
       
       toast({
-        title: "Sucesso",
-        description: "Conteúdo excluído com sucesso"
+        title: t('common.success'),
+        description: t('admin.content.success.delete')
       });
       
       fetchContents();
     } catch (error) {
       console.error('Error deleting content:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao excluir conteúdo",
+        title: t('common.error'),
+        description: t('admin.content.error.delete'),
         variant: "destructive"
       });
     }
@@ -247,7 +248,7 @@ export const EducationalContentManager = () => {
   };
 
   if (loading) {
-    return <div className="text-center p-8">Carregando...</div>;
+    return <div className="text-center p-8">{t('admin.content.loading')}</div>;
   }
 
   return (
@@ -257,34 +258,34 @@ export const EducationalContentManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Adicionar Conteúdo Educacional
+            {t('admin.content.title')}
           </CardTitle>
           <CardDescription>
-            Faça upload de materiais educativos para usuários premium
+            {t('admin.content.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Título *</label>
+                <label className="text-sm font-medium mb-2 block">{t('admin.content.titleField')} *</label>
                 <Input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Título do conteúdo"
+                  placeholder={t('admin.content.titlePlaceholder')}
                   required
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium mb-2 block">Categoria *</label>
+                <label className="text-sm font-medium mb-2 block">{t('admin.content.category')} *</label>
                 <Select 
                   value={formData.category} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
+                    <SelectValue placeholder={t('admin.content.categoryPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(category => (
@@ -298,24 +299,24 @@ export const EducationalContentManager = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Descrição</label>
+              <label className="text-sm font-medium mb-2 block">{t('admin.content.descriptionField')}</label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Descrição do conteúdo"
+                placeholder={t('admin.content.descriptionPlaceholder')}
                 className="min-h-[80px]"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Tipo de Conteúdo *</label>
+                <label className="text-sm font-medium mb-2 block">{t('admin.content.contentType')} *</label>
                 <Select 
                   value={formData.content_type} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, content_type: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
+                    <SelectValue placeholder={t('admin.content.contentTypePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {contentTypes.map(type => (
@@ -331,7 +332,7 @@ export const EducationalContentManager = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">Ordem de Exibição</label>
+                <label className="text-sm font-medium mb-2 block">{t('admin.content.sortOrder')}</label>
                 <Input
                   type="number"
                   value={formData.sort_order}
@@ -343,7 +344,7 @@ export const EducationalContentManager = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Arquivo *</label>
+              <label className="text-sm font-medium mb-2 block">{t('admin.content.file')} *</label>
               <Input
                 type="file"
                 onChange={handleFileSelect}
@@ -352,13 +353,13 @@ export const EducationalContentManager = () => {
               />
               {selectedFile && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Arquivo selecionado: {selectedFile.name}
+                  {t('admin.content.fileSelected')}: {selectedFile.name}
                 </p>
               )}
             </div>
 
             <Button type="submit" disabled={uploading} className="w-full">
-              {uploading ? "Fazendo upload..." : "Adicionar Conteúdo"}
+              {uploading ? t('admin.content.uploading') : t('admin.content.addButton')}
             </Button>
           </form>
         </CardContent>
@@ -367,26 +368,26 @@ export const EducationalContentManager = () => {
       {/* Content List */}
       <Card>
         <CardHeader>
-          <CardTitle>Conteúdos Cadastrados</CardTitle>
+          <CardTitle>{t('admin.content.listTitle')}</CardTitle>
           <CardDescription>
-            Gerencie todo o conteúdo educacional disponível
+            {t('admin.content.listDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {contents.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              Nenhum conteúdo cadastrado ainda
+              {t('admin.content.noContent')}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Ações</TableHead>
+                  <TableHead>{t('admin.content.table.title')}</TableHead>
+                  <TableHead>{t('admin.content.table.category')}</TableHead>
+                  <TableHead>{t('admin.content.table.type')}</TableHead>
+                  <TableHead>{t('admin.content.table.status')}</TableHead>
+                  <TableHead>{t('admin.content.table.date')}</TableHead>
+                  <TableHead>{t('admin.content.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -402,7 +403,7 @@ export const EducationalContentManager = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant={content.is_active ? "default" : "secondary"}>
-                        {content.is_active ? "Ativo" : "Inativo"}
+                        {content.is_active ? t('admin.content.status.active') : t('admin.content.status.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell>
