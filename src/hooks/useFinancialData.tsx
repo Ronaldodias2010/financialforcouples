@@ -307,18 +307,27 @@ export const useFinancialData = () => {
 
   const getFinancialComparison = async () => {
     try {
-      // Get previous month data
-      const prevMonth = new Date();
-      prevMonth.setMonth(prevMonth.getMonth() - 1);
+      // Get current date for accurate month calculation
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
       
-      const startOfPrevMonth = new Date(prevMonth);
-      startOfPrevMonth.setDate(1);
-      startOfPrevMonth.setHours(0, 0, 0, 0);
+      // Calculate previous month accurately, handling year transitions
+      let prevYear = currentYear;
+      let prevMonth = currentMonth - 1;
       
-      const endOfPrevMonth = new Date(prevMonth);
-      endOfPrevMonth.setMonth(endOfPrevMonth.getMonth() + 1);
-      endOfPrevMonth.setDate(0);
-      endOfPrevMonth.setHours(23, 59, 59, 999);
+      if (prevMonth < 0) {
+        prevMonth = 11; // December
+        prevYear = currentYear - 1;
+      }
+      
+      // Create precise date ranges for previous month
+      const startOfPrevMonth = new Date(prevYear, prevMonth, 1, 0, 0, 0, 0);
+      const endOfPrevMonth = new Date(prevYear, prevMonth + 1, 0, 23, 59, 59, 999);
+      
+      // Create precise date ranges for current month
+      const startOfCurrentMonth = new Date(currentYear, currentMonth, 1, 0, 0, 0, 0);
+      const endOfCurrentMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
 
       // Check if user is part of a couple to include partner's transactions
       const { data: coupleData } = await supabase
@@ -334,14 +343,25 @@ export const useFinancialData = () => {
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      const { data: prevTransactions, error } = await supabase
+      // Fetch previous month transactions
+      const { data: prevTransactions, error: prevError } = await supabase
         .from('transactions')
         .select('*')
         .in('user_id', userIds)
         .gte('transaction_date', format(startOfPrevMonth, 'yyyy-MM-dd'))
         .lte('transaction_date', format(endOfPrevMonth, 'yyyy-MM-dd'));
 
-      if (error) throw error;
+      if (prevError) throw prevError;
+
+      // Fetch current month transactions (for more accurate comparison)
+      const { data: currentTransactions, error: currentError } = await supabase
+        .from('transactions')
+        .select('*')
+        .in('user_id', userIds)
+        .gte('transaction_date', format(startOfCurrentMonth, 'yyyy-MM-dd'))
+        .lte('transaction_date', format(endOfCurrentMonth, 'yyyy-MM-dd'));
+
+      if (currentError) throw currentError;
 
       // Calculate previous month totals
       let prevTotalIncome = 0;
@@ -356,33 +376,48 @@ export const useFinancialData = () => {
 
         if (transaction.type === 'income') {
           prevTotalIncome += amountInUserCurrency;
-        } else {
+        } else if (transaction.type === 'expense') {
           prevTotalExpenses += amountInUserCurrency;
         }
       });
 
+      // Calculate current month totals from fresh data
+      let currentTotalIncome = 0;
+      let currentTotalExpenses = 0;
+
+      (currentTransactions || []).forEach((transaction) => {
+        const amountInUserCurrency = convertCurrency(
+          transaction.amount,
+          transaction.currency,
+          userPreferredCurrency
+        );
+
+        if (transaction.type === 'income') {
+          currentTotalIncome += amountInUserCurrency;
+        } else if (transaction.type === 'expense') {
+          currentTotalExpenses += amountInUserCurrency;
+        }
+      });
+
       const prevBalance = prevTotalIncome - prevTotalExpenses;
+      const currentBalance = currentTotalIncome - currentTotalExpenses;
 
-      // Compute current month totals from current transactions state (transactions only)
-      const currentIncome = transactions
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
+      // Calculate percentage changes with improved logic
+      const calculatePercentageChange = (current: number, previous: number): number => {
+        if (previous === 0) {
+          return current > 0 ? 100 : 0; // 100% increase if we had nothing before and now have something
+        }
+        return ((current - previous) / Math.abs(previous)) * 100;
+      };
 
-      const currentExpenses = transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
+      const incomeChange = calculatePercentageChange(currentTotalIncome, prevTotalIncome);
+      const expenseChange = calculatePercentageChange(currentTotalExpenses, prevTotalExpenses);
+      const balanceChange = calculatePercentageChange(currentBalance, prevBalance);
 
-      const currentBalance = currentIncome - currentExpenses;
-
-      // Calculate percentage changes
-      const incomeChange = prevTotalIncome === 0 ? 0 : 
-        ((currentIncome - prevTotalIncome) / prevTotalIncome) * 100;
-      
-      const expenseChange = prevTotalExpenses === 0 ? 0 : 
-        ((currentExpenses - prevTotalExpenses) / prevTotalExpenses) * 100;
-      
-      const balanceChange = prevBalance === 0 ? 0 : 
-        ((currentBalance - prevBalance) / Math.abs(prevBalance)) * 100;
+      console.log(`📊 Comparação mensal calculada:
+        - Receitas: ${currentTotalIncome.toFixed(2)} vs ${prevTotalIncome.toFixed(2)} (${incomeChange.toFixed(1)}%)
+        - Despesas: ${currentTotalExpenses.toFixed(2)} vs ${prevTotalExpenses.toFixed(2)} (${expenseChange.toFixed(1)}%)
+        - Saldo: ${currentBalance.toFixed(2)} vs ${prevBalance.toFixed(2)} (${balanceChange.toFixed(1)}%)`);
 
       return {
         incomeChange: Number(incomeChange.toFixed(1)),
