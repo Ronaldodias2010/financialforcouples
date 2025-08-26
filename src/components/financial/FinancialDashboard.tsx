@@ -7,6 +7,7 @@ import { MonthlyIncomeView } from "./MonthlyIncomeView";
 import { CategoryManager } from "./CategoryManager";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
 import { ExpensesPieChart } from "./ExpensesPieChart";
+import { AIRecommendations } from "./AIRecommendations";
 import { InvestmentDashboard } from "./InvestmentDashboard";
 import { MileageSystem } from "./MileageSystem";
 import { CardsPage } from "@/pages/CardsPage";
@@ -16,7 +17,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 // TEMPORARIAMENTE REMOVIDO: import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { usePWA } from "@/hooks/usePWA";
@@ -357,6 +358,8 @@ export const FinancialDashboard = () => {
         return <CategoryManager />;
       case "recurring":
         return <RecurringExpensesManager viewMode={viewMode} />;
+      case "aiRecommendations":
+        return <AIRecommendations />;
       case "investments":
         return (
           <div className="text-center py-8">
@@ -552,7 +555,8 @@ export const FinancialDashboard = () => {
                 { id: "transactions", label: t('nav.monthlyExpenses'), icon: Wallet },
                 { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp },
                 { id: "categories", label: t('nav.categories'), icon: Settings },
-                { id: "recurring", label: t('nav.recurring'), icon: TrendingDown }
+                { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -604,7 +608,8 @@ export const FinancialDashboard = () => {
               <div className="flex space-x-4 justify-center">
                 {[
                   { id: "categories", label: t('nav.categories'), icon: Settings },
-                  { id: "recurring", label: t('nav.recurring'), icon: TrendingDown }
+                  { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                  { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
