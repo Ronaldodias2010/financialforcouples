@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { ManualPremiumAccess } from "@/components/admin/ManualPremiumAccess";
 import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
 import AbandonedCheckouts from "@/components/admin/AbandonedCheckouts";
+import { EducationalContentManager } from "@/components/admin/EducationalContentManager";
 
 
 interface SubscriptionMetrics {
@@ -446,70 +447,83 @@ const AdminDashboardContent = () => {
         </div>
       </div>
 
-      {/* Métricas do Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('admin.metrics.activeUsers')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{metrics.activeUsers}</div>
-          </CardContent>
-        </Card>
+      {/* Main Admin Tabs */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">📊 Visão Geral</TabsTrigger>
+          <TabsTrigger value="users">👥 Usuários</TabsTrigger>
+          <TabsTrigger value="alerts">🚨 Alertas</TabsTrigger>
+          <TabsTrigger value="content">📚 Conteúdo</TabsTrigger>
+          <TabsTrigger value="premium">👑 Premium</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('admin.metrics.canceledSubscriptions')}</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{metrics.canceledSubscriptions}</div>
-          </CardContent>
-        </Card>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Métricas do Dashboard */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('admin.metrics.activeUsers')}</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{metrics.activeUsers}</div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('admin.metrics.failedPayments')}</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{metrics.failedPayments}</div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('admin.metrics.canceledSubscriptions')}</CardTitle>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">{metrics.canceledSubscriptions}</div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('admin.metrics.monthlyRevenue')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {(language === 'en' || language === 'es')
-                ? `$ ${metrics.monthlyRevenue.toFixed(2)}` 
-                : `R$ ${metrics.monthlyRevenue.toFixed(2)}`
-              }
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('admin.metrics.failedPayments')}</CardTitle>
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-yellow-600">{metrics.failedPayments}</div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{language === 'en' ? 'Annual Revenue' : 'Receita Anual'}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {(language === 'en' || language === 'es')
-                ? `$ ${metrics.annualRevenue.toFixed(2)}` 
-                : `R$ ${metrics.annualRevenue.toFixed(2)}`
-              }
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('admin.metrics.monthlyRevenue')}</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {(language === 'en' || language === 'es')
+                    ? `$ ${metrics.monthlyRevenue.toFixed(2)}` 
+                    : `R$ ${metrics.monthlyRevenue.toFixed(2)}`
+                  }
+                </div>
+              </CardContent>
+            </Card>
 
-      <Tabs defaultValue="users" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{language === 'en' ? 'Annual Revenue' : 'Receita Anual'}</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {(language === 'en' || language === 'es')
+                    ? `$ ${metrics.annualRevenue.toFixed(2)}` 
+                    : `R$ ${metrics.annualRevenue.toFixed(2)}`
+                  }
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-6">
+          <Tabs defaultValue="users" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger 
             value="users" 
@@ -687,46 +701,57 @@ const AdminDashboardContent = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="abandoned">
-          <AbandonedCheckouts />
+            <TabsContent value="abandoned">
+              <AbandonedCheckouts />
+            </TabsContent>
+
+            <TabsContent value="alerts">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('admin.alerts.title')}</CardTitle>
+                  <CardDescription>{t('admin.alerts.subtitle')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {alerts.map((alert) => (
+                      <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{alert.date}</span>
+                            <Badge variant="outline">{alert.user_email}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{alert.event}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">{alert.action}</p>
+                          <div className="mt-2 flex items-center justify-end gap-2">
+                            {alert.action !== t('admin.actions.noActionNeeded') && (
+                              <Button size="sm" variant="outline">
+                                {t('admin.actions.execute')}
+                              </Button>
+                            )}
+                            <Button size="sm" variant="outline" onClick={() => handleDeleteAlert(alert.id)}>
+                              {t('common.delete')}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
+        <TabsContent value="content">
+          <EducationalContentManager />
+        </TabsContent>
 
-        <TabsContent value="alerts">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('admin.alerts.title')}</CardTitle>
-              <CardDescription>{t('admin.alerts.subtitle')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {alerts.map((alert) => (
-                  <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{alert.date}</span>
-                        <Badge variant="outline">{alert.user_email}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{alert.event}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{alert.action}</p>
-                      <div className="mt-2 flex items-center justify-end gap-2">
-                        {alert.action !== t('admin.actions.noActionNeeded') && (
-                          <Button size="sm" variant="outline">
-                            {t('admin.actions.execute')}
-                          </Button>
-                        )}
-                        <Button size="sm" variant="outline" onClick={() => handleDeleteAlert(alert.id)}>
-                          {t('common.delete')}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="premium">
+          <div className="grid grid-cols-1 gap-6">
+            <ManualPremiumAccess language={language === 'es' ? 'en' : language as 'pt' | 'en'} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

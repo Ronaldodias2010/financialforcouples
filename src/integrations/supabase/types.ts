@@ -357,6 +357,54 @@ export type Database = {
         }
         Relationships: []
       }
+      educational_content: {
+        Row: {
+          category: string
+          content_type: string
+          created_at: string
+          created_by_admin_id: string
+          description: string | null
+          file_name: string | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          is_active: boolean
+          sort_order: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content_type: string
+          created_at?: string
+          created_by_admin_id: string
+          description?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean
+          sort_order?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content_type?: string
+          created_at?: string
+          created_by_admin_id?: string
+          description?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean
+          sort_order?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exchange_rates: {
         Row: {
           base_currency: string

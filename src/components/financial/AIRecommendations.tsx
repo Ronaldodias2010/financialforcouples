@@ -11,6 +11,7 @@ import { ptBR, enUS, es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { AIHistorySection } from "./AIHistorySection";
+import { EducationalContentSection } from "@/components/educational/EducationalContentSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -317,45 +318,7 @@ const AIRecommendationsContent = () => {
       <AIHistorySection />
 
       {/* Educational Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            {t('aiRecommendations.educationalContent')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">📊 {t('aiRecommendations.planning')}</h4>
-              <p className="text-sm text-muted-foreground">
-                {t('aiRecommendations.planningDesc')}
-              </p>
-            </div>
-            
-            <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">💰 {t('aiRecommendations.investments')}</h4>
-              <p className="text-sm text-muted-foreground">
-                {t('aiRecommendations.investmentsDesc')}
-              </p>
-            </div>
-            
-            <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">🏠 {t('aiRecommendations.emergency')}</h4>
-              <p className="text-sm text-muted-foreground">
-                {t('aiRecommendations.emergencyDesc')}
-              </p>
-            </div>
-            
-            <div className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <h4 className="font-semibold mb-2">📈 {t('aiRecommendations.analysis')}</h4>
-              <p className="text-sm text-muted-foreground">
-                {t('aiRecommendations.analysisDesc')}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <EducationalContentSection />
     </div>
   );
 };
