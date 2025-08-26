@@ -5,13 +5,17 @@ export type Language = 'en' | 'pt' | 'es';
 interface LanguageContextProps {
   language: Language;
   t: (key: string, params?: Record<string, string | number>) => string;
+  tFor: (lang: Language, key: string, params?: Record<string, string | number>) => string;
   setLanguage: (lang: Language) => void;
+  inBrazil: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextProps>({
   language: 'pt',
   t: (key: string) => key,
+  tFor: (lang: Language, key: string) => key,
   setLanguage: () => {},
+  inBrazil: true,
 });
 
 const translations = {
@@ -152,6 +156,9 @@ const translations = {
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('pt');
 
+  // Detect if user is in Brazil (simplified logic - can be enhanced)
+  const inBrazil = language === 'pt';
+
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     const keys = key.split('.');
     let value: any = translations[language];
@@ -177,8 +184,33 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return key;
   }, [language]);
 
+  const tFor = useCallback((lang: Language, key: string, params?: Record<string, string | number>): string => {
+    const keys = key.split('.');
+    let value: any = translations[lang];
+  
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k];
+      } else {
+        return key;
+      }
+    }
+  
+    if (typeof value === 'string') {
+      if (params) {
+        Object.entries(params).forEach(([paramKey, paramValue]) => {
+          const placeholder = `{{${paramKey}}}`;
+          value = value.replace(new RegExp(placeholder, 'g'), String(paramValue));
+        });
+      }
+      return value;
+    }
+  
+    return key;
+  }, []);
+
   return (
-    <LanguageContext.Provider value={{ language, t, setLanguage }}>
+    <LanguageContext.Provider value={{ language, t, tFor, setLanguage, inBrazil }}>
       {children}
     </LanguageContext.Provider>
   );
