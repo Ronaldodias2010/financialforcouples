@@ -123,6 +123,7 @@ const translations = {
     // AI Recommendations
     'aiRecommendations.title': 'Recomendações da IA',
     'aiRecommendations.subtitle': 'Análise inteligente das suas finanças e recomendações personalizadas',
+    'aiRecommendations.analysisPanel': 'Período de Análise',
     'aiRecommendations.analysisPeriod': 'Período de Análise',
     'aiRecommendations.from': 'De:',
     'aiRecommendations.to': 'Até:',
