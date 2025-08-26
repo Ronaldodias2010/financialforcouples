@@ -395,6 +395,12 @@ function generateFinancialContext(data: FinancialData): string {
 
   let context = '';
 
+  // Get today's date for analyzing daily transactions
+  const today = new Date().toISOString().split('T')[0];
+  const todayTransactions = transactions.filter(t => t.transaction_date === today);
+  const todayIncome = todayTransactions.filter(t => t.type === 'income');
+  const todayExpenses = todayTransactions.filter(t => t.type === 'expense');
+
   // Add relationship context for intelligent interpretation
   if (relationshipInfo) {
     context += `
@@ -409,7 +415,37 @@ INFORMAÇÕES DO RELACIONAMENTO:
 
     context += `
 
+TRANSAÇÕES DE HOJE (${today}):
+${todayIncome.length > 0 ? 
+  `ENTRADAS HOJE:
+${todayIncome.map(t => `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${accounts.find(a => a.id === t.account_id)?.name || 'Conta'})`).join('\n')}
+TOTAL DE ENTRADAS HOJE: R$ ${todayIncome.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
+  'ENTRADAS HOJE: Nenhuma entrada registrada hoje'
+}
+
+${todayExpenses.length > 0 ? 
+  `GASTOS HOJE:
+${todayExpenses.map(t => {
+    const category = categories.find(c => c.id === t.category_id);
+    const paymentInfo = t.account_id ? 
+      (accounts.find(a => a.id === t.account_id)?.name || 'Conta') :
+      (cards.find(c => c.id === t.card_id)?.name || 'Cartão');
+    return `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${category?.name || 'Sem categoria'} - ${paymentInfo})`;
+  }).join('\n')}
+TOTAL DE GASTOS HOJE: R$ ${todayExpenses.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
+  'GASTOS HOJE: Nenhum gasto registrado hoje'
+}
+
 INSTRUÇÕES DE INTERPRETAÇÃO INTELIGENTE:
+
+PARA PERGUNTAS OBJETIVAS SOBRE HOJE:
+- Se o usuário perguntar sobre "entrou algum valor hoje", "teve receita hoje", "recebi algo hoje": responda DIRETAMENTE baseado nas ENTRADAS HOJE acima
+- Se o usuário perguntar sobre "gastos de hoje", "gastei hoje", "saiu dinheiro hoje": responda DIRETAMENTE baseado nos GASTOS HOJE acima
+- Para estas perguntas objetivas, seja CONCISO e DIRETO: apenas confirme sim/não e mostre os valores específicos
+- Não faça análise completa automaticamente - apenas responda a pergunta específica
+- Ofereça análise mais detalhada apenas se o usuário pedir explicitamente ("quer mais detalhes?", "pode analisar?")
+
+PARA PERGUNTAS GERAIS/AMBÍGUAS:
 ${relationshipInfo.isCouple ? 
   `- Este usuário faz parte de um casal. Quando o usuário fizer perguntas ambíguas sobre "saldo", "gastos", "receitas" sem especificar de quem, pergunte especificamente se ele quer ver:
   1) Apenas seus dados pessoais (${relationshipInfo.currentUserName})
