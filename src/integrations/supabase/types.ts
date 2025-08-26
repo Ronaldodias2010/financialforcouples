@@ -1168,6 +1168,7 @@ export type Database = {
           is_installment: boolean | null
           owner_user: string | null
           payment_method: string | null
+          purchase_date: string
           subcategory: string | null
           total_installments: number | null
           transaction_date: string
@@ -1188,6 +1189,7 @@ export type Database = {
           is_installment?: boolean | null
           owner_user?: string | null
           payment_method?: string | null
+          purchase_date?: string
           subcategory?: string | null
           total_installments?: number | null
           transaction_date?: string
@@ -1208,6 +1210,7 @@ export type Database = {
           is_installment?: boolean | null
           owner_user?: string | null
           payment_method?: string | null
+          purchase_date?: string
           subcategory?: string | null
           total_installments?: number | null
           transaction_date?: string

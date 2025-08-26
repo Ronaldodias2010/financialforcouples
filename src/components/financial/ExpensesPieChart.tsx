@@ -135,10 +135,13 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
           amount,
           user_id,
           payment_method,
+          purchase_date,
+          transaction_date,
           created_at,
           categories!inner(name, color)
         `)
-        .or(`and(type.eq.expense,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startDate},created_at.lte.${endDate})`);
+        .eq('type', 'expense')
+        .or(`and(payment_method.neq.credit_card,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(payment_method.eq.credit_card,purchase_date.gte.${startDate},purchase_date.lte.${endDate})`);
 
       // Apply couple or individual user filter first
       if (coupleData?.status === 'active') {

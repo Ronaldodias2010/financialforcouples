@@ -567,51 +567,53 @@ const invTxn: TablesInsert<'transactions'> = {
           const total = Math.round(transactionAmount * 100);
           const per = Math.floor(total / totalInstallments);
 
-          const rows = Array.from({ length: totalInstallments }, (_, i) => {
-            const isLast = i === totalInstallments - 1;
-            const amountCents = isLast ? total - per * (totalInstallments - 1) : per;
-            const dueDate = makeDueDate(purchaseDate, firstOffset + i);
-            return {
-              user_id: user.id,
-              owner_user: ownerUser,
-              type: "expense" as const,
-              amount: amountCents / 100,
-              currency,
-              description,
-              category_id: categoryId,
-              subcategory: subcategory || null,
-              transaction_date: format(dueDate, 'yyyy-MM-dd'),
-              payment_method: "credit_card" as const,
-              card_id: cardId,
-              account_id: null,
-              is_installment: true,
-              total_installments: totalInstallments,
-              installment_number: i + 1,
-            };
-          });
-
-          const { error: insertErr } = await supabase.from("transactions").insert(rows);
-          if (insertErr) throw insertErr;
-        } else {
-          // À vista => 1/1 respeitando corte
-          const dueDate = makeDueDate(purchaseDate, firstOffset);
-          const { error: insertErr } = await supabase.from("transactions").insert({
+        const rows = Array.from({ length: totalInstallments }, (_, i) => {
+          const isLast = i === totalInstallments - 1;
+          const amountCents = isLast ? total - per * (totalInstallments - 1) : per;
+          const dueDate = makeDueDate(purchaseDate, firstOffset + i);
+          return {
             user_id: user.id,
             owner_user: ownerUser,
-            type: "expense",
-            amount: transactionAmount,
+            type: "expense" as const,
+            amount: amountCents / 100,
             currency,
             description,
             category_id: categoryId,
             subcategory: subcategory || null,
             transaction_date: format(dueDate, 'yyyy-MM-dd'),
-            payment_method: "credit_card",
+            purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
+            payment_method: "credit_card" as const,
             card_id: cardId,
             account_id: null,
             is_installment: true,
-            total_installments: 1,
-            installment_number: 1,
-          });
+            total_installments: totalInstallments,
+            installment_number: i + 1,
+          };
+        });
+
+          const { error: insertErr } = await supabase.from("transactions").insert(rows);
+          if (insertErr) throw insertErr;
+        } else {
+        // À vista => 1/1 respeitando corte
+        const dueDate = makeDueDate(purchaseDate, firstOffset);
+        const { error: insertErr } = await supabase.from("transactions").insert({
+          user_id: user.id,
+          owner_user: ownerUser,
+          type: "expense",
+          amount: transactionAmount,
+          currency,
+          description,
+          category_id: categoryId,
+          subcategory: subcategory || null,
+          transaction_date: format(dueDate, 'yyyy-MM-dd'),
+          purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
+          payment_method: "credit_card",
+          card_id: cardId,
+          account_id: null,
+          is_installment: true,
+          total_installments: 1,
+          installment_number: 1,
+        });
           if (insertErr) throw insertErr;
         }
       } else {
@@ -677,6 +679,7 @@ const invTxn: TablesInsert<'transactions'> = {
             category_id: categoryId,
             subcategory: subcategory || null,
             transaction_date: format(transactionDate, 'yyyy-MM-dd'),
+            purchase_date: format(transactionDate, 'yyyy-MM-dd'),
             payment_method: paymentMethod,
             card_id: cardId || null,
             account_id: accountId || null,

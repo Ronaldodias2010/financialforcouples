@@ -28,6 +28,7 @@ interface Transaction {
   account_id?: string;
   subcategory?: string;
   transaction_date: string; // para cartão, representa o vencimento
+  purchase_date?: string; // data real da compra
   payment_method: string;
   card_id?: string;
   user_id: string;
@@ -35,6 +36,7 @@ interface Transaction {
   is_installment?: boolean;
   total_installments?: number | null;
   installment_number?: number | null;
+  created_at?: string;
   categories?: {
     name: string;
   };
@@ -207,8 +209,9 @@ const fetchCategories = async () => {
           accounts(name)
         `)
         .in('user_id', userIds)
-        .or(`and(type.eq.expense,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${startDate},created_at.lte.${endDate})`)
-        .order('transaction_date', { ascending: false });
+        .eq('type', 'expense')
+        .or(`and(payment_method.neq.credit_card,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(payment_method.eq.credit_card,purchase_date.gte.${startDate},purchase_date.lte.${endDate})`)
+        .order('purchase_date', { ascending: false });
 
 if (selectedCategory !== "all") {
         const opt = categoryOptions.find(o => o.key === selectedCategory);
@@ -324,7 +327,7 @@ if (selectedCategory !== "all") {
     ];
 
     const csvData = transactions.map(transaction => [
-      formatDate(transaction.transaction_date),
+      formatDate(transaction.purchase_date || transaction.created_at?.split('T')[0] || transaction.transaction_date),
       transaction.description,
       translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
       transaction.subcategory || '',
@@ -400,7 +403,7 @@ if (selectedCategory !== "all") {
     ];
     
     const tableData = transactions.map(transaction => [
-      formatDate(transaction.transaction_date),
+      formatDate(transaction.purchase_date || transaction.created_at?.split('T')[0] || transaction.transaction_date),
       transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
       translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
       getUserName(transaction.owner_user || 'user1'),
@@ -557,9 +560,9 @@ if (selectedCategory !== "all") {
                         {transaction.cards?.owner_user && (
                           <p>{t('monthlyExpenses.cardOwner')}: {getCardOwnerName(transaction.cards.owner_user)}</p>
                         )}
-                        <p>{t('monthlyExpenses.purchaseDate')}: {formatDate(transaction.transaction_date)}</p>
-                        {transaction.payment_method === 'credit_card' && transaction.cards?.due_date && (
-                          <p>{t('monthlyExpenses.dueDate')}: {transaction.cards.due_date}</p>
+                        <p>{t('monthlyExpenses.purchaseDate')}: {formatDate(transaction.purchase_date || transaction.created_at?.split('T')[0] || transaction.transaction_date)}</p>
+                        {transaction.payment_method === 'credit_card' && (
+                          <p>{t('monthlyExpenses.dueDate')}: {formatDate(transaction.transaction_date)}</p>
                         )}
                       </div>
                     </div>
