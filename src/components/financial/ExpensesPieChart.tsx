@@ -261,17 +261,23 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
     };
   }, [user, selectedMonth, viewMode, coupleData]);
 
-  const getChartData = (data: ExpenseByCategory[]) => ({
-    labels: data.map(item => item.categoryName),
-    datasets: [
-      {
-        data: data.map(item => item.amount),
-        backgroundColor: data.map(item => item.color),
-        borderColor: data.map(item => item.color),
-        borderWidth: 1,
-      },
-    ],
-  });
+  const getChartData = (data: ExpenseByCategory[]) => {
+    const total = data.reduce((sum, item) => sum + item.amount, 0);
+    return {
+      labels: data.map(item => {
+        const percentage = total > 0 ? ((item.amount / total) * 100).toFixed(1) : '0';
+        return `${item.categoryName} (${percentage}%)`;
+      }),
+      datasets: [
+        {
+          data: data.map(item => item.amount),
+          backgroundColor: data.map(item => item.color),
+          borderColor: data.map(item => item.color),
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
 
   const getChartOptions = (data: ExpenseByCategory[]) => ({
     responsive: true,
