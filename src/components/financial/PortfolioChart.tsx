@@ -71,8 +71,16 @@ export const PortfolioChart = ({ investments, userPreferredCurrency }: Portfolio
     return acc;
   }, {} as { [key: string]: number });
 
+  // Calcular percentuais para as labels
+  const totalValue = Object.values(distributionByType).reduce((a, b) => a + b, 0);
+  const labelsWithPercentage = Object.keys(distributionByType).map(key => {
+    const value = distributionByType[key];
+    const percentage = ((value / totalValue) * 100).toFixed(1);
+    return `${key} (${percentage}%)`;
+  });
+
   const pieData = {
-    labels: Object.keys(distributionByType),
+    labels: labelsWithPercentage,
     datasets: [
       {
         label: t('portfolioChart.investedValue'),
