@@ -361,7 +361,7 @@ async function saveToAIHistory(supabase: any, userId: string, entryType: string,
       .insert({
         user_id: userId,
         entry_type: entryType,
-        message: message.substring(0, 1000) // Limit message length
+        message: message.substring(0, 5000) // Increased limit to capture full recommendations
       });
   } catch (error) {
     console.error('Error saving to AI history:', error);

@@ -188,8 +188,39 @@ export const AIHistorySection = () => {
                     <CollapsibleContent>
                       <div className="px-4 pb-4 border-t bg-muted/20">
                         <div className="pt-3 space-y-3">
-                          <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
-                            {entry.message}
+                          <div className="text-sm leading-relaxed text-foreground">
+                            <div className="space-y-2">
+                              {entry.message.split('\n').map((line, index) => {
+                                // Skip empty lines
+                                if (!line.trim()) return null;
+                                
+                                // Headers (lines with all caps or ending with :)
+                                if (line.match(/^[A-Z\s]+:?$/) || line.endsWith(':')) {
+                                  return (
+                                    <div key={index} className="font-semibold text-primary mt-3 first:mt-0">
+                                      {line}
+                                    </div>
+                                  );
+                                }
+                                
+                                // Bullet points or numbered items
+                                if (line.match(/^[\s]*[-•*]\s/) || line.match(/^\d+\.\s/)) {
+                                  return (
+                                    <div key={index} className="ml-2 flex items-start gap-2">
+                                      <span className="text-primary mt-1">•</span>
+                                      <span>{line.replace(/^[\s]*[-•*]\s/, '').replace(/^\d+\.\s/, '')}</span>
+                                    </div>
+                                  );
+                                }
+                                
+                                // Regular paragraphs
+                                return (
+                                  <div key={index} className="leading-relaxed">
+                                    {line}
+                                  </div>
+                                );
+                              }).filter(Boolean)}
+                            </div>
                           </div>
                           
                           {(entry.card_name || entry.amount) && (
