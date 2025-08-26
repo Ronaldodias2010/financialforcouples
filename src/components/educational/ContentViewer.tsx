@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Download, X, AlertCircle, Loader2 } from 'lucide-react';
+import { Download, X, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 
 interface ContentViewerProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [iframeBlocked, setIframeBlocked] = useState(false);
 
   if (!content) return null;
 
@@ -47,6 +48,15 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
   const isImage = content.content_type === 'image' || 
                   content.file_type?.toLowerCase().includes('image') ||
                   /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(content.file_name);
+
+  const openInNewTab = () => {
+    window.open(content.file_url, '_blank', 'noopener,noreferrer');
+  };
+
+  const getPDFViewerUrl = () => {
+    // Usar o visualizador PDF.js do navegador quando disponível
+    return `https://docs.google.com/gview?url=${encodeURIComponent(content.file_url)}&embedded=true`;
+  };
 
   const renderContent = () => {
     if (error) {
@@ -89,6 +99,28 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
     }
 
     if (isPDF) {
+      if (iframeBlocked) {
+        return (
+          <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
+            <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
+            <div>
+              <h3 className="text-lg font-semibold mb-2">{t('educational.viewer.blocked')}</h3>
+              <p className="text-muted-foreground mb-4">{t('educational.viewer.blockedDesc')}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={openInNewTab} className="bg-gradient-to-r from-blue-500 to-blue-600">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                {t('educational.viewer.openInNewTab')}
+              </Button>
+              <Button onClick={handleDownload} variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                {t('educational.download')}
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="relative w-full h-[80vh]">
           {loading && (
@@ -97,15 +129,30 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
             </div>
           )}
           <iframe
-            src={content.file_url}
+            src={getPDFViewerUrl()}
             className="w-full h-full rounded-lg border"
             onLoad={() => setLoading(false)}
             onError={() => {
+              console.log('PDF iframe failed, trying direct URL...');
               setLoading(false);
-              setError(true);
+              setIframeBlocked(true);
             }}
             title={content.title}
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
           />
+          {/* Fallback com iframe direto */}
+          {!loading && !iframeBlocked && (
+            <iframe
+              src={content.file_url}
+              className="w-full h-full rounded-lg border absolute top-0 left-0"
+              style={{ display: iframeBlocked ? 'none' : 'block' }}
+              onError={() => {
+                console.log('Direct PDF iframe also failed');
+                setIframeBlocked(true);
+              }}
+              title={`${content.title} - Direct`}
+            />
+          )}
         </div>
       );
     }
@@ -153,6 +200,9 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <DialogTitle className="text-xl">{content.title}</DialogTitle>
+              <DialogDescription className="sr-only">
+                {t('educational.viewer.modalDesc')}
+              </DialogDescription>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="secondary">{content.content_type}</Badge>
                 <span className="text-sm text-muted-foreground">{content.file_name}</span>
