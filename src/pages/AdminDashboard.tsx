@@ -450,12 +450,10 @@ const AdminDashboardContent = () => {
 
       {/* Main Admin Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">📊 {t('admin.tabs.overview')}</TabsTrigger>
           <TabsTrigger value="users">👥 {t('admin.tabs.users')}</TabsTrigger>
-          <TabsTrigger value="alerts">🚨 {t('admin.tabs.alerts')}</TabsTrigger>
           <TabsTrigger value="content">📚 {t('admin.tabs.content')}</TabsTrigger>
-          <TabsTrigger value="premium">👑 Premium</TabsTrigger>
           <TabsTrigger value="ai-control">🤖 {t('admin.tabs.aiControl')}</TabsTrigger>
         </TabsList>
 
@@ -554,13 +552,6 @@ const AdminDashboardContent = () => {
           >
             <Search className="h-4 w-4 mr-2" />
             {language === 'pt' ? 'Carrinho Abandonado' : language === 'en' ? 'Abandoned Checkouts' : 'Carritos Abandonados'}
-          </TabsTrigger>
-          <TabsTrigger 
-            value="alerts"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
-          >
-            <AlertTriangle className="h-4 w-4 mr-2" />
-            {t('admin.tabs.alerts')}
           </TabsTrigger>
         </TabsList>
 
@@ -706,43 +697,6 @@ const AdminDashboardContent = () => {
             <TabsContent value="abandoned">
               <AbandonedCheckouts />
             </TabsContent>
-
-            <TabsContent value="alerts">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('admin.alerts.title')}</CardTitle>
-                  <CardDescription>{t('admin.alerts.subtitle')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {alerts.map((alert) => (
-                      <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{alert.date}</span>
-                            <Badge variant="outline">{alert.user_email}</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{alert.event}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">{alert.action}</p>
-                          <div className="mt-2 flex items-center justify-end gap-2">
-                            {alert.action !== t('admin.actions.noActionNeeded') && (
-                              <Button size="sm" variant="outline">
-                                {t('admin.actions.execute')}
-                              </Button>
-                            )}
-                            <Button size="sm" variant="outline" onClick={() => handleDeleteAlert(alert.id)}>
-                              {t('common.delete')}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
         </TabsContent>
 
@@ -752,12 +706,6 @@ const AdminDashboardContent = () => {
 
         <TabsContent value="ai-control">
           <AIControlSection />
-        </TabsContent>
-        
-        <TabsContent value="premium">
-          <div className="grid grid-cols-1 gap-6">
-            <ManualPremiumAccess language={language === 'es' ? 'en' : language as 'pt' | 'en'} />
-          </div>
         </TabsContent>
       </Tabs>
     </div>
