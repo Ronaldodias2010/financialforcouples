@@ -12,7 +12,11 @@ import {
   AlertTriangle,
   TrendingUp,
   Settings,
-  RefreshCw
+  RefreshCw,
+  Crown,
+  Zap,
+  Target,
+  Award
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -43,6 +47,9 @@ interface UsageMetrics {
   totalCost: number;
   premiumUsers: number;
   essentialUsers: number;
+  topUser?: UsageData;
+  avgTokensPerUser: number;
+  usersNearLimit: number;
 }
 
 export const AIControlSection = () => {
@@ -61,10 +68,14 @@ export const AIControlSection = () => {
       limits: 'Limites',
       totalUsers: 'Total de Usuários',
       totalRequests: 'Requisições Hoje',
-      totalTokens: 'Tokens Consumidos',
+      totalTokens: 'Total de Tokens Hoje',
       dailyCost: 'Custo Diário Estimado',
       premiumUsers: 'Usuários Premium',
       essentialUsers: 'Usuários Essential',
+      topUser: 'Maior Consumidor Hoje',
+      avgTokens: 'Média de Tokens/Usuário',
+      usersNearLimit: 'Usuários Próximos do Limite',
+      noTopUser: 'Nenhum usuário ativo',
       userEmail: 'Email do Usuário',
       requests: 'Requisições',
       tokens: 'Tokens',
@@ -92,10 +103,14 @@ export const AIControlSection = () => {
       limits: 'Limits',
       totalUsers: 'Total Users',
       totalRequests: 'Requests Today',
-      totalTokens: 'Tokens Consumed',
+      totalTokens: 'Total Tokens Today',
       dailyCost: 'Daily Estimated Cost',
       premiumUsers: 'Premium Users',
       essentialUsers: 'Essential Users',
+      topUser: 'Top Consumer Today',
+      avgTokens: 'Average Tokens/User',
+      usersNearLimit: 'Users Near Limit',
+      noTopUser: 'No active user',
       userEmail: 'User Email',
       requests: 'Requests',
       tokens: 'Tokens',
@@ -123,10 +138,14 @@ export const AIControlSection = () => {
       limits: 'Límites',
       totalUsers: 'Total de Usuarios',
       totalRequests: 'Solicitudes Hoy',
-      totalTokens: 'Tokens Consumidos',
+      totalTokens: 'Total de Tokens Hoy',
       dailyCost: 'Costo Diario Estimado',
       premiumUsers: 'Usuarios Premium',
       essentialUsers: 'Usuarios Essential',
+      topUser: 'Mayor Consumidor Hoy',
+      avgTokens: 'Promedio Tokens/Usuario',
+      usersNearLimit: 'Usuarios Cerca del Límite',
+      noTopUser: 'Ningún usuario activo',
       userEmail: 'Email del Usuario',
       requests: 'Solicitudes',
       tokens: 'Tokens',
@@ -224,6 +243,22 @@ export const AIControlSection = () => {
       const totalCost = processedUsage.reduce((sum, u) => sum + Number(u.estimated_cost_brl), 0);
       const premiumUsers = processedUsage.filter(u => u.subscription_tier === 'premium').length;
       const essentialUsers = processedUsage.filter(u => u.subscription_tier === 'essential').length;
+      
+      // Calculate additional metrics
+      const topUser = processedUsage.length > 0 ? processedUsage[0] : undefined;
+      const avgTokensPerUser = processedUsage.length > 0 ? Math.round(totalTokens / processedUsage.length) : 0;
+      
+      // Count users near their limits (>80% of any limit)
+      const usersNearLimit = processedUsage.filter(user => {
+        const userLimit = (limitsData || []).find(l => l.subscription_tier === user.subscription_tier);
+        if (!userLimit) return false;
+        
+        const requestsPercent = getUsagePercentage(user.requests_count, userLimit.daily_requests_limit);
+        const tokensPercent = getUsagePercentage(user.tokens_used, userLimit.daily_tokens_limit);
+        const costPercent = getUsagePercentage(Number(user.estimated_cost_brl), userLimit.daily_cost_limit_brl);
+        
+        return requestsPercent > 80 || tokensPercent > 80 || costPercent > 80;
+      }).length;
 
       setUsageData(processedUsage);
       setLimits(limitsData || []);
@@ -233,7 +268,10 @@ export const AIControlSection = () => {
         totalTokens,
         totalCost,
         premiumUsers,
-        essentialUsers
+        essentialUsers,
+        topUser,
+        avgTokensPerUser,
+        usersNearLimit
       });
 
     } catch (error) {
@@ -331,50 +369,125 @@ export const AIControlSection = () => {
           <TabsTrigger value="limits">{text.limits}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent value="overview" className="space-y-6">
+          {/* Cards principais em destaque */}
           {metrics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{text.totalUsers}</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+            <>
+              {/* Card dedicado para Total de Tokens */}
+              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+                <CardHeader className="text-center pb-2">
+                  <CardTitle className="text-lg font-bold text-primary flex items-center justify-center gap-2">
+                    <Zap className="h-6 w-6" />
+                    {text.totalTokens}
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{formatNumber(metrics.totalUsers)}</div>
+                <CardContent className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {formatNumber(metrics.totalTokens)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Consumidos por {metrics.totalUsers} usuários hoje
+                  </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {metrics.premiumUsers} Premium, {metrics.essentialUsers} Essential
+                    Média: {formatNumber(metrics.avgTokensPerUser)} tokens/usuário
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{text.totalRequests}</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{formatNumber(metrics.totalRequests)}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {formatNumber(metrics.totalTokens)} tokens
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Cards de métricas principais */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{text.totalUsers}</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(metrics.totalUsers)}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {metrics.premiumUsers} Premium, {metrics.essentialUsers} Essential
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{text.dailyCost}</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(metrics.totalCost)}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Média: {formatCurrency(metrics.totalCost / Math.max(metrics.totalUsers, 1))} / usuário
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{text.totalRequests}</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(metrics.totalRequests)}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {formatNumber(metrics.avgTokensPerUser)} tokens/usuário
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{text.dailyCost}</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(metrics.totalCost)}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Média: {formatCurrency(metrics.totalCost / Math.max(metrics.totalUsers, 1))} / usuário
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className={metrics.usersNearLimit > 0 ? "border-destructive/50 bg-destructive/5" : ""}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{text.usersNearLimit}</CardTitle>
+                    <AlertTriangle className={`h-4 w-4 ${metrics.usersNearLimit > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+                  </CardHeader>
+                  <CardContent>
+                    <div className={`text-2xl font-bold ${metrics.usersNearLimit > 0 ? 'text-destructive' : ''}`}>
+                      {formatNumber(metrics.usersNearLimit)}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Acima de 80% do limite
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Card do usuário que mais consumiu */}
+              {metrics.topUser && (
+                <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-amber-700">
+                      <Award className="h-5 w-5" />
+                      {text.topUser}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="font-semibold text-lg">{metrics.topUser.display_name}</div>
+                        <div className="text-sm text-muted-foreground">{metrics.topUser.user_email}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant={metrics.topUser.subscription_tier === 'premium' ? 'default' : 'secondary'}>
+                            {metrics.topUser.subscription_tier === 'premium' ? 'Premium' : 'Essential'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <div className="text-3xl font-bold text-amber-700">
+                          {formatNumber(metrics.topUser.tokens_used)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">tokens utilizados</div>
+                        <div className="text-sm">
+                          {formatNumber(metrics.topUser.requests_count)} requisições • {formatCurrency(Number(metrics.topUser.estimated_cost_brl))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
 
+          {/* Alerta se não houver uso */}
           {usageData.length === 0 && (
             <Alert>
               <AlertTriangle className="h-4 w-4" />
@@ -384,16 +497,68 @@ export const AIControlSection = () => {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-4">
+          {/* Resumo rápido */}
+          {metrics && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="border-blue-200 bg-blue-50">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-700">{formatNumber(metrics.totalUsers)}</div>
+                      <div className="text-sm text-blue-600">Usuários Ativos</div>
+                    </div>
+                    <Users className="h-8 w-8 text-blue-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-green-700">{formatNumber(metrics.avgTokensPerUser)}</div>
+                      <div className="text-sm text-green-600">Tokens/Usuário</div>
+                    </div>
+                    <Target className="h-8 w-8 text-green-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-200 bg-purple-50">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-purple-700">{formatCurrency(metrics.totalCost)}</div>
+                      <div className="text-sm text-purple-600">Custo Total</div>
+                    </div>
+                    <DollarSign className="h-8 w-8 text-purple-500" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           <Card>
             <CardHeader>
-              <CardTitle>{text.users} - {text.totalRequests}</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                {text.users} - Detalhamento de Uso
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {usageData.map((user) => {
                   const userLimits = limits.find(l => l.subscription_tier === user.subscription_tier);
+                  const isNearLimit = userLimits && (
+                    getUsagePercentage(user.requests_count, userLimits.daily_requests_limit) > 80 ||
+                    getUsagePercentage(user.tokens_used, userLimits.daily_tokens_limit) > 80 ||
+                    getUsagePercentage(Number(user.estimated_cost_brl), userLimits.daily_cost_limit_brl) > 80
+                  );
+                  
                   return (
-                    <div key={user.user_id} className="border rounded-lg p-4">
+                    <div key={user.user_id} className={`border rounded-lg p-4 transition-all ${
+                      isNearLimit ? 'border-destructive/50 bg-destructive/5' : 'hover:shadow-md'
+                    }`}>
                       <div className="flex items-center justify-between mb-2">
                         <div>
                           <div className="font-medium">{user.display_name}</div>
@@ -401,11 +566,20 @@ export const AIControlSection = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant={user.subscription_tier === 'premium' ? 'default' : 'secondary'}>
-                            {user.subscription_tier === 'premium' ? text.premium : text.essential}
+                            {user.subscription_tier === 'premium' ? (
+                              <><Crown className="h-3 w-3 mr-1" />{text.premium}</>
+                            ) : (
+                              text.essential
+                            )}
                           </Badge>
                           {userLimits && (isLimitReached(user.requests_count, userLimits.daily_requests_limit) ||
                             isLimitReached(user.tokens_used, userLimits.daily_tokens_limit)) && (
                             <Badge variant="destructive">{text.limitReached}</Badge>
+                          )}
+                          {isNearLimit && (
+                            <Badge variant="outline" className="border-amber-500 text-amber-600">
+                              Próximo do Limite
+                            </Badge>
                           )}
                         </div>
                       </div>
@@ -475,12 +649,12 @@ export const AIControlSection = () => {
                       onChange={(e) => {
                         const newLimits = limits.map(l => 
                           l.subscription_tier === limit.subscription_tier 
-                            ? { ...l, daily_requests_limit: parseInt(e.target.value) || 0 }
+                            ? { ...l, daily_requests_limit: parseInt(e.target.value) }
                             : l
                         );
                         setLimits(newLimits);
                       }}
-                      className="w-full mt-1 px-3 py-2 border border-border rounded-md"
+                      className="w-full mt-1 px-3 py-2 border rounded-md"
                     />
                   </div>
 
@@ -492,12 +666,12 @@ export const AIControlSection = () => {
                       onChange={(e) => {
                         const newLimits = limits.map(l => 
                           l.subscription_tier === limit.subscription_tier 
-                            ? { ...l, daily_tokens_limit: parseInt(e.target.value) || 0 }
+                            ? { ...l, daily_tokens_limit: parseInt(e.target.value) }
                             : l
                         );
                         setLimits(newLimits);
                       }}
-                      className="w-full mt-1 px-3 py-2 border border-border rounded-md"
+                      className="w-full mt-1 px-3 py-2 border rounded-md"
                     />
                   </div>
 
@@ -510,12 +684,12 @@ export const AIControlSection = () => {
                       onChange={(e) => {
                         const newLimits = limits.map(l => 
                           l.subscription_tier === limit.subscription_tier 
-                            ? { ...l, daily_cost_limit_brl: parseFloat(e.target.value) || 0 }
+                            ? { ...l, daily_cost_limit_brl: parseFloat(e.target.value) }
                             : l
                         );
                         setLimits(newLimits);
                       }}
-                      className="w-full mt-1 px-3 py-2 border border-border rounded-md"
+                      className="w-full mt-1 px-3 py-2 border rounded-md"
                     />
                   </div>
                 </div>
