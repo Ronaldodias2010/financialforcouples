@@ -631,6 +631,40 @@ const invTxn: TablesInsert<'transactions'> = {
             return;
           }
         }
+
+        // Check credit card limit and warn if exceeded (but allow transaction)
+        let limitExceeded = false;
+        let cardName = "";
+        let availableLimit = 0;
+        
+        if (type === "expense" && paymentMethod === "credit_card" && cardId) {
+          const selectedCard = cards.find(card => card.id === cardId);
+          if (selectedCard) {
+            // Get current card data with limit information
+            const { data: cardData, error: cardError } = await supabase
+              .from('cards')
+              .select('name, credit_limit, initial_balance_original, current_balance, currency')
+              .eq('id', cardId)
+              .single();
+
+            if (!cardError && cardData) {
+              cardName = cardData.name;
+              const creditLimit = Number(cardData.credit_limit || 0);
+              const initialBalanceOriginal = Number(cardData.initial_balance_original || 0);
+              const currentBalance = Number(cardData.current_balance || 0);
+              const cardCurrency = (cardData.currency || "BRL") as CurrencyCode;
+              const convertedAmount = convertCurrency(transactionAmount, currency, cardCurrency);
+              
+              // Calculate available limit
+              availableLimit = creditLimit - initialBalanceOriginal - currentBalance;
+              
+              // Check if this transaction would exceed the limit
+              if (convertedAmount > availableLimit && availableLimit >= 0) {
+                limitExceeded = true;
+              }
+            }
+          }
+        }
         const { error } = await supabase
           .from('transactions')
           .insert({
@@ -652,6 +686,45 @@ const invTxn: TablesInsert<'transactions'> = {
           });
 
         if (error) throw error;
+
+        // Show limit exceeded warning if applicable
+        if (limitExceeded) {
+          const formatCurrency = (value: number, currency: string = 'BRL') => {
+            return new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: currency,
+            }).format(value);
+          };
+
+          toast({
+            title: "⚠️ Limite do Cartão Extrapolado",
+            description: `Você gastou além do limite disponível do cartão ${cardName}. Limite disponível era: ${formatCurrency(availableLimit, currency)}`,
+            variant: "destructive",
+            duration: 8000,
+          });
+
+          // Add to AI history for premium users
+          try {
+            const { data: subscription } = await supabase
+              .from('subscribers')
+              .select('subscribed, subscription_tier')
+              .eq('user_id', user.id)
+              .single();
+
+            if (subscription?.subscribed && subscription?.subscription_tier === 'premium') {
+              await supabase.from('ai_history').insert({
+                user_id: user.id,
+                entry_type: 'limit_exceeded',
+                message: `Limite do cartão ${cardName} foi extrapolado. Gasto de ${formatCurrency(transactionAmount, currency)} excedeu o limite disponível de ${formatCurrency(availableLimit, currency)} em ${new Date().toLocaleDateString('pt-BR')}.`,
+                card_name: cardName,
+                amount: transactionAmount,
+                currency: currency
+              });
+            }
+          } catch (historyError) {
+            console.error('Error adding to AI history:', historyError);
+          }
+        }
       }
 
       // Atualizar saldo da conta para receitas com depósito ou transferência

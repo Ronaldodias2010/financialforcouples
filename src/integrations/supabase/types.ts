@@ -56,6 +56,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_history: {
+        Row: {
+          amount: number | null
+          card_name: string | null
+          created_at: string
+          currency: string | null
+          entry_type: string
+          id: string
+          message: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          card_name?: string | null
+          created_at?: string
+          currency?: string | null
+          entry_type?: string
+          id?: string
+          message: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          card_name?: string | null
+          created_at?: string
+          currency?: string | null
+          entry_type?: string
+          id?: string
+          message?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       card_mileage_rules: {
         Row: {
           amount_threshold: number

@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, History } from "lucide-react";
+import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
+import { AIHistorySection } from "./AIHistorySection";
 
 const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
@@ -265,23 +266,7 @@ const AIRecommendationsContent = () => {
       </Card>
 
       {/* History Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            {t('aiRecommendations.history')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="text-center text-muted-foreground py-8">
-              <History className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>{t('aiRecommendations.noHistory')}</p>
-              <p className="text-sm">{t('aiRecommendations.historyDesc')}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <AIHistorySection />
 
       {/* Educational Content */}
       <Card>
