@@ -6,8 +6,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Download, X, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
-// Configure PDF.js worker (avoids Chrome iframe blocking by rendering inline)
-pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.worker.min.js';
+// Configure PDF.js worker (local to avoid CORS/dynamic import issues)
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 interface ContentViewerProps {
   isOpen: boolean;
   onClose: () => void;
