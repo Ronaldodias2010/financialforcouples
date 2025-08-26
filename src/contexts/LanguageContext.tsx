@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
-export type Language = 'en' | 'pt' | 'es';
+export type Language = 'pt' | 'en' | 'es';
 
 interface LanguageContextProps {
   language: Language;
@@ -62,6 +62,10 @@ const translations = {
       analysis: 'Análise Financeira',
       analysisDesc: 'Aprenda a analisar suas finanças para tomar decisões melhores.',
     },
+    subscription: {
+      aiRecommendationsUpgrade: "🤖 Funcionalidades de IA Premium",
+      aiRecommendationsMessage: "Desbloqueie análises inteligentes, recomendações personalizadas e consultoria financeira com IA para otimizar suas finanças!",
+    },
   },
   en: {
     common: {
@@ -106,6 +110,10 @@ const translations = {
       analysis: 'Financial Analysis',
       analysisDesc: 'Learn how to analyze your finances to make better decisions.',
     },
+    subscription: {
+      aiRecommendationsUpgrade: "🤖 Premium AI Features",
+      aiRecommendationsMessage: "Unlock intelligent analysis, personalized recommendations and AI financial consulting to optimize your finances!",
+    },
   },
   es: {
     common: {
@@ -149,6 +157,10 @@ const translations = {
       emergencyDesc: 'Aprenda a crear y mantener un fondo de emergencia.',
       analysis: 'Análisis Financiero',
       analysisDesc: 'Aprenda a analizar sus finanzas para tomar mejores decisiones.',
+    },
+    subscription: {
+      aiRecommendationsUpgrade: "🤖 Funciones de IA Premium",
+      aiRecommendationsMessage: "¡Desbloquea análisis inteligente, recomendaciones personalizadas y consultoría financiera con IA para optimizar tus finanzas!",
     },
   },
 };

@@ -1,5 +1,7 @@
+
 import { useState } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,7 +12,7 @@ import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-export const AIRecommendations = () => {
+const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
@@ -304,5 +306,28 @@ export const AIRecommendations = () => {
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+export const AIRecommendations = () => {
+  const { t } = useLanguage();
+  
+  return (
+    <PremiumFeatureGuard 
+      feature="aiPlanning"
+      fallback={
+        <div className="text-center py-12 space-y-4">
+          <Brain className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold">{t('subscription.aiRecommendationsUpgrade')}</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              {t('subscription.aiRecommendationsMessage')}
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <AIRecommendationsContent />
+    </PremiumFeatureGuard>
   );
 };
