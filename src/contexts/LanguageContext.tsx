@@ -864,6 +864,7 @@ const translations = {
     'admin.reactivation.processedMessage': 'Oferta de reativação enviada para {email}',
     'admin.tabs.overview': 'Visão Geral',
     'admin.tabs.content': 'Conteúdo',
+    'admin.tabs.aiControl': 'Controle de IA',
     
     // Educational Content Management
     'admin.content.title': 'Adicionar Conteúdo Educacional',
@@ -2008,6 +2009,7 @@ const translations = {
     'admin.reactivation.processedMessage': 'Reactivation offer sent to {email}',
     'admin.tabs.overview': 'Overview',
     'admin.tabs.content': 'Content',
+    'admin.tabs.aiControl': 'AI Control',
     
     // Educational Content Management
     'admin.content.title': 'Add Educational Content',
@@ -3149,6 +3151,7 @@ const translations = {
     'admin.reactivation.processedMessage': 'Oferta de reactivación enviada a {email}',
     'admin.tabs.overview': 'Resumen',
     'admin.tabs.content': 'Contenido',
+    'admin.tabs.aiControl': 'Control de IA',
     
     // Educational Content Management
     'admin.content.title': 'Agregar Contenido Educativo',

@@ -456,7 +456,7 @@ const AdminDashboardContent = () => {
           <TabsTrigger value="alerts">🚨 {t('admin.tabs.alerts')}</TabsTrigger>
           <TabsTrigger value="content">📚 {t('admin.tabs.content')}</TabsTrigger>
           <TabsTrigger value="premium">👑 Premium</TabsTrigger>
-          <TabsTrigger value="ai-control">🤖 Controle de IA</TabsTrigger>
+          <TabsTrigger value="ai-control">🤖 {t('admin.tabs.aiControl')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
