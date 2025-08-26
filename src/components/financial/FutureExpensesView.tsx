@@ -318,106 +318,132 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   const exportToCSV = () => {
+    console.log('🔽 Iniciando exportação CSV...');
+    console.log('Filtered expenses:', filteredExpenses.length);
+    
     if (filteredExpenses.length === 0) {
       toast.error("Não há dados para exportar");
       return;
     }
 
-    const headers = [
-      t('futureExpenses.description'),
-      t('futureExpenses.amount'),
-      t('futureExpenses.dueDate'),
-      t('futureExpenses.category'),
-      t('futureExpenses.type'),
-      t('futureExpenses.owner')
-    ];
+    try {
+      const headers = [
+        t('futureExpenses.description'),
+        t('futureExpenses.amount'),
+        t('futureExpenses.dueDate'),
+        t('futureExpenses.category'),
+        t('futureExpenses.type'),
+        t('futureExpenses.owner')
+      ];
 
-    const csvData = filteredExpenses.map(expense => [
-      expense.description,
-      formatCurrency(expense.amount),
-      formatDate(expense.due_date),
-      translateCategory(expense.category),
-      getTypeLabel(expense.type),
-      expense.owner_user ? getOwnerName(expense.owner_user) : ''
-    ]);
+      const csvData = filteredExpenses.map(expense => [
+        expense.description,
+        formatCurrency(expense.amount),
+        formatDate(expense.due_date),
+        translateCategory(expense.category),
+        getTypeLabel(expense.type),
+        expense.owner_user ? getOwnerName(expense.owner_user) : ''
+      ]);
 
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
+      const csvContent = [headers, ...csvData]
+        .map(row => row.map(field => `"${field}"`).join(','))
+        .join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    const categoryLabel = selectedCategory === "all" ? "todas-categorias" : selectedCategory.toLowerCase().replace(/\s+/g, '-');
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `gastos-futuros-${categoryLabel}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success("Arquivo CSV exportado com sucesso");
+      // Adicionar BOM para suporte a caracteres especiais
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      const categoryLabel = selectedCategory === "all" ? "todas-categorias" : selectedCategory.toLowerCase().replace(/\s+/g, '-');
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `gastos-futuros-${categoryLabel}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Limpar URL após download
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+      
+      console.log('✅ CSV exportado com sucesso');
+      toast.success("Arquivo CSV exportado com sucesso");
+    } catch (error) {
+      console.error('❌ Erro ao exportar CSV:', error);
+      toast.error("Erro ao exportar CSV");
+    }
   };
 
   const exportToPDF = () => {
+    console.log('🔽 Iniciando exportação PDF...');
+    console.log('Filtered expenses:', filteredExpenses.length);
+    
     if (filteredExpenses.length === 0) {
       toast.error("Não há dados para exportar");
       return;
     }
 
-    const doc = new jsPDF();
-    
-    // Título
-    doc.setFontSize(18);
-    doc.text(t('futureExpenses.pdfTitle'), 20, 20);
-    
-    // Subtítulo com total
-    doc.setFontSize(12);
-    const categoryLabel = selectedCategory === "all" ? t('monthlyExpenses.allFilter') : translateCategory(selectedCategory);
-    doc.text(`${t('futureExpenses.category')}: ${categoryLabel}`, 20, 35);
-    doc.text(`${t('futureExpenses.total')}: ${formatCurrency(totalAmount)}`, 20, 45);
-    
-    // Tabela
-    const tableColumns = [
-      t('futureExpenses.description'),
-      t('futureExpenses.amount'),
-      t('futureExpenses.dueDate'),
-      t('futureExpenses.category'),
-      t('futureExpenses.type'),
-      t('futureExpenses.owner')
-    ];
-    
-    const tableRows = filteredExpenses.map(expense => [
-      expense.description,
-      formatCurrency(expense.amount),
-      formatDate(expense.due_date),
-      translateCategory(expense.category),
-      getTypeLabel(expense.type),
-      expense.owner_user ? getOwnerName(expense.owner_user) : ''
-    ]);
+    try {
+      const doc = new jsPDF();
+      
+      // Título
+      doc.setFontSize(18);
+      doc.text(t('futureExpenses.pdfTitle'), 20, 20);
+      
+      // Subtítulo com total
+      doc.setFontSize(12);
+      const categoryLabel = selectedCategory === "all" ? t('monthlyExpenses.allFilter') : translateCategory(selectedCategory);
+      doc.text(`${t('futureExpenses.category')}: ${categoryLabel}`, 20, 35);
+      doc.text(`${t('futureExpenses.total')}: ${formatCurrency(totalAmount)}`, 20, 45);
+      
+      // Tabela
+      const tableColumns = [
+        t('futureExpenses.description'),
+        t('futureExpenses.amount'),
+        t('futureExpenses.dueDate'),
+        t('futureExpenses.category'),
+        t('futureExpenses.type'),
+        t('futureExpenses.owner')
+      ];
+      
+      const tableRows = filteredExpenses.map(expense => [
+        expense.description,
+        formatCurrency(expense.amount),
+        formatDate(expense.due_date),
+        translateCategory(expense.category),
+        getTypeLabel(expense.type),
+        expense.owner_user ? getOwnerName(expense.owner_user) : ''
+      ]);
 
-    autoTable(doc, {
-      head: [tableColumns],
-      body: tableRows,
-      startY: 55,
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-      },
-      headStyles: {
-        fillColor: [66, 102, 241],
-        textColor: 255,
-      },
-      alternateRowStyles: {
-        fillColor: [245, 247, 250],
-      },
-    });
+      autoTable(doc, {
+        head: [tableColumns],
+        body: tableRows,
+        startY: 55,
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
+        },
+        headStyles: {
+          fillColor: [66, 102, 241],
+          textColor: 255,
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250],
+        },
+      });
 
-    doc.save(`gastos-futuros-${categoryLabel.toLowerCase().replace(/\s+/g, '-')}.pdf`);
-    
-    toast.success("Arquivo PDF exportado com sucesso");
+      const fileName = `gastos-futuros-${categoryLabel.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+      console.log('📁 Nome do arquivo PDF:', fileName);
+      
+      doc.save(fileName);
+      
+      console.log('✅ PDF exportado com sucesso');
+      toast.success("Arquivo PDF exportado com sucesso");
+    } catch (error) {
+      console.error('❌ Erro ao exportar PDF:', error);
+      toast.error("Erro ao exportar PDF");
+    }
   };
 
   if (loading) {
