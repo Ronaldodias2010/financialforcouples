@@ -92,6 +92,72 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage_limits: {
+        Row: {
+          created_at: string
+          daily_cost_limit_brl: number
+          daily_requests_limit: number
+          daily_tokens_limit: number
+          id: string
+          is_active: boolean
+          subscription_tier: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          daily_cost_limit_brl?: number
+          daily_requests_limit?: number
+          daily_tokens_limit?: number
+          id?: string
+          is_active?: boolean
+          subscription_tier: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          daily_cost_limit_brl?: number
+          daily_requests_limit?: number
+          daily_tokens_limit?: number
+          id?: string
+          is_active?: boolean
+          subscription_tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_usage_tracking: {
+        Row: {
+          created_at: string
+          date: string
+          estimated_cost_brl: number
+          id: string
+          requests_count: number
+          tokens_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          estimated_cost_brl?: number
+          id?: string
+          requests_count?: number
+          tokens_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          estimated_cost_brl?: number
+          id?: string
+          requests_count?: number
+          tokens_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       card_mileage_rules: {
         Row: {
           amount_threshold: number
@@ -1282,6 +1348,14 @@ export type Database = {
         Args: { p_record_id: string }
         Returns: string
       }
+      get_user_daily_ai_usage: {
+        Args: { p_date?: string; p_user_id: string }
+        Returns: {
+          estimated_cost_brl: number
+          requests_count: number
+          tokens_used: number
+        }[]
+      }
       hash_temp_password: {
         Args: { password: string }
         Returns: string
@@ -1293,6 +1367,14 @@ export type Database = {
       normalize_text_simple: {
         Args: { input: string }
         Returns: string
+      }
+      update_ai_usage: {
+        Args: {
+          p_estimated_cost_brl?: number
+          p_tokens_used: number
+          p_user_id: string
+        }
+        Returns: undefined
       }
       update_exchange_rate: {
         Args: {

@@ -324,7 +324,28 @@ const AIRecommendationsContent = () => {
 };
 
 const PremiumUpgradeFallback = () => {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const { hasAccess } = useSubscription();
+  
+  const translations = {
+    pt: {
+      title: 'IA Disponível Apenas para Premium',
+      message: 'A funcionalidade de IA está disponível apenas para usuários Premium. Faça upgrade do seu plano para ter acesso ao consultor financeiro com IA.',
+      upgradeButton: 'Fazer Upgrade'
+    },
+    en: {
+      title: 'AI Available for Premium Only',
+      message: 'AI functionality is available only for Premium users. Upgrade your plan to access the AI financial consultant.',
+      upgradeButton: 'Upgrade Plan'
+    },
+    es: {
+      title: 'IA Disponible Solo para Premium',
+      message: 'La funcionalidad de IA está disponible solo para usuarios Premium. Actualiza tu plan para acceder al consultor financiero con IA.',
+      upgradeButton: 'Actualizar Plan'
+    }
+  };
+
+  const text = translations[language as keyof typeof translations] || translations.pt;
   
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -333,14 +354,20 @@ const PremiumUpgradeFallback = () => {
           <div className="space-y-4">
             <div className="flex justify-center">
               <div className="relative">
-                <Brain className="h-16 w-16 text-primary" />
-                <Sparkles className="h-6 w-6 text-primary absolute -top-1 -right-1 animate-pulse" />
+                <Brain className="h-16 w-16 text-muted-foreground" />
+                <Lock className="h-6 w-6 text-destructive absolute -top-1 -right-1" />
               </div>
             </div>
-            <h3 className="text-xl font-semibold">{t('aiRecommendations.premiumTitle')}</h3>
+            <h3 className="text-xl font-semibold">{text.title}</h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              {t('aiRecommendations.premiumMessage')}
+              {text.message}
             </p>
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Essential users do not have access to AI features
+              </AlertDescription>
+            </Alert>
           </div>
         </CardContent>
       </Card>

@@ -7,6 +7,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Function to estimate tokens (rough estimation: 1 token ≈ 4 characters for GPT models)
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+// Function to estimate cost in BRL (GPT-4o-mini: ~$0.00015 per 1K tokens input, ~$0.0006 per 1K tokens output)
+function estimateCostBRL(inputTokens: number, outputTokens: number): number {
+  const inputCostUSD = (inputTokens / 1000) * 0.00015;
+  const outputCostUSD = (outputTokens / 1000) * 0.0006;
+  const totalCostUSD = inputCostUSD + outputCostUSD;
+  // Convert USD to BRL (approximate rate 5.2)
+  return totalCostUSD * 5.2;
+}
+
 interface FinancialData {
   transactions: any[];
   accounts: any[];
@@ -41,6 +55,61 @@ serve(async (req) => {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
       throw new Error('User not authenticated');
+    }
+
+    // Check subscription status and AI access
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('subscription_tier, subscribed')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!profile || !profile.subscribed || profile.subscription_tier === 'essential') {
+      return new Response(JSON.stringify({ 
+        error: 'AI_ACCESS_DENIED',
+        message: 'A funcionalidade de IA está disponível apenas para usuários Premium. Faça upgrade do seu plano para ter acesso.',
+        details: 'Essential users do not have access to AI features'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check daily limits
+    const { data: limits } = await supabaseClient
+      .from('ai_usage_limits')
+      .select('*')
+      .eq('subscription_tier', profile.subscription_tier)
+      .eq('is_active', true)
+      .single();
+
+    if (!limits) {
+      throw new Error('No AI limits found for subscription tier');
+    }
+
+    // Get current usage for today
+    const { data: currentUsage } = await supabaseClient
+      .rpc('get_user_daily_ai_usage', { p_user_id: user.id })
+      .single();
+
+    console.log('Current usage:', currentUsage, 'Limits:', limits);
+
+    // Check if user has exceeded limits
+    if (currentUsage && (
+      currentUsage.requests_count >= limits.daily_requests_limit ||
+      currentUsage.tokens_used >= limits.daily_tokens_limit ||
+      currentUsage.estimated_cost_brl >= limits.daily_cost_limit_brl
+    )) {
+      return new Response(JSON.stringify({ 
+        error: 'DAILY_LIMIT_REACHED',
+        message: 'Limite diário de IA atingido. Tente novamente amanhã ou faça upgrade do seu plano.',
+        usage: currentUsage,
+        limits: limits,
+        details: 'Daily AI usage limit exceeded'
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const { message, chatHistory = [], dateRange } = await req.json();
@@ -81,6 +150,25 @@ Forneça uma resposta detalhada, com insights específicos baseados nos dados re
       });
     }
 
+    // Estimate input tokens
+    const inputText = messages.map(m => m.content).join(' ');
+    const inputTokens = estimateTokens(inputText);
+
+    // Check if this request would exceed token limit
+    const projectedTokenUsage = (currentUsage?.tokens_used || 0) + inputTokens + 1500; // Add estimated response tokens
+    if (projectedTokenUsage > limits.daily_tokens_limit) {
+      return new Response(JSON.stringify({ 
+        error: 'TOKEN_LIMIT_WOULD_EXCEED',
+        message: `Esta consulta excederia seu limite diário de tokens (${limits.daily_tokens_limit}). Tente uma pergunta mais curta.`,
+        currentUsage: currentUsage?.tokens_used || 0,
+        limit: limits.daily_tokens_limit,
+        details: 'Projected token usage would exceed daily limit'
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Call OpenAI API
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -105,13 +193,41 @@ Forneça uma resposta detalhada, com insights específicos baseados nos dados re
     const aiData = await openAIResponse.json();
     const aiResponse = aiData.choices[0].message.content;
 
-    console.log('AI response generated successfully');
+    // Calculate actual tokens and cost
+    const outputTokens = estimateTokens(aiResponse);
+    const totalTokens = inputTokens + outputTokens;
+    const estimatedCost = estimateCostBRL(inputTokens, outputTokens);
+
+    console.log('AI response generated successfully', {
+      inputTokens,
+      outputTokens,
+      totalTokens,
+      estimatedCost
+    });
+
+    // Update usage tracking
+    await supabaseClient.rpc('update_ai_usage', {
+      p_user_id: user.id,
+      p_tokens_used: totalTokens,
+      p_estimated_cost_brl: estimatedCost
+    });
 
     // Save to AI history if this is an analysis or recommendation
     await saveToAIHistory(supabaseClient, user.id, 'ai_analysis', aiResponse);
 
+    // Get updated usage for response
+    const { data: updatedUsage } = await supabaseClient
+      .rpc('get_user_daily_ai_usage', { p_user_id: user.id })
+      .single();
+
     return new Response(JSON.stringify({ 
       response: aiResponse,
+      usage: {
+        tokensUsed: totalTokens,
+        estimatedCost: estimatedCost,
+        dailyUsage: updatedUsage,
+        dailyLimits: limits
+      },
       financialSummary: {
         totalAccounts: financialData.accounts.length,
         totalTransactions: financialData.transactions.length,
