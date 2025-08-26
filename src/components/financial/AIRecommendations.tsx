@@ -306,12 +306,12 @@ const AIRecommendationsContent = () => {
               </div>
             </div>
 
-            {/* View Mode Selection */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Modo de Visualização:</span>
+            {/* View Mode and Format Selection */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Label className="text-sm font-medium">Modo de Visualização:</Label>
                 <Select value={viewMode} onValueChange={(value: 'both' | 'user1' | 'user2') => setViewMode(value)}>
-                  <SelectTrigger className="w-[240px]">
+                  <SelectTrigger className="w-full mt-1">
                     <Users className="mr-2 h-4 w-4" />
                     <SelectValue />
                   </SelectTrigger>
@@ -323,10 +323,11 @@ const AIRecommendationsContent = () => {
                 </Select>
               </div>
               
-              <div className="flex items-center gap-2">
-                <Label htmlFor="export-format" className="text-sm font-medium">Formato:</Label>
+              <div className="flex-1">
+                <Label htmlFor="export-format" className="text-sm font-medium">Formato de Exportação:</Label>
                 <Select value={exportFormat} onValueChange={(value: 'pdf' | 'csv') => setExportFormat(value)}>
-                  <SelectTrigger id="export-format" className="w-[120px]">
+                  <SelectTrigger id="export-format" className="w-full mt-1">
+                    <Download className="mr-2 h-4 w-4" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
