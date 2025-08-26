@@ -5,19 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles } from "lucide-react";
+import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { PremiumFeatureGuard } from "@/components/subscription/PremiumFeatureGuard";
 import { AIHistorySection } from "./AIHistorySection";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
+  const { toast } = useToast();
   const [dateFrom, setDateFrom] = useState<Date>();
-  const [dateTo, setDateTo] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>(); 
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'ai', message: string}>>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getDateLocale = () => {
     switch (language) {
@@ -27,18 +31,58 @@ const AIRecommendationsContent = () => {
     }
   };
 
-  const handleSendMessage = () => {
-    if (!chatMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!chatMessage.trim() || isLoading) return;
     
-    setChatHistory(prev => [...prev, { role: 'user', message: chatMessage }]);
-    // Simulated AI response for now
-    setTimeout(() => {
+    const userMessage = chatMessage;
+    setChatMessage("");
+    setChatHistory(prev => [...prev, { role: 'user', message: userMessage }]);
+    setIsLoading(true);
+
+    try {
+      const dateRange = dateFrom && dateTo ? {
+        from: format(dateFrom, 'yyyy-MM-dd'),
+        to: format(dateTo, 'yyyy-MM-dd')
+      } : undefined;
+
+      const { data, error } = await supabase.functions.invoke('ai-financial-consultant', {
+        body: {
+          message: userMessage,
+          chatHistory: chatHistory,
+          dateRange: dateRange
+        }
+      });
+
+      if (error) {
+        console.error('AI Consultant error:', error);
+        throw error;
+      }
+
       setChatHistory(prev => [...prev, { 
         role: 'ai', 
-        message: "Esta é uma resposta simulada da IA. Aqui será integrada a análise real das suas finanças." 
+        message: data.response || 'Desculpe, não consegui processar sua solicitação.'
       }]);
-    }, 1000);
-    setChatMessage("");
+
+      toast({
+        title: "Análise concluída",
+        description: "Sua consulta foi processada pela IA.",
+      });
+
+    } catch (error) {
+      console.error('Error calling AI consultant:', error);
+      setChatHistory(prev => [...prev, { 
+        role: 'ai', 
+        message: 'Desculpe, ocorreu um erro ao processar sua consulta. Tente novamente.'
+      }]);
+      
+      toast({
+        title: "Erro na consulta",
+        description: "Não foi possível processar sua solicitação. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleExportData = (type: string) => {
@@ -257,8 +301,12 @@ const AIRecommendationsContent = () => {
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
                 className="flex-1 min-h-[40px] max-h-[120px]"
               />
-              <Button onClick={handleSendMessage} disabled={!chatMessage.trim()}>
-                <MessageSquare className="h-4 w-4" />
+              <Button onClick={handleSendMessage} disabled={!chatMessage.trim() || isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MessageSquare className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>

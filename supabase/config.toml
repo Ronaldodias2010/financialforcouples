@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.complete-checkout]
 verify_jwt = true
+
+[functions.ai-financial-consultant]
+verify_jwt = true
