@@ -156,10 +156,16 @@ export const EducationalContentSection = () => {
       </CardHeader>
       <CardContent>
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
             {categories.map((category) => (
-              <TabsTrigger key={category.value} value={category.value} className="text-xs">
-                {category.icon} {category.label.split(' ')[0]}
+              <TabsTrigger 
+                key={category.value} 
+                value={category.value} 
+                className="text-[10px] sm:text-xs px-1 sm:px-3 py-1 sm:py-2 h-auto min-h-[2rem] sm:min-h-[2.5rem] flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
+              >
+                <span className="text-xs sm:text-sm">{category.icon}</span>
+                <span className="hidden xs:block sm:hidden">{category.label.split(' ')[0]}</span>
+                <span className="hidden sm:block">{category.label.split(' ')[0]}</span>
               </TabsTrigger>
             ))}
           </TabsList>
