@@ -221,6 +221,13 @@ const translations = {
     'accounts.selectType': 'Selecione o tipo',
     'accounts.adding': 'Adicionando...',
     'accounts.addAccount': 'Adicionar Conta',
+    'accounts.edit': 'Editar',
+    'accounts.editAccount': 'Editar Conta',
+    'accounts.save': 'Salvar',
+    'accounts.cancel': 'Cancelar',
+    'accounts.editing': 'Salvando...',
+    'accounts.editSuccess': 'Conta atualizada com sucesso!',
+    'accounts.editError': 'Erro ao atualizar conta',
     
     // Common
     'common.required': 'obrigatório',
@@ -1397,6 +1404,13 @@ const translations = {
     'accounts.selectType': 'Select type',
     'accounts.adding': 'Adding...',
     'accounts.addAccount': 'Add Account',
+    'accounts.edit': 'Edit',
+    'accounts.editAccount': 'Edit Account',
+    'accounts.save': 'Save',
+    'accounts.cancel': 'Cancel',
+    'accounts.editing': 'Saving...',
+    'accounts.editSuccess': 'Account updated successfully!',
+    'accounts.editError': 'Error updating account',
     
     // Common
     'common.required': 'required',
@@ -2566,6 +2580,13 @@ const translations = {
     'accounts.selectType': 'Seleccionar tipo',
     'accounts.adding': 'Agregando...',
     'accounts.addAccount': 'Agregar Cuenta',
+    'accounts.edit': 'Editar',
+    'accounts.editAccount': 'Editar Cuenta',
+    'accounts.save': 'Guardar',
+    'accounts.cancel': 'Cancelar',
+    'accounts.editing': 'Guardando...',
+    'accounts.editSuccess': '¡Cuenta actualizada exitosamente!',
+    'accounts.editError': 'Error al actualizar cuenta',
     
     // Common
     'common.required': 'requerido',

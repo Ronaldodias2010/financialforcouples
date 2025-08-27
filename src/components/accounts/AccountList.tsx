@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Trash2, AlertTriangle } from "lucide-react";
+import { Wallet, Trash2, AlertTriangle, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { AccountEditForm } from "./AccountEditForm";
 
 interface AccountData {
   id: string;
@@ -27,6 +28,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
   const { t } = useLanguage();
   const [accounts, setAccounts] = useState<AccountData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -238,18 +240,40 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => deleteAccount(account.id)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteAccount(account.id)}
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingAccountId(account.id)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
         </div>
+      )}
+      
+      {editingAccountId && (
+        <AccountEditForm
+          account={accounts.find(acc => acc.id === editingAccountId)!}
+          isOpen={!!editingAccountId}
+          onClose={() => setEditingAccountId(null)}
+          onSuccess={() => {
+            fetchAccounts();
+            setEditingAccountId(null);
+          }}
+        />
       )}
     </div>
   );
