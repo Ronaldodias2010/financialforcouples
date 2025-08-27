@@ -21,15 +21,24 @@ export async function fetchExportData(
   viewMode: ViewMode,
   userId: string
 ): Promise<ExportData> {
-  // Build user filter based on viewMode
-  let userFilter = '';
-  if (viewMode === 'user1') {
-    userFilter = `owner_user.eq.user1`;
-  } else if (viewMode === 'user2') {
-    userFilter = `owner_user.eq.user2`;
+  console.log('Fetching export data:', { dateFrom, dateTo, viewMode, userId });
+
+  // Get user's couple relationship if exists
+  const { data: couples } = await supabase
+    .from('user_couples')
+    .select('*')
+    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+    .eq('status', 'active')
+    .single();
+
+  // Build user IDs array (user + partner if in couple)
+  let userIds = [userId];
+  if (couples) {
+    const partnerId = couples.user1_id === userId ? couples.user2_id : couples.user1_id;
+    userIds.push(partnerId);
   }
 
-  // Fetch transactions
+  // Fetch transactions with proper filtering
   let transactionsQuery = supabase
     .from('transactions')
     .select(`
@@ -39,24 +48,45 @@ export async function fetchExportData(
       accounts(name)
     `)
     .gte('transaction_date', dateFrom)
-    .lte('transaction_date', dateTo);
+    .lte('transaction_date', dateTo)
+    .in('user_id', userIds);
 
-  if (userFilter) {
-    transactionsQuery = transactionsQuery.or(userFilter);
+  // Apply viewMode filter
+  if (viewMode === 'user1') {
+    transactionsQuery = transactionsQuery.eq('owner_user', 'user1');
+  } else if (viewMode === 'user2') {
+    transactionsQuery = transactionsQuery.eq('owner_user', 'user2');
   }
 
-  const { data: transactions } = await transactionsQuery;
+  const { data: transactions, error: transactionsError } = await transactionsQuery;
+  
+  if (transactionsError) {
+    console.error('Error fetching transactions:', transactionsError);
+  }
+  
+  console.log('Transactions fetched:', transactions?.length || 0);
 
-  // Fetch accounts
+  // Fetch accounts with proper filtering
   let accountsQuery = supabase
     .from('accounts')
-    .select('*');
+    .select('*')
+    .in('user_id', userIds)
+    .eq('is_active', true);
 
-  if (userFilter) {
-    accountsQuery = accountsQuery.or(userFilter);
+  // Apply viewMode filter
+  if (viewMode === 'user1') {
+    accountsQuery = accountsQuery.eq('owner_user', 'user1');
+  } else if (viewMode === 'user2') {
+    accountsQuery = accountsQuery.eq('owner_user', 'user2');
   }
 
-  const { data: accounts } = await accountsQuery;
+  const { data: accounts, error: accountsError } = await accountsQuery;
+  
+  if (accountsError) {
+    console.error('Error fetching accounts:', accountsError);
+  }
+  
+  console.log('Accounts fetched:', accounts?.length || 0);
 
   // Process data
   const expenses = transactions?.filter(t => t.type === 'expense') || [];
@@ -127,6 +157,8 @@ export async function fetchExportData(
 }
 
 export function exportToPDF(data: any[], title: string, columns: string[], filename: string) {
+  console.log('Exporting to PDF:', { dataLength: data.length, columns });
+  
   const doc = new jsPDF();
   
   // Add title
@@ -137,11 +169,25 @@ export function exportToPDF(data: any[], title: string, columns: string[], filen
   doc.setFontSize(10);
   doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`, 20, 30);
 
+  // Column mapping
+  const columnMap: { [key: string]: string } = {
+    'Mês': 'month',
+    'Receitas': 'income', 
+    'Despesas': 'expense',
+    'Saldo': 'balance',
+    'Categoria': 'category',
+    'Total': 'total',
+    'Total Receitas': 'totalrevenues',
+    'Total Despesas': 'totalexpenses', 
+    'Saldo Contas': 'saldocontas'
+  };
+
   // Add table
   autoTable(doc, {
     head: [columns],
     body: data.map(row => columns.map(col => {
-      const value = row[col.toLowerCase().replace(/\s+/g, '')];
+      const key = columnMap[col] || col.toLowerCase().replace(/\s+/g, '');
+      const value = row[key];
       if (typeof value === 'number') {
         return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
       }
@@ -156,10 +202,26 @@ export function exportToPDF(data: any[], title: string, columns: string[], filen
 }
 
 export function exportToCSV(data: any[], columns: string[], filename: string) {
+  console.log('Exporting to CSV:', { dataLength: data.length, columns });
+  
+  // Column mapping
+  const columnMap: { [key: string]: string } = {
+    'Mês': 'month',
+    'Receitas': 'income', 
+    'Despesas': 'expense',
+    'Saldo': 'balance',
+    'Categoria': 'category',
+    'Total': 'total',
+    'Total Receitas': 'totalrevenues',
+    'Total Despesas': 'totalexpenses', 
+    'Saldo Contas': 'saldocontas'
+  };
+
   const headers = columns.join(',');
   const rows = data.map(row => 
     columns.map(col => {
-      const value = row[col.toLowerCase().replace(/\s+/g, '')];
+      const key = columnMap[col] || col.toLowerCase().replace(/\s+/g, '');
+      const value = row[key];
       if (typeof value === 'number') {
         return value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       }
@@ -183,12 +245,28 @@ export function exportToCSV(data: any[], columns: string[], filename: string) {
 }
 
 export function exportToExcel(data: any[], title: string, columns: string[], filename: string) {
+  console.log('Exporting to Excel:', { dataLength: data.length, columns });
+  
+  // Column mapping
+  const columnMap: { [key: string]: string } = {
+    'Mês': 'month',
+    'Receitas': 'income', 
+    'Despesas': 'expense',
+    'Saldo': 'balance',
+    'Categoria': 'category',
+    'Total': 'total',
+    'Total Receitas': 'totalrevenues',
+    'Total Despesas': 'totalexpenses', 
+    'Saldo Contas': 'saldocontas'
+  };
+
   // Prepare data for Excel
   const worksheetData = [
     columns, // Headers
     ...data.map(row => 
       columns.map(col => {
-        const value = row[col.toLowerCase().replace(/\s+/g, '')];
+        const key = columnMap[col] || col.toLowerCase().replace(/\s+/g, '');
+        const value = row[key];
         return value || '';
       })
     )
