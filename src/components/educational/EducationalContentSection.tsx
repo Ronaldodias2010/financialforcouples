@@ -206,24 +206,24 @@ export const EducationalContentSection = () => {
                   <div className="grid gap-4">
                     {getContentsByCategory(category.value).map((content) => (
                       <Card key={content.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex items-start gap-4">
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex flex-col sm:flex-row items-start gap-4">
                             {content.image_url && (
-                              <div className="flex-shrink-0">
+                              <div className="flex-shrink-0 w-full sm:w-auto">
                                 <img 
                                   src={content.image_url} 
                                   alt={content.title}
-                                  className="w-24 h-24 object-cover rounded-lg border border-border/20"
+                                  className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-lg border border-border/20"
                                 />
                               </div>
                             )}
                             
-                            <div className="flex-1">
-                              <div className="flex items-start justify-between">
+                            <div className="flex-1 w-full">
+                              <div className="flex flex-col space-y-3">
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
+                                  <div className="flex flex-wrap items-center gap-2 mb-2">
                                     {getContentIcon(content.content_type)}
-                                    <h4 className="font-semibold">{content.title}</h4>
+                                    <h4 className="font-semibold text-sm sm:text-base">{content.title}</h4>
                                     <Badge variant="secondary" className="text-xs">
                                       {content.content_type}
                                     </Badge>
@@ -235,19 +235,19 @@ export const EducationalContentSection = () => {
                                     </p>
                                   )}
                                   
-                                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                                     <span>📅 {new Date(content.created_at).toLocaleDateString(
                                       t('common.locale') || 'pt-BR'
                                     )}</span>
-                                    <span>📄 {content.file_name}</span>
+                                    <span className="break-all">📄 {content.file_name}</span>
                                   </div>
                                 </div>
                                 
-                                <div className="ml-4 flex gap-2">
+                                <div className="flex flex-col sm:flex-row gap-2 pt-2">
                                   <Button
                                     size="sm"
                                     onClick={() => handleViewContent(content)}
-                                    className="bg-gradient-to-r from-blue-500 to-blue-600"
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600 w-full sm:w-auto"
                                   >
                                     <Eye className="h-4 w-4 mr-1" />
                                     {t('educational.view')}
@@ -256,6 +256,7 @@ export const EducationalContentSection = () => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleDownload(content.file_url, content.file_name)}
+                                    className="w-full sm:w-auto"
                                   >
                                     <Download className="h-4 w-4 mr-1" />
                                     {t('educational.download')}
