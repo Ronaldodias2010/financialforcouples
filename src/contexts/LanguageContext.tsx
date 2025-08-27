@@ -189,10 +189,16 @@ const translations = {
     'cards.currentBalance': 'Saldo Atual',
     'cards.currency': 'Moeda',
     'cards.dueDate': 'Data de Vencimento',
+    'cards.closingDate': 'Data de Fechamento',
     'cards.selectType': 'Selecione o tipo',
     'cards.selectDay': 'Selecione o dia',
     'cards.adding': 'Adicionando...',
     'cards.addCard': 'Adicionar Cartão',
+    'cards.edit': 'Editar',
+    'cards.editCard': 'Editar Cartão',
+    'cards.editing': 'Salvando...',
+    'cards.editSuccess': 'Cartão atualizado com sucesso!',
+    'cards.editError': 'Erro ao atualizar cartão',
     
     // Accounts
     'accounts.title': 'Gerenciar Contas Bancárias',
@@ -1359,10 +1365,16 @@ const translations = {
     'cards.currentBalance': 'Current Balance',
     'cards.currency': 'Currency',
     'cards.dueDate': 'Due Date',
+    'cards.closingDate': 'Closing Date',
     'cards.selectType': 'Select type',
     'cards.selectDay': 'Select day',
     'cards.adding': 'Adding...',
     'cards.addCard': 'Add Card',
+    'cards.edit': 'Edit',
+    'cards.editCard': 'Edit Card',
+    'cards.editing': 'Saving...',
+    'cards.editSuccess': 'Card updated successfully!',
+    'cards.editError': 'Error updating card',
     
     // Accounts
     'accounts.title': 'Manage Bank Accounts',

@@ -6,14 +6,15 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
-import { CreditCard, Trash2 } from "lucide-react";
+import { CreditCard, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { CardEditForm } from "./CardEditForm";
 
 interface CardData {
   id: string;
   user_id: string;
   name: string;
-  card_type: string;
+  card_type: "credit" | "debit";
   last_four_digits: string;
   credit_limit: number | null;
   current_balance: number;
@@ -39,6 +40,7 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [accounts, setAccounts] = useState<Record<string, string>>({});
+  const [editingCard, setEditingCard] = useState<CardData | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -119,6 +121,15 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
       console.error("Error deleting card:", error);
       toast.error("Erro ao remover cartão");
     }
+  };
+
+  const handleEditSuccess = () => {
+    fetchCards(); // Refresh the cards list to show updated data
+    setEditingCard(null);
+  };
+
+  const handleEditCancel = () => {
+    setEditingCard(null);
   };
 
   const formatCurrency = (value: number, currency: string) => {
@@ -266,19 +277,39 @@ const getOwnerNameForCard = (card: CardData) => {
                     )}
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => deleteCard(card.id)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {card.card_type === "credit" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingCard(card)}
+                      title="Editar cartão"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteCard(card.id)}
+                    className="text-destructive hover:text-destructive"
+                    title="Excluir cartão"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
         </div>
       )}
+
+      <CardEditForm
+        card={editingCard}
+        isOpen={!!editingCard}
+        onClose={handleEditCancel}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 };
