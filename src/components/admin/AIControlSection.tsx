@@ -16,7 +16,11 @@ import {
   Crown,
   Zap,
   Target,
-  Award
+  Award,
+  Calendar,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -52,6 +56,36 @@ interface UsageMetrics {
   usersNearLimit: number;
 }
 
+interface MonthlyData {
+  user_id: string;
+  user_email: string;
+  display_name: string;
+  monthly_requests: number;
+  monthly_tokens: number;
+  monthly_cost: number;
+  subscription_tier: string;
+  days_active: number;
+}
+
+interface MonthlyMetrics {
+  totalUsers: number;
+  totalRequests: number;
+  totalTokens: number;
+  totalCost: number;
+  uniqueUsers: number;
+  daysWithActivity: number;
+  avgDailyRequests: number;
+  avgDailyTokens: number;
+  avgDailyCost: number;
+  topUser?: MonthlyData;
+  previousMonthGrowth: {
+    requests: number;
+    tokens: number;
+    cost: number;
+    users: number;
+  };
+}
+
 export const AIControlSection = () => {
   const { language } = useLanguage();
   const [usageData, setUsageData] = useState<UsageData[]>([]);
@@ -59,6 +93,15 @@ export const AIControlSection = () => {
   const [metrics, setMetrics] = useState<UsageMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Monthly data states
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [monthlyMetrics, setMonthlyMetrics] = useState<MonthlyMetrics | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [monthlyLoading, setMonthlyLoading] = useState(false);
 
   const translations = {
     pt: {
@@ -66,6 +109,7 @@ export const AIControlSection = () => {
       overview: 'Visão Geral',
       users: 'Usuários',
       limits: 'Limites',
+      monthlyReports: 'Relatórios Mensais',
       totalUsers: 'Total de Usuários',
       totalRequests: 'Requisições Hoje',
       totalTokens: 'Total de Tokens Hoje',
@@ -94,13 +138,31 @@ export const AIControlSection = () => {
       save: 'Salvar',
       limitsSaved: 'Limites atualizados com sucesso!',
       errorLoading: 'Erro ao carregar dados',
-      errorSaving: 'Erro ao salvar limites'
+      errorSaving: 'Erro ao salvar limites',
+      // Monthly translations
+      monthlyTokens: 'Tokens do Mês',
+      monthlyRequests: 'Requisições do Mês',
+      monthlyCost: 'Custo Mensal',
+      uniqueUsers: 'Usuários Únicos',
+      daysActive: 'Dias com Atividade',
+      avgDaily: 'Média Diária',
+      topUserMonth: 'Maior Consumidor do Mês',
+      previousMonth: 'Mês Anterior',
+      currentMonth: 'Mês Atual',
+      growth: 'Crescimento',
+      decline: 'Queda',
+      stable: 'Estável',
+      noDataMonth: 'Nenhum dado encontrado para este mês',
+      selectMonth: 'Selecionar Mês',
+      monthYear: 'Mês/Ano',
+      daysActiveInMonth: 'dias ativos'
     },
     en: {
       title: 'AI Control',
       overview: 'Overview',
       users: 'Users',
       limits: 'Limits',
+      monthlyReports: 'Monthly Reports',
       totalUsers: 'Total Users',
       totalRequests: 'Requests Today',
       totalTokens: 'Total Tokens Today',
@@ -129,13 +191,31 @@ export const AIControlSection = () => {
       save: 'Save',
       limitsSaved: 'Limits updated successfully!',
       errorLoading: 'Error loading data',
-      errorSaving: 'Error saving limits'
+      errorSaving: 'Error saving limits',
+      // Monthly translations
+      monthlyTokens: 'Monthly Tokens',
+      monthlyRequests: 'Monthly Requests',
+      monthlyCost: 'Monthly Cost',
+      uniqueUsers: 'Unique Users',
+      daysActive: 'Active Days',
+      avgDaily: 'Daily Average',
+      topUserMonth: 'Top Consumer of Month',
+      previousMonth: 'Previous Month',
+      currentMonth: 'Current Month',
+      growth: 'Growth',
+      decline: 'Decline',
+      stable: 'Stable',
+      noDataMonth: 'No data found for this month',
+      selectMonth: 'Select Month',
+      monthYear: 'Month/Year',
+      daysActiveInMonth: 'active days'
     },
     es: {
       title: 'Control de IA',
       overview: 'Resumen',
       users: 'Usuarios',
       limits: 'Límites',
+      monthlyReports: 'Informes Mensuales',
       totalUsers: 'Total de Usuarios',
       totalRequests: 'Solicitudes Hoy',
       totalTokens: 'Total de Tokens Hoy',
@@ -164,7 +244,24 @@ export const AIControlSection = () => {
       save: 'Guardar',
       limitsSaved: '¡Límites actualizados correctamente!',
       errorLoading: 'Error al cargar datos',
-      errorSaving: 'Error al guardar límites'
+      errorSaving: 'Error al guardar límites',
+      // Monthly translations
+      monthlyTokens: 'Tokens del Mes',
+      monthlyRequests: 'Solicitudes del Mes',
+      monthlyCost: 'Costo Mensual',
+      uniqueUsers: 'Usuarios Únicos',
+      daysActive: 'Días Activos',
+      avgDaily: 'Promedio Diario',
+      topUserMonth: 'Mayor Consumidor del Mes',
+      previousMonth: 'Mes Anterior',
+      currentMonth: 'Mes Actual',
+      growth: 'Crecimiento',
+      decline: 'Decline',
+      stable: 'Estable',
+      noDataMonth: 'No se encontraron datos para este mes',
+      selectMonth: 'Seleccionar Mes',
+      monthYear: 'Mes/Año',
+      daysActiveInMonth: 'días activos'
     }
   };
 
@@ -305,9 +402,162 @@ export const AIControlSection = () => {
     }
   };
 
+  const loadMonthlyData = async (monthYear: string) => {
+    try {
+      setMonthlyLoading(true);
+      
+      // Parse year and month
+      const [year, month] = monthYear.split('-');
+      const startDate = `${year}-${month.padStart(2, '0')}-01`;
+      const endDate = new Date(parseInt(year), parseInt(month), 0).toISOString().split('T')[0];
+      
+      // Get monthly data aggregated by user
+      const { data: monthlyUsage, error: monthlyError } = await supabase
+        .from('ai_usage_tracking')
+        .select('user_id, requests_count, tokens_used, estimated_cost_brl, date')
+        .gte('date', startDate)
+        .lte('date', endDate);
+
+      if (monthlyError) throw monthlyError;
+
+      // Get previous month data for comparison
+      const prevMonth = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const prevStartDate = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}-01`;
+      const prevEndDate = new Date(prevMonth.getFullYear(), prevMonth.getMonth() + 1, 0).toISOString().split('T')[0];
+      
+      const { data: prevMonthUsage } = await supabase
+        .from('ai_usage_tracking')
+        .select('requests_count, tokens_used, estimated_cost_brl, user_id')
+        .gte('date', prevStartDate)
+        .lte('date', prevEndDate);
+
+      // Aggregate data by user
+      const userAggregates: { [key: string]: any } = {};
+      const activeDays = new Set<string>();
+      
+      (monthlyUsage || []).forEach((item: any) => {
+        activeDays.add(item.date);
+        if (!userAggregates[item.user_id]) {
+          userAggregates[item.user_id] = {
+            user_id: item.user_id,
+            monthly_requests: 0,
+            monthly_tokens: 0,
+            monthly_cost: 0,
+            days_active: new Set()
+          };
+        }
+        userAggregates[item.user_id].monthly_requests += item.requests_count;
+        userAggregates[item.user_id].monthly_tokens += item.tokens_used;
+        userAggregates[item.user_id].monthly_cost += Number(item.estimated_cost_brl);
+        userAggregates[item.user_id].days_active.add(item.date);
+      });
+
+      // Get user profiles
+      const userIds = Object.keys(userAggregates);
+      let userProfiles: { [key: string]: any } = {};
+      let subscriberEmails: { [key: string]: string } = {};
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, subscription_tier')
+          .in('user_id', userIds);
+        
+        const { data: subscribersData } = await supabase
+          .from('subscribers')
+          .select('user_id, email')
+          .in('user_id', userIds);
+        
+        if (profilesData) {
+          userProfiles = profilesData.reduce((acc: any, profile: any) => {
+            acc[profile.user_id] = profile;
+            return acc;
+          }, {});
+        }
+        
+        if (subscribersData) {
+          subscriberEmails = subscribersData.reduce((acc: any, sub: any) => {
+            acc[sub.user_id] = sub.email;
+            return acc;
+          }, {});
+        }
+      }
+
+      // Process monthly data
+      const processedMonthlyData: MonthlyData[] = Object.values(userAggregates).map((user: any) => ({
+        user_id: user.user_id,
+        user_email: subscriberEmails[user.user_id] || 'N/A',
+        display_name: userProfiles[user.user_id]?.display_name || 'N/A',
+        monthly_requests: user.monthly_requests,
+        monthly_tokens: user.monthly_tokens,
+        monthly_cost: user.monthly_cost,
+        subscription_tier: userProfiles[user.user_id]?.subscription_tier || 'essential',
+        days_active: user.days_active.size
+      })).sort((a, b) => b.monthly_tokens - a.monthly_tokens);
+
+      // Calculate metrics
+      const totalRequests = processedMonthlyData.reduce((sum, u) => sum + u.monthly_requests, 0);
+      const totalTokens = processedMonthlyData.reduce((sum, u) => sum + u.monthly_tokens, 0);
+      const totalCost = processedMonthlyData.reduce((sum, u) => sum + u.monthly_cost, 0);
+      const daysWithActivity = activeDays.size;
+      
+      // Calculate previous month totals for comparison
+      const prevTotalRequests = (prevMonthUsage || []).reduce((sum: number, item: any) => sum + item.requests_count, 0);
+      const prevTotalTokens = (prevMonthUsage || []).reduce((sum: number, item: any) => sum + item.tokens_used, 0);
+      const prevTotalCost = (prevMonthUsage || []).reduce((sum: number, item: any) => sum + Number(item.estimated_cost_brl), 0);
+      const prevUniqueUsers = new Set((prevMonthUsage || []).map((item: any) => item.user_id)).size;
+
+      const monthlyMetrics: MonthlyMetrics = {
+        totalUsers: processedMonthlyData.length,
+        totalRequests,
+        totalTokens,
+        totalCost,
+        uniqueUsers: processedMonthlyData.length,
+        daysWithActivity,
+        avgDailyRequests: daysWithActivity > 0 ? totalRequests / daysWithActivity : 0,
+        avgDailyTokens: daysWithActivity > 0 ? totalTokens / daysWithActivity : 0,
+        avgDailyCost: daysWithActivity > 0 ? totalCost / daysWithActivity : 0,
+        topUser: processedMonthlyData.length > 0 ? processedMonthlyData[0] : undefined,
+        previousMonthGrowth: {
+          requests: prevTotalRequests > 0 ? ((totalRequests - prevTotalRequests) / prevTotalRequests) * 100 : 0,
+          tokens: prevTotalTokens > 0 ? ((totalTokens - prevTotalTokens) / prevTotalTokens) * 100 : 0,
+          cost: prevTotalCost > 0 ? ((totalCost - prevTotalCost) / prevTotalCost) * 100 : 0,
+          users: prevUniqueUsers > 0 ? ((processedMonthlyData.length - prevUniqueUsers) / prevUniqueUsers) * 100 : 0
+        }
+      };
+
+      setMonthlyData(processedMonthlyData);
+      setMonthlyMetrics(monthlyMetrics);
+
+    } catch (error) {
+      console.error('Error loading monthly data:', error);
+      toast.error(text.errorLoading);
+    } finally {
+      setMonthlyLoading(false);
+    }
+  };
+
+  const handleMonthChange = (direction: 'prev' | 'next') => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    let newDate;
+    
+    if (direction === 'prev') {
+      newDate = new Date(year, month - 2, 1); // month is 1-indexed, so -2 for previous month
+    } else {
+      newDate = new Date(year, month, 1); // month is 1-indexed, so +0 for next month
+    }
+    
+    const newMonth = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`;
+    setSelectedMonth(newMonth);
+  };
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    loadMonthlyData(selectedMonth);
+  }, [selectedMonth]);
 
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('pt-BR', { 
@@ -363,9 +613,10 @@ export const AIControlSection = () => {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">{text.overview}</TabsTrigger>
           <TabsTrigger value="users">{text.users}</TabsTrigger>
+          <TabsTrigger value="monthly">{text.monthlyReports}</TabsTrigger>
           <TabsTrigger value="limits">{text.limits}</TabsTrigger>
         </TabsList>
 
@@ -628,6 +879,233 @@ export const AIControlSection = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="monthly" className="space-y-6">
+          {/* Month Navigation */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  {text.monthlyReports}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleMonthChange('prev')}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm font-medium px-3">
+                    {new Date(selectedMonth + '-01').toLocaleDateString(language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es-ES', { 
+                      year: 'numeric', 
+                      month: 'long' 
+                    })}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleMonthChange('next')}
+                    disabled={selectedMonth >= `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+          </Card>
+
+          {monthlyLoading ? (
+            <Card>
+              <CardContent className="flex items-center justify-center h-32">
+                <RefreshCw className="h-6 w-6 animate-spin" />
+              </CardContent>
+            </Card>
+          ) : monthlyMetrics ? (
+            <>
+              {/* Monthly Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-blue-700">{text.monthlyTokens}</CardTitle>
+                    <Zap className="h-4 w-4 text-blue-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-800">{formatNumber(monthlyMetrics.totalTokens)}</div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      {text.avgDaily}: {formatNumber(Math.round(monthlyMetrics.avgDailyTokens))}
+                    </div>
+                    <div className="text-xs text-blue-500 mt-1">
+                      {monthlyMetrics.previousMonthGrowth.tokens > 0 ? '↗' : monthlyMetrics.previousMonthGrowth.tokens < 0 ? '↘' : '→'} 
+                      {Math.abs(monthlyMetrics.previousMonthGrowth.tokens).toFixed(1)}% vs {text.previousMonth}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-green-200 bg-gradient-to-r from-green-50 to-green-100">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-green-700">{text.monthlyRequests}</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-800">{formatNumber(monthlyMetrics.totalRequests)}</div>
+                    <div className="text-xs text-green-600 mt-1">
+                      {text.avgDaily}: {formatNumber(Math.round(monthlyMetrics.avgDailyRequests))}
+                    </div>
+                    <div className="text-xs text-green-500 mt-1">
+                      {monthlyMetrics.previousMonthGrowth.requests > 0 ? '↗' : monthlyMetrics.previousMonthGrowth.requests < 0 ? '↘' : '→'} 
+                      {Math.abs(monthlyMetrics.previousMonthGrowth.requests).toFixed(1)}% vs {text.previousMonth}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-purple-100">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-purple-700">{text.monthlyCost}</CardTitle>
+                    <DollarSign className="h-4 w-4 text-purple-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-purple-800">{formatCurrency(monthlyMetrics.totalCost)}</div>
+                    <div className="text-xs text-purple-600 mt-1">
+                      {text.avgDaily}: {formatCurrency(monthlyMetrics.avgDailyCost)}
+                    </div>
+                    <div className="text-xs text-purple-500 mt-1">
+                      {monthlyMetrics.previousMonthGrowth.cost > 0 ? '↗' : monthlyMetrics.previousMonthGrowth.cost < 0 ? '↘' : '→'} 
+                      {Math.abs(monthlyMetrics.previousMonthGrowth.cost).toFixed(1)}% vs {text.previousMonth}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-amber-100">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-amber-700">{text.uniqueUsers}</CardTitle>
+                    <Users className="h-4 w-4 text-amber-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-amber-800">{formatNumber(monthlyMetrics.uniqueUsers)}</div>
+                    <div className="text-xs text-amber-600 mt-1">
+                      {monthlyMetrics.daysWithActivity} {text.daysActiveInMonth}
+                    </div>
+                    <div className="text-xs text-amber-500 mt-1">
+                      {monthlyMetrics.previousMonthGrowth.users > 0 ? '↗' : monthlyMetrics.previousMonthGrowth.users < 0 ? '↘' : '→'} 
+                      {Math.abs(monthlyMetrics.previousMonthGrowth.users).toFixed(1)}% vs {text.previousMonth}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Top User of the Month */}
+              {monthlyMetrics.topUser && (
+                <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-emerald-700">
+                      <Award className="h-5 w-5" />
+                      {text.topUserMonth}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="font-semibold text-lg">{monthlyMetrics.topUser.display_name}</div>
+                        <div className="text-sm text-muted-foreground">{monthlyMetrics.topUser.user_email}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant={monthlyMetrics.topUser.subscription_tier === 'premium' ? 'default' : 'secondary'}>
+                            {monthlyMetrics.topUser.subscription_tier === 'premium' ? 'Premium' : 'Essential'}
+                          </Badge>
+                          <Badge variant="outline" className="text-emerald-600 border-emerald-600">
+                            {monthlyMetrics.topUser.days_active} {text.daysActiveInMonth}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <div className="text-3xl font-bold text-emerald-700">
+                          {formatNumber(monthlyMetrics.topUser.monthly_tokens)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">tokens no mês</div>
+                        <div className="text-sm">
+                          {formatNumber(monthlyMetrics.topUser.monthly_requests)} requisições • {formatCurrency(monthlyMetrics.topUser.monthly_cost)}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Monthly Users List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Usuários do Mês - Ranking por Tokens
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {monthlyData.map((user, index) => (
+                      <div key={user.user_id} className="border rounded-lg p-4 hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                              #{index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium">{user.display_name}</div>
+                              <div className="text-sm text-muted-foreground">{user.user_email}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={user.subscription_tier === 'premium' ? 'default' : 'secondary'}>
+                              {user.subscription_tier === 'premium' ? (
+                                <><Crown className="h-3 w-3 mr-1" />{text.premium}</>
+                              ) : (
+                                text.essential
+                              )}
+                            </Badge>
+                            <Badge variant="outline">
+                              {user.days_active} {text.daysActiveInMonth}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">{text.requests}</div>
+                            <div className="text-xl font-bold text-green-600">{formatNumber(user.monthly_requests)}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ~{formatNumber(Math.round(user.monthly_requests / user.days_active))} por dia ativo
+                            </div>
+                          </div>
+
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">{text.tokens}</div>
+                            <div className="text-xl font-bold text-blue-600">{formatNumber(user.monthly_tokens)}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ~{formatNumber(Math.round(user.monthly_tokens / user.days_active))} por dia ativo
+                            </div>
+                          </div>
+
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">{text.cost}</div>
+                            <div className="text-xl font-bold text-purple-600">{formatCurrency(user.monthly_cost)}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ~{formatCurrency(user.monthly_cost / user.days_active)} por dia ativo
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{text.noDataMonth}</AlertDescription>
+            </Alert>
+          )}
         </TabsContent>
 
         <TabsContent value="limits" className="space-y-4">
