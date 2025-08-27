@@ -99,7 +99,9 @@ export const AIControlSection = () => {
   const [monthlyMetrics, setMonthlyMetrics] = useState<MonthlyMetrics | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // getMonth() returns 0-11, so +1 for 1-12
+    return `${year}-${String(month).padStart(2, '0')}`;
   });
   const [monthlyLoading, setMonthlyLoading] = useState(false);
 
@@ -542,9 +544,9 @@ export const AIControlSection = () => {
     let newDate;
     
     if (direction === 'prev') {
-      newDate = new Date(year, month - 2, 1); // month is 1-indexed, so -2 for previous month
+      newDate = new Date(year, month - 2, 1); // month - 2 porque month é 1-based e Date precisa 0-based
     } else {
-      newDate = new Date(year, month, 1); // month is 1-indexed, so +0 for next month
+      newDate = new Date(year, month, 1); // month + 0 para próximo mês
     }
     
     const newMonth = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`;
@@ -899,16 +901,24 @@ export const AIControlSection = () => {
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm font-medium px-3">
-                    {new Date(selectedMonth + '-01').toLocaleDateString(language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es-ES', { 
-                      year: 'numeric', 
-                      month: 'long' 
-                    })}
+                    {(() => {
+                      const [year, month] = selectedMonth.split('-').map(Number);
+                      const date = new Date(year, month - 1, 1); // month - 1 porque Date usa 0-based months
+                      return date.toLocaleDateString(language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es-ES', { 
+                        year: 'numeric', 
+                        month: 'long' 
+                      });
+                    })()}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleMonthChange('next')}
-                    disabled={selectedMonth >= `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}
+                    disabled={(() => {
+                      const now = new Date();
+                      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                      return selectedMonth >= currentMonth;
+                    })()}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
