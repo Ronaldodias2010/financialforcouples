@@ -115,46 +115,100 @@ export async function fetchExportData(
   }, {});
 
   // Calculate cash flow by month
-  const cashFlowByMonth = transactions?.reduce((acc, transaction) => {
-    const month = format(new Date(transaction.transaction_date), 'yyyy-MM');
-    if (!acc[month]) {
-      acc[month] = { income: 0, expense: 0, balance: 0 };
-    }
-    if (transaction.type === 'income') {
-      acc[month].income += transaction.amount;
-    } else {
-      acc[month].expense += transaction.amount;
-    }
-    acc[month].balance = acc[month].income - acc[month].expense;
-    return acc;
-  }, {});
+  let cashFlowSeparated: any[] = [];
 
-  // Create separated cash flow entries (one line for income, one for expense, one for balance)
-  const cashFlowSeparated: any[] = [];
-  Object.entries(cashFlowByMonth || {}).forEach(([month, data]: [string, any]) => {
-    const monthName = format(new Date(month + '-01'), 'MMMM yyyy', { locale: ptBR });
-    
-    // Income line
-    cashFlowSeparated.push({
-      description: `${monthName} - Receitas`,
-      type: 'Receita',
-      amount: data.income
+  if (viewMode === 'both' && couples) {
+    // Separate cash flow by user when viewing both users in a couple
+    const cashFlowUser1: any = {};
+    const cashFlowUser2: any = {};
+    const cashFlowTotal: any = {};
+
+    transactions?.forEach(transaction => {
+      const month = format(new Date(transaction.transaction_date), 'yyyy-MM');
+      
+      // Initialize month objects
+      if (!cashFlowUser1[month]) {
+        cashFlowUser1[month] = { income: 0, expense: 0, balance: 0 };
+        cashFlowUser2[month] = { income: 0, expense: 0, balance: 0 };
+        cashFlowTotal[month] = { income: 0, expense: 0, balance: 0 };
+      }
+
+      const amount = transaction.amount;
+      const isUser1 = transaction.owner_user === 'user1';
+
+      if (transaction.type === 'income') {
+        if (isUser1) {
+          cashFlowUser1[month].income += amount;
+        } else {
+          cashFlowUser2[month].income += amount;
+        }
+        cashFlowTotal[month].income += amount;
+      } else {
+        if (isUser1) {
+          cashFlowUser1[month].expense += amount;
+        } else {
+          cashFlowUser2[month].expense += amount;
+        }
+        cashFlowTotal[month].expense += amount;
+      }
+
+      // Calculate balances
+      cashFlowUser1[month].balance = cashFlowUser1[month].income - cashFlowUser1[month].expense;
+      cashFlowUser2[month].balance = cashFlowUser2[month].income - cashFlowUser2[month].expense;
+      cashFlowTotal[month].balance = cashFlowTotal[month].income - cashFlowTotal[month].expense;
     });
-    
-    // Expense line  
-    cashFlowSeparated.push({
-      description: `${monthName} - Despesas`,
-      type: 'Despesa',
-      amount: data.expense
+
+    // Create separated entries for each month
+    Object.keys(cashFlowTotal).forEach(month => {
+      const monthName = format(new Date(month + '-01'), 'MMMM yyyy', { locale: ptBR });
+      
+      // User 1 line
+      cashFlowSeparated.push({
+        description: `${monthName} - Usuário 1`,
+        type: 'Usuário 1',
+        amount: cashFlowUser1[month].balance
+      });
+      
+      // User 2 line
+      cashFlowSeparated.push({
+        description: `${monthName} - Usuário 2`,
+        type: 'Usuário 2', 
+        amount: cashFlowUser2[month].balance
+      });
+      
+      // Total line
+      cashFlowSeparated.push({
+        description: `${monthName} - Total`,
+        type: 'Total',
+        amount: cashFlowTotal[month].balance
+      });
     });
-    
-    // Balance line
-    cashFlowSeparated.push({
-      description: `${monthName} - Saldo`,
-      type: 'Saldo',
-      amount: data.balance
+  } else {
+    // Single user or filtered view - consolidated cash flow
+    const cashFlowByMonth = transactions?.reduce((acc, transaction) => {
+      const month = format(new Date(transaction.transaction_date), 'yyyy-MM');
+      if (!acc[month]) {
+        acc[month] = { income: 0, expense: 0, balance: 0 };
+      }
+      if (transaction.type === 'income') {
+        acc[month].income += transaction.amount;
+      } else {
+        acc[month].expense += transaction.amount;
+      }
+      acc[month].balance = acc[month].income - acc[month].expense;
+      return acc;
+    }, {});
+
+    Object.entries(cashFlowByMonth || {}).forEach(([month, data]: [string, any]) => {
+      const monthName = format(new Date(month + '-01'), 'MMMM yyyy', { locale: ptBR });
+      
+      cashFlowSeparated.push({
+        description: `${monthName} - Saldo`,
+        type: 'Saldo',
+        amount: data.balance
+      });
     });
-  });
+  }
 
   return {
     cashFlow: cashFlowSeparated,
