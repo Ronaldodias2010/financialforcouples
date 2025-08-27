@@ -1,10 +1,11 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export type ExportFormat = 'pdf' | 'csv';
+export type ExportFormat = 'pdf' | 'csv' | 'xlsx';
 export type ViewMode = 'both' | 'user1' | 'user2';
 
 interface ExportData {
@@ -181,6 +182,45 @@ export function exportToCSV(data: any[], columns: string[], filename: string) {
   }
 }
 
+export function exportToExcel(data: any[], title: string, columns: string[], filename: string) {
+  // Prepare data for Excel
+  const worksheetData = [
+    columns, // Headers
+    ...data.map(row => 
+      columns.map(col => {
+        const value = row[col.toLowerCase().replace(/\s+/g, '')];
+        return value || '';
+      })
+    )
+  ];
+
+  // Create workbook and worksheet
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+  // Set column widths
+  const colWidths = columns.map(() => ({ wch: 20 }));
+  worksheet['!cols'] = colWidths;
+
+  // Style headers
+  const headerRange = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+    if (!worksheet[cellAddress]) continue;
+    worksheet[cellAddress].s = {
+      font: { bold: true },
+      fill: { fgColor: { rgb: "4F46E5" } },
+      alignment: { horizontal: "center" }
+    };
+  }
+
+  // Add worksheet to workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, title);
+
+  // Save file
+  XLSX.writeFile(workbook, `${filename}.xlsx`);
+}
+
 export async function exportCashFlow(
   format: ExportFormat,
   dateFrom: string,
@@ -193,8 +233,10 @@ export async function exportCashFlow(
   
   if (format === 'pdf') {
     exportToPDF(data.cashFlow, 'Relatório de Fluxo de Caixa', columns, 'fluxo-de-caixa');
-  } else {
+  } else if (format === 'csv') {
     exportToCSV(data.cashFlow, columns, 'fluxo-de-caixa');
+  } else {
+    exportToExcel(data.cashFlow, 'Fluxo de Caixa', columns, 'fluxo-de-caixa');
   }
 }
 
@@ -210,8 +252,10 @@ export async function exportConsolidatedExpenses(
   
   if (format === 'pdf') {
     exportToPDF(data.expenses, 'Relatório de Gastos Consolidados', columns, 'gastos-consolidados');
-  } else {
+  } else if (format === 'csv') {
     exportToCSV(data.expenses, columns, 'gastos-consolidados');
+  } else {
+    exportToExcel(data.expenses, 'Gastos Consolidados', columns, 'gastos-consolidados');
   }
 }
 
@@ -227,8 +271,10 @@ export async function exportConsolidatedRevenues(
   
   if (format === 'pdf') {
     exportToPDF(data.revenues, 'Relatório de Receitas Consolidadas', columns, 'receitas-consolidadas');
-  } else {
+  } else if (format === 'csv') {
     exportToCSV(data.revenues, columns, 'receitas-consolidadas');
+  } else {
+    exportToExcel(data.revenues, 'Receitas Consolidadas', columns, 'receitas-consolidadas');
   }
 }
 
@@ -244,7 +290,9 @@ export async function exportTaxReport(
   
   if (format === 'pdf') {
     exportToPDF(data.taxReport, 'Relatório para Imposto de Renda', columns, 'relatorio-imposto-renda');
-  } else {
+  } else if (format === 'csv') {
     exportToCSV(data.taxReport, columns, 'relatorio-imposto-renda');
+  } else {
+    exportToExcel(data.taxReport, 'Imposto de Renda', columns, 'relatorio-imposto-renda');
   }
 }

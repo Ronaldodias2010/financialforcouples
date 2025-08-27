@@ -30,7 +30,7 @@ const AIRecommendationsContent = () => {
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>(); 
   const [viewMode, setViewMode] = useState<'both' | 'user1' | 'user2'>('both');
-  const [exportFormat, setExportFormat] = useState<'pdf' | 'csv'>('pdf');
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'csv' | 'xlsx'>('pdf');
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'ai', message: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -325,7 +325,7 @@ const AIRecommendationsContent = () => {
               
               <div className="flex-1">
                 <Label htmlFor="export-format" className="text-sm font-medium">{t('aiRecommendations.exportFormat')}:</Label>
-                <Select value={exportFormat} onValueChange={(value: 'pdf' | 'csv') => setExportFormat(value)}>
+                <Select value={exportFormat} onValueChange={(value: 'pdf' | 'csv' | 'xlsx') => setExportFormat(value)}>
                   <SelectTrigger id="export-format" className="w-full mt-1">
                     <Download className="mr-2 h-4 w-4" />
                     <SelectValue />
@@ -333,6 +333,7 @@ const AIRecommendationsContent = () => {
                   <SelectContent>
                     <SelectItem value="pdf">PDF</SelectItem>
                     <SelectItem value="csv">CSV</SelectItem>
+                    <SelectItem value="xlsx">Excel</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
