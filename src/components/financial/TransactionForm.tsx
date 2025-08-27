@@ -278,8 +278,9 @@ const getAccountOwnerName = (account: Account) => {
       // For income/expense transactions, only show current user's accounts
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, user_id, name, account_type, balance, currency, owner_user, overdraft_limit')
+        .select('id, user_id, name, account_type, balance, currency, owner_user, overdraft_limit, is_active')
         .eq('user_id', user.id)
+        .eq('is_active', true)
         .order('name');
 
       if (error) throw error;
