@@ -72,8 +72,10 @@ const computeSuasContasTotal = (accounts: AccountRow[]) => {
     const limit = Number(a.overdraft_limit ?? 0);
     const from = (a.currency ?? "BRL") as CurrencyCode;
     if (bal >= 0) {
-      return sum + convertCurrency(bal, from, displayCurrency);
+      // Valor Disponível = Saldo atual + Limite do cheque especial
+      return sum + convertCurrency(bal + limit, from, displayCurrency);
     } else {
+      // Se saldo negativo, calcular quanto ainda tem disponível do limite
       const used = Math.min(limit, Math.abs(bal));
       const remaining = Math.max(0, limit - used);
       return sum + convertCurrency(remaining, from, displayCurrency);
