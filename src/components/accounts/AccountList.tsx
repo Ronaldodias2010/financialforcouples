@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Wallet, Trash2, AlertTriangle, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { AccountEditForm } from "./AccountEditForm";
+import { AccountDeactivationDialog } from "./AccountDeactivationDialog";
 
 interface AccountData {
   id: string;
@@ -17,6 +18,7 @@ interface AccountData {
   balance: number;
   currency: string;
   overdraft_limit: number;
+  is_active: boolean;
 }
 
 interface AccountListProps {
@@ -29,6 +31,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
   const [accounts, setAccounts] = useState<AccountData[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+  const [deactivatingAccountId, setDeactivatingAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -71,20 +74,20 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     };
   }, [user?.id]);
 
-  const deleteAccount = async (accountId: string) => {
+  const reactivateAccount = async (accountId: string) => {
     try {
       const { error } = await supabase
         .from("accounts")
-        .delete()
+        .update({ is_active: true })
         .eq("id", accountId);
 
       if (error) throw error;
 
-      toast.success(t('messages.accountDeleted') || "Conta removida com sucesso!");
+      toast.success(t('accounts.deactivation.reactivated') || "Conta reativada com sucesso!");
       fetchAccounts();
     } catch (error) {
-      console.error("Error deleting account:", error);
-      toast.error(t('messages.accountDeleteError') || "Erro ao remover conta");
+      console.error("Error reactivating account:", error);
+      toast.error(t('accounts.deactivation.reactivateError') || "Erro ao reativar conta");
     }
   };
 
@@ -191,7 +194,10 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
       ) : (
         <div className="grid gap-4">
           {accounts.map((account) => (
-            <Card key={account.id} className="p-4">
+            <Card 
+              key={account.id} 
+              className={`p-4 ${!account.is_active ? 'opacity-30 bg-muted/50' : ''}`}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {(() => {
@@ -203,7 +209,14 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                     );
                   })()}
                   <div>
-                    <h4 className="font-semibold">{account.name}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">{account.name}</h4>
+                      {!account.is_active && (
+                        <Badge variant="secondary" className="text-xs">
+                          {t('accounts.deactivation.deactivated') || "Desativada"}
+                        </Badge>
+                      )}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       <span>{getAccountTypeLabel(account.account_type)}</span>
                       {account.account_model && (
@@ -241,14 +254,25 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => deleteAccount(account.id)}
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {account.is_active ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDeactivatingAccountId(account.id)}
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => reactivateAccount(account.id)}
+                      className="h-8 px-3 text-primary hover:text-primary"
+                    >
+                      {t('accounts.deactivation.reactivate') || "Reativar"}
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -272,6 +296,19 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
           onSuccess={() => {
             fetchAccounts();
             setEditingAccountId(null);
+          }}
+        />
+      )}
+      
+      {deactivatingAccountId && (
+        <AccountDeactivationDialog
+          accountId={deactivatingAccountId}
+          accountName={accounts.find(acc => acc.id === deactivatingAccountId)?.name || ""}
+          isOpen={!!deactivatingAccountId}
+          onClose={() => setDeactivatingAccountId(null)}
+          onSuccess={() => {
+            fetchAccounts();
+            setDeactivatingAccountId(null);
           }}
         />
       )}
