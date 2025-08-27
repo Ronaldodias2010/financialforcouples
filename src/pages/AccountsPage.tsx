@@ -45,7 +45,8 @@ const partnerId = getPartnerUserId();
     const fetchAccounts = async () => {
       const { data, error } = await supabase
         .from("accounts")
-        .select("id, user_id, owner_user, currency, balance, overdraft_limit, account_model, name");
+        .select("id, user_id, owner_user, currency, balance, overdraft_limit, account_model, name, is_active")
+        .eq('is_active', true);
       if (!error && data) {
         setAccountsData(
           data.map((a) => ({

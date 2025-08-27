@@ -247,9 +247,9 @@ export const useFinancialData = () => {
 
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, user_id, balance, currency, account_model, owner_user')
+        .select('id, user_id, balance, currency, account_model, owner_user, is_active')
         .in('user_id', userIds)
-        .eq('account_model', 'personal');
+        .eq('is_active', true);
 
       if (error) throw error;
       setAccounts(data || []);
