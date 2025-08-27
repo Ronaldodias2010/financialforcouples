@@ -415,6 +415,45 @@ INFORMAÇÕES DO RELACIONAMENTO:
 
     context += `
 
+SALDO REAL DAS CONTAS (Valor Disponível Atualmente):
+${accounts.length > 0 ? 
+  accounts.map(acc => {
+    const ownerName = relationshipInfo.isCouple ? 
+      (acc.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
+      relationshipInfo.currentUserName;
+    return `- ${acc.name || 'Conta'}: R$ ${Number(acc.balance || 0).toFixed(2)} (${ownerName})`;
+  }).join('\n') + '\n' +
+  `TOTAL SALDO REAL: R$ ${accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0).toFixed(2)}` :
+  'CONTAS: Nenhuma conta cadastrada'
+}
+
+MOVIMENTAÇÃO DO PERÍODO (Receitas e Despesas):
+${transactions.filter(t => t.type === 'income').length > 0 ? 
+  `RECEITAS DO PERÍODO:
+${transactions.filter(t => t.type === 'income').map(t => {
+    const ownerName = relationshipInfo.isCouple ? 
+      (t.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
+      relationshipInfo.currentUserName;
+    return `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${ownerName})`;
+  }).join('\n')}
+TOTAL RECEITAS: R$ ${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
+  'RECEITAS DO PERÍODO: Nenhuma receita registrada'
+}
+
+${transactions.filter(t => t.type === 'expense').length > 0 ? 
+  `DESPESAS DO PERÍODO:
+${transactions.filter(t => t.type === 'expense').slice(0, 10).map(t => {
+    const category = categories.find(c => c.id === t.category_id);
+    const ownerName = relationshipInfo.isCouple ? 
+      (t.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
+      relationshipInfo.currentUserName;
+    return `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${category?.name || 'Sem categoria'} - ${ownerName})`;
+  }).join('\n')}
+${transactions.filter(t => t.type === 'expense').length > 10 ? '... (mostrando apenas as últimas 10)' : ''}
+TOTAL DESPESAS: R$ ${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
+  'DESPESAS DO PERÍODO: Nenhuma despesa registrada'
+}
+
 TRANSAÇÕES DE HOJE (${today}):
 ${todayIncome.length > 0 ? 
   `ENTRADAS HOJE:
@@ -436,7 +475,13 @@ TOTAL DE GASTOS HOJE: R$ ${todayExpenses.reduce((sum, t) => sum + Number(t.amoun
   'GASTOS HOJE: Nenhum gasto registrado hoje'
 }
 
-INSTRUÇÕES DE INTERPRETAÇÃO INTELIGENTE:
+INSTRUÇÕES CRÍTICAS DE INTERPRETAÇÃO:
+
+DIFERENCIAÇÃO ENTRE SALDO REAL E MOVIMENTAÇÃO:
+- "Qual meu saldo?" / "Quanto tenho na conta?" / "Saldo das contas" → Use SALDO REAL DAS CONTAS
+- "Quanto movimentei?" / "Qual resultado do mês?" / "Receitas/Despesas" → Use MOVIMENTAÇÃO DO PERÍODO
+- "Tenho dinheiro disponível?" → Use SALDO REAL DAS CONTAS
+- "Como está minha situação financeira do mês?" → Use MOVIMENTAÇÃO DO PERÍODO
 
 PARA PERGUNTAS OBJETIVAS SOBRE HOJE:
 - Se o usuário perguntar sobre "entrou algum valor hoje", "teve receita hoje", "recebi algo hoje": responda DIRETAMENTE baseado nas ENTRADAS HOJE acima
@@ -460,7 +505,7 @@ ${relationshipInfo.isCouple ?
 `;
   }
 
-  // Calculate metrics for combined data
+  // Calculate metrics for combined data - MOVIMENTAÇÃO DO PERÍODO (sem incluir saldos de contas)
   const totalIncome = transactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -469,6 +514,7 @@ ${relationshipInfo.isCouple ?
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
+  // SALDO REAL DAS CONTAS (separado da movimentação)
   const totalAccountBalance = accounts
     .reduce((sum, a) => sum + Number(a.balance), 0);
 
@@ -480,54 +526,64 @@ ${relationshipInfo.isCouple ?
 
   // Add segmented data for couples
   if (segmentedData && relationshipInfo?.isCouple) {
-    // Current user metrics
+    // Current user metrics - MOVIMENTAÇÃO SEPARADA (sem incluir saldos como receita)
     const userIncome = segmentedData.currentUser.transactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + Number(t.amount), 0);
     const userExpenses = segmentedData.currentUser.transactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + Number(t.amount), 0);
+    // SALDO REAL DAS CONTAS DO USUÁRIO (separado)
     const userAccountBalance = segmentedData.currentUser.accounts
       .reduce((sum, a) => sum + Number(a.balance), 0);
     const userInvestments = segmentedData.currentUser.investments
       .reduce((sum, i) => sum + Number(i.current_value), 0);
 
-    // Partner metrics
+    // Partner metrics - MOVIMENTAÇÃO SEPARADA (sem incluir saldos como receita)
     const partnerIncome = segmentedData.partner!.transactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + Number(t.amount), 0);
     const partnerExpenses = segmentedData.partner!.transactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + Number(t.amount), 0);
+    // SALDO REAL DAS CONTAS DO PARCEIRO (separado)
     const partnerAccountBalance = segmentedData.partner!.accounts
       .reduce((sum, a) => sum + Number(a.balance), 0);
     const partnerInvestments = segmentedData.partner!.investments
       .reduce((sum, i) => sum + Number(i.current_value), 0);
 
     context += `
-DADOS SEGMENTADOS POR USUÁRIO:
 
-=== DADOS DE ${relationshipInfo.currentUserName.toUpperCase()} ===
-- Receitas no período: R$ ${userIncome.toFixed(2)}
-- Gastos no período: R$ ${userExpenses.toFixed(2)}
-- Saldo líquido: R$ ${(userIncome - userExpenses).toFixed(2)}
-- Saldo em contas: R$ ${userAccountBalance.toFixed(2)}
-- Total em investimentos: R$ ${userInvestments.toFixed(2)}
+DADOS FINANCEIROS SEGMENTADOS POR USUÁRIO:
 
-Contas de ${relationshipInfo.currentUserName}:
-${segmentedData.currentUser.accounts.map(a => `- ${a.name}: R$ ${Number(a.balance).toFixed(2)}`).join('\n') || '- Nenhuma conta cadastrada'}
+${relationshipInfo.currentUserName.toUpperCase()} - MOVIMENTAÇÃO DO PERÍODO:
+- Receitas: R$ ${userIncome.toFixed(2)}
+- Despesas: R$ ${userExpenses.toFixed(2)}
+- Saldo Líquido da Movimentação: R$ ${(userIncome - userExpenses).toFixed(2)}
 
-=== DADOS DE ${relationshipInfo.partnerName?.toUpperCase()} ===
-- Receitas no período: R$ ${partnerIncome.toFixed(2)}
-- Gastos no período: R$ ${partnerExpenses.toFixed(2)}
-- Saldo líquido: R$ ${(partnerIncome - partnerExpenses).toFixed(2)}
-- Saldo em contas: R$ ${partnerAccountBalance.toFixed(2)}
-- Total em investimentos: R$ ${partnerInvestments.toFixed(2)}
+${relationshipInfo.currentUserName.toUpperCase()} - SALDO REAL DAS CONTAS:
+- Total em Contas: R$ ${userAccountBalance.toFixed(2)}
+- Investimentos: R$ ${userInvestments.toFixed(2)}
 
-Contas de ${relationshipInfo.partnerName}:
-${segmentedData.partner!.accounts.map(a => `- ${a.name}: R$ ${Number(a.balance).toFixed(2)}`).join('\n') || '- Nenhuma conta cadastrada'}
+${relationshipInfo.partnerName?.toUpperCase()} - MOVIMENTAÇÃO DO PERÍODO:
+- Receitas: R$ ${partnerIncome.toFixed(2)}
+- Despesas: R$ ${partnerExpenses.toFixed(2)}
+- Saldo Líquido da Movimentação: R$ ${(partnerIncome - partnerExpenses).toFixed(2)}
+${relationshipInfo.partnerName?.toUpperCase()} - SALDO REAL DAS CONTAS:
+- Total em Contas: R$ ${partnerAccountBalance.toFixed(2)}
+- Investimentos: R$ ${partnerInvestments.toFixed(2)}
 
-=== DADOS COMBINADOS (AMBOS) ===`;
+DADOS COMBINADOS DO CASAL:
+
+MOVIMENTAÇÃO COMBINADA DO PERÍODO:
+- Receitas Totais: R$ ${totalIncome.toFixed(2)}
+- Despesas Totais: R$ ${totalExpenses.toFixed(2)}
+- Saldo Líquido da Movimentação: R$ ${(totalIncome - totalExpenses).toFixed(2)}
+
+SALDO REAL COMBINADO:
+- Total em Contas: R$ ${totalAccountBalance.toFixed(2)}
+- Total em Investimentos: R$ ${totalInvestments.toFixed(2)}
+- Dívida em Cartões: R$ ${cardDebt.toFixed(2)}`;
   }
 
   // Expense by category
@@ -540,19 +596,28 @@ ${segmentedData.partner!.accounts.map(a => `- ${a.name}: R$ ${Number(a.balance).
       return acc;
     }, {} as Record<string, number>);
 
-  context += `
-RESUMO FINANCEIRO ${segmentedData ? '(COMBINADO)' : ''}:
-- Receitas no período: R$ ${totalIncome.toFixed(2)}
-- Gastos no período: R$ ${totalExpenses.toFixed(2)}
-- Saldo líquido: R$ ${(totalIncome - totalExpenses).toFixed(2)}
-- Saldo total em contas: R$ ${totalAccountBalance.toFixed(2)}
-- Total em investimentos: R$ ${totalInvestments.toFixed(2)}
-- Dívidas em cartões: R$ ${cardDebt.toFixed(2)}
+  } else {
+    // Single user data
+    context += `
 
-CONTAS BANCÁRIAS (${accounts.length}):
+MOVIMENTAÇÃO DO PERÍODO:
+- Total de Receitas: R$ ${totalIncome.toFixed(2)}
+- Total de Despesas: R$ ${totalExpenses.toFixed(2)}
+- Saldo Líquido da Movimentação: R$ ${(totalIncome - totalExpenses).toFixed(2)}
+
+SALDO REAL DAS CONTAS:
+- Saldo em Contas: R$ ${totalAccountBalance.toFixed(2)}
+- Investimentos: R$ ${totalInvestments.toFixed(2)}
+- Dívida em Cartões: R$ ${cardDebt.toFixed(2)}
+`;
+  }
+
+  context += `
+
+DETALHES DAS CONTAS (${accounts.length}):
 ${accounts.map(a => `- ${a.name}: R$ ${Number(a.balance).toFixed(2)} (${a.currency})`).join('\n')}
 
-CARTÕES (${cards.length}):
+DETALHES DOS CARTÕES (${cards.length}):
 ${cards.map(c => `- ${c.name}: Limite R$ ${Number(c.credit_limit || 0).toFixed(2)}, Usado R$ ${Number(c.current_balance || 0).toFixed(2)}`).join('\n')}
 
 GASTOS POR CATEGORIA:

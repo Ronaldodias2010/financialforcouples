@@ -278,29 +278,20 @@ export const useFinancialData = () => {
       }
     });
 
-    // Include balances from personal accounts as income
-    const filteredAccounts = getAccountsByUser(viewMode).filter(
-      (acc) => (acc.account_model || 'personal') === 'personal'
-    );
-    const accountsIncome = filteredAccounts.reduce((sum, acc) => {
-      return sum + convertCurrency(acc.balance || 0, acc.currency as CurrencyCode, userPreferredCurrency);
-    }, 0);
+    // CORREÇÃO: NÃO incluir saldos de contas como receita na movimentação
+    // Saldo das contas deve ser tratado separadamente do fluxo de receitas/despesas
 
-    const totalIncomeWithAccounts = totalIncome + accountsIncome;
-
-    console.log('Financial Summary (with accounts):', {
-      totalIncome: totalIncomeWithAccounts,
+    console.log('Financial Summary (MOVIMENTAÇÃO - sem saldos de contas):', {
+      totalIncome,
       totalExpenses,
-      accountsIncome,
       transactionsCount: filteredTransactions.length,
-      accountsCount: filteredAccounts.length,
       viewMode,
     });
     
     return {
-      totalIncome: totalIncomeWithAccounts,
+      totalIncome,
       totalExpenses,
-      balance: totalIncomeWithAccounts - totalExpenses,
+      balance: totalIncome - totalExpenses,
       currency: userPreferredCurrency,
     };
   };
@@ -482,19 +473,19 @@ export const useFinancialData = () => {
     }
   };
 
-  // Returns the sum of balances from personal accounts as income (converted)
-  const getAccountsIncome = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
+  // Returns the sum of balances from personal accounts (SALDO REAL - não é receita)
+  const getAccountsBalance = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredAccounts = getAccountsByUser(viewMode).filter(
       (acc) => (acc.account_model || 'personal') === 'personal'
     );
-    const accountsIncome = filteredAccounts.reduce((sum, acc) => {
+    const accountsBalance = filteredAccounts.reduce((sum, acc) => {
       return sum + convertCurrency(
         acc.balance || 0,
         acc.currency as CurrencyCode,
         userPreferredCurrency
       );
     }, 0);
-    return accountsIncome;
+    return accountsBalance;
   };
 
   // Returns the sum of transaction-based incomes only (no accounts)
@@ -525,7 +516,7 @@ export const useFinancialData = () => {
     getFinancialComparison,
     getTransactionsByUser,
     getExpensesByUser,
-    getAccountsIncome,
+    getAccountsBalance, // Corrigido: usando getAccountsBalance em vez de getAccountsIncome
     getTransactionsIncome,
     getTransactionsExpenses,
     refreshData

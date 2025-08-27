@@ -48,7 +48,7 @@ interface Transaction {
 export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsIncome, getTransactionsIncome, getTransactionsExpenses } = useFinancialData();
+  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsBalance, getTransactionsIncome, getTransactionsExpenses } = useFinancialData();
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
   const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
@@ -62,7 +62,7 @@ export const FinancialDashboard = () => {
   const currentUser = "user1"; // Fixed to user1 (logged user)
   
   const financialSummary = getFinancialSummary(viewMode);
-  const accountsIncome = getAccountsIncome(viewMode);
+  const accountsBalance = getAccountsBalance(viewMode);
   const formatCurrency = (value: number) => {
     try {
       return new Intl.NumberFormat(undefined, { style: 'currency', currency: financialSummary.currency }).format(value);
