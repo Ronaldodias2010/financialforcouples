@@ -211,7 +211,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
         </div>
         {viewMode === 'both' ? (
           <FinancialCard
-            title="Seus Cartões — Ambos"
+            title={t('cards.availableLimit') + " — Ambos"}
             amount={bothTotal}
             currency={getDisplayCurrency()}
             icon={CreditCard}
@@ -219,7 +219,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
           />
         ) : (
           <FinancialCard
-            title={`Seus Cartões — ${getUserLabel(viewMode)}`}
+            title={`${t('cards.availableLimit')} — ${getUserLabel(viewMode)}`}
             amount={viewMode === 'user1' ? user1Total : user2Total}
             currency={getDisplayCurrency()}
             icon={CreditCard}
