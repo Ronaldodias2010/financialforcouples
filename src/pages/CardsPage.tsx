@@ -160,7 +160,15 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
 
   // Calcular totais diretamente por user1/user2 para garantir consistência
   const user1Total = useMemo(() => {
-    if (!user?.id || !partnerId) return 0;
+    if (!user?.id) return 0;
+    
+    // Se não há partner, user1 = usuário atual, user2 = 0
+    if (!partnerId) {
+      const user1Cards = cardsData.filter(c => c.user_id === user.id);
+      const total = user1Cards.reduce((sum, c) => sum + computeAvailable(c), 0);
+      console.log(`User1 (no couple, ${user.id}) total: R$ ${total}`);
+      return total;
+    }
     
     // Identificar quem é user1 baseado na relação do casal
     const user1Id = isUserOne() ? user.id : partnerId;
@@ -172,7 +180,13 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   }, [cardsData, user?.id, partnerId, isUserOne]);
 
   const user2Total = useMemo(() => {
-    if (!user?.id || !partnerId) return 0;
+    if (!user?.id) return 0;
+    
+    // Se não há partner, user2 = 0
+    if (!partnerId) {
+      console.log(`User2 (no couple) total: R$ 0`);
+      return 0;
+    }
     
     // Identificar quem é user2 baseado na relação do casal
     const user2Id = isUserOne() ? partnerId : user.id;
@@ -201,14 +215,25 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   }, [currentUserTotalLimit, partnerTotalLimit]);
 
   const user1TotalLimit = useMemo(() => {
-    if (!user?.id || !partnerId) return 0;
+    if (!user?.id) return 0;
+    
+    // Se não há partner, user1 = usuário atual
+    if (!partnerId) {
+      const user1Cards = cardsData.filter(c => c.user_id === user.id);
+      return user1Cards.reduce((sum, c) => sum + computeTotalLimit(c), 0);
+    }
+    
     const user1Id = isUserOne() ? user.id : partnerId;
     const user1Cards = cardsData.filter(c => c.user_id === user1Id);
     return user1Cards.reduce((sum, c) => sum + computeTotalLimit(c), 0);
   }, [cardsData, user?.id, partnerId, isUserOne]);
 
   const user2TotalLimit = useMemo(() => {
-    if (!user?.id || !partnerId) return 0;
+    if (!user?.id) return 0;
+    
+    // Se não há partner, user2 = 0
+    if (!partnerId) return 0;
+    
     const user2Id = isUserOne() ? partnerId : user.id;
     const user2Cards = cardsData.filter(c => c.user_id === user2Id);
     return user2Cards.reduce((sum, c) => sum + computeTotalLimit(c), 0);
