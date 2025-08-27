@@ -584,18 +584,6 @@ SALDO REAL COMBINADO:
 - Total em Contas: R$ ${totalAccountBalance.toFixed(2)}
 - Total em Investimentos: R$ ${totalInvestments.toFixed(2)}
 - Dívida em Cartões: R$ ${cardDebt.toFixed(2)}`;
-  }
-
-  // Expense by category
-  const expensesByCategory = transactions
-    .filter(t => t.type === 'expense' && t.category_id)
-    .reduce((acc, t) => {
-      const category = categories.find(c => c.id === t.category_id);
-      const categoryName = category?.name || 'Outros';
-      acc[categoryName] = (acc[categoryName] || 0) + Number(t.amount);
-      return acc;
-    }, {} as Record<string, number>);
-
   } else {
     // Single user data
     context += `
@@ -611,6 +599,16 @@ SALDO REAL DAS CONTAS:
 - Dívida em Cartões: R$ ${cardDebt.toFixed(2)}
 `;
   }
+
+  // Expense by category
+  const expensesByCategory = transactions
+    .filter(t => t.type === 'expense' && t.category_id)
+    .reduce((acc, t) => {
+      const category = categories.find(c => c.id === t.category_id);
+      const categoryName = category?.name || 'Outros';
+      acc[categoryName] = (acc[categoryName] || 0) + Number(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
 
   context += `
 
