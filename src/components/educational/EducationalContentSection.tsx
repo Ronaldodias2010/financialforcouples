@@ -18,6 +18,7 @@ interface EducationalContent {
   file_name: string;
   file_type: string;
   content_type: string;
+  image_url?: string;
   created_at: string;
 }
 
@@ -206,47 +207,61 @@ export const EducationalContentSection = () => {
                     {getContentsByCategory(category.value).map((content) => (
                       <Card key={content.id} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                {getContentIcon(content.content_type)}
-                                <h4 className="font-semibold">{content.title}</h4>
-                                <Badge variant="secondary" className="text-xs">
-                                  {content.content_type}
-                                </Badge>
+                          <div className="flex items-start gap-4">
+                            {content.image_url && (
+                              <div className="flex-shrink-0">
+                                <img 
+                                  src={content.image_url} 
+                                  alt={content.title}
+                                  className="w-24 h-24 object-cover rounded-lg border border-border/20"
+                                />
                               </div>
-                              
-                              {content.description && (
-                                <p className="text-sm text-muted-foreground mb-3">
-                                  {content.description}
-                                </p>
-                              )}
-                              
-                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                <span>📅 {new Date(content.created_at).toLocaleDateString(
-                                  t('common.locale') || 'pt-BR'
-                                )}</span>
-                                <span>📄 {content.file_name}</span>
-                              </div>
-                            </div>
+                            )}
                             
-                            <div className="ml-4 flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleViewContent(content)}
-                                className="bg-gradient-to-r from-blue-500 to-blue-600"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                {t('educational.view')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDownload(content.file_url, content.file_name)}
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                {t('educational.download')}
-                              </Button>
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    {getContentIcon(content.content_type)}
+                                    <h4 className="font-semibold">{content.title}</h4>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {content.content_type}
+                                    </Badge>
+                                  </div>
+                                  
+                                  {content.description && (
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                      {content.description}
+                                    </p>
+                                  )}
+                                  
+                                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <span>📅 {new Date(content.created_at).toLocaleDateString(
+                                      t('common.locale') || 'pt-BR'
+                                    )}</span>
+                                    <span>📄 {content.file_name}</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="ml-4 flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleViewContent(content)}
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600"
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    {t('educational.view')}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDownload(content.file_url, content.file_name)}
+                                  >
+                                    <Download className="h-4 w-4 mr-1" />
+                                    {t('educational.download')}
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </CardContent>

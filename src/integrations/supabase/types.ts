@@ -434,6 +434,7 @@ export type Database = {
           file_type: string | null
           file_url: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           sort_order: number | null
           title: string
@@ -449,6 +450,7 @@ export type Database = {
           file_type?: string | null
           file_url?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           sort_order?: number | null
           title: string
@@ -464,6 +466,7 @@ export type Database = {
           file_type?: string | null
           file_url?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           sort_order?: number | null
           title?: string

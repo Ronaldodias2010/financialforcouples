@@ -20,6 +20,7 @@ interface EducationalContent {
   file_name: string;
   file_type: string;
   content_type: string;
+  image_url?: string;
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -53,6 +54,7 @@ export const EducationalContentManager = () => {
     sort_order: 0
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   useEffect(() => {
     fetchContents();
@@ -99,6 +101,13 @@ export const EducationalContentManager = () => {
     }
   };
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -130,6 +139,26 @@ export const EducationalContentManager = () => {
         .from('educational-content')
         .getPublicUrl(filePath);
 
+      // Upload image if provided
+      let imageUrl = null;
+      if (selectedImage) {
+        const imageExt = selectedImage.name.split('.').pop();
+        const imageName = `${Date.now()}-image-${Math.random().toString(36).substring(2)}.${imageExt}`;
+        const imagePath = `${formData.category}/images/${imageName}`;
+
+        const { data: imageUploadData, error: imageUploadError } = await supabase.storage
+          .from('educational-content')
+          .upload(imagePath, selectedImage);
+
+        if (imageUploadError) throw imageUploadError;
+
+        const { data: imageUrlData } = supabase.storage
+          .from('educational-content')
+          .getPublicUrl(imagePath);
+
+        imageUrl = imageUrlData.publicUrl;
+      }
+
       // Insert record into database
       const { error: insertError } = await supabase
         .from('educational_content')
@@ -141,6 +170,7 @@ export const EducationalContentManager = () => {
           file_name: selectedFile.name,
           file_type: fileExt,
           content_type: formData.content_type,
+          image_url: imageUrl,
           sort_order: formData.sort_order,
           created_by_admin_id: (await supabase.auth.getUser()).data.user?.id
         });
@@ -161,6 +191,7 @@ export const EducationalContentManager = () => {
         sort_order: 0
       });
       setSelectedFile(null);
+      setSelectedImage(null);
       
       // Refresh list
       fetchContents();
@@ -354,6 +385,20 @@ export const EducationalContentManager = () => {
               {selectedFile && (
                 <p className="text-sm text-muted-foreground mt-1">
                   {t('admin.content.fileSelected')}: {selectedFile.name}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">{t('admin.content.image')} (opcional)</label>
+              <Input
+                type="file"
+                onChange={handleImageSelect}
+                accept=".jpg,.jpeg,.png,.gif,.webp"
+              />
+              {selectedImage && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {t('admin.content.imageSelected')}: {selectedImage.name}
                 </p>
               )}
             </div>
