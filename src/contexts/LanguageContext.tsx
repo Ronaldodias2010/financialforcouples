@@ -1178,6 +1178,11 @@ const translations = {
     'monthlyIncome.receiptMethod': 'Método de recebimento',
     'monthlyIncome.receivedAccount': 'Conta bancária',
     'monthlyIncome.date': 'Data',
+    'monthlyIncome.description': 'Descrição',
+    'monthlyIncome.amount': 'Valor',
+    'monthlyIncome.pdfTitle': 'Relatório de Receitas Mensais',
+    'monthlyIncome.pdfPeriod': 'Período',
+    'monthlyIncome.pdfTotalIncome': 'Total de Receitas',
   },
   
   en: {
@@ -2342,6 +2347,11 @@ const translations = {
     'monthlyIncome.receiptMethod': 'Receipt method',
     'monthlyIncome.receivedAccount': 'Bank account',
     'monthlyIncome.date': 'Date',
+    'monthlyIncome.description': 'Description',
+    'monthlyIncome.amount': 'Amount',
+    'monthlyIncome.pdfTitle': 'Monthly Income Report',
+    'monthlyIncome.pdfPeriod': 'Period',
+    'monthlyIncome.pdfTotalIncome': 'Total Income',
   },
   
   es: {
@@ -3499,6 +3509,11 @@ const translations = {
     'monthlyIncome.receiptMethod': 'Método de recepción',
     'monthlyIncome.receivedAccount': 'Cuenta bancaria',
     'monthlyIncome.date': 'Fecha',
+    'monthlyIncome.description': 'Descripción',
+    'monthlyIncome.amount': 'Importe',
+    'monthlyIncome.pdfTitle': 'Informe de Ingresos Mensuales',
+    'monthlyIncome.pdfPeriod': 'Período',
+    'monthlyIncome.pdfTotalIncome': 'Total de Ingresos',
   },
 };
 
