@@ -2,6 +2,21 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Language detection function
+function detectLanguage(text: string): 'pt' | 'en' | 'es' {
+  const portuguese = /\b(meu|minha|qual|como|quanto|onde|quando|por que|porque|que|saldo|conta|gasto|receita|dinheiro|real|reais|hoje|ontem|mês|ano|semana|dia|tenho|estou|posso|preciso|quero|fazer|ver|mostrar|análise|relatório|resumo)\b/gi;
+  const english = /\b(my|what|how|much|where|when|why|that|balance|account|expense|income|money|dollar|today|yesterday|month|year|week|day|have|am|can|need|want|show|analysis|report|summary|financial|budget)\b/gi;
+  const spanish = /\b(mi|qué|cómo|cuánto|dónde|cuándo|por qué|porque|que|saldo|cuenta|gasto|ingreso|dinero|peso|euro|hoy|ayer|mes|año|semana|día|tengo|estoy|puedo|necesito|quiero|mostrar|análisis|reporte|resumen|financiero)\b/gi;
+
+  const ptMatches = (text.match(portuguese) || []).length;
+  const enMatches = (text.match(english) || []).length;
+  const esMatches = (text.match(spanish) || []).length;
+
+  if (enMatches > ptMatches && enMatches > esMatches) return 'en';
+  if (esMatches > ptMatches && esMatches > enMatches) return 'es';
+  return 'pt'; // Default to Portuguese
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -150,29 +165,23 @@ serve(async (req) => {
       investments: financialData.investments.length
     });
 
-    // Generate financial context
-    const financialContext = generateFinancialContext(financialData);
+
+    // Detect language from user message
+    const detectedLanguage = detectLanguage(message);
+    console.log('Detected language:', detectedLanguage);
+
+    // Generate financial context with appropriate language
+    const financialContext = generateFinancialContext(financialData, detectedLanguage);
     console.log('Financial context generated');
+
+    // Get system prompt based on detected language
+    const systemPrompt = getSystemPrompt(detectedLanguage, financialContext, message);
 
     // Prepare messages for OpenAI
     const messages: ChatMessage[] = [
       {
         role: 'user',
-        content: `Você é um consultor financeiro especialista especializado em atendimento personalizado para casais e indivíduos. 
-
-IMPORTANTE: Analise o contexto do relacionamento e seja inteligente na interpretação das solicitações:
-
-${financialContext}
-
-PERGUNTA DO USUÁRIO: ${message}
-
-INSTRUÇÕES ESPECÍFICAS DE INTERPRETAÇÃO:
-- Se o usuário fizer uma pergunta ambígua sobre "saldo", "gastos", "receitas" e ele for parte de um casal, pergunte especificamente se ele quer ver dados próprios, do parceiro, ou combinados
-- Use sempre os nomes reais dos usuários para personalizar as respostas
-- Para usuários individuais, sempre forneça dados próprios sem perguntar sobre outros
-- Seja prático e ofereça recomendações acionáveis baseadas nos dados reais
-
-Forneça uma resposta detalhada, personalizada e profissional.`
+        content: systemPrompt
       }
     ];
 
@@ -390,7 +399,157 @@ async function collectFinancialData(
   };
 }
 
-function generateFinancialContext(data: FinancialData): string {
+// Get system prompt based on detected language
+function getSystemPrompt(language: 'pt' | 'en' | 'es', financialContext: string, userMessage: string): string {
+  const prompts = {
+    pt: `Você é um consultor financeiro especialista especializado em atendimento personalizado para casais e indivíduos. 
+
+IMPORTANTE: Analise o contexto do relacionamento e seja inteligente na interpretação das solicitações. RESPONDA SEMPRE EM PORTUGUÊS.
+
+${financialContext}
+
+PERGUNTA DO USUÁRIO: ${userMessage}
+
+INSTRUÇÕES ESPECÍFICAS DE INTERPRETAÇÃO:
+- Se o usuário fizer uma pergunta ambígua sobre "saldo", "gastos", "receitas" e ele for parte de um casal, pergunte especificamente se ele quer ver dados próprios, do parceiro, ou combinados
+- Use sempre os nomes reais dos usuários para personalizar as respostas
+- Para usuários individuais, sempre forneça dados próprios sem perguntar sobre outros
+- Seja prático e ofereça recomendações acionáveis baseadas nos dados reais
+
+Forneça uma resposta detalhada, personalizada e profissional EM PORTUGUÊS.`,
+
+    en: `You are an expert financial consultant specialized in personalized service for couples and individuals.
+
+IMPORTANT: Analyze the relationship context and be intelligent in interpreting requests. ALWAYS RESPOND IN ENGLISH.
+
+${financialContext}
+
+USER QUESTION: ${userMessage}
+
+SPECIFIC INTERPRETATION INSTRUCTIONS:
+- If the user asks an ambiguous question about "balance", "expenses", "income" and they are part of a couple, ask specifically if they want to see their own data, their partner's, or combined
+- Always use real user names to personalize responses
+- For individual users, always provide their own data without asking about others
+- Be practical and offer actionable recommendations based on real data
+
+Provide a detailed, personalized and professional response IN ENGLISH.`,
+
+    es: `Eres un consultor financiero experto especializado en atención personalizada para parejas e individuos.
+
+IMPORTANTE: Analiza el contexto de la relación y sé inteligente en la interpretación de las solicitudes. RESPONDE SIEMPRE EN ESPAÑOL.
+
+${financialContext}
+
+PREGUNTA DEL USUARIO: ${userMessage}
+
+INSTRUCCIONES ESPECÍFICAS DE INTERPRETACIÓN:
+- Si el usuario hace una pregunta ambigua sobre "saldo", "gastos", "ingresos" y es parte de una pareja, pregunta específicamente si quiere ver datos propios, de su pareja, o combinados
+- Usa siempre los nombres reales de los usuarios para personalizar las respuestas
+- Para usuarios individuales, siempre proporciona sus propios datos sin preguntar sobre otros
+- Sé práctico y ofrece recomendaciones accionables basadas en datos reales
+
+Proporciona una respuesta detallada, personalizada y profesional EN ESPAÑOL.`
+  };
+
+  return prompts[language];
+}
+
+// Get labels based on language
+function getLabels(language: 'pt' | 'en' | 'es') {
+  const labels = {
+    pt: {
+      relationshipInfo: 'INFORMAÇÕES DO RELACIONAMENTO',
+      status: 'Status',
+      activeCouple: 'CASAL_ATIVO',
+      individualUser: 'USUÁRIO_INDIVIDUAL',
+      currentUserName: 'Nome do usuário atual',
+      partnerName: 'Nome do parceiro(a)',
+      realBalance: 'SALDO REAL DAS CONTAS (Valor Disponível Atualmente)',
+      account: 'Conta',
+      currency: 'R$ ',
+      totalRealBalance: 'TOTAL SALDO REAL',
+      accounts: 'CONTAS',
+      noAccountsRegistered: 'Nenhuma conta cadastrada',
+      periodMovement: 'MOVIMENTAÇÃO DO PERÍODO (Receitas e Despesas)',
+      periodIncome: 'RECEITAS DO PERÍODO',
+      totalIncome: 'TOTAL RECEITAS',
+      noIncomeRegistered: 'Nenhuma receita registrada',
+      periodExpenses: 'DESPESAS DO PERÍODO',
+      totalExpenses: 'TOTAL DESPESAS',
+      noExpensesRegistered: 'Nenhuma despesa registrada',
+      todayTransactions: 'TRANSAÇÕES DE HOJE',
+      todayIncome: 'ENTRADAS HOJE',
+      totalTodayIncome: 'TOTAL DE ENTRADAS HOJE',
+      noTodayIncomeRegistered: 'Nenhuma entrada registrada hoje',
+      todayExpenses: 'GASTOS HOJE',
+      totalTodayExpenses: 'TOTAL DE GASTOS HOJE',
+      noTodayExpensesRegistered: 'Nenhum gasto registrado hoje',
+      noCategory: 'Sem categoria'
+    },
+    en: {
+      relationshipInfo: 'RELATIONSHIP INFORMATION',
+      status: 'Status',
+      activeCouple: 'ACTIVE_COUPLE',
+      individualUser: 'INDIVIDUAL_USER',
+      currentUserName: 'Current user name',
+      partnerName: 'Partner name',
+      realBalance: 'REAL ACCOUNT BALANCE (Currently Available Amount)',
+      account: 'Account',
+      currency: '$ ',
+      totalRealBalance: 'TOTAL REAL BALANCE',
+      accounts: 'ACCOUNTS',
+      noAccountsRegistered: 'No accounts registered',
+      periodMovement: 'PERIOD MOVEMENT (Income and Expenses)',
+      periodIncome: 'PERIOD INCOME',
+      totalIncome: 'TOTAL INCOME',
+      noIncomeRegistered: 'No income registered',
+      periodExpenses: 'PERIOD EXPENSES',
+      totalExpenses: 'TOTAL EXPENSES',
+      noExpensesRegistered: 'No expenses registered',
+      todayTransactions: 'TODAY\'S TRANSACTIONS',
+      todayIncome: 'TODAY\'S INCOME',
+      totalTodayIncome: 'TOTAL TODAY\'S INCOME',
+      noTodayIncomeRegistered: 'No income registered today',
+      todayExpenses: 'TODAY\'S EXPENSES',
+      totalTodayExpenses: 'TOTAL TODAY\'S EXPENSES',
+      noTodayExpensesRegistered: 'No expenses registered today',
+      noCategory: 'No category'
+    },
+    es: {
+      relationshipInfo: 'INFORMACIÓN DE LA RELACIÓN',
+      status: 'Estado',
+      activeCouple: 'PAREJA_ACTIVA',
+      individualUser: 'USUARIO_INDIVIDUAL',
+      currentUserName: 'Nombre del usuario actual',
+      partnerName: 'Nombre de la pareja',
+      realBalance: 'SALDO REAL DE LAS CUENTAS (Cantidad Disponible Actualmente)',
+      account: 'Cuenta',
+      currency: '$ ',
+      totalRealBalance: 'SALDO REAL TOTAL',
+      accounts: 'CUENTAS',
+      noAccountsRegistered: 'Ninguna cuenta registrada',
+      periodMovement: 'MOVIMIENTO DEL PERÍODO (Ingresos y Gastos)',
+      periodIncome: 'INGRESOS DEL PERÍODO',
+      totalIncome: 'TOTAL INGRESOS',
+      noIncomeRegistered: 'Ningún ingreso registrado',
+      periodExpenses: 'GASTOS DEL PERÍODO',
+      totalExpenses: 'TOTAL GASTOS',
+      noExpensesRegistered: 'Ningún gasto registrado',
+      todayTransactions: 'TRANSACCIONES DE HOY',
+      todayIncome: 'INGRESOS DE HOY',
+      totalTodayIncome: 'TOTAL INGRESOS DE HOY',
+      noTodayIncomeRegistered: 'Ningún ingreso registrado hoy',
+      todayExpenses: 'GASTOS DE HOY',
+      totalTodayExpenses: 'TOTAL GASTOS DE HOY',
+      noTodayExpensesRegistered: 'Ningún gasto registrado hoy',
+      noCategory: 'Sin categoría'
+    }
+  };
+
+  return labels[language];
+}
+
+function generateFinancialContext(data: FinancialData, language: 'pt' | 'en' | 'es' = 'pt'): string {
   const { transactions, accounts, cards, investments, categories, recurringExpenses, relationshipInfo, segmentedData } = data;
 
   let context = '';
@@ -401,78 +560,81 @@ function generateFinancialContext(data: FinancialData): string {
   const todayIncome = todayTransactions.filter(t => t.type === 'income');
   const todayExpenses = todayTransactions.filter(t => t.type === 'expense');
 
+  // Get labels based on language
+  const labels = getLabels(language);
+
   // Add relationship context for intelligent interpretation
   if (relationshipInfo) {
     context += `
-INFORMAÇÕES DO RELACIONAMENTO:
-- Status: ${relationshipInfo.isCouple ? 'CASAL_ATIVO' : 'USUÁRIO_INDIVIDUAL'}
-- Nome do usuário atual: ${relationshipInfo.currentUserName}`;
+${labels.relationshipInfo}:
+- ${labels.status}: ${relationshipInfo.isCouple ? labels.activeCouple : labels.individualUser}
+- ${labels.currentUserName}: ${relationshipInfo.currentUserName}`;
     
     if (relationshipInfo.partnerName) {
       context += `
-- Nome do parceiro(a): ${relationshipInfo.partnerName}`;
+- ${labels.partnerName}: ${relationshipInfo.partnerName}`;
     }
 
     context += `
 
-SALDO REAL DAS CONTAS (Valor Disponível Atualmente):
+${labels.realBalance}:
 ${accounts.length > 0 ? 
   accounts.map(acc => {
     const ownerName = relationshipInfo.isCouple ? 
       (acc.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
       relationshipInfo.currentUserName;
-    return `- ${acc.name || 'Conta'}: R$ ${Number(acc.balance || 0).toFixed(2)} (${ownerName})`;
+    return `- ${acc.name || labels.account}: ${labels.currency}${Number(acc.balance || 0).toFixed(2)} (${ownerName})`;
   }).join('\n') + '\n' +
-  `TOTAL SALDO REAL: R$ ${accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0).toFixed(2)}` :
-  'CONTAS: Nenhuma conta cadastrada'
+  `${labels.totalRealBalance}: ${labels.currency}${accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0).toFixed(2)}` :
+  `${labels.accounts}: ${labels.noAccountsRegistered}`
 }
 
-MOVIMENTAÇÃO DO PERÍODO (Receitas e Despesas):
+${labels.periodMovement}:
 ${transactions.filter(t => t.type === 'income').length > 0 ? 
-  `RECEITAS DO PERÍODO:
+  `${labels.periodIncome}:
 ${transactions.filter(t => t.type === 'income').map(t => {
     const ownerName = relationshipInfo.isCouple ? 
       (t.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
       relationshipInfo.currentUserName;
-    return `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${ownerName})`;
+    return `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${ownerName})`;
   }).join('\n')}
-TOTAL RECEITAS: R$ ${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
-  'RECEITAS DO PERÍODO: Nenhuma receita registrada'
+${labels.totalIncome}: ${labels.currency}${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
+  `${labels.periodIncome}: ${labels.noIncomeRegistered}`
 }
 
 ${transactions.filter(t => t.type === 'expense').length > 0 ? 
-  `DESPESAS DO PERÍODO:
+  `${labels.periodExpenses}:
 ${transactions.filter(t => t.type === 'expense').slice(0, 10).map(t => {
     const category = categories.find(c => c.id === t.category_id);
     const ownerName = relationshipInfo.isCouple ? 
       (t.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
       relationshipInfo.currentUserName;
-    return `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${category?.name || 'Sem categoria'} - ${ownerName})`;
+    return `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${category?.name || labels.noCategory} - ${ownerName})`;
   }).join('\n')}
-${transactions.filter(t => t.type === 'expense').length > 10 ? '... (mostrando apenas as últimas 10)' : ''}
-TOTAL DESPESAS: R$ ${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
-  'DESPESAS DO PERÍODO: Nenhuma despesa registrada'
+${transactions.filter(t => t.type === 'expense').length > 10 ? '... (showing only the last 10)' : ''}
+${labels.totalExpenses}: ${labels.currency}${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
+  `${labels.periodExpenses}: ${labels.noExpensesRegistered}`
 }
 
-TRANSAÇÕES DE HOJE (${today}):
+${labels.todayTransactions} (${today}):
 ${todayIncome.length > 0 ? 
-  `ENTRADAS HOJE:
-${todayIncome.map(t => `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${accounts.find(a => a.id === t.account_id)?.name || 'Conta'})`).join('\n')}
-TOTAL DE ENTRADAS HOJE: R$ ${todayIncome.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
-  'ENTRADAS HOJE: Nenhuma entrada registrada hoje'
+  `${labels.todayIncome}:
+${todayIncome.map(t => `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${accounts.find(a => a.id === t.account_id)?.name || labels.account})`).join('\n')}
+${labels.totalTodayIncome}: ${labels.currency}${todayIncome.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
+  `${labels.todayIncome}: ${labels.noTodayIncomeRegistered}`
 }
 
 ${todayExpenses.length > 0 ? 
-  `GASTOS HOJE:
+  `${labels.todayExpenses}:
 ${todayExpenses.map(t => {
     const category = categories.find(c => c.id === t.category_id);
     const paymentInfo = t.account_id ? 
-      (accounts.find(a => a.id === t.account_id)?.name || 'Conta') :
-      (cards.find(c => c.id === t.card_id)?.name || 'Cartão');
-    return `- ${t.description}: R$ ${Number(t.amount).toFixed(2)} (${category?.name || 'Sem categoria'} - ${paymentInfo})`;
+      (accounts.find(a => a.id === t.account_id)?.name || labels.account) :
+      (cards.find(c => c.id === t.card_id)?.name || 'Card');
+    return `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${category?.name || labels.noCategory} - ${paymentInfo})`;
   }).join('\n')}
-TOTAL DE GASTOS HOJE: R$ ${todayExpenses.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
-  'GASTOS HOJE: Nenhum gasto registrado hoje'
+${labels.totalTodayExpenses}: ${labels.currency}${todayExpenses.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
+  `${labels.todayExpenses}: ${labels.noTodayExpensesRegistered}`
 }
 
 INSTRUÇÕES CRÍTICAS DE INTERPRETAÇÃO:
