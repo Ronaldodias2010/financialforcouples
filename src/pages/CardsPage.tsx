@@ -3,7 +3,7 @@ import { CardForm } from "@/components/cards/CardForm";
 import { CardList } from "@/components/cards/CardList";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
-import { ArrowLeft, CreditCard } from "lucide-react";
+import { ArrowLeft, CreditCard, TrendingUp, Wallet } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
@@ -65,6 +65,17 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
     }
 
     return availableLimit;
+  };
+
+  const computeTotalLimit = (c: CardRow) => {
+    if (c.card_type !== "credit") return 0;
+    const totalLimit = Number(c.credit_limit ?? 0);
+    
+    if (c.currency && c.currency !== "BRL") {
+      return convertCurrency(totalLimit, c.currency as CurrencyCode, "BRL");
+    }
+    
+    return totalLimit;
   };
 
   useEffect(() => {
@@ -172,6 +183,44 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
     return total;
   }, [cardsData, user?.id, partnerId, isUserOne]);
 
+  // Total Limit calculations
+  const currentUserTotalLimit = useMemo(() => {
+    if (!user?.id) return 0;
+    const mine = cardsData.filter(c => c.user_id === user.id);
+    return mine.reduce((sum, c) => sum + computeTotalLimit(c), 0);
+  }, [cardsData, user?.id]);
+
+  const partnerTotalLimit = useMemo(() => {
+    if (!partnerId) return 0;
+    const theirs = cardsData.filter(c => c.user_id === partnerId);
+    return theirs.reduce((sum, c) => sum + computeTotalLimit(c), 0);
+  }, [cardsData, partnerId]);
+
+  const bothTotalLimit = useMemo(() => {
+    return currentUserTotalLimit + partnerTotalLimit;
+  }, [currentUserTotalLimit, partnerTotalLimit]);
+
+  const user1TotalLimit = useMemo(() => {
+    if (!user?.id || !partnerId) return 0;
+    const user1Id = isUserOne() ? user.id : partnerId;
+    const user1Cards = cardsData.filter(c => c.user_id === user1Id);
+    return user1Cards.reduce((sum, c) => sum + computeTotalLimit(c), 0);
+  }, [cardsData, user?.id, partnerId, isUserOne]);
+
+  const user2TotalLimit = useMemo(() => {
+    if (!user?.id || !partnerId) return 0;
+    const user2Id = isUserOne() ? partnerId : user.id;
+    const user2Cards = cardsData.filter(c => c.user_id === user2Id);
+    return user2Cards.reduce((sum, c) => sum + computeTotalLimit(c), 0);
+  }, [cardsData, user?.id, partnerId, isUserOne]);
+
+  // Used Limit calculations (Total - Available)
+  const currentUserUsedLimit = currentUserTotalLimit - currentUserTotal;
+  const partnerUsedLimit = partnerTotalLimit - partnerTotal;
+  const bothUsedLimit = bothTotalLimit - bothTotal;
+  const user1UsedLimit = user1TotalLimit - user1Total;
+  const user2UsedLimit = user2TotalLimit - user2Total;
+
   const handleCardAdded = () => {
     setRefreshTrigger(prev => prev + 1);
   };
@@ -209,23 +258,58 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
             </Button>
           </div>
         </div>
-        {viewMode === 'both' ? (
-          <FinancialCard
-            title={t('cards.availableLimit') + " — Ambos"}
-            amount={bothTotal}
-            currency={getDisplayCurrency()}
-            icon={CreditCard}
-            type="balance"
-          />
-        ) : (
-          <FinancialCard
-            title={`${t('cards.availableLimit')} — ${getUserLabel(viewMode)}`}
-            amount={viewMode === 'user1' ? user1Total : user2Total}
-            currency={getDisplayCurrency()}
-            icon={CreditCard}
-            type="balance"
-          />
-        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {viewMode === 'both' ? (
+            <>
+              <FinancialCard
+                title={t('cards.totalLimit') + " — Ambos"}
+                amount={bothTotalLimit}
+                currency={getDisplayCurrency()}
+                icon={CreditCard}
+                type="balance"
+              />
+              <FinancialCard
+                title={t('cards.usedLimit') + " — Ambos"}
+                amount={bothUsedLimit}
+                currency={getDisplayCurrency()}
+                icon={TrendingUp}
+                type="expense"
+              />
+              <FinancialCard
+                title={t('cards.availableLimit') + " — Ambos"}
+                amount={bothTotal}
+                currency={getDisplayCurrency()}
+                icon={Wallet}
+                type="income"
+              />
+            </>
+          ) : (
+            <>
+              <FinancialCard
+                title={`${t('cards.totalLimit')} — ${getUserLabel(viewMode)}`}
+                amount={viewMode === 'user1' ? user1TotalLimit : user2TotalLimit}
+                currency={getDisplayCurrency()}
+                icon={CreditCard}
+                type="balance"
+              />
+              <FinancialCard
+                title={`${t('cards.usedLimit')} — ${getUserLabel(viewMode)}`}
+                amount={viewMode === 'user1' ? user1UsedLimit : user2UsedLimit}
+                currency={getDisplayCurrency()}
+                icon={TrendingUp}
+                type="expense"
+              />
+              <FinancialCard
+                title={`${t('cards.availableLimit')} — ${getUserLabel(viewMode)}`}
+                amount={viewMode === 'user1' ? user1Total : user2Total}
+                currency={getDisplayCurrency()}
+                icon={Wallet}
+                type="income"
+              />
+            </>
+          )}
+        </div>
 
       </div>
 

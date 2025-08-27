@@ -176,7 +176,9 @@ const translations = {
     // Cards
     'cards.title': 'Gerenciar Cartões',
     'cards.manage': 'Gerenciar Cartões',
-    'cards.availableLimit': 'Limite Cartões Disponível',
+    'cards.totalLimit': 'Limite Total',
+    'cards.usedLimit': 'Limite Utilizado',
+    'cards.availableLimit': 'Limite Disponível',
     'cards.add': 'Adicionar Cartão',
     'cards.name': 'Nome do Cartão',
     'cards.type': 'Tipo do Cartão',
@@ -1337,7 +1339,9 @@ const translations = {
     // Cards
     'cards.title': 'Manage Cards',
     'cards.manage': 'Manage Cards',
-    'cards.availableLimit': 'Available Card Limit',
+    'cards.totalLimit': 'Total Limit',
+    'cards.usedLimit': 'Used Limit',
+    'cards.availableLimit': 'Available Limit',
     'cards.add': 'Add Card',
     'cards.name': 'Card Name',
     'cards.type': 'Card Type',
@@ -2497,7 +2501,9 @@ const translations = {
     // Cards
     'cards.title': 'Gestionar Tarjetas',
     'cards.manage': 'Gestionar Tarjetas',
-    'cards.availableLimit': 'Límite Tarjetas Disponible',
+    'cards.totalLimit': 'Límite Total',
+    'cards.usedLimit': 'Límite Utilizado',
+    'cards.availableLimit': 'Límite Disponible',
     'cards.add': 'Agregar Tarjeta',
     'cards.name': 'Nombre de Tarjeta',
     'cards.type': 'Tipo de Tarjeta',
