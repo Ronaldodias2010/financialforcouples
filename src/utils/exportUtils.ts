@@ -129,13 +129,35 @@ export async function fetchExportData(
     return acc;
   }, {});
 
+  // Create separated cash flow entries (one line for income, one for expense, one for balance)
+  const cashFlowSeparated: any[] = [];
+  Object.entries(cashFlowByMonth || {}).forEach(([month, data]: [string, any]) => {
+    const monthName = format(new Date(month + '-01'), 'MMMM yyyy', { locale: ptBR });
+    
+    // Income line
+    cashFlowSeparated.push({
+      description: `${monthName} - Receitas`,
+      type: 'Receita',
+      amount: data.income
+    });
+    
+    // Expense line  
+    cashFlowSeparated.push({
+      description: `${monthName} - Despesas`,
+      type: 'Despesa',
+      amount: data.expense
+    });
+    
+    // Balance line
+    cashFlowSeparated.push({
+      description: `${monthName} - Saldo`,
+      type: 'Saldo',
+      amount: data.balance
+    });
+  });
+
   return {
-    cashFlow: Object.entries(cashFlowByMonth || {}).map(([month, data]: [string, any]) => ({
-      month,
-      income: data.income,
-      expense: data.expense,
-      balance: data.balance
-    })),
+    cashFlow: cashFlowSeparated,
     expenses: Object.entries(expensesByCategory).map(([category, data]: [string, any]) => ({
       category,
       total: data.total,
@@ -175,6 +197,9 @@ export function exportToPDF(data: any[], title: string, columns: string[], filen
     'Receitas': 'income', 
     'Despesas': 'expense',
     'Saldo': 'balance',
+    'Descrição': 'description',
+    'Tipo': 'type', 
+    'Valor': 'amount',
     'Categoria': 'category',
     'Total': 'total',
     'Total Receitas': 'totalrevenues',
@@ -210,6 +235,9 @@ export function exportToCSV(data: any[], columns: string[], filename: string) {
     'Receitas': 'income', 
     'Despesas': 'expense',
     'Saldo': 'balance',
+    'Descrição': 'description',
+    'Tipo': 'type', 
+    'Valor': 'amount',
     'Categoria': 'category',
     'Total': 'total',
     'Total Receitas': 'totalrevenues',
@@ -253,6 +281,9 @@ export function exportToExcel(data: any[], title: string, columns: string[], fil
     'Receitas': 'income', 
     'Despesas': 'expense',
     'Saldo': 'balance',
+    'Descrição': 'description',
+    'Tipo': 'type', 
+    'Valor': 'amount',
     'Categoria': 'category',
     'Total': 'total',
     'Total Receitas': 'totalrevenues',
@@ -307,7 +338,7 @@ export async function exportCashFlow(
   userId: string
 ) {
   const data = await fetchExportData(dateFrom, dateTo, viewMode, userId);
-  const columns = ['Mês', 'Receitas', 'Despesas', 'Saldo'];
+  const columns = ['Descrição', 'Tipo', 'Valor'];
   
   if (format === 'pdf') {
     exportToPDF(data.cashFlow, 'Relatório de Fluxo de Caixa', columns, 'fluxo-de-caixa');
