@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import { getTodayLocalDateString } from "@/utils/date";
 
 interface Investment {
   id: string;
@@ -137,7 +138,7 @@ export const InvestmentWithdrawForm = ({ onSuccess, onCancel }: InvestmentWithdr
           description: `Resgate: ${selectedInvestment.name}`,
           account_id: formData.account_id,
           currency: (selectedAccount?.currency || selectedInvestment.currency) as any,
-          transaction_date: new Date().toISOString().split('T')[0],
+          transaction_date: getTodayLocalDateString(),
           payment_method: "resgate_investimento"
         });
 

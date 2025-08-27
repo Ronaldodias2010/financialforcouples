@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
+import { formatLocalDate, getLocaleForLanguage } from "@/utils/date";
 
 
 interface Transaction {
@@ -216,7 +217,7 @@ if (selectedCategory !== "all") {
   };
 
   const formatDate = (dateString: string): string => {
-    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+    return formatLocalDate(dateString, "dd/MM/yyyy", language as 'pt' | 'en' | 'es');
   };
 
   const getPaymentMethodText = (method: string) => {

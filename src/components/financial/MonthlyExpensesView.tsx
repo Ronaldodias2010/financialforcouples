@@ -15,6 +15,7 @@ import { translateCategoryName as translateCategoryUtil } from "@/utils/category
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
+import { formatLocalDate, getLocaleForLanguage } from "@/utils/date";
 import { Download, FileText } from "lucide-react";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -262,10 +263,7 @@ if (selectedCategory !== "all") {
   };
 
   const formatDate = (dateString: string): string => {
-    // Parse the date string manually to avoid timezone issues
-    const [year, month, day] = dateString.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    return format(date, "dd/MM/yyyy", { locale: getLocale() });
+    return formatLocalDate(dateString, "dd/MM/yyyy", language as 'pt' | 'en' | 'es');
   };
 
   const getPaymentMethodText = (method: string) => {
