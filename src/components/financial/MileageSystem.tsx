@@ -100,7 +100,9 @@ export const MileageSystem = () => {
     name: "",
     description: "",
     target_miles: "",
-    target_date: ""
+    target_date: "",
+    card_id: "",
+    initial_miles: 0
   });
 
   useEffect(() => {
@@ -333,6 +335,7 @@ export const MileageSystem = () => {
         name: goalForm.name,
         description: goalForm.description,
         target_miles: Number(goalForm.target_miles),
+        current_miles: goalForm.initial_miles,
         target_date: goalForm.target_date || null
       });
 
@@ -354,7 +357,9 @@ export const MileageSystem = () => {
       name: "",
       description: "",
       target_miles: "",
-      target_date: ""
+      target_date: "",
+      card_id: "",
+      initial_miles: 0
     });
     setShowGoalForm(false);
     loadMileageGoals();
@@ -424,6 +429,28 @@ export const MileageSystem = () => {
     });
 
     loadMileageGoals();
+  };
+
+  const handleCardSelect = (cardId: string) => {
+    setGoalForm(prev => ({ ...prev, card_id: cardId }));
+    
+    if (cardId) {
+      // Buscar milhas existentes do cartão selecionado
+      const selectedRule = mileageRules.find(rule => 
+        rule.card_id === cardId && rule.is_active && rule.user_id === user?.id
+      );
+      
+      if (selectedRule && selectedRule.existing_miles) {
+        setGoalForm(prev => ({ 
+          ...prev, 
+          initial_miles: Number(selectedRule.existing_miles) || 0 
+        }));
+      } else {
+        setGoalForm(prev => ({ ...prev, initial_miles: 0 }));
+      }
+    } else {
+      setGoalForm(prev => ({ ...prev, initial_miles: 0 }));
+    }
   };
 
   return (
@@ -728,6 +755,28 @@ export const MileageSystem = () => {
                     </div>
 
                     <div className="space-y-2">
+                      <Label htmlFor="card_select">{t('mileage.selectCard')}</Label>
+                      <Select value={goalForm.card_id} onValueChange={handleCardSelect}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('mileage.selectCardPlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border border-border shadow-lg z-50">
+                          <SelectItem value="">{t('mileage.noCard')}</SelectItem>
+                          {mileageRules
+                            .filter(rule => rule.is_active && rule.user_id === user?.id && rule.existing_miles && rule.existing_miles > 0)
+                            .map((rule) => (
+                              <SelectItem key={rule.card_id} value={rule.card_id}>
+                                {rule.card?.name} - {Number(rule.existing_miles).toLocaleString()} milhas
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Selecione um cartão para adicionar suas milhas existentes à meta
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="target_date">{t('mileage.targetDate')}</Label>
                       <Input
                         id="target_date"
@@ -736,6 +785,19 @@ export const MileageSystem = () => {
                         onChange={(e) => setGoalForm({...goalForm, target_date: e.target.value})}
                       />
                     </div>
+
+                    {goalForm.initial_miles > 0 && (
+                      <div className="md:col-span-2">
+                        <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                          <p className="text-sm font-medium text-primary">
+                            Milhas iniciais: {goalForm.initial_miles.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Estas milhas serão adicionadas como progresso inicial da meta
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
