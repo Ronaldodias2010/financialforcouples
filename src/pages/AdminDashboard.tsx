@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck, FileSpreadsheet, FileText } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { toast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
@@ -70,6 +70,7 @@ const AdminDashboardContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
+  const [exportFormat, setExportFormat] = useState("csv");
 
   // Check if user is admin (simplified - in production use proper role system)
   const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email === 'admin@example.com' || user?.email?.includes('admin');
@@ -390,6 +391,79 @@ const AdminDashboardContent = () => {
     document.body.removeChild(link);
   };
 
+  const exportToPDF = async () => {
+    const { jsPDF } = await import('jspdf');
+    const autoTable = (await import('jspdf-autotable')).default;
+    
+    const doc = new jsPDF();
+    
+    // Título
+    doc.setFontSize(18);
+    doc.text('Relatório de Usuários Premium', 14, 22);
+    
+    // Data
+    doc.setFontSize(12);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+    
+    // Tabela
+    const headers = [[t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment')]];
+    const data = filteredUsers.map(user => [
+      user.display_name,
+      user.email,
+      user.status,
+      user.subscription_tier,
+      user.last_payment ? new Date(user.last_payment).toLocaleDateString('pt-BR') : ''
+    ]);
+    
+    autoTable(doc, {
+      head: headers,
+      body: data,
+      startY: 40,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [71, 85, 105] }
+    });
+    
+    doc.save('usuarios_premium.pdf');
+  };
+
+  const exportToExcel = async () => {
+    const XLSX = await import('xlsx');
+    
+    const worksheetData = [
+      [t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment'), t('admin.table.nextBilling')],
+      ...filteredUsers.map(user => [
+        user.display_name,
+        user.email,
+        user.status,
+        user.subscription_tier,
+        user.last_payment || '',
+        user.subscription_end || ''
+      ])
+    ];
+    
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuários Premium');
+    
+    XLSX.writeFile(workbook, 'usuarios_premium.xlsx');
+  };
+
+  const handleExport = () => {
+    switch (exportFormat) {
+      case 'csv':
+        exportToCSV();
+        break;
+      case 'pdf':
+        exportToPDF();
+        break;
+      case 'excel':
+        exportToExcel();
+        break;
+      default:
+        exportToCSV();
+    }
+  };
+
   if (!isAdmin) {
     return (
       <div className="container mx-auto py-8">
@@ -429,10 +503,37 @@ const AdminDashboardContent = () => {
         </div>
         <div className="flex gap-2">
           <LanguageSwitcher />
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            {t('admin.export')}
-          </Button>
+          <div className="flex gap-1">
+            <Select value={exportFormat} onValueChange={setExportFormat}>
+              <SelectTrigger className="w-[110px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="csv">
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    CSV
+                  </div>
+                </SelectItem>
+                <SelectItem value="pdf">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    PDF
+                  </div>
+                </SelectItem>
+                <SelectItem value="excel">
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Excel
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={handleExport} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              {t('admin.export')}
+            </Button>
+          </div>
           <Button 
             onClick={fetchDashboardData} 
             variant="outline"
