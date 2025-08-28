@@ -1388,6 +1388,10 @@ export type Database = {
         Args: { input: string }
         Returns: string
       }
+      recalculate_mileage_goals: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_ai_usage: {
         Args: {
           p_estimated_cost_brl?: number
