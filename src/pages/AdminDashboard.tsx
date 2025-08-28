@@ -71,6 +71,9 @@ const AdminDashboardContent = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [exportFormat, setExportFormat] = useState("csv");
+  const [activeMainTab, setActiveMainTab] = useState("overview");
+  const [activeUsersSubTab, setActiveUsersSubTab] = useState("users");
+  const [activeAISubTab, setActiveAISubTab] = useState("overview");
 
   // Check if user is admin (simplified - in production use proper role system)
   const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email === 'admin@example.com' || user?.email?.includes('admin');
@@ -366,102 +369,222 @@ const AdminDashboardContent = () => {
     setAlerts((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const exportToCSV = () => {
+  // Contextual export functions
+  const exportOverviewMetrics = () => {
+    const currencySymbol = (language === 'en' || language === 'es') ? '$' : 'R$';
+    
+    const metricsData = [
+      ['Métrica', 'Valor'],
+      [t('admin.metrics.activeUsers'), metrics.activeUsers.toString()],
+      [t('admin.metrics.canceledSubscriptions'), metrics.canceledSubscriptions.toString()],
+      [t('admin.metrics.failedPayments'), metrics.failedPayments.toString()],
+      [t('admin.metrics.monthlyRevenue'), `${currencySymbol} ${metrics.monthlyRevenue.toFixed(2)}`],
+      ['Receita Anual', `${currencySymbol} ${metrics.annualRevenue.toFixed(2)}`]
+    ];
+
+    if (exportFormat === 'csv') {
+      const csvContent = metricsData.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'metricas_dashboard.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (exportFormat === 'pdf') {
+      import('jspdf').then(({ jsPDF }) => {
+        import('jspdf-autotable').then((autoTableModule) => {
+          const autoTable = autoTableModule.default;
+          const doc = new jsPDF();
+          
+          doc.setFontSize(18);
+          doc.text('Métricas do Dashboard', 14, 22);
+          doc.setFontSize(12);
+          doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+          
+          autoTable(doc, {
+            head: [metricsData[0]],
+            body: metricsData.slice(1),
+            startY: 40,
+            styles: { fontSize: 10 },
+            headStyles: { fillColor: [71, 85, 105] }
+          });
+          
+          doc.save('metricas_dashboard.pdf');
+        });
+      });
+    } else if (exportFormat === 'excel') {
+      import('xlsx').then((XLSX) => {
+        const worksheet = XLSX.utils.aoa_to_sheet(metricsData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Métricas');
+        XLSX.writeFile(workbook, 'metricas_dashboard.xlsx');
+      });
+    }
+  };
+
+  const exportContextualData = () => {
+    // Determine context based on active tabs
+    if (activeMainTab === 'overview') {
+      exportOverviewMetrics();
+    } else if (activeMainTab === 'users') {
+      if (activeUsersSubTab === 'users') {
+        exportPremiumUsers();
+      } else if (activeUsersSubTab === 'alerts') {
+        exportAlerts();
+      } else {
+        // For other sub-tabs, show a message
+        toast({
+          title: "Exportação em desenvolvimento",
+          description: `A exportação para a aba ${activeUsersSubTab} ainda está sendo desenvolvida.`,
+          variant: "default"
+        });
+      }
+    } else {
+      toast({
+        title: "Exportação em desenvolvimento", 
+        description: `A exportação para a aba ${activeMainTab} ainda está sendo desenvolvida.`,
+        variant: "default"
+      });
+    }
+  };
+
+  const exportPremiumUsers = () => {
     const csvHeaders = [t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment'), t('admin.table.nextBilling')];
-    const csvContent = [
-      csvHeaders.join(','),
-      ...filteredUsers.map(user => [
-        user.display_name,
-        user.email,
-        user.status,
-        user.subscription_tier,
-        user.last_payment || '',
-        user.subscription_end || ''
-      ].join(','))
-    ].join('\n');
+    
+    if (exportFormat === 'csv') {
+      const csvContent = [
+        csvHeaders.join(','),
+        ...filteredUsers.map(user => [
+          user.display_name,
+          user.email,
+          user.status,
+          user.subscription_tier,
+          user.last_payment || '',
+          user.subscription_end || ''
+        ].join(','))
+      ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'usuarios_premium.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'usuarios_premium.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (exportFormat === 'pdf') {
+      import('jspdf').then(({ jsPDF }) => {
+        import('jspdf-autotable').then((autoTableModule) => {
+          const autoTable = autoTableModule.default;
+          const doc = new jsPDF();
+          
+          doc.setFontSize(18);
+          doc.text('Relatório de Usuários Premium', 14, 22);
+          doc.setFontSize(12);
+          doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+          
+          const headers = [[t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment')]];
+          const data = filteredUsers.map(user => [
+            user.display_name,
+            user.email,
+            user.status,
+            user.subscription_tier,
+            user.last_payment ? new Date(user.last_payment).toLocaleDateString('pt-BR') : ''
+          ]);
+          
+          autoTable(doc, {
+            head: headers,
+            body: data,
+            startY: 40,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [71, 85, 105] }
+          });
+          
+          doc.save('usuarios_premium.pdf');
+        });
+      });
+    } else if (exportFormat === 'excel') {
+      import('xlsx').then((XLSX) => {
+        const worksheetData = [
+          csvHeaders,
+          ...filteredUsers.map(user => [
+            user.display_name,
+            user.email,
+            user.status,
+            user.subscription_tier,
+            user.last_payment || '',
+            user.subscription_end || ''
+          ])
+        ];
+        
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuários Premium');
+        XLSX.writeFile(workbook, 'usuarios_premium.xlsx');
+      });
+    }
   };
 
-  const exportToPDF = async () => {
-    const { jsPDF } = await import('jspdf');
-    const autoTable = (await import('jspdf-autotable')).default;
-    
-    const doc = new jsPDF();
-    
-    // Título
-    doc.setFontSize(18);
-    doc.text('Relatório de Usuários Premium', 14, 22);
-    
-    // Data
-    doc.setFontSize(12);
-    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
-    
-    // Tabela
-    const headers = [[t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment')]];
-    const data = filteredUsers.map(user => [
-      user.display_name,
-      user.email,
-      user.status,
-      user.subscription_tier,
-      user.last_payment ? new Date(user.last_payment).toLocaleDateString('pt-BR') : ''
-    ]);
-    
-    autoTable(doc, {
-      head: headers,
-      body: data,
-      startY: 40,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [71, 85, 105] }
-    });
-    
-    doc.save('usuarios_premium.pdf');
-  };
-
-  const exportToExcel = async () => {
-    const XLSX = await import('xlsx');
-    
-    const worksheetData = [
-      [t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment'), t('admin.table.nextBilling')],
-      ...filteredUsers.map(user => [
-        user.display_name,
-        user.email,
-        user.status,
-        user.subscription_tier,
-        user.last_payment || '',
-        user.subscription_end || ''
+  const exportAlerts = () => {
+    const alertsData = [
+      ['Data', 'Email do Usuário', 'Evento', 'Ação'],
+      ...alerts.map(alert => [
+        alert.date,
+        alert.user_email,
+        alert.event,
+        alert.action
       ])
     ];
-    
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuários Premium');
-    
-    XLSX.writeFile(workbook, 'usuarios_premium.xlsx');
+
+    if (exportFormat === 'csv') {
+      const csvContent = alertsData.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'alertas_admin.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (exportFormat === 'pdf') {
+      import('jspdf').then(({ jsPDF }) => {
+        import('jspdf-autotable').then((autoTableModule) => {
+          const autoTable = autoTableModule.default;
+          const doc = new jsPDF();
+          
+          doc.setFontSize(18);
+          doc.text('Relatório de Alertas', 14, 22);
+          doc.setFontSize(12);
+          doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+          
+          autoTable(doc, {
+            head: [alertsData[0]],
+            body: alertsData.slice(1),
+            startY: 40,
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [71, 85, 105] }
+          });
+          
+          doc.save('alertas_admin.pdf');
+        });
+      });
+    } else if (exportFormat === 'excel') {
+      import('xlsx').then((XLSX) => {
+        const worksheet = XLSX.utils.aoa_to_sheet(alertsData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Alertas');
+        XLSX.writeFile(workbook, 'alertas_admin.xlsx');
+      });
+    }
   };
 
   const handleExport = () => {
-    switch (exportFormat) {
-      case 'csv':
-        exportToCSV();
-        break;
-      case 'pdf':
-        exportToPDF();
-        break;
-      case 'excel':
-        exportToExcel();
-        break;
-      default:
-        exportToCSV();
-    }
+    exportContextualData();
   };
 
   if (!isAdmin) {
@@ -531,7 +654,7 @@ const AdminDashboardContent = () => {
             </Select>
             <Button onClick={handleExport} variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              {t('admin.export')}
+              Exportar
             </Button>
           </div>
           <Button 
@@ -550,7 +673,7 @@ const AdminDashboardContent = () => {
       </div>
 
       {/* Main Admin Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs defaultValue="overview" className="w-full" onValueChange={(value) => setActiveMainTab(value)}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">📊 {t('admin.tabs.overview')}</TabsTrigger>
           <TabsTrigger value="users">👥 {t('admin.tabs.users')}</TabsTrigger>
@@ -624,7 +747,7 @@ const AdminDashboardContent = () => {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
-          <Tabs defaultValue="users" className="space-y-6">
+          <Tabs defaultValue="users" className="space-y-6" onValueChange={(value) => setActiveUsersSubTab(value)}>
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger 
             value="users" 
