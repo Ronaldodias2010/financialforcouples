@@ -329,42 +329,68 @@ export const MileageSystem = () => {
   const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user?.id) return;
+    
+    try {
+      let initialMiles = goalForm.initial_miles || 0;
+      
+      // Se selecionou um cartão, calcular milhas totais (iniciais + histórico)
+      if (goalForm.card_id && goalForm.card_id !== "none") {
+        const selectedRule = mileageRules.find(rule => rule.card_id === goalForm.card_id);
+        if (selectedRule?.existing_miles) {
+          initialMiles = selectedRule.existing_miles;
+          
+          // Somar as milhas do histórico deste cartão específico
+          const { data: cardHistory } = await supabase
+            .from('mileage_history')
+            .select('miles_earned')
+            .eq('user_id', user.id)
+            .eq('card_id', goalForm.card_id);
+          
+          if (cardHistory) {
+            const historyMiles = cardHistory.reduce((sum, record) => sum + (record.miles_earned || 0), 0);
+            initialMiles += historyMiles;
+          }
+        }
+      }
+
       const { error } = await supabase
         .from("mileage_goals")
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           name: goalForm.name,
           description: goalForm.description,
           target_miles: Number(goalForm.target_miles),
-          current_miles: goalForm.initial_miles,
+          current_miles: initialMiles,
           target_date: goalForm.target_date || null,
           source_card_id: goalForm.card_id || null
         });
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: t('mileage.goalCreated')
+      });
+
+      setGoalForm({
+        name: "",
+        description: "",
+        target_miles: "",
+        target_date: "",
+        card_id: "",
+        initial_miles: 0
+      });
+      setShowGoalForm(false);
+      loadMileageGoals();
+    } catch (error: any) {
+      console.error('Error creating goal:', error);
       toast({
         title: "Erro",
-        description: t('mileage.goalCreateError'),
+        description: error.message || t('mileage.goalCreateError'),
         variant: "destructive"
       });
-      return;
     }
-
-    toast({
-      title: "Sucesso",
-      description: t('mileage.goalCreated')
-    });
-
-    setGoalForm({
-      name: "",
-      description: "",
-      target_miles: "",
-      target_date: "",
-      card_id: "",
-      initial_miles: 0
-    });
-    setShowGoalForm(false);
-    loadMileageGoals();
   };
 
   const toggleRuleStatus = async (ruleId: string, currentStatus: boolean) => {
@@ -764,25 +790,34 @@ export const MileageSystem = () => {
                         </SelectTrigger>
                         <SelectContent className="bg-background border border-border shadow-lg z-50">
                            <SelectItem value="none">{t('mileage.noCard')}</SelectItem>
-                          {mileageRules
-                            .filter(rule => {
-                              // Filtrar regras ativas com milhas existentes
-                              if (!rule.is_active || rule.user_id !== user?.id || !rule.existing_miles || rule.existing_miles <= 0) {
-                                return false;
-                              }
-                              
-                              // Verificar se o cartão já está vinculado a uma meta ativa
-                              const isCardAlreadyLinked = mileageGoals.some(goal => 
-                                goal.source_card_id === rule.card_id && !goal.is_completed
-                              );
-                              
-                              return !isCardAlreadyLinked;
-                            })
-                            .map((rule) => (
-                              <SelectItem key={rule.card_id} value={rule.card_id}>
-                                {rule.card?.name} - {Number(rule.existing_miles).toLocaleString()} milhas
-                              </SelectItem>
-                            ))}
+                           {mileageRules
+                             .filter(rule => {
+                               // Filtrar regras ativas com milhas existentes
+                               if (!rule.is_active || rule.user_id !== user?.id || !rule.existing_miles || rule.existing_miles <= 0) {
+                                 return false;
+                               }
+                               
+                               // Verificar se o cartão já está vinculado a uma meta ativa
+                               const isCardAlreadyLinked = mileageGoals.some(goal => 
+                                 goal.source_card_id === rule.card_id && !goal.is_completed
+                               );
+                               
+                               return !isCardAlreadyLinked;
+                             })
+                             .map((rule) => {
+                               // Calcular milhas totais disponíveis (existentes + histórico)
+                               const cardHistoryMiles = mileageHistory
+                                 .filter(h => h.card_id === rule.card_id)
+                                 .reduce((sum, h) => sum + (h.miles_earned || 0), 0);
+                               
+                               const totalAvailableMiles = (rule.existing_miles || 0) + cardHistoryMiles;
+                               
+                               return (
+                                 <SelectItem key={rule.card_id} value={rule.card_id}>
+                                   {rule.card?.name} - {totalAvailableMiles.toLocaleString()} milhas
+                                 </SelectItem>
+                               );
+                             })}
                         </SelectContent>
                       </Select>
                        {mileageRules

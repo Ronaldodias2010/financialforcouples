@@ -456,8 +456,14 @@ INSTRUÇÕES ESPECÍFICAS DE INTERPRETAÇÃO:
 - Para usuários individuais, sempre forneça dados próprios sem perguntar sobre outros
 - Seja prático e ofereça recomendações acionáveis baseadas nos dados reais
 
-Forneça uma resposta detalhada, personalizada e profissional EM PORTUGUÊS.`,
+INSTRUÇÕES SOBRE SISTEMA DE MILHAS:
+- CRITICAL: As milhas em metas (current_miles) JÁ INCLUEM as milhas iniciais dos cartões quando a meta foi criada
+- As milhas mostradas no histórico são APENAS de transações/gastos realizados
+- NUNCA duplique as milhas iniciais ao calcular quanto falta para atingir uma meta
+- Se uma meta tem current_miles maior que zero, esse valor já considera milhas iniciais + milhas de gastos
 
+Forneça uma resposta detalhada, personalizada e profissional EM PORTUGUÊS.`,
+    
     en: `You are an expert financial consultant specialized in personalized service for couples and individuals.
 
 IMPORTANT: Analyze the relationship context and be intelligent in interpreting requests. ALWAYS RESPOND IN ENGLISH.
@@ -472,8 +478,14 @@ SPECIFIC INTERPRETATION INSTRUCTIONS:
 - For individual users, always provide their own data without asking about others
 - Be practical and offer actionable recommendations based on real data
 
-Provide a detailed, personalized and professional response IN ENGLISH.`,
+MILEAGE SYSTEM INSTRUCTIONS:
+- CRITICAL: Miles in goals (current_miles) ALREADY INCLUDE initial card miles when the goal was created
+- Miles shown in history are ONLY from transactions/spending
+- NEVER duplicate initial miles when calculating how much is left to reach a goal
+- If a goal has current_miles greater than zero, this value already considers initial miles + spending miles
 
+Provide a detailed, personalized and professional response IN ENGLISH.`,
+    
     es: `Eres un consultor financiero experto especializado en atención personalizada para parejas e individuos.
 
 IMPORTANTE: Analiza el contexto de la relación y sé inteligente en la interpretación de las solicitudes. RESPONDE SIEMPRE EN ESPAÑOL.
@@ -483,10 +495,16 @@ ${financialContext}
 PREGUNTA DEL USUARIO: ${userMessage}
 
 INSTRUCCIONES ESPECÍFICAS DE INTERPRETACIÓN:
-- Si el usuario hace una pregunta ambigua sobre "saldo", "gastos", "ingresos" y es parte de una pareja, pregunta específicamente si quiere ver datos propios, de su pareja, o combinados
+- Si el usuario hace una pregunta ambigua sobre "saldo", "gastos", "ingresos" y forma parte de una pareja, pregunta específicamente si quiere ver sus propios datos, los de su pareja, o combinados
 - Usa siempre los nombres reales de los usuarios para personalizar las respuestas
 - Para usuarios individuales, siempre proporciona sus propios datos sin preguntar sobre otros
 - Sé práctico y ofrece recomendaciones accionables basadas en datos reales
+
+INSTRUCCIONES DEL SISTEMA DE MILLAS:
+- CRÍTICO: Las millas en metas (current_miles) YA INCLUYEN las millas iniciales de las tarjetas cuando se creó la meta
+- Las millas mostradas en el historial son SOLO de transacciones/gastos realizados
+- NUNCA dupliques las millas iniciales al calcular cuánto falta para alcanzar una meta
+- Si una meta tiene current_miles mayor que cero, este valor ya considera millas iniciales + millas de gastos
 
 Proporciona una respuesta detallada, personalizada y profesional EN ESPAÑOL.`
   };
@@ -494,388 +512,175 @@ Proporciona una respuesta detallada, personalizada y profesional EN ESPAÑOL.`
   return prompts[language];
 }
 
-// Get labels based on language
-function getLabels(language: 'pt' | 'en' | 'es') {
-  const labels = {
-    pt: {
-      relationshipInfo: 'INFORMAÇÕES DO RELACIONAMENTO',
-      status: 'Status',
-      activeCouple: 'CASAL_ATIVO',
-      individualUser: 'USUÁRIO_INDIVIDUAL',
-      currentUserName: 'Nome do usuário atual',
-      partnerName: 'Nome do parceiro(a)',
-      realBalance: 'SALDO REAL DAS CONTAS (Valor Disponível Atualmente)',
-      account: 'Conta',
-      currency: 'R$ ',
-      totalRealBalance: 'TOTAL SALDO REAL',
-      accounts: 'CONTAS',
-      noAccountsRegistered: 'Nenhuma conta cadastrada',
-      periodMovement: 'MOVIMENTAÇÃO DO PERÍODO (Receitas e Despesas)',
-      periodIncome: 'RECEITAS DO PERÍODO',
-      totalIncome: 'TOTAL RECEITAS',
-      noIncomeRegistered: 'Nenhuma receita registrada',
-      periodExpenses: 'DESPESAS DO PERÍODO',
-      totalExpenses: 'TOTAL DESPESAS',
-      noExpensesRegistered: 'Nenhuma despesa registrada',
-      todayTransactions: 'TRANSAÇÕES DE HOJE',
-      todayIncome: 'ENTRADAS HOJE',
-      totalTodayIncome: 'TOTAL DE ENTRADAS HOJE',
-      noTodayIncomeRegistered: 'Nenhuma entrada registrada hoje',
-      todayExpenses: 'GASTOS HOJE',
-      totalTodayExpenses: 'TOTAL DE GASTOS HOJE',
-      noTodayExpensesRegistered: 'Nenhum gasto registrado hoje',
-      noCategory: 'Sem categoria'
-    },
-    en: {
-      relationshipInfo: 'RELATIONSHIP INFORMATION',
-      status: 'Status',
-      activeCouple: 'ACTIVE_COUPLE',
-      individualUser: 'INDIVIDUAL_USER',
-      currentUserName: 'Current user name',
-      partnerName: 'Partner name',
-      realBalance: 'REAL ACCOUNT BALANCE (Currently Available Amount)',
-      account: 'Account',
-      currency: '$ ',
-      totalRealBalance: 'TOTAL REAL BALANCE',
-      accounts: 'ACCOUNTS',
-      noAccountsRegistered: 'No accounts registered',
-      periodMovement: 'PERIOD MOVEMENT (Income and Expenses)',
-      periodIncome: 'PERIOD INCOME',
-      totalIncome: 'TOTAL INCOME',
-      noIncomeRegistered: 'No income registered',
-      periodExpenses: 'PERIOD EXPENSES',
-      totalExpenses: 'TOTAL EXPENSES',
-      noExpensesRegistered: 'No expenses registered',
-      todayTransactions: 'TODAY\'S TRANSACTIONS',
-      todayIncome: 'TODAY\'S INCOME',
-      totalTodayIncome: 'TOTAL TODAY\'S INCOME',
-      noTodayIncomeRegistered: 'No income registered today',
-      todayExpenses: 'TODAY\'S EXPENSES',
-      totalTodayExpenses: 'TOTAL TODAY\'S EXPENSES',
-      noTodayExpensesRegistered: 'No expenses registered today',
-      noCategory: 'No category'
-    },
-    es: {
-      relationshipInfo: 'INFORMACIÓN DE LA RELACIÓN',
-      status: 'Estado',
-      activeCouple: 'PAREJA_ACTIVA',
-      individualUser: 'USUARIO_INDIVIDUAL',
-      currentUserName: 'Nombre del usuario actual',
-      partnerName: 'Nombre de la pareja',
-      realBalance: 'SALDO REAL DE LAS CUENTAS (Cantidad Disponible Actualmente)',
-      account: 'Cuenta',
-      currency: '$ ',
-      totalRealBalance: 'SALDO REAL TOTAL',
-      accounts: 'CUENTAS',
-      noAccountsRegistered: 'Ninguna cuenta registrada',
-      periodMovement: 'MOVIMIENTO DEL PERÍODO (Ingresos y Gastos)',
-      periodIncome: 'INGRESOS DEL PERÍODO',
-      totalIncome: 'TOTAL INGRESOS',
-      noIncomeRegistered: 'Ningún ingreso registrado',
-      periodExpenses: 'GASTOS DEL PERÍODO',
-      totalExpenses: 'TOTAL GASTOS',
-      noExpensesRegistered: 'Ningún gasto registrado',
-      todayTransactions: 'TRANSACCIONES DE HOY',
-      todayIncome: 'INGRESOS DE HOY',
-      totalTodayIncome: 'TOTAL INGRESOS DE HOY',
-      noTodayIncomeRegistered: 'Ningún ingreso registrado hoy',
-      todayExpenses: 'GASTOS DE HOY',
-      totalTodayExpenses: 'TOTAL GASTOS DE HOY',
-      noTodayExpensesRegistered: 'Ningún gasto registrado hoy',
-      noCategory: 'Sin categoría'
-    }
+function generateFinancialContext(data: FinancialData, language: 'pt' | 'en' | 'es'): string {
+  const { relationshipInfo, segmentedData } = data;
+  
+  const formatCurrency = (amount: number, currency: string = 'BRL') => {
+    const symbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : 'R$';
+    return `${symbol} ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
   };
 
-  return labels[language];
-}
-
-function generateFinancialContext(data: FinancialData, language: 'pt' | 'en' | 'es' = 'pt'): string {
-  const { transactions, accounts, cards, investments, investmentGoals, mileageGoals, mileageHistory, cardMileageRules, categories, recurringExpenses, relationshipInfo, segmentedData } = data;
+  const formatMiles = (miles: number) => {
+    return `${miles.toLocaleString('pt-BR')} milhas`;
+  };
 
   let context = '';
 
-  // Get today's date for analyzing daily transactions
-  const today = new Date().toISOString().split('T')[0];
-  const todayTransactions = transactions.filter(t => t.transaction_date === today);
-  const todayIncome = todayTransactions.filter(t => t.type === 'income');
-  const todayExpenses = todayTransactions.filter(t => t.type === 'expense');
+  // Relationship context
+  if (relationshipInfo?.isCouple && segmentedData) {
+    context += language === 'pt' 
+      ? `CONTEXTO DO RELACIONAMENTO: O usuário ${relationshipInfo.currentUserName} faz parte de um casal com ${relationshipInfo.partnerName}.\n\n`
+      : language === 'en' 
+      ? `RELATIONSHIP CONTEXT: User ${relationshipInfo.currentUserName} is part of a couple with ${relationshipInfo.partnerName}.\n\n`
+      : `CONTEXTO DE RELACIÓN: El usuario ${relationshipInfo.currentUserName} forma parte de una pareja con ${relationshipInfo.partnerName}.\n\n`;
 
-  // Get labels based on language
-  const labels = getLabels(language);
-
-  // Add relationship context for intelligent interpretation
-  if (relationshipInfo) {
-    context += `
-${labels.relationshipInfo}:
-- ${labels.status}: ${relationshipInfo.isCouple ? labels.activeCouple : labels.individualUser}
-- ${labels.currentUserName}: ${relationshipInfo.currentUserName}`;
+    // Current user data
+    context += language === 'pt' 
+      ? `DADOS DE ${relationshipInfo.currentUserName.toUpperCase()}:\n`
+      : language === 'en' 
+      ? `DATA FOR ${relationshipInfo.currentUserName.toUpperCase()}:\n`
+      : `DATOS DE ${relationshipInfo.currentUserName.toUpperCase()}:\n`;
     
-    if (relationshipInfo.partnerName) {
-      context += `
-- ${labels.partnerName}: ${relationshipInfo.partnerName}`;
+    context += generateIndividualContext(segmentedData.currentUser, language, formatCurrency, formatMiles);
+
+    // Partner data
+    if (segmentedData.partner) {
+      context += language === 'pt' 
+        ? `\nDADOS DE ${relationshipInfo.partnerName?.toUpperCase()}:\n`
+        : language === 'en' 
+        ? `\nDATA FOR ${relationshipInfo.partnerName?.toUpperCase()}:\n`
+        : `\nDATO DE ${relationshipInfo.partnerName?.toUpperCase()}:\n`;
+      
+      context += generateIndividualContext(segmentedData.partner, language, formatCurrency, formatMiles);
     }
 
-    context += `
+    // Combined data
+    context += language === 'pt' 
+      ? `\nDADOS COMBINADOS DO CASAL:\n`
+      : language === 'en' 
+      ? `\nCOMBINED COUPLE DATA:\n`
+      : `\nDATO COMBINADO DE LA PAREJA:\n`;
+    
+    context += generateIndividualContext(segmentedData.combined, language, formatCurrency, formatMiles);
 
-${labels.realBalance}:
-${accounts.length > 0 ? 
-  accounts.map(acc => {
-    const ownerName = relationshipInfo.isCouple ? 
-      (acc.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
-      relationshipInfo.currentUserName;
-    return `- ${acc.name || labels.account}: ${labels.currency}${Number(acc.balance || 0).toFixed(2)} (${ownerName})`;
-  }).join('\n') + '\n' +
-  `${labels.totalRealBalance}: ${labels.currency}${accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0).toFixed(2)}` :
-  `${labels.accounts}: ${labels.noAccountsRegistered}`
-}
-
-${labels.periodMovement}:
-${transactions.filter(t => t.type === 'income').length > 0 ? 
-  `${labels.periodIncome}:
-${transactions.filter(t => t.type === 'income').map(t => {
-    const ownerName = relationshipInfo.isCouple ? 
-      (t.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
-      relationshipInfo.currentUserName;
-    return `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${ownerName})`;
-  }).join('\n')}
-${labels.totalIncome}: ${labels.currency}${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
-  `${labels.periodIncome}: ${labels.noIncomeRegistered}`
-}
-
-${transactions.filter(t => t.type === 'expense').length > 0 ? 
-  `${labels.periodExpenses}:
-${transactions.filter(t => t.type === 'expense').slice(0, 10).map(t => {
-    const category = categories.find(c => c.id === t.category_id);
-    const ownerName = relationshipInfo.isCouple ? 
-      (t.user_id === relationshipInfo.partnerUserId ? relationshipInfo.partnerName : relationshipInfo.currentUserName) :
-      relationshipInfo.currentUserName;
-    return `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${category?.name || labels.noCategory} - ${ownerName})`;
-  }).join('\n')}
-${transactions.filter(t => t.type === 'expense').length > 10 ? '... (showing only the last 10)' : ''}
-${labels.totalExpenses}: ${labels.currency}${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
-  `${labels.periodExpenses}: ${labels.noExpensesRegistered}`
-}
-
-${labels.todayTransactions} (${today}):
-${todayIncome.length > 0 ? 
-  `${labels.todayIncome}:
-${todayIncome.map(t => `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${accounts.find(a => a.id === t.account_id)?.name || labels.account})`).join('\n')}
-${labels.totalTodayIncome}: ${labels.currency}${todayIncome.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` : 
-  `${labels.todayIncome}: ${labels.noTodayIncomeRegistered}`
-}
-
-${todayExpenses.length > 0 ? 
-  `${labels.todayExpenses}:
-${todayExpenses.map(t => {
-    const category = categories.find(c => c.id === t.category_id);
-    const paymentInfo = t.account_id ? 
-      (accounts.find(a => a.id === t.account_id)?.name || labels.account) :
-      (cards.find(c => c.id === t.card_id)?.name || 'Card');
-    return `- ${t.description}: ${labels.currency}${Number(t.amount).toFixed(2)} (${category?.name || labels.noCategory} - ${paymentInfo})`;
-  }).join('\n')}
-${labels.totalTodayExpenses}: ${labels.currency}${todayExpenses.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}` :
-  `${labels.todayExpenses}: ${labels.noTodayExpensesRegistered}`
-}
-
-INSTRUÇÕES CRÍTICAS DE INTERPRETAÇÃO:
-
-DIFERENCIAÇÃO ENTRE SALDO REAL E MOVIMENTAÇÃO:
-- "Qual meu saldo?" / "Quanto tenho na conta?" / "Saldo das contas" → Use SALDO REAL DAS CONTAS
-- "Quanto movimentei?" / "Qual resultado do mês?" / "Receitas/Despesas" → Use MOVIMENTAÇÃO DO PERÍODO
-- "Tenho dinheiro disponível?" → Use SALDO REAL DAS CONTAS
-- "Como está minha situação financeira do mês?" → Use MOVIMENTAÇÃO DO PERÍODO
-
-PARA PERGUNTAS OBJETIVAS SOBRE HOJE:
-- Se o usuário perguntar sobre "entrou algum valor hoje", "teve receita hoje", "recebi algo hoje": responda DIRETAMENTE baseado nas ENTRADAS HOJE acima
-- Se o usuário perguntar sobre "gastos de hoje", "gastei hoje", "saiu dinheiro hoje": responda DIRETAMENTE baseado nos GASTOS HOJE acima
-- Para estas perguntas objetivas, seja CONCISO e DIRETO: apenas confirme sim/não e mostre os valores específicos
-- Não faça análise completa automaticamente - apenas responda a pergunta específica
-- Ofereça análise mais detalhada apenas se o usuário pedir explicitamente ("quer mais detalhes?", "pode analisar?")
-
-PARA PERGUNTAS GERAIS/AMBÍGUAS:
-${relationshipInfo.isCouple ? 
-  `- Este usuário faz parte de um casal. Quando o usuário fizer perguntas ambíguas sobre "saldo", "gastos", "receitas" sem especificar de quem, pergunte especificamente se ele quer ver:
-  1) Apenas seus dados pessoais (${relationshipInfo.currentUserName})
-  2) Apenas os dados do parceiro (${relationshipInfo.partnerName})
-  3) Dados combinados de ambos
-  
-- Use os nomes reais nas interações para personalizar as respostas
-- Ofereça insights comparativos entre os parceiros quando apropriado` :
-  '- Este é um usuário individual. Sempre forneça dados próprios sem perguntar sobre outros usuários'
-}
-
-`;
-  }
-
-  // Calculate metrics for combined data - MOVIMENTAÇÃO DO PERÍODO (sem incluir saldos de contas)
-  const totalIncome = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-
-  const totalExpenses = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-
-  // SALDO REAL DAS CONTAS (separado da movimentação)
-  const totalAccountBalance = accounts
-    .reduce((sum, a) => sum + Number(a.balance), 0);
-
-  const totalInvestments = investments
-    .reduce((sum, i) => sum + Number(i.current_value), 0);
-
-  const cardDebt = cards
-    .reduce((sum, c) => sum + Number(c.current_balance || 0), 0);
-
-  // Add segmented data for couples
-  if (segmentedData && relationshipInfo?.isCouple) {
-    // Current user metrics - MOVIMENTAÇÃO SEPARADA (sem incluir saldos como receita)
-    const userIncome = segmentedData.currentUser.transactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    const userExpenses = segmentedData.currentUser.transactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    // SALDO REAL DAS CONTAS DO USUÁRIO (separado)
-    const userAccountBalance = segmentedData.currentUser.accounts
-      .reduce((sum, a) => sum + Number(a.balance), 0);
-    const userInvestments = segmentedData.currentUser.investments
-      .reduce((sum, i) => sum + Number(i.current_value), 0);
-
-    // Partner metrics - MOVIMENTAÇÃO SEPARADA (sem incluir saldos como receita)
-    const partnerIncome = segmentedData.partner!.transactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    const partnerExpenses = segmentedData.partner!.transactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    // SALDO REAL DAS CONTAS DO PARCEIRO (separado)
-    const partnerAccountBalance = segmentedData.partner!.accounts
-      .reduce((sum, a) => sum + Number(a.balance), 0);
-    const partnerInvestments = segmentedData.partner!.investments
-      .reduce((sum, i) => sum + Number(i.current_value), 0);
-
-    context += `
-
-DADOS FINANCEIROS SEGMENTADOS POR USUÁRIO:
-
-${relationshipInfo.currentUserName.toUpperCase()} - MOVIMENTAÇÃO DO PERÍODO:
-- Receitas: R$ ${userIncome.toFixed(2)}
-- Despesas: R$ ${userExpenses.toFixed(2)}
-- Saldo Líquido da Movimentação: R$ ${(userIncome - userExpenses).toFixed(2)}
-
-${relationshipInfo.currentUserName.toUpperCase()} - SALDO REAL DAS CONTAS:
-- Total em Contas: R$ ${userAccountBalance.toFixed(2)}
-- Investimentos: R$ ${userInvestments.toFixed(2)}
-
-${relationshipInfo.partnerName?.toUpperCase()} - MOVIMENTAÇÃO DO PERÍODO:
-- Receitas: R$ ${partnerIncome.toFixed(2)}
-- Despesas: R$ ${partnerExpenses.toFixed(2)}
-- Saldo Líquido da Movimentação: R$ ${(partnerIncome - partnerExpenses).toFixed(2)}
-${relationshipInfo.partnerName?.toUpperCase()} - SALDO REAL DAS CONTAS:
-- Total em Contas: R$ ${partnerAccountBalance.toFixed(2)}
-- Investimentos: R$ ${partnerInvestments.toFixed(2)}
-
-DADOS COMBINADOS DO CASAL:
-
-MOVIMENTAÇÃO COMBINADA DO PERÍODO:
-- Receitas Totais: R$ ${totalIncome.toFixed(2)}
-- Despesas Totais: R$ ${totalExpenses.toFixed(2)}
-- Saldo Líquido da Movimentação: R$ ${(totalIncome - totalExpenses).toFixed(2)}
-
-SALDO REAL COMBINADO:
-- Total em Contas: R$ ${totalAccountBalance.toFixed(2)}
-- Total em Investimentos: R$ ${totalInvestments.toFixed(2)}
-- Dívida em Cartões: R$ ${cardDebt.toFixed(2)}`;
   } else {
-    // Single user data
-    context += `
-
-MOVIMENTAÇÃO DO PERÍODO:
-- Total de Receitas: R$ ${totalIncome.toFixed(2)}
-- Total de Despesas: R$ ${totalExpenses.toFixed(2)}
-- Saldo Líquido da Movimentação: R$ ${(totalIncome - totalExpenses).toFixed(2)}
-
-SALDO REAL DAS CONTAS:
-- Saldo em Contas: R$ ${totalAccountBalance.toFixed(2)}
-- Investimentos: R$ ${totalInvestments.toFixed(2)}
-- Dívida em Cartões: R$ ${cardDebt.toFixed(2)}
-`;
+    // Individual user
+    context += language === 'pt' 
+      ? `DADOS FINANCEIROS DO USUÁRIO ${relationshipInfo?.currentUserName || 'Usuário'}:\n`
+      : language === 'en' 
+      ? `FINANCIAL DATA FOR USER ${relationshipInfo?.currentUserName || 'User'}:\n`
+      : `DATOS FINANCIEROS DEL USUARIO ${relationshipInfo?.currentUserName || 'Usuario'}:\n`;
+    
+    context += generateIndividualContext(data, language, formatCurrency, formatMiles);
   }
 
-  // Expense by category
-  const expensesByCategory = transactions
-    .filter(t => t.type === 'expense' && t.category_id)
-    .reduce((acc, t) => {
-      const category = categories.find(c => c.id === t.category_id);
-      const categoryName = category?.name || 'Outros';
-      acc[categoryName] = (acc[categoryName] || 0) + Number(t.amount);
-      return acc;
-    }, {} as Record<string, number>);
-
-  context += `
-
-DETALHES DAS CONTAS (${accounts.length}):
-${accounts.map(a => `- ${a.name}: R$ ${Number(a.balance).toFixed(2)} (${a.currency})`).join('\n')}
-
-DETALHES DOS CARTÕES (${cards.length}):
-${cards.map(c => `- ${c.name}: Limite R$ ${Number(c.credit_limit || 0).toFixed(2)}, Usado R$ ${Number(c.current_balance || 0).toFixed(2)}`).join('\n')}
-
-GASTOS POR CATEGORIA:
-${Object.entries(expensesByCategory)
-  .sort(([,a], [,b]) => b - a)
-  .slice(0, 10)
-  .map(([cat, amount]) => `- ${cat}: R$ ${amount.toFixed(2)}`)
-  .join('\n')}
-
-GASTOS RECORRENTES (${recurringExpenses.length}):
-${recurringExpenses.map(r => `- ${r.name}: R$ ${Number(r.amount).toFixed(2)} a cada ${r.frequency_days} dias`).join('\n')}
-
-INVESTIMENTOS (${investments.length}):
-${investments.map(i => `- ${i.name}: R$ ${Number(i.current_value).toFixed(2)} (${i.type})`).join('\n')}
-
-OBJETIVOS DE INVESTIMENTO (${investmentGoals.length}):
-${investmentGoals.length > 0 ? 
-  investmentGoals.map(goal => {
-    const progress = goal.target_amount > 0 ? ((goal.current_amount / goal.target_amount) * 100).toFixed(1) : '0.0';
-    const timeLeft = goal.target_date ? ` (Meta: ${goal.target_date})` : '';
-    return `- ${goal.name}: R$ ${Number(goal.current_amount).toFixed(2)} / R$ ${Number(goal.target_amount).toFixed(2)} (${progress}%)${timeLeft}`;
-  }).join('\n') : 
-  'Nenhum objetivo de investimento cadastrado'
+  return context;
 }
 
-METAS DE MILHAGEM (${mileageGoals.length}):
-${mileageGoals.length > 0 ? 
-  mileageGoals.map(goal => {
-    const progress = goal.target_miles > 0 ? ((goal.current_miles / goal.target_miles) * 100).toFixed(1) : '0.0';
-    const status = goal.is_completed ? ' ✓ CONCLUÍDA' : '';
-    const timeLeft = goal.target_date ? ` (Meta: ${goal.target_date})` : '';
-    return `- ${goal.name}: ${Number(goal.current_miles).toFixed(0)} / ${Number(goal.target_miles).toFixed(0)} milhas (${progress}%)${timeLeft}${status}`;
-  }).join('\n') : 
-  'Nenhuma meta de milhagem cadastrada'
-}
+function generateIndividualContext(
+  data: any, 
+  language: 'pt' | 'en' | 'es', 
+  formatCurrency: (amount: number, currency?: string) => string,
+  formatMiles: (miles: number) => string
+): string {
+  let context = '';
 
-ESTRATÉGIAS DE MILHAGEM ATIVAS (${cardMileageRules.length}):
-${cardMileageRules.length > 0 ? 
-  cardMileageRules.map(rule => {
-    return `- ${rule.bank_name} ${rule.card_brand}: ${Number(rule.miles_per_amount).toFixed(1)} milhas a cada R$ ${Number(rule.amount_threshold).toFixed(2)}`;
-  }).join('\n') : 
-  'Nenhuma estratégia de milhagem configurada'
-}
+  // Calculate TODAY's transactions for immediate questions
+  const today = new Date().toISOString().split('T')[0];
+  const todayTransactions = data.transactions?.filter(t => t.transaction_date === today) || [];
+  const todayExpenses = todayTransactions.filter(t => t.type === 'expense');
+  const todayIncome = todayTransactions.filter(t => t.type === 'income');
+  
+  const todayExpenseTotal = todayExpenses.reduce((sum, t) => sum + Number(t.amount), 0);
+  const todayIncomeTotal = todayIncome.reduce((sum, t) => sum + Number(t.amount), 0);
 
-HISTÓRICO DE MILHAGEM RECENTE (últimos 30 dias):
-${mileageHistory.length > 0 ? 
-  mileageHistory
-    .filter(h => {
-      const historyDate = new Date(h.calculation_date);
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      return historyDate >= thirtyDaysAgo;
-    })
-    .slice(0, 10)
-    .map(h => `- ${h.calculation_date}: +${Number(h.miles_earned).toFixed(0)} milhas (Gasto: R$ ${Number(h.amount_spent).toFixed(2)})`)
-    .join('\n') || 'Nenhuma milhagem acumulada nos últimos 30 dias' : 
-  'Nenhum histórico de milhagem disponível'
-}
-`;
+  // Add TODAY's section first for immediate questions
+  if (language === 'pt') {
+    context += `GASTOS HOJE (${today}):\n`;
+    if (todayExpenses.length > 0) {
+      context += `Total gasto hoje: ${formatCurrency(todayExpenseTotal)}\n`;
+      todayExpenses.forEach(t => {
+        context += `- ${t.description}: ${formatCurrency(t.amount, t.currency)}\n`;
+      });
+    } else {
+      context += `Nenhum gasto registrado hoje.\n`;
+    }
+    
+    context += `\nRECEITAS HOJE (${today}):\n`;
+    if (todayIncome.length > 0) {
+      context += `Total recebido hoje: ${formatCurrency(todayIncomeTotal)}\n`;
+      todayIncome.forEach(t => {
+        context += `- ${t.description}: ${formatCurrency(t.amount, t.currency)}\n`;
+      });
+    } else {
+      context += `Nenhuma receita registrada hoje.\n`;
+    }
+    context += `\n`;
+  }
+
+  // Mileage Goals Analysis - COM CORREÇÃO CRÍTICA
+  if (data.mileageGoals && data.mileageGoals.length > 0) {
+    context += language === 'pt' 
+      ? `\nMETAS DE MILHAS:\n`
+      : language === 'en' 
+      ? `\nMILEAGE GOALS:\n`
+      : `\nOBJETIVOS DE MILLAS:\n`;
+    
+    data.mileageGoals.forEach(goal => {
+      const progress = goal.target_miles > 0 ? (goal.current_miles / goal.target_miles * 100).toFixed(1) : '0.0';
+      const remaining = Math.max(0, goal.target_miles - goal.current_miles);
+      
+      // Incluir informação sobre fonte das milhas iniciais se disponível
+      const sourceInfo = goal.source_card_id ? ' (inclui milhas iniciais do cartão)' : '';
+      
+      context += language === 'pt' 
+        ? `- ${goal.name}: ${formatMiles(goal.current_miles)} de ${formatMiles(goal.target_miles)} (${progress}% completo)${sourceInfo}. Faltam ${formatMiles(remaining)} para atingir a meta.\n`
+        : language === 'en' 
+        ? `- ${goal.name}: ${formatMiles(goal.current_miles)} of ${formatMiles(goal.target_miles)} (${progress}% complete)${sourceInfo}. ${formatMiles(remaining)} remaining to reach goal.\n`
+        : `- ${goal.name}: ${formatMiles(goal.current_miles)} de ${formatMiles(goal.target_miles)} (${progress}% completo)${sourceInfo}. Faltan ${formatMiles(remaining)} para alcanzar la meta.\n`;
+    });
+  }
+
+  // Card Mileage Rules Analysis - COM DETALHAMENTO CORRETO
+  if (data.cardMileageRules && data.cardMileageRules.length > 0) {
+    const totalExistingMiles = data.cardMileageRules.reduce((sum, rule) => sum + (rule.existing_miles || 0), 0);
+    
+    // Calcular milhas do histórico por cartão
+    const mileageByCard: Record<string, number> = {};
+    if (data.mileageHistory) {
+      data.mileageHistory.forEach(record => {
+        if (!mileageByCard[record.card_id]) {
+          mileageByCard[record.card_id] = 0;
+        }
+        mileageByCard[record.card_id] += record.miles_earned || 0;
+      });
+    }
+    
+    context += language === 'pt' 
+      ? `\nREGRAS DE MILHAS DOS CARTÕES:\n`
+      : language === 'en' 
+      ? `\nCARD MILEAGE RULES:\n`
+      : `\nREGLAS DE MILLAS DE TARJETAS:\n`;
+    
+    context += language === 'pt' 
+      ? `Total de milhas iniciais acumuladas: ${formatMiles(totalExistingMiles)}\n`
+      : language === 'en' 
+      ? `Total initial accumulated miles: ${formatMiles(totalExistingMiles)}\n`
+      : `Total de millas iniciales acumuladas: ${formatMiles(totalExistingMiles)}\n`;
+    
+    data.cardMileageRules.forEach(rule => {
+      const historyMiles = mileageByCard[rule.card_id] || 0;
+      const totalCardMiles = (rule.existing_miles || 0) + historyMiles;
+      
+      context += language === 'pt' 
+        ? `- ${rule.bank_name} ${rule.card_brand}: ${rule.miles_per_amount} milhas por ${formatCurrency(rule.amount_threshold, rule.currency)}. Milhas iniciais: ${formatMiles(rule.existing_miles || 0)}, Milhas por gastos: ${formatMiles(historyMiles)}, Total disponível: ${formatMiles(totalCardMiles)}\n`
+        : language === 'en' 
+        ? `- ${rule.bank_name} ${rule.card_brand}: ${rule.miles_per_amount} miles per ${formatCurrency(rule.amount_threshold, rule.currency)}. Initial miles: ${formatMiles(rule.existing_miles || 0)}, Miles from spending: ${formatMiles(historyMiles)}, Total available: ${formatMiles(totalCardMiles)}\n`
+        : `- ${rule.bank_name} ${rule.card_brand}: ${rule.miles_per_amount} millas por ${formatCurrency(rule.amount_threshold, rule.currency)}. Millas iniciales: ${formatMiles(rule.existing_miles || 0)}, Millas por gastos: ${formatMiles(historyMiles)}, Total disponible: ${formatMiles(totalCardMiles)}\n`;
+    });
+  }
+
+  // Additional financial data summaries can be added here if needed
 
   return context;
 }
@@ -887,7 +692,7 @@ async function saveToAIHistory(supabase: any, userId: string, entryType: string,
       .insert({
         user_id: userId,
         entry_type: entryType,
-        message: message.substring(0, 5000) // Increased limit to capture full recommendations
+        message: message
       });
   } catch (error) {
     console.error('Error saving to AI history:', error);
