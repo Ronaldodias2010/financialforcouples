@@ -680,7 +680,75 @@ function generateIndividualContext(
     });
   }
 
-  // Additional financial data summaries can be added here if needed
+  // Recurring Expenses (Future Expenses) Analysis
+  if (data.recurringExpenses && data.recurringExpenses.length > 0) {
+    const currentDate = new Date();
+    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    const monthAfter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 1);
+    
+    const nextMonthExpenses = data.recurringExpenses.filter(expense => {
+      const nextDue = new Date(expense.next_due_date);
+      return nextDue >= nextMonth && nextDue < monthAfter;
+    });
+    
+    const totalNextMonth = nextMonthExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+    
+    context += language === 'pt' 
+      ? `\nGASTOS FUTUROS (DESPESAS RECORRENTES):\n`
+      : language === 'en' 
+      ? `\nFUTURE EXPENSES (RECURRING EXPENSES):\n`
+      : `\nGASTOS FUTUROS (GASTOS RECURRENTES):\n`;
+    
+    if (nextMonthExpenses.length > 0) {
+      context += language === 'pt' 
+        ? `Total previsto para o próximo mês: ${formatCurrency(totalNextMonth)}\n`
+        : language === 'en' 
+        ? `Total forecast for next month: ${formatCurrency(totalNextMonth)}\n`
+        : `Total previsto para el próximo mes: ${formatCurrency(totalNextMonth)}\n`;
+      
+      context += language === 'pt' 
+        ? `Despesas programadas:\n`
+        : language === 'en' 
+        ? `Scheduled expenses:\n`
+        : `Gastos programados:\n`;
+      
+      nextMonthExpenses.forEach(expense => {
+        const nextDue = new Date(expense.next_due_date);
+        const formattedDate = nextDue.toLocaleDateString('pt-BR');
+        
+        context += language === 'pt' 
+          ? `- ${expense.name}: ${formatCurrency(expense.amount, expense.currency)} (vencimento: ${formattedDate}, frequência: ${expense.frequency_days} dias)\n`
+          : language === 'en' 
+          ? `- ${expense.name}: ${formatCurrency(expense.amount, expense.currency)} (due: ${formattedDate}, frequency: ${expense.frequency_days} days)\n`
+          : `- ${expense.name}: ${formatCurrency(expense.amount, expense.currency)} (vencimiento: ${formattedDate}, frecuencia: ${expense.frequency_days} días)\n`;
+      });
+    } else {
+      context += language === 'pt' 
+        ? `Nenhuma despesa recorrente programada para o próximo mês.\n`
+        : language === 'en' 
+        ? `No recurring expenses scheduled for next month.\n`
+        : `No hay gastos recurrentes programados para el próximo mes.\n`;
+    }
+    
+    // All recurring expenses summary
+    const totalAllRecurring = data.recurringExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+    context += language === 'pt' 
+      ? `\nTotal mensal de todas as despesas recorrentes ativas: ${formatCurrency(totalAllRecurring)}\n`
+      : language === 'en' 
+      ? `\nMonthly total of all active recurring expenses: ${formatCurrency(totalAllRecurring)}\n`
+      : `\nTotal mensual de todos los gastos recurrentes activos: ${formatCurrency(totalAllRecurring)}\n`;
+    
+    data.recurringExpenses.forEach(expense => {
+      const nextDue = new Date(expense.next_due_date);
+      const formattedDate = nextDue.toLocaleDateString('pt-BR');
+      
+      context += language === 'pt' 
+        ? `- ${expense.name}: ${formatCurrency(expense.amount, expense.currency)} a cada ${expense.frequency_days} dias (próximo: ${formattedDate})\n`
+        : language === 'en' 
+        ? `- ${expense.name}: ${formatCurrency(expense.amount, expense.currency)} every ${expense.frequency_days} days (next: ${formattedDate})\n`
+        : `- ${expense.name}: ${formatCurrency(expense.amount, expense.currency)} cada ${expense.frequency_days} días (próximo: ${formattedDate})\n`;
+    });
+  }
 
   return context;
 }
