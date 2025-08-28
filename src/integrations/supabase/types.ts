@@ -771,6 +771,7 @@ export type Database = {
           id: string
           is_completed: boolean
           name: string
+          source_card_id: string | null
           target_date: string | null
           target_miles: number
           updated_at: string
@@ -783,6 +784,7 @@ export type Database = {
           id?: string
           is_completed?: boolean
           name: string
+          source_card_id?: string | null
           target_date?: string | null
           target_miles: number
           updated_at?: string
@@ -795,12 +797,21 @@ export type Database = {
           id?: string
           is_completed?: boolean
           name?: string
+          source_card_id?: string | null
           target_date?: string | null
           target_miles?: number
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mileage_goals_source_card_id_fkey"
+            columns: ["source_card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mileage_history: {
         Row: {

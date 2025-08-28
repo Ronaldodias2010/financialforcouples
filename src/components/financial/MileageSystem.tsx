@@ -48,6 +48,7 @@ interface MileageGoal {
   current_miles: number;
   target_date: string;
   is_completed: boolean;
+  source_card_id?: string;
 }
 
 interface MileageHistory {
@@ -328,16 +329,17 @@ export const MileageSystem = () => {
   const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { error } = await supabase
-      .from("mileage_goals")
-      .insert({
-        user_id: user?.id,
-        name: goalForm.name,
-        description: goalForm.description,
-        target_miles: Number(goalForm.target_miles),
-        current_miles: goalForm.initial_miles,
-        target_date: goalForm.target_date || null
-      });
+      const { error } = await supabase
+        .from("mileage_goals")
+        .insert({
+          user_id: user?.id,
+          name: goalForm.name,
+          description: goalForm.description,
+          target_miles: Number(goalForm.target_miles),
+          current_miles: goalForm.initial_miles,
+          target_date: goalForm.target_date || null,
+          source_card_id: goalForm.card_id || null
+        });
 
     if (error) {
       toast({
@@ -761,8 +763,21 @@ export const MileageSystem = () => {
                           <SelectValue placeholder={t('mileage.selectCardPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background border border-border shadow-lg z-50">
+                          <SelectItem value="">{t('mileage.noCard')}</SelectItem>
                           {mileageRules
-                            .filter(rule => rule.is_active && rule.user_id === user?.id && rule.existing_miles && rule.existing_miles > 0)
+                            .filter(rule => {
+                              // Filtrar regras ativas com milhas existentes
+                              if (!rule.is_active || rule.user_id !== user?.id || !rule.existing_miles || rule.existing_miles <= 0) {
+                                return false;
+                              }
+                              
+                              // Verificar se o cartão já está vinculado a uma meta ativa
+                              const isCardAlreadyLinked = mileageGoals.some(goal => 
+                                goal.source_card_id === rule.card_id && !goal.is_completed
+                              );
+                              
+                              return !isCardAlreadyLinked;
+                            })
                             .map((rule) => (
                               <SelectItem key={rule.card_id} value={rule.card_id}>
                                 {rule.card?.name} - {Number(rule.existing_miles).toLocaleString()} milhas
@@ -770,9 +785,24 @@ export const MileageSystem = () => {
                             ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Selecione um cartão para adicionar suas milhas existentes à meta
-                      </p>
+                       {mileageRules
+                         .filter(rule => {
+                           if (!rule.is_active || rule.user_id !== user?.id || !rule.existing_miles || rule.existing_miles <= 0) {
+                             return false;
+                           }
+                           const isCardAlreadyLinked = mileageGoals.some(goal => 
+                             goal.source_card_id === rule.card_id && !goal.is_completed
+                           );
+                           return !isCardAlreadyLinked;
+                         }).length === 0 ? (
+                         <p className="text-xs text-orange-600 italic">
+                           {t('mileage.allCardsLinked')}
+                         </p>
+                       ) : (
+                         <p className="text-xs text-muted-foreground">
+                           Selecione um cartão para adicionar suas milhas existentes à meta
+                         </p>
+                       )}
                     </div>
 
                     <div className="space-y-2">
