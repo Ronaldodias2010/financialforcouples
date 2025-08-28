@@ -41,6 +41,10 @@ interface FinancialData {
   accounts: any[];
   cards: any[];
   investments: any[];
+  investmentGoals: any[];
+  mileageGoals: any[];
+  mileageHistory: any[];
+  cardMileageRules: any[];
   categories: any[];
   recurringExpenses: any[];
   relationshipInfo?: {
@@ -55,18 +59,30 @@ interface FinancialData {
       accounts: any[];
       cards: any[];
       investments: any[];
+      investmentGoals: any[];
+      mileageGoals: any[];
+      mileageHistory: any[];
+      cardMileageRules: any[];
     };
     partner?: {
       transactions: any[];
       accounts: any[];
       cards: any[];
       investments: any[];
+      investmentGoals: any[];
+      mileageGoals: any[];
+      mileageHistory: any[];
+      cardMileageRules: any[];
     };
     combined: {
       transactions: any[];
       accounts: any[];
       cards: any[];
       investments: any[];
+      investmentGoals: any[];
+      mileageGoals: any[];
+      mileageHistory: any[];
+      cardMileageRules: any[];
     };
   };
 }
@@ -336,6 +352,10 @@ async function collectFinancialData(
     { data: accounts = [] },
     { data: cards = [] },
     { data: investments = [] },
+    { data: investmentGoals = [] },
+    { data: mileageGoals = [] },
+    { data: mileageHistory = [] },
+    { data: cardMileageRules = [] },
     { data: categories = [] },
     { data: recurringExpenses = [] }
   ] = await Promise.all([
@@ -350,6 +370,10 @@ async function collectFinancialData(
     supabase.from('accounts').select('*').in('user_id', userIds),
     supabase.from('cards').select('*').in('user_id', userIds),
     supabase.from('investments').select('*').in('user_id', userIds),
+    supabase.from('investment_goals').select('*').in('user_id', userIds),
+    supabase.from('mileage_goals').select('*').in('user_id', userIds),
+    supabase.from('mileage_history').select('*').in('user_id', userIds),
+    supabase.from('card_mileage_rules').select('*').in('user_id', userIds).eq('is_active', true),
     supabase.from('categories').select('*').in('user_id', userIds),
     supabase.from('recurring_expenses').select('*').in('user_id', userIds).eq('is_active', true)
   ]);
@@ -370,19 +394,31 @@ async function collectFinancialData(
         transactions: transactions.filter(t => t.user_id === userId),
         accounts: accounts.filter(a => a.user_id === userId),
         cards: cards.filter(c => c.user_id === userId),
-        investments: investments.filter(i => i.user_id === userId)
+        investments: investments.filter(i => i.user_id === userId),
+        investmentGoals: investmentGoals.filter(g => g.user_id === userId),
+        mileageGoals: mileageGoals.filter(g => g.user_id === userId),
+        mileageHistory: mileageHistory.filter(h => h.user_id === userId),
+        cardMileageRules: cardMileageRules.filter(r => r.user_id === userId)
       },
       partner: {
         transactions: transactions.filter(t => t.user_id === partnerUserId),
         accounts: accounts.filter(a => a.user_id === partnerUserId),
         cards: cards.filter(c => c.user_id === partnerUserId),
-        investments: investments.filter(i => i.user_id === partnerUserId)
+        investments: investments.filter(i => i.user_id === partnerUserId),
+        investmentGoals: investmentGoals.filter(g => g.user_id === partnerUserId),
+        mileageGoals: mileageGoals.filter(g => g.user_id === partnerUserId),
+        mileageHistory: mileageHistory.filter(h => h.user_id === partnerUserId),
+        cardMileageRules: cardMileageRules.filter(r => r.user_id === partnerUserId)
       },
       combined: {
         transactions,
         accounts,
         cards,
-        investments
+        investments,
+        investmentGoals,
+        mileageGoals,
+        mileageHistory,
+        cardMileageRules
       }
     };
   }
@@ -392,6 +428,10 @@ async function collectFinancialData(
     accounts,
     cards,
     investments,
+    investmentGoals,
+    mileageGoals,
+    mileageHistory,
+    cardMileageRules,
     categories,
     recurringExpenses,
     relationshipInfo,
@@ -550,7 +590,7 @@ function getLabels(language: 'pt' | 'en' | 'es') {
 }
 
 function generateFinancialContext(data: FinancialData, language: 'pt' | 'en' | 'es' = 'pt'): string {
-  const { transactions, accounts, cards, investments, categories, recurringExpenses, relationshipInfo, segmentedData } = data;
+  const { transactions, accounts, cards, investments, investmentGoals, mileageGoals, mileageHistory, cardMileageRules, categories, recurringExpenses, relationshipInfo, segmentedData } = data;
 
   let context = '';
 
@@ -792,6 +832,49 @@ ${recurringExpenses.map(r => `- ${r.name}: R$ ${Number(r.amount).toFixed(2)} a c
 
 INVESTIMENTOS (${investments.length}):
 ${investments.map(i => `- ${i.name}: R$ ${Number(i.current_value).toFixed(2)} (${i.type})`).join('\n')}
+
+OBJETIVOS DE INVESTIMENTO (${investmentGoals.length}):
+${investmentGoals.length > 0 ? 
+  investmentGoals.map(goal => {
+    const progress = goal.target_amount > 0 ? ((goal.current_amount / goal.target_amount) * 100).toFixed(1) : '0.0';
+    const timeLeft = goal.target_date ? ` (Meta: ${goal.target_date})` : '';
+    return `- ${goal.name}: R$ ${Number(goal.current_amount).toFixed(2)} / R$ ${Number(goal.target_amount).toFixed(2)} (${progress}%)${timeLeft}`;
+  }).join('\n') : 
+  'Nenhum objetivo de investimento cadastrado'
+}
+
+METAS DE MILHAGEM (${mileageGoals.length}):
+${mileageGoals.length > 0 ? 
+  mileageGoals.map(goal => {
+    const progress = goal.target_miles > 0 ? ((goal.current_miles / goal.target_miles) * 100).toFixed(1) : '0.0';
+    const status = goal.is_completed ? ' ✓ CONCLUÍDA' : '';
+    const timeLeft = goal.target_date ? ` (Meta: ${goal.target_date})` : '';
+    return `- ${goal.name}: ${Number(goal.current_miles).toFixed(0)} / ${Number(goal.target_miles).toFixed(0)} milhas (${progress}%)${timeLeft}${status}`;
+  }).join('\n') : 
+  'Nenhuma meta de milhagem cadastrada'
+}
+
+ESTRATÉGIAS DE MILHAGEM ATIVAS (${cardMileageRules.length}):
+${cardMileageRules.length > 0 ? 
+  cardMileageRules.map(rule => {
+    return `- ${rule.bank_name} ${rule.card_brand}: ${Number(rule.miles_per_amount).toFixed(1)} milhas a cada R$ ${Number(rule.amount_threshold).toFixed(2)}`;
+  }).join('\n') : 
+  'Nenhuma estratégia de milhagem configurada'
+}
+
+HISTÓRICO DE MILHAGEM RECENTE (últimos 30 dias):
+${mileageHistory.length > 0 ? 
+  mileageHistory
+    .filter(h => {
+      const historyDate = new Date(h.calculation_date);
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      return historyDate >= thirtyDaysAgo;
+    })
+    .slice(0, 10)
+    .map(h => `- ${h.calculation_date}: +${Number(h.miles_earned).toFixed(0)} milhas (Gasto: R$ ${Number(h.amount_spent).toFixed(2)})`)
+    .join('\n') || 'Nenhuma milhagem acumulada nos últimos 30 dias' : 
+  'Nenhum histórico de milhagem disponível'
+}
 `;
 
   return context;
