@@ -763,7 +763,7 @@ export const MileageSystem = () => {
                           <SelectValue placeholder={t('mileage.selectCardPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background border border-border shadow-lg z-50">
-                          <SelectItem value="">{t('mileage.noCard')}</SelectItem>
+                           <SelectItem value="none">{t('mileage.noCard')}</SelectItem>
                           {mileageRules
                             .filter(rule => {
                               // Filtrar regras ativas com milhas existentes
