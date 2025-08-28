@@ -374,12 +374,12 @@ const AdminDashboardContent = () => {
     const currencySymbol = (language === 'en' || language === 'es') ? '$' : 'R$';
     
     const metricsData = [
-      ['Métrica', 'Valor'],
+      [t('admin.export.metricColumn'), t('admin.export.valueColumn')],
       [t('admin.metrics.activeUsers'), metrics.activeUsers.toString()],
       [t('admin.metrics.canceledSubscriptions'), metrics.canceledSubscriptions.toString()],
       [t('admin.metrics.failedPayments'), metrics.failedPayments.toString()],
       [t('admin.metrics.monthlyRevenue'), `${currencySymbol} ${metrics.monthlyRevenue.toFixed(2)}`],
-      ['Receita Anual', `${currencySymbol} ${metrics.annualRevenue.toFixed(2)}`]
+      [t('admin.metrics.annualRevenue'), `${currencySymbol} ${metrics.annualRevenue.toFixed(2)}`]
     ];
 
     if (exportFormat === 'csv') {
@@ -388,7 +388,7 @@ const AdminDashboardContent = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', 'metricas_dashboard.csv');
+      link.setAttribute('download', language === 'en' ? 'dashboard_metrics.csv' : language === 'es' ? 'metricas_panel.csv' : 'metricas_dashboard.csv');
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -400,9 +400,9 @@ const AdminDashboardContent = () => {
           const doc = new jsPDF();
           
           doc.setFontSize(18);
-          doc.text('Métricas do Dashboard', 14, 22);
+          doc.text(t('admin.export.overviewTitle'), 14, 22);
           doc.setFontSize(12);
-          doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+          doc.text(`${language === 'en' ? 'Date' : language === 'es' ? 'Fecha' : 'Data'}: ${new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR')}`, 14, 32);
           
           autoTable(doc, {
             head: [metricsData[0]],
@@ -412,15 +412,15 @@ const AdminDashboardContent = () => {
             headStyles: { fillColor: [71, 85, 105] }
           });
           
-          doc.save('metricas_dashboard.pdf');
+          doc.save(language === 'en' ? 'dashboard_metrics.pdf' : language === 'es' ? 'metricas_panel.pdf' : 'metricas_dashboard.pdf');
         });
       });
     } else if (exportFormat === 'excel') {
       import('xlsx').then((XLSX) => {
         const worksheet = XLSX.utils.aoa_to_sheet(metricsData);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Métricas');
-        XLSX.writeFile(workbook, 'metricas_dashboard.xlsx');
+        XLSX.utils.book_append_sheet(workbook, worksheet, language === 'en' ? 'Metrics' : language === 'es' ? 'Métricas' : 'Métricas');
+        XLSX.writeFile(workbook, language === 'en' ? 'dashboard_metrics.xlsx' : language === 'es' ? 'metricas_panel.xlsx' : 'metricas_dashboard.xlsx');
       });
     }
   };
@@ -471,7 +471,7 @@ const AdminDashboardContent = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', 'usuarios_premium.csv');
+      link.setAttribute('download', language === 'en' ? 'premium_users.csv' : language === 'es' ? 'usuarios_premium.csv' : 'usuarios_premium.csv');
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -483,9 +483,9 @@ const AdminDashboardContent = () => {
           const doc = new jsPDF();
           
           doc.setFontSize(18);
-          doc.text('Relatório de Usuários Premium', 14, 22);
+          doc.text(t('admin.export.premiumUsersTitle'), 14, 22);
           doc.setFontSize(12);
-          doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+          doc.text(`${language === 'en' ? 'Date' : language === 'es' ? 'Fecha' : 'Data'}: ${new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR')}`, 14, 32);
           
           const headers = [[t('admin.table.userName'), t('admin.table.email'), t('admin.table.status'), t('admin.table.plan'), t('admin.table.lastPayment')]];
           const data = filteredUsers.map(user => [
@@ -493,7 +493,7 @@ const AdminDashboardContent = () => {
             user.email,
             user.status,
             user.subscription_tier,
-            user.last_payment ? new Date(user.last_payment).toLocaleDateString('pt-BR') : ''
+            user.last_payment ? new Date(user.last_payment).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR') : ''
           ]);
           
           autoTable(doc, {
@@ -504,7 +504,7 @@ const AdminDashboardContent = () => {
             headStyles: { fillColor: [71, 85, 105] }
           });
           
-          doc.save('usuarios_premium.pdf');
+          doc.save(language === 'en' ? 'premium_users.pdf' : language === 'es' ? 'usuarios_premium.pdf' : 'usuarios_premium.pdf');
         });
       });
     } else if (exportFormat === 'excel') {
@@ -523,15 +523,18 @@ const AdminDashboardContent = () => {
         
         const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuários Premium');
-        XLSX.writeFile(workbook, 'usuarios_premium.xlsx');
+        XLSX.utils.book_append_sheet(workbook, worksheet, language === 'en' ? 'Premium Users' : language === 'es' ? 'Usuarios Premium' : 'Usuários Premium');
+        XLSX.writeFile(workbook, language === 'en' ? 'premium_users.xlsx' : language === 'es' ? 'usuarios_premium.xlsx' : 'usuarios_premium.xlsx');
       });
     }
   };
 
   const exportAlerts = () => {
     const alertsData = [
-      ['Data', 'Email do Usuário', 'Evento', 'Ação'],
+      [language === 'en' ? 'Date' : language === 'es' ? 'Fecha' : 'Data', 
+       language === 'en' ? 'User Email' : language === 'es' ? 'Email del Usuario' : 'Email do Usuário',
+       language === 'en' ? 'Event' : language === 'es' ? 'Evento' : 'Evento',
+       language === 'en' ? 'Action' : language === 'es' ? 'Acción' : 'Ação'],
       ...alerts.map(alert => [
         alert.date,
         alert.user_email,
@@ -546,7 +549,7 @@ const AdminDashboardContent = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', 'alertas_admin.csv');
+      link.setAttribute('download', language === 'en' ? 'alerts.csv' : language === 'es' ? 'alertas.csv' : 'alertas_admin.csv');
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -558,9 +561,9 @@ const AdminDashboardContent = () => {
           const doc = new jsPDF();
           
           doc.setFontSize(18);
-          doc.text('Relatório de Alertas', 14, 22);
+          doc.text(t('admin.export.alertsTitle'), 14, 22);
           doc.setFontSize(12);
-          doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+          doc.text(`${language === 'en' ? 'Date' : language === 'es' ? 'Fecha' : 'Data'}: ${new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR')}`, 14, 32);
           
           autoTable(doc, {
             head: [alertsData[0]],
@@ -570,15 +573,15 @@ const AdminDashboardContent = () => {
             headStyles: { fillColor: [71, 85, 105] }
           });
           
-          doc.save('alertas_admin.pdf');
+          doc.save(language === 'en' ? 'alerts.pdf' : language === 'es' ? 'alertas.pdf' : 'alertas_admin.pdf');
         });
       });
     } else if (exportFormat === 'excel') {
       import('xlsx').then((XLSX) => {
         const worksheet = XLSX.utils.aoa_to_sheet(alertsData);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Alertas');
-        XLSX.writeFile(workbook, 'alertas_admin.xlsx');
+        XLSX.utils.book_append_sheet(workbook, worksheet, language === 'en' ? 'Alerts' : language === 'es' ? 'Alertas' : 'Alertas');
+        XLSX.writeFile(workbook, language === 'en' ? 'alerts.xlsx' : language === 'es' ? 'alertas.xlsx' : 'alertas_admin.xlsx');
       });
     }
   };
@@ -654,7 +657,7 @@ const AdminDashboardContent = () => {
             </Select>
             <Button onClick={handleExport} variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              {t('admin.export.title')}
             </Button>
           </div>
           <Button 
@@ -731,7 +734,7 @@ const AdminDashboardContent = () => {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{language === 'en' ? 'Annual Revenue' : 'Receita Anual'}</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('admin.metrics.annualRevenue')}</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -875,10 +878,10 @@ const AdminDashboardContent = () => {
                           <Badge variant="outline">{user.subscription_tier}</Badge>
                         </TableCell>
                         <TableCell>
-                          {user.last_payment ? new Date(user.last_payment).toLocaleDateString('pt-BR') : '—'}
+                          {user.last_payment ? new Date(user.last_payment).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR') : '—'}
                         </TableCell>
                         <TableCell>
-                          {user.subscription_end ? new Date(user.subscription_end).toLocaleDateString('pt-BR') : '—'}
+                          {user.subscription_end ? new Date(user.subscription_end).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR') : '—'}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
