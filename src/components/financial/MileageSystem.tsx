@@ -434,7 +434,7 @@ export const MileageSystem = () => {
   const handleCardSelect = (cardId: string) => {
     setGoalForm(prev => ({ ...prev, card_id: cardId }));
     
-    if (cardId) {
+    if (cardId && cardId !== "none") {
       // Buscar milhas existentes do cartão selecionado
       const selectedRule = mileageRules.find(rule => 
         rule.card_id === cardId && rule.is_active && rule.user_id === user?.id
@@ -761,7 +761,6 @@ export const MileageSystem = () => {
                           <SelectValue placeholder={t('mileage.selectCardPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background border border-border shadow-lg z-50">
-                          <SelectItem value="">{t('mileage.noCard')}</SelectItem>
                           {mileageRules
                             .filter(rule => rule.is_active && rule.user_id === user?.id && rule.existing_miles && rule.existing_miles > 0)
                             .map((rule) => (
