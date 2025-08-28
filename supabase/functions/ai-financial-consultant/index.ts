@@ -387,22 +387,23 @@ async function collectFinancialData(
     supabase.from('categories').select('*').in('user_id', userIds),
     supabase.from('recurring_expenses').select('*').in('user_id', userIds).eq('is_active', true),
     
-    // Future installments (next month)
+  // Future installments (next month)
     supabase
       .from('transactions')
-      .select('*, cards(name)')
+      .select('*, cards(name), categories(name)')
       .in('user_id', userIds)
       .eq('is_installment', true)
       .gte('transaction_date', nextMonthStart)
       .lte('transaction_date', nextMonthEnd)
       .order('transaction_date', { ascending: true }),
     
-    // Future card payments (next month due dates)
+    // Credit cards for calculating payment amounts
     supabase
       .from('cards')
       .select('*')
       .in('user_id', userIds)
-      .gt('current_balance', 0)
+      .eq('card_type', 'credit')
+      .not('due_date', 'is', null)
   ]);
 
   // Build relationship info
@@ -710,51 +711,137 @@ function generateIndividualContext(
   }
 
   // ====== GASTOS FUTUROS (ABA dentro de Gastos Mensais - PRÓXIMO MÊS APENAS) ======
-  const currentDate = new Date();
-  const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-  const monthAfter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 1);
+  // Calculate exactly like FutureExpensesView.tsx
+  const now = new Date();
+  const futureDate = new Date();
+  futureDate.setMonth(futureDate.getMonth() + 12); // 12 months for calendar
   
-  let futureExpensesTotal = 0;
-  let futureExpensesItems = [];
+  // List limit date (end of next month)
+  const listLimitDate = new Date();
+  listLimitDate.setMonth(listLimitDate.getMonth() + 1);
+  listLimitDate.setDate(new Date(listLimitDate.getFullYear(), listLimitDate.getMonth() + 1, 0).getDate());
   
-  // 1. Parcelas futuras (installments)
-  if (data.futureInstallments && data.futureInstallments.length > 0) {
-    data.futureInstallments.forEach(installment => {
-      futureExpensesTotal += Number(installment.amount);
-      const installmentText = language === 'pt' 
-        ? `${installment.description} - Parcela ${installment.installment_number}/${installment.total_installments}`
-        : `${installment.description} - Installment ${installment.installment_number}/${installment.total_installments}`;
-      futureExpensesItems.push(`${installmentText}: ${formatCurrency(installment.amount, installment.currency)}`);
+  const futureExpensesData = [];
+  
+  // 1. INSTALLMENTS: add from futureInstallments (already filtered for next month)
+  (data.futureInstallments || []).forEach(installment => {
+    futureExpensesData.push({
+      type: 'installment',
+      description: installment.description,
+      amount: installment.amount,
+      due_date: installment.transaction_date,
+      category: installment.categories?.name || 'Sem categoria',
+      card_name: installment.cards?.name,
+      installment_info: `${installment.installment_number}/${installment.total_installments}`,
+      owner_user: installment.owner_user,
+      currency: installment.currency
     });
-  }
+  });
   
-  // 2. Pagamentos de cartão de crédito
-  if (data.futureCardPayments && data.futureCardPayments.length > 0) {
-    data.futureCardPayments.forEach(card => {
-      if (card.current_balance > 0) {
-        futureExpensesTotal += Number(card.current_balance);
-        const cardText = language === 'pt' 
-          ? `Pagamento cartão ${card.name}`
-          : `Credit card payment ${card.name}`;
-        futureExpensesItems.push(`${cardText}: ${formatCurrency(card.current_balance, card.currency)}`);
+  // 2. RECURRING EXPENSES: calculate ALL future occurrences like FutureExpensesView.tsx
+  (data.recurringExpenses || []).forEach(recur => {
+    let currentDueDate = new Date(recur.next_due_date);
+    let installmentCount = 0;
+    const maxInstallments = recur.contract_duration_months || 120; // Default to 10 years if no duration
+    
+    while (currentDueDate <= futureDate && installmentCount < maxInstallments) {
+      // Only add if date is in the future or today
+      if (currentDueDate >= now) {
+        futureExpensesData.push({
+          type: 'recurring',
+          description: recur.name,
+          amount: recur.amount,
+          due_date: currentDueDate.toISOString().split('T')[0],
+          category: 'Recorrente',
+          owner_user: recur.owner_user,
+          currency: recur.currency
+        });
       }
-    });
-  }
+      
+      // Calculate next due date
+      currentDueDate = new Date(currentDueDate);
+      currentDueDate.setDate(currentDueDate.getDate() + recur.frequency_days);
+      installmentCount++;
+    }
+  });
   
-  // 3. Gastos recorrentes do próximo mês
-  const nextMonthRecurring = data.recurringExpenses ? data.recurringExpenses.filter(expense => {
-    const nextDue = new Date(expense.next_due_date);
-    return nextDue >= nextMonth && nextDue < monthAfter;
-  }) : [];
+  // 3. CARD PAYMENTS: calculate exactly like FutureExpensesView.tsx
+  const getNextDueDate = (dueDay: number): string => {
+    const now = new Date();
+    const currentDay = now.getDate();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    let nextDueDate: Date;
+    
+    // If we haven't passed the due day in current month
+    if (currentDay <= dueDay) {
+      nextDueDate = new Date(currentYear, currentMonth, dueDay);
+    } else {
+      // If already passed, use next month
+      nextDueDate = new Date(currentYear, currentMonth + 1, dueDay);
+    }
+    
+    // Ensure we don't return a date in the past
+    if (nextDueDate <= now) {
+      nextDueDate = new Date(currentYear, currentMonth + 1, dueDay);
+    }
+    
+    return nextDueDate.toISOString().split('T')[0];
+  };
   
-  nextMonthRecurring.forEach(expense => {
-    futureExpensesTotal += Number(expense.amount);
-    const nextDue = new Date(expense.next_due_date);
-    const formattedDate = nextDue.toLocaleDateString('pt-BR');
-    const recurringText = language === 'pt' 
-      ? `${expense.name} (recorrente - vence ${formattedDate})`
-      : `${expense.name} (recurring - due ${formattedDate})`;
-    futureExpensesItems.push(`${recurringText}: ${formatCurrency(expense.amount, expense.currency)}`);
+  // Function to calculate card payment amount like FutureExpensesView.tsx
+  const calculateCardPaymentAmount = (card: any): number => {
+    // For credit cards, calculate: Total Limit - Available Limit
+    if (card.card_type === 'credit') {
+      const totalLimit = Number(card.credit_limit || 0);
+      const availableLimit = Number(card.initial_balance || 0);
+      return totalLimit - availableLimit;
+    }
+    
+    // For other card types, use current balance
+    return card.current_balance || 0;
+  };
+  
+  (data.futureCardPayments || []).forEach(card => {
+    if (card.due_date) {
+      const paymentAmount = calculateCardPaymentAmount(card);
+      if (paymentAmount > 0) {
+        const nextDueDate = getNextDueDate(card.due_date);
+        futureExpensesData.push({
+          type: 'card_payment',
+          description: `Pagamento ${card.name}`,
+          amount: paymentAmount,
+          due_date: nextDueDate,
+          category: 'Cartão de Crédito',
+          card_name: card.name,
+          owner_user: card.owner_user,
+          currency: card.currency
+        });
+      }
+    }
+  });
+  
+  // Filter expenses for list (only until end of next month) - exactly like FutureExpensesView.tsx
+  const expensesForList = futureExpensesData.filter(expense => 
+    new Date(expense.due_date) <= listLimitDate
+  );
+  
+  // Sort by date
+  expensesForList.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+  
+  const futureExpensesTotal = expensesForList.reduce((sum, expense) => sum + expense.amount, 0);
+  const futureExpensesItems = expensesForList.map(expense => {
+    const formattedDate = new Date(expense.due_date).toLocaleDateString('pt-BR');
+    let description = expense.description;
+    
+    if (expense.type === 'installment' && expense.installment_info) {
+      description += ` - Parcela ${expense.installment_info}`;
+    } else if (expense.type === 'recurring') {
+      description += ` (recorrente - vence ${formattedDate})`;
+    }
+    
+    return `${description}: ${formatCurrency(expense.amount, expense.currency)}`;
   });
   
   // Seção GASTOS FUTUROS
