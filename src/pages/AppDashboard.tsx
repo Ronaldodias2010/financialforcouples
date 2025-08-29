@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
+import { PremiumExpirationWarning } from "@/components/subscription/PremiumExpirationWarning";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
@@ -102,7 +103,12 @@ const AppDashboard = () => {
       </header>
       <main>
         {currentPage === 'dashboard' ? (
-          <FinancialDashboard />
+          <div>
+            <div className="container mx-auto px-4 py-4">
+              <PremiumExpirationWarning />
+            </div>
+            <FinancialDashboard />
+          </div>
         ) : (
           <div className="container mx-auto px-4 py-8">
             <SubscriptionPage onBack={() => setCurrentPage('dashboard')} />

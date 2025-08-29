@@ -9,8 +9,8 @@ import { Loader2, Send } from 'lucide-react';
 
 export default function EmailSender() {
   const [email, setEmail] = useState('');
-  const [template, setTemplate] = useState<'invite' | 'premium' | 'confirmation' | 'password-reset'>('invite');
-  const [language, setLanguage] = useState<'pt' | 'en'>('pt');
+  const [template, setTemplate] = useState<'invite' | 'premium' | 'confirmation' | 'password-reset' | 'expiration-warning' | 'final-warning' | 'grace-period'>('invite');
+  const [language, setLanguage] = useState<'pt' | 'en' | 'es'>('pt');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -72,6 +72,9 @@ export default function EmailSender() {
             <SelectItem value="premium">⭐ Acesso Premium</SelectItem>
             <SelectItem value="confirmation">🎉 Confirmação de Conta</SelectItem>
             <SelectItem value="password-reset">🔐 Redefinir Senha</SelectItem>
+            <SelectItem value="expiration-warning">⏰ Aviso de Vencimento Premium</SelectItem>
+            <SelectItem value="final-warning">🚨 Aviso Final Premium</SelectItem>
+            <SelectItem value="grace-period">🛡️ Período de Graça Premium</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -85,6 +88,7 @@ export default function EmailSender() {
           <SelectContent>
             <SelectItem value="pt">🇧🇷 Português</SelectItem>
             <SelectItem value="en">🇺🇸 English</SelectItem>
+            <SelectItem value="es">🇪🇸 Español</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -104,7 +108,7 @@ export default function EmailSender() {
       </Button>
 
       <div className="text-sm text-muted-foreground">
-        Templates: Convite, Premium, Confirmação, Reset de Senha (PT/EN)
+        Templates: Convite, Premium, Confirmação, Reset de Senha, Avisos de Vencimento (PT/EN/ES)
       </div>
     </div>
   );
