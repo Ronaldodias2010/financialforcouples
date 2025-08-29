@@ -12,9 +12,7 @@ import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { formatLocalDate, getLocaleForLanguage } from "@/utils/date";
-import { Download, FileText } from "lucide-react";
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { ExportUtils } from "@/components/financial/ExportUtils";
 
 
 interface Transaction {
@@ -255,129 +253,13 @@ if (selectedCategory !== "all") {
 
   const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0);
 
-  const exportToCSV = () => {
-    if (transactions.length === 0) {
-      toast({
-        title: "Aviso",
-        description: "Não há receitas para exportar",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const headers = [
-      'Data',
-      'Descrição',
-      'Categoria',
-      'Subcategoria',
-      'Recebido por',
-      'Método de Recebimento',
-      'Conta',
-      'Valor'
-    ];
-
-    const csvData = transactions.map(transaction => [
-      formatDate(transaction.transaction_date),
-      transaction.description,
-      translateCategoryUtil(transaction.categories?.name || 'N/A', language),
-      transaction.subcategory || '',
-      getUserName(transaction.owner_user || 'user1'),
-      getPaymentMethodText(transaction.payment_method),
-      transaction.accounts?.name || '',
-      formatCurrency(transaction.amount)
-    ]);
-
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
+  const getExportTitle = () => {
     const [year, month] = selectedMonth.split('-').map(Number);
     const monthDate = new Date(year, month - 1, 1);
     const locale = language === 'en' ? enUS : ptBR;
     const monthLabel = format(monthDate, "MMMM-yyyy", { locale });
     const categoryLabel = selectedCategory === 'all' ? 'todas-categorias' : selectedCategory;
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `receitas-${monthLabel}-${categoryLabel}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast({
-      title: "Sucesso",
-      description: "Arquivo CSV exportado com sucesso",
-    });
-  };
-
-  const exportToPDF = () => {
-    if (transactions.length === 0) {
-      toast({
-        title: "Aviso",
-        description: "Não há receitas para exportar",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const doc = new jsPDF();
-    
-    // Título
-    doc.setFontSize(16);
-    doc.text(t('monthlyIncome.pdfTitle'), 14, 20);
-    
-    // Informações do período
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const monthDate = new Date(year, month - 1, 1);
-    const locale = language === 'en' ? enUS : ptBR;
-    const labelFormat = language === 'en' ? "MMMM yyyy" : "MMMM 'de' yyyy";
-    const monthLabel = format(monthDate, labelFormat, { locale });
-    const categoryLabel = selectedCategory === 'all' ? t('monthlyIncome.allCategories') : 
-      categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory;
-    
-    doc.setFontSize(12);
-    doc.text(`${t('monthlyIncome.pdfPeriod')}: ${monthLabel}`, 14, 30);
-    doc.text(`${t('monthlyIncome.categoryLabel')}: ${categoryLabel}`, 14, 38);
-    doc.text(`${t('monthlyIncome.pdfTotalIncome')}: ${formatCurrency(totalIncome)}`, 14, 46);
-    
-    // Tabela com cabeçalhos
-    const tableHeaders = [
-      t('monthlyIncome.date'),
-      t('monthlyIncome.description'),
-      t('monthlyIncome.categoryLabel'),
-      t('monthlyIncome.receivedBy'),
-      t('monthlyIncome.receiptMethod'),
-      t('monthlyIncome.amount')
-    ];
-    
-    const tableData = transactions.map(transaction => [
-      formatDate(transaction.transaction_date),
-      transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
-      translateCategoryUtil(transaction.categories?.name || 'N/A', language),
-      getUserName(transaction.owner_user || 'user1'),
-      getPaymentMethodText(transaction.payment_method),
-      formatCurrency(transaction.amount)
-    ]);
-
-    autoTable(doc, {
-      head: [tableHeaders],
-      body: tableData,
-      startY: 55,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [66, 66, 66] },
-    });
-
-    const fileName = `receitas-${format(monthDate, "MMMM-yyyy", { locale })}-${categoryLabel.replace(/\s+/g, '-')}.pdf`;
-    doc.save(fileName);
-
-    toast({
-      title: "Sucesso",
-      description: "Arquivo PDF exportado com sucesso",
-    });
+    return `receitas-${monthLabel}-${categoryLabel}`;
   };
 
   return (
@@ -440,22 +322,51 @@ if (selectedCategory !== "all") {
           </div>
           
           {transactions.length > 0 && (
-            <div className="flex gap-2">
-              <button
-                onClick={exportToCSV}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                PDF
-              </button>
-            </div>
+            <ExportUtils
+              data={transactions}
+              filename={getExportTitle()}
+              headers={[
+                t('monthlyIncome.date'),
+                t('monthlyIncome.description'),
+                t('monthlyIncome.categoryLabel'),
+                t('monthlyIncome.subcategoryLabel'),
+                t('monthlyIncome.receivedBy'),
+                t('monthlyIncome.receiptMethod'),
+                t('monthlyIncome.receivedAccount'),
+                t('monthlyIncome.amount')
+              ]}
+              tableHeaders={[
+                t('monthlyIncome.date'),
+                t('monthlyIncome.description'),
+                t('monthlyIncome.categoryLabel'),
+                t('monthlyIncome.receivedBy'),
+                t('monthlyIncome.receiptMethod'),
+                t('monthlyIncome.amount')
+              ]}
+              title={t('monthlyIncome.pdfTitle')}
+              additionalInfo={[
+                { label: t('monthlyIncome.pdfPeriod'), value: selectedMonth },
+                { label: t('monthlyIncome.pdfTotalIncome'), value: formatCurrency(totalIncome) }
+              ]}
+               formatRowForCSV={(transaction) => [
+                formatDate(transaction.transaction_date),
+                transaction.description,
+                translateCategoryUtil(transaction.categories?.name || 'N/A', language),
+                (transaction as any).subcategory || '',
+                getUserName(transaction.owner_user || 'user1'),
+                getPaymentMethodText(transaction.payment_method),
+                transaction.accounts?.name || '',
+                formatCurrency(transaction.amount)
+              ]}
+              formatRowForPDF={(transaction) => [
+                formatDate(transaction.transaction_date),
+                transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
+                translateCategoryUtil(transaction.categories?.name || 'N/A', language),
+                getUserName(transaction.owner_user || 'user1'),
+                getPaymentMethodText(transaction.payment_method),
+                formatCurrency(transaction.amount)
+              ]}
+            />
           )}
         </div>
       </Card>

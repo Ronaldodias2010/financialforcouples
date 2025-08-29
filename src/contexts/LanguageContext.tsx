@@ -324,6 +324,8 @@ const translations = {
     'futureExpenses.category': 'Categoria',
     'futureExpenses.type': 'Tipo',
     'futureExpenses.owner': 'Responsável',
+    'futureExpenses.cardName': 'Cartão',
+    'futureExpenses.installmentInfo': 'Parcela',
     'futureExpenses.pdfTitle': 'Relatório de Gastos Futuros',
     'futureExpenses.total': 'Total de Gastos Futuros',
     
@@ -1552,6 +1554,8 @@ const translations = {
     'futureExpenses.category': 'Category',
     'futureExpenses.type': 'Type',
     'futureExpenses.owner': 'Owner',
+    'futureExpenses.cardName': 'Card',
+    'futureExpenses.installmentInfo': 'Installment',
     'futureExpenses.pdfTitle': 'Future Expenses Report',
     'futureExpenses.total': 'Total Future Expenses',
     
@@ -2811,6 +2815,8 @@ const translations = {
     'futureExpenses.category': 'Categoría',
     'futureExpenses.type': 'Tipo',
     'futureExpenses.owner': 'Propietario',
+    'futureExpenses.cardName': 'Tarjeta',
+    'futureExpenses.installmentInfo': 'Cuota',
     'futureExpenses.pdfTitle': 'Informe de Gastos Futuros',
     'futureExpenses.total': 'Total de Gastos Futuros',
     
@@ -3718,6 +3724,7 @@ const translations = {
     'aiBeta.betatesterDescription': 'Contáctanos y sé uno de los primeros en probar nuestra IA financiera.',
     'aiBeta.contactButton': 'Quiero ser probador beta',
     'aiBeta.waitButton': 'Voy a esperar',
+    'aiBeta.emails': 'Nuestros contactos:',
   },
 };
 
