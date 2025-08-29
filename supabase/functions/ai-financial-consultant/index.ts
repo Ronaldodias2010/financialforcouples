@@ -205,8 +205,13 @@ serve(async (req) => {
 
     // Add chat history if available
     if (chatHistory.length > 0) {
-      chatHistory.forEach((msg: ChatMessage) => {
-        messages.push(msg);
+      chatHistory.forEach((msg: any) => {
+        // Convert 'ai' role to 'assistant' for OpenAI compatibility
+        const normalizedRole = msg.role === 'ai' ? 'assistant' : msg.role;
+        messages.push({
+          role: normalizedRole as 'user' | 'assistant',
+          content: msg.message || msg.content
+        });
       });
     }
 
@@ -247,7 +252,26 @@ serve(async (req) => {
     if (!openAIResponse.ok) {
       const errorText = await openAIResponse.text();
       console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${openAIResponse.status}`);
+      
+      // Parse the error to provide better error messages
+      let errorMessage = 'Erro na API da OpenAI';
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error?.message) {
+          errorMessage = errorData.error.message;
+        }
+      } catch (parseError) {
+        console.error('Failed to parse OpenAI error:', parseError);
+      }
+      
+      return new Response(JSON.stringify({ 
+        error: 'OPENAI_API_ERROR',
+        message: 'Não foi possível processar sua solicitação. Tente novamente em alguns minutos.',
+        details: errorMessage
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const aiData = await openAIResponse.json();

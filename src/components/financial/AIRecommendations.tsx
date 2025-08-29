@@ -68,16 +68,26 @@ const AIRecommendationsContent = () => {
       if (error) {
         console.error('AI Consultant error:', error);
         
-        // Handle specific error cases
-        if (error.message === 'AI_ACCESS_DENIED') {
+        // Handle specific error cases based on error code or message
+        if (data?.error === 'AI_ACCESS_DENIED' || error.message === 'AI_ACCESS_DENIED') {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
             message: 'Acesso negado: Esta funcionalidade está disponível apenas para usuários Premium. Faça upgrade do seu plano para continuar.'
           }]);
-        } else if (error.message === 'DAILY_LIMIT_REACHED') {
+        } else if (data?.error === 'DAILY_LIMIT_REACHED' || error.message === 'DAILY_LIMIT_REACHED') {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
             message: 'Limite diário de IA atingido. Você pode tentar novamente amanhã ou fazer upgrade do seu plano para ter mais acesso.'
+          }]);
+        } else if (data?.error === 'TOKEN_LIMIT_WOULD_EXCEED') {
+          setChatHistory(prev => [...prev, { 
+            role: 'ai', 
+            message: `Esta consulta excederia seu limite diário de tokens. Tente uma pergunta mais curta ou aguarde até amanhã.`
+          }]);
+        } else if (data?.error === 'OPENAI_API_ERROR') {
+          setChatHistory(prev => [...prev, { 
+            role: 'ai', 
+            message: 'Não foi possível processar sua solicitação no momento. Tente novamente em alguns minutos.'
           }]);
         } else {
           throw error;
