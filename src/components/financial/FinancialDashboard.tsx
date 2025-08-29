@@ -394,12 +394,13 @@ export const FinancialDashboard = () => {
               {/* WhatsApp Smart - Automação */}
               <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg max-w-xs">
                 <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-green-500" />
                   <span className="text-xs text-green-400 font-medium">
-                    📱 WhatsApp Smart: (11) 98806-6403
+                    WhatsApp Smart: (11) 98806-6403
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground/70 mt-1">
-                  Envie suas despesas para nossa automação
+                  Envie suas despesas para nossa IA
                 </p>
               </div>
             </div>
