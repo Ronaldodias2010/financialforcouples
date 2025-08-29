@@ -47,7 +47,7 @@ interface Transaction {
 
 export const FinancialDashboard = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsBalance, getTransactionsIncome, getTransactionsExpenses } = useFinancialData();
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
@@ -396,11 +396,19 @@ export const FinancialDashboard = () => {
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-green-500" />
                   <span className="text-xs text-green-400 font-medium">
-                    WhatsApp Smart: (11) 98806-6403
+                    {language === 'pt' 
+                      ? 'WhatsApp Smart: (11) 98806-6403'
+                      : 'WhatsApp Smart: +55(11) 98806-6403'
+                    }
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground/70 mt-1">
-                  Envie suas despesas para nossa IA
+                  {language === 'pt' 
+                    ? 'Envie suas despesas para nossa IA'
+                    : language === 'es'
+                    ? 'Envía tus gastos a nuestra IA'
+                    : 'Send your expenses to our AI'
+                  }
                 </p>
               </div>
             </div>
