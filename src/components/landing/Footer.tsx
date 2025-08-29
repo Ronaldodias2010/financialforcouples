@@ -2,6 +2,7 @@ import { Heart, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import logo from "/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
+import { openWhatsApp } from "@/utils/whatsapp";
 
 const Footer = () => {
   const { t, language } = useLanguage();
@@ -65,7 +66,10 @@ const Footer = () => {
                 <Phone className="w-4 h-4" />
                 <span>{contactInfo.phone}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <button 
+                onClick={() => openWhatsApp(t('whatsapp.defaultMessage'))}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+              >
                 <MessageCircle className="w-4 h-4 text-green-500" />
                 <span className="text-green-400">
                   {language === 'pt' 
@@ -73,7 +77,7 @@ const Footer = () => {
                     : 'WhatsApp Smart +55(11) 98806-6403'
                   }
                 </span>
-              </div>
+              </button>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 <span>{contactInfo.location}</span>

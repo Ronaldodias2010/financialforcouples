@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { MessageCircle, Mic, Sparkles, Zap, BarChart3 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import whatsappChat from "@/assets/whatsapp-chat.jpg";
+import { openWhatsApp } from "@/utils/whatsapp";
 
 const WhatsAppSection = () => {
   const { t } = useLanguage();
@@ -129,7 +130,11 @@ const WhatsAppSection = () => {
             </div>
             
             {/* CTA */}
-            <Button size="lg" className="bg-[#25D366] hover:bg-[#1DA851] text-white w-full sm:w-auto">
+            <Button 
+              size="lg" 
+              className="bg-[#25D366] hover:bg-[#1DA851] text-white w-full sm:w-auto"
+              onClick={() => openWhatsApp(t('whatsapp.defaultMessage'))}
+            >
               <MessageCircle className="w-5 h-5" />
               {t('whatsapp.cta')}
             </Button>

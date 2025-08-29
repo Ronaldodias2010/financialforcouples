@@ -725,10 +725,11 @@ const translations = {
     'whatsapp.feature1': 'Registro mais rápido que digitar',
     'whatsapp.feature2': 'Funciona enquanto você está ocupado',
     'whatsapp.feature3': 'Dados mais precisos e organizados',
-    'whatsapp.naturalLanguage': 'IA entende linguagem natural',
-    'whatsapp.recording': 'Gravando...',
-    'whatsapp.cta': 'Experimentar no WhatsApp',
-    'whatsapp.imageAlt': 'Chat do WhatsApp com assistente financeiro',
+     'whatsapp.naturalLanguage': 'IA entende linguagem natural',
+     'whatsapp.recording': 'Gravando...',
+     'whatsapp.cta': 'Experimentar no WhatsApp',
+     'whatsapp.imageAlt': 'Chat do WhatsApp com assistente financeiro',
+     'whatsapp.defaultMessage': 'Olá! Gostaria de saber mais sobre o Couples Financials e como posso registrar meus gastos por voz.',
     
     // AI Section for Landing Page
     'aiSection.badge': 'Nova Funcionalidade',
@@ -1945,10 +1946,11 @@ const translations = {
     'whatsapp.feature1': 'Faster than typing',
     'whatsapp.feature2': 'Works while you are busy',
     'whatsapp.feature3': 'More accurate and organized data',
-    'whatsapp.naturalLanguage': 'AI understands natural language',
-    'whatsapp.recording': 'Recording...',
-    'whatsapp.cta': 'Try on WhatsApp',
-    'whatsapp.imageAlt': 'WhatsApp chat with financial assistant',
+     'whatsapp.naturalLanguage': 'AI understands natural language',
+     'whatsapp.recording': 'Recording...',
+     'whatsapp.cta': 'Try on WhatsApp',
+     'whatsapp.imageAlt': 'WhatsApp chat with financial assistant',
+     'whatsapp.defaultMessage': 'Hello! I would like to know more about Couples Financials and how I can record my expenses by voice.',
     
     // AI Section for Landing Page
     'aiSection.badge': 'New Feature',
@@ -3156,10 +3158,11 @@ const translations = {
     'whatsapp.feature1': 'Más rápido que escribir',
     'whatsapp.feature2': 'Funciona mientras estás ocupado',
     'whatsapp.feature3': 'Datos más precisos y organizados',
-    'whatsapp.naturalLanguage': 'IA entiende lenguaje natural',
-    'whatsapp.recording': 'Grabando...',
-    'whatsapp.cta': 'Probar en WhatsApp',
-    'whatsapp.imageAlt': 'Chat de WhatsApp con asistente financiero',
+     'whatsapp.naturalLanguage': 'IA entiende lenguaje natural',
+     'whatsapp.recording': 'Grabando...',
+     'whatsapp.cta': 'Probar en WhatsApp',
+     'whatsapp.imageAlt': 'Chat de WhatsApp con asistente financiero',
+     'whatsapp.defaultMessage': '¡Hola! Me gustaría saber más sobre Couples Financials y cómo puedo registrar mis gastos por voz.',
     
     // AI Section for Landing Page
     'aiSection.badge': 'Nueva Funcionalidad',
