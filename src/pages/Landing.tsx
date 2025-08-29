@@ -26,9 +26,9 @@ const Landing = () => {
         <BenefitsSection />
         <AppDemoSection />
         <PricingSection />
-        <SecuritySection />
         <WhatsAppSection />
         <AIRecommendationsSection />
+        <SecuritySection />
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-muted/30 h-32"></div>
           <div className="relative flex justify-center py-8">
