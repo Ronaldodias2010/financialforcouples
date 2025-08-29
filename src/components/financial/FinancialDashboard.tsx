@@ -386,21 +386,22 @@ export const FinancialDashboard = () => {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="flex justify-between items-start mb-2">
-            <div className="text-sm text-muted-foreground">
-              👤 {user?.email} | Status: {subscribed ? 'Premium' : 'Essential'}
-            </div>
-            
-            {/* WhatsApp Smart - Automação */}
-            <div className="mt-2 p-2 bg-green-500/10 border border-green-500/20 rounded-lg max-w-md mx-auto">
-              <div className="flex items-center justify-center gap-2">
-                <MessageCircle className="w-4 h-4 text-green-500" />
-                <span className="text-xs text-green-400 font-medium">
-                  📱 WhatsApp Smart: (11) 98806-6403
-                </span>
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                👤 {user?.email} | Status: {subscribed ? 'Premium' : 'Essential'}
               </div>
-              <p className="text-xs text-center text-muted-foreground/70 mt-1">
-                Envie suas despesas para nossa automação
-              </p>
+              
+              {/* WhatsApp Smart - Automação */}
+              <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg max-w-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-green-400 font-medium">
+                    📱 WhatsApp Smart: (11) 98806-6403
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  Envie suas despesas para nossa automação
+                </p>
+              </div>
             </div>
             <div className="flex gap-2">
               {/* TEMPORARIAMENTE REMOVIDO: <ThemeSwitcher /> */}
