@@ -69,7 +69,7 @@ const Footer = () => {
                 <MessageCircle className="w-4 h-4 text-green-500" />
                 <span className="text-green-400">
                   {language === 'pt' 
-                    ? 'WhatsApp Inteligente (11) 98806-6403'
+                    ? 'WhatsApp Smart (11) 98806-6403'
                     : 'WhatsApp Smart +55(11) 98806-6403'
                   }
                 </span>
