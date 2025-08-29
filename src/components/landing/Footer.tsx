@@ -72,19 +72,19 @@ const Footer = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <MessageCircle className="w-5 h-5 text-green-500" />
                   <span className="text-green-400 font-semibold text-sm">
-                    {language === 'pt' ? 'Automação WhatsApp' : 'WhatsApp Automation'}
+                    IA WhatsApp
                   </span>
                 </div>
                 <p className="text-xs text-background/70 mb-2">
                   {language === 'pt' 
-                    ? 'Envie suas despesas diretamente para nosso WhatsApp Smart:'
-                    : 'Send your expenses directly to our Smart WhatsApp:'
+                    ? 'Envie suas despesas para nossa IA WhatsApp Smart'
+                    : 'Send your expenses to our AI WhatsApp Smart'
                   }
                 </p>
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-green-500" />
                   <span className="text-green-300 font-mono text-sm font-bold">
-                    (11) 98806-6403
+                    {language === 'pt' ? '(11) 98806-6403' : '+55(11) 98806-6403'}
                   </span>
                 </div>
               </div>
