@@ -18,14 +18,14 @@ import { AIHistorySection } from "./AIHistorySection";
 import { EducationalContentSection } from "@/components/educational/EducationalContentSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useUserNames } from "@/hooks/useUserNames";
+import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useAuth } from "@/hooks/useAuth";
 import { exportCashFlow, exportConsolidatedExpenses, exportConsolidatedRevenues, exportTaxReport } from "@/utils/exportUtils";
 
 const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const { userNames } = useUserNames();
+  const { names } = usePartnerNames();
   const { user } = useAuth();
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>(); 
@@ -327,8 +327,8 @@ const AIRecommendationsContent = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="both">{t('aiRecommendations.both')}</SelectItem>
-                    <SelectItem value="user1">{userNames.user1}</SelectItem>
-                    <SelectItem value="user2">{userNames.user2}</SelectItem>
+                    <SelectItem value="user1">{names.user1Name}</SelectItem>
+                    <SelectItem value="user2">{names.user2Name}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
