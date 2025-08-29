@@ -701,6 +701,7 @@ export type Database = {
           end_date: string
           id: string
           ip_address: string | null
+          language_preference: string | null
           start_date: string
           status: string
           temp_password_hash: string | null
@@ -717,6 +718,7 @@ export type Database = {
           end_date: string
           id?: string
           ip_address?: string | null
+          language_preference?: string | null
           start_date?: string
           status?: string
           temp_password_hash?: string | null
@@ -733,6 +735,7 @@ export type Database = {
           end_date?: string
           id?: string
           ip_address?: string | null
+          language_preference?: string | null
           start_date?: string
           status?: string
           temp_password_hash?: string | null
@@ -913,6 +916,39 @@ export type Database = {
           verification_code?: string
           verified?: boolean | null
           verified_at?: string | null
+        }
+        Relationships: []
+      }
+      premium_expiration_emails: {
+        Row: {
+          created_at: string
+          email: string
+          expiration_date: string
+          id: string
+          language: string
+          sent_at: string
+          user_id: string
+          warning_type: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expiration_date: string
+          id?: string
+          language?: string
+          sent_at?: string
+          user_id: string
+          warning_type: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expiration_date?: string
+          id?: string
+          language?: string
+          sent_at?: string
+          user_id?: string
+          warning_type?: string
         }
         Relationships: []
       }
@@ -1391,6 +1427,16 @@ export type Database = {
           tokens_used: number
         }[]
       }
+      get_users_near_expiration: {
+        Args: { days_before: number }
+        Returns: {
+          days_until_expiration: number
+          email: string
+          end_date: string
+          language_preference: string
+          user_id: string
+        }[]
+      }
       hash_temp_password: {
         Args: { password: string }
         Returns: string
@@ -1398,6 +1444,16 @@ export type Database = {
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      mark_expiration_email_sent: {
+        Args: {
+          p_email: string
+          p_expiration_date: string
+          p_language?: string
+          p_user_id: string
+          p_warning_type: string
+        }
+        Returns: undefined
       }
       normalize_text_simple: {
         Args: { input: string }
