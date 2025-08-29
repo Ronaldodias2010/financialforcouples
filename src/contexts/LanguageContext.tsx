@@ -730,6 +730,8 @@ const translations = {
      'whatsapp.cta': 'Experimentar no WhatsApp',
      'whatsapp.imageAlt': 'Chat do WhatsApp com assistente financeiro',
      'whatsapp.defaultMessage': 'Olá! Gostaria de saber mais sobre o Couples Financials e como posso registrar meus gastos por voz.',
+     'whatsapp.welcomeFooter': '👋 Olá! Vi que você está interessado no Couples Financials. Como posso te ajudar a começar a gerenciar suas finanças de forma inteligente?',
+     'whatsapp.welcomeButton': '🎉 Oi! Quero experimentar o controle por voz do Couples Financials. Como funciona para registrar meus gastos falando?',
     
     // AI Section for Landing Page
     'aiSection.badge': 'Nova Funcionalidade',
@@ -1951,6 +1953,8 @@ const translations = {
      'whatsapp.cta': 'Try on WhatsApp',
      'whatsapp.imageAlt': 'WhatsApp chat with financial assistant',
      'whatsapp.defaultMessage': 'Hello! I would like to know more about Couples Financials and how I can record my expenses by voice.',
+     'whatsapp.welcomeFooter': '👋 Hello! I see you are interested in Couples Financials. How can I help you start managing your finances intelligently?',
+     'whatsapp.welcomeButton': '🎉 Hi! I want to try the voice control of Couples Financials. How does it work to record my expenses by speaking?',
     
     // AI Section for Landing Page
     'aiSection.badge': 'New Feature',
@@ -3163,6 +3167,8 @@ const translations = {
      'whatsapp.cta': 'Probar en WhatsApp',
      'whatsapp.imageAlt': 'Chat de WhatsApp con asistente financiero',
      'whatsapp.defaultMessage': '¡Hola! Me gustaría saber más sobre Couples Financials y cómo puedo registrar mis gastos por voz.',
+     'whatsapp.welcomeFooter': '👋 ¡Hola! Veo que estás interesado en Couples Financials. ¿Cómo puedo ayudarte a comenzar a gestionar tus finanzas de manera inteligente?',
+     'whatsapp.welcomeButton': '🎉 ¡Hola! Quiero probar el control por voz de Couples Financials. ¿Cómo funciona para registrar mis gastos hablando?',
     
     // AI Section for Landing Page
     'aiSection.badge': 'Nueva Funcionalidad',

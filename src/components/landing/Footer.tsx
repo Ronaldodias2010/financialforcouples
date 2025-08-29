@@ -67,7 +67,7 @@ const Footer = () => {
                 <span>{contactInfo.phone}</span>
               </div>
               <button 
-                onClick={() => openWhatsApp(t('whatsapp.defaultMessage'))}
+                onClick={() => openWhatsApp(t("whatsapp.welcomeFooter"))}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-green-500" />

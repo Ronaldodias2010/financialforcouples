@@ -133,7 +133,7 @@ const WhatsAppSection = () => {
             <Button 
               size="lg" 
               className="bg-[#25D366] hover:bg-[#1DA851] text-white w-full sm:w-auto"
-              onClick={() => openWhatsApp(t('whatsapp.defaultMessage'))}
+              onClick={() => openWhatsApp(t("whatsapp.welcomeButton"))}
             >
               <MessageCircle className="w-5 h-5" />
               {t('whatsapp.cta')}
