@@ -44,20 +44,21 @@ const AppDashboard = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex justify-end items-center">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
             {isAdmin && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => navigate('/')}
+                className="hidden sm:flex"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar à Landing
               </Button>
             )}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <User className="h-4 w-4" />
-              <span>{displayName}</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
+              <User className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate max-w-[100px] sm:max-w-none">{displayName}</span>
             </div>
             <Button 
               variant="outline" 
