@@ -2,6 +2,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import BenefitsSection from "@/components/landing/BenefitsSection";
 import AppDemoSection from "@/components/landing/AppDemoSection";
 import PricingSection from "@/components/landing/PricingSection";
+import SecuritySection from "@/components/landing/SecuritySection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import WhatsAppSection from "@/components/landing/WhatsAppSection";
 import AIRecommendationsSection from "@/components/landing/AIRecommendationsSection";
@@ -25,6 +26,7 @@ const Landing = () => {
         <BenefitsSection />
         <AppDemoSection />
         <PricingSection />
+        <SecuritySection />
         <WhatsAppSection />
         <AIRecommendationsSection />
         <div className="relative">
