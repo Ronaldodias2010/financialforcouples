@@ -3,12 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, HelpCircle } from "lucide-react";
 
 interface Category {
   id: string;
@@ -16,11 +18,13 @@ interface Category {
   color?: string;
   icon?: string;
   category_type: "income" | "expense";
+  description?: string;
 }
 
 export const CategoryManager = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryDescription, setNewCategoryDescription] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState("#6366f1");
   const [newCategoryType, setNewCategoryType] = useState<"income" | "expense">("expense");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
@@ -242,7 +246,7 @@ export const CategoryManager = () => {
 
       let query = supabase
         .from('categories')
-        .select('id, name, color, icon, category_type, user_id')
+        .select('id, name, color, icon, category_type, description, user_id')
         .eq('user_id', user.id)
         .order('name');
       
@@ -355,6 +359,7 @@ export const CategoryManager = () => {
             name: trimmedName,
             color: newCategoryColor,
             category_type: newCategoryType,
+            description: newCategoryDescription.trim() || null,
           })
           .eq('id', editingCategory.id);
 
@@ -393,6 +398,7 @@ export const CategoryManager = () => {
             name: finalName,
             color: newCategoryColor,
             category_type: newCategoryType,
+            description: newCategoryDescription.trim() || null,
             user_id: user.id,
           });
 
@@ -406,6 +412,7 @@ export const CategoryManager = () => {
 
       // Reset form and refresh list
       setNewCategoryName("");
+      setNewCategoryDescription("");
       setNewCategoryColor("#6366f1");
       setNewCategoryType("expense");
       setEditingCategory(null);
@@ -423,6 +430,7 @@ export const CategoryManager = () => {
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setNewCategoryName(category.name);
+    setNewCategoryDescription(category.description || "");
     setNewCategoryColor(category.color || "#6366f1");
     setNewCategoryType(category.category_type);
     setIsDialogOpen(true);
@@ -454,6 +462,7 @@ export const CategoryManager = () => {
 
   const resetForm = () => {
     setNewCategoryName("");
+    setNewCategoryDescription("");
     setNewCategoryColor("#6366f1");
     setNewCategoryType("expense");
     setEditingCategory(null);
@@ -503,6 +512,29 @@ export const CategoryManager = () => {
                     onChange={(e) => setNewCategoryName(e.target.value)}
                     placeholder={t('categories.placeholder')}
                     required
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="categoryDescription">{t('categories.description')}</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t('categories.descriptionTooltip')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Textarea
+                    id="categoryDescription"
+                    value={newCategoryDescription}
+                    onChange={(e) => setNewCategoryDescription(e.target.value)}
+                    placeholder={t('categories.descriptionPlaceholder')}
+                    rows={3}
                   />
                 </div>
                 
@@ -572,7 +604,17 @@ export const CategoryManager = () => {
                     className="w-4 h-4 rounded-full border"
                     style={{ backgroundColor: category.color || "#6366f1" }}
                   />
-                  <span className="font-medium">{translateCategoryName(category.name, language as 'pt' | 'en' | 'es')}</span>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{translateCategoryName(category.name, language as 'pt' | 'en' | 'es')}</span>
+                    {category.description && (
+                      <span className="text-xs text-muted-foreground">
+                        {category.description.length > 60 
+                          ? category.description.slice(0, 60) + '...' 
+                          : category.description
+                        }
+                      </span>
+                    )}
+                  </div>
                   <span className="text-xs px-2 py-1 rounded-full bg-muted">
                     {category.category_type === 'income' ? t('categories.type.income') : t('categories.type.expense')}
                   </span>

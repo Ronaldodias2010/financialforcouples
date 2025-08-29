@@ -284,6 +284,7 @@ export type Database = {
           category_type: string
           color: string | null
           created_at: string
+          description: string | null
           icon: string | null
           id: string
           name: string
@@ -295,6 +296,7 @@ export type Database = {
           category_type?: string
           color?: string | null
           created_at?: string
+          description?: string | null
           icon?: string | null
           id?: string
           name: string
@@ -306,6 +308,7 @@ export type Database = {
           category_type?: string
           color?: string | null
           created_at?: string
+          description?: string | null
           icon?: string | null
           id?: string
           name?: string
@@ -398,6 +401,9 @@ export type Database = {
           category_type: string
           color: string
           created_at: string
+          description_en: string | null
+          description_es: string | null
+          description_pt: string | null
           icon: string | null
           id: string
           name_en: string
@@ -408,6 +414,9 @@ export type Database = {
           category_type: string
           color?: string
           created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          description_pt?: string | null
           icon?: string | null
           id?: string
           name_en: string
@@ -418,6 +427,9 @@ export type Database = {
           category_type?: string
           color?: string
           created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          description_pt?: string | null
           icon?: string | null
           id?: string
           name_en?: string
@@ -1330,8 +1342,11 @@ export type Database = {
       auto_translate_category_name: {
         Args: { from_lang?: string; input_name: string }
         Returns: {
+          en_description: string
           en_name: string
+          es_description: string
           es_name: string
+          pt_description: string
           pt_name: string
         }[]
       }

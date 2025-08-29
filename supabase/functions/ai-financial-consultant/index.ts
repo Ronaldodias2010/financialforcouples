@@ -628,6 +628,30 @@ function generateFinancialContext(data: FinancialData, language: 'pt' | 'en' | '
     context += generateIndividualContext(data, language, formatCurrency, formatMiles);
   }
 
+  // Categories with descriptions for AI context
+  if (data.categories && data.categories.length > 0) {
+    context += language === 'pt' 
+      ? '\nCATEGORIAS DISPONÍVEIS:\n'
+      : language === 'en' 
+      ? '\nAVAILABLE CATEGORIES:\n'
+      : '\nCATEGORÍAS DISPONIBLES:\n';
+    
+    data.categories.forEach(category => {
+      const typeLabel = language === 'pt' 
+        ? (category.category_type === 'income' ? 'Receita' : 'Despesa')
+        : language === 'en' 
+        ? (category.category_type === 'income' ? 'Income' : 'Expense')
+        : (category.category_type === 'income' ? 'Ingreso' : 'Gasto');
+      
+      context += `- ${category.name} (${typeLabel})`;
+      if (category.description) {
+        context += `: ${category.description}`;
+      }
+      context += '\n';
+    });
+    context += '\n';
+  }
+  
   return context;
 }
 
@@ -939,8 +963,29 @@ function generateIndividualContext(
       : `No hay gastos recurrentes activos registrados.\n`;
   }
 
-  return context;
-}
+  // Categories with descriptions for AI context
+  if (data.categories && data.categories.length > 0) {
+    context += language === 'pt' 
+      ? '\nCATEGORIAS DISPONÍVEIS:\n'
+      : language === 'en' 
+      ? '\nAVAILABLE CATEGORIES:\n'
+      : '\nCATEGORÍAS DISPONIBLES:\n';
+    
+    data.categories.forEach(category => {
+      const typeLabel = language === 'pt' 
+        ? (category.category_type === 'income' ? 'Receita' : 'Despesa')
+        : language === 'en' 
+        ? (category.category_type === 'income' ? 'Income' : 'Expense')
+        : (category.category_type === 'income' ? 'Ingreso' : 'Gasto');
+      
+      context += `- ${category.name} (${typeLabel})`;
+      if (category.description) {
+        context += `: ${category.description}`;
+      }
+      context += '\n';
+    });
+    context += '\n';
+  }
 
 async function saveToAIHistory(supabase: any, userId: string, entryType: string, message: string) {
   try {
