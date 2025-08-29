@@ -87,27 +87,35 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
         .select('*')
         .eq('subscription_tier', 'essential');
 
+      // Excluir usuários com acesso manual ativo
+      const { data: manualAccessUsers } = await supabase
+        .from('manual_premium_access')
+        .select('user_id')
+        .eq('status', 'active');
+      
+      const manualAccessUserIds = manualAccessUsers?.map(m => m.user_id) || [];
+      
+      // Filtrar usuários que não têm acesso manual
+      const filteredSubscribers = subscribersData?.filter(sub => 
+        !manualAccessUserIds.includes(sub.user_id)
+      ) || [];
+
       if (subscribersError) {
         console.error('❌ Error fetching subscribers:', subscribersError);
         throw subscribersError;
       }
 
-      console.log('📊 Subscribers data from DB:', subscribersData);
-      console.log('📊 Subscribers count:', subscribersData?.length || 0);
+      console.log('📊 Filtered subscribers data (excluding manual access):', filteredSubscribers);
+      console.log('📊 Essential users count (excluding manual access):', filteredSubscribers?.length || 0);
 
-      if (!subscribersData || subscribersData.length === 0) {
-        console.log('⚠️ No essential subscribers found. Trying to fetch all subscribers to debug...');
-        
-        // Debug: buscar todos os subscribers para ver o que tem
-        const { data: allSubs } = await supabase.from('subscribers').select('*');
-        console.log('🔍 All subscribers for debug:', allSubs);
-        
+      if (!filteredSubscribers || filteredSubscribers.length === 0) {
+        console.log('⚠️ No essential subscribers found after filtering manual access users.');
         setUsers([]);
         return;
       }
 
       // Depois buscar os perfis correspondentes
-      const userIds = subscribersData?.map(sub => sub.user_id) || [];
+      const userIds = filteredSubscribers?.map(sub => sub.user_id) || [];
       console.log('👥 User IDs to fetch profiles for:', userIds);
       
       let profilesData: any[] = [];
@@ -130,7 +138,7 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
       console.log('👤 Profiles data:', profilesData);
 
       // Combinar dados dos subscribers com profiles e buscar casais
-      const usersWithNames = await Promise.all(subscribersData?.map(async (subscriber) => {
+      const usersWithNames = await Promise.all(filteredSubscribers?.map(async (subscriber) => {
         const profile = profilesData?.find(p => p.user_id === subscriber.user_id);
         
         // Verificar se o usuário tem casal (abordagem simplificada)

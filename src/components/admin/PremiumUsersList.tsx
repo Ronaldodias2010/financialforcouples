@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Crown } from 'lucide-react';
+import { ManualAccessBadge } from './ManualAccessBadge';
 
 interface PremiumUserData {
   email: string;
@@ -12,6 +13,8 @@ interface PremiumUserData {
   user_id: string;
   isCoupled?: boolean;
   partnerName?: string;
+  isManualAccess?: boolean;
+  accessSource?: 'stripe' | 'manual';
 }
 
 interface PremiumUsersListProps {
@@ -29,7 +32,8 @@ const text = {
     plan: 'Plan',
     active: 'Active',
     inactive: 'Inactive',
-    coupled: 'Coupled'
+    coupled: 'Coupled',
+    source: 'Source'
   },
   pt: {
     title: 'Usuários Premium',
@@ -41,7 +45,8 @@ const text = {
     plan: 'Plano',
     active: 'Ativo',
     inactive: 'Inativo',
-    coupled: 'Casal'
+    coupled: 'Casal',
+    source: 'Origem'
   }
 };
 
@@ -64,16 +69,28 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
 
       const userIds = premiumSubscribers?.map((s: any) => s.user_id) || [];
       let profiles: any[] = [];
+      let manualAccessUsers: any[] = [];
+      
       if (userIds.length) {
         const { data: profs } = await supabase
           .from('profiles')
           .select('user_id, display_name')
           .in('user_id', userIds);
         profiles = profs || [];
+
+        // Check for manual premium access
+        const { data: manualAccess } = await supabase
+          .from('manual_premium_access')
+          .select('user_id, email, status, end_date')
+          .in('user_id', userIds)
+          .eq('status', 'active');
+        manualAccessUsers = manualAccess || [];
       }
 
       const enriched = await Promise.all((premiumSubscribers || []).map(async (s: any) => {
         const profile = profiles.find(p => p.user_id === s.user_id);
+        const manualAccess = manualAccessUsers.find(m => m.user_id === s.user_id);
+        
         const { data: couple } = await supabase
           .from('user_couples')
           .select('user1_id, user2_id')
@@ -92,6 +109,7 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
             .maybeSingle();
           partnerName = partnerProfile?.display_name || 'Parceiro';
         }
+        
         return {
           user_id: s.user_id,
           email: s.email,
@@ -99,7 +117,9 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
           subscribed: s.subscribed,
           subscription_tier: s.subscription_tier,
           isCoupled,
-          partnerName
+          partnerName,
+          isManualAccess: !!manualAccess,
+          accessSource: manualAccess ? 'manual' : 'stripe'
         } as PremiumUserData;
       }));
 
@@ -149,6 +169,7 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.email}</th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.status}</th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.plan}</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.source}</th>
                 </tr>
               </thead>
               <tbody>
@@ -173,6 +194,23 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                     </td>
                     <td className="p-4 align-middle">
                       <Badge variant="outline">{u.subscription_tier}</Badge>
+                    </td>
+                    <td className="p-4 align-middle">
+                      {u.isManualAccess ? (
+                        <ManualAccessBadge 
+                          language={language} 
+                          userId={u.user_id}
+                          onViewDetails={() => {
+                            // Navigate to manual access tab
+                            const event = new CustomEvent('navigateToManualAccess', { 
+                              detail: { userId: u.user_id } 
+                            });
+                            window.dispatchEvent(event);
+                          }}
+                        />
+                      ) : (
+                        <Badge variant="success">Stripe</Badge>
+                      )}
                     </td>
                   </tr>
                 ))}
