@@ -4,10 +4,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AIBetaModal from "@/components/landing/AIBetaModal";
+import PWAInstallModal from "@/components/landing/PWAInstallModal";
 
 const FinalCTASection = () => {
   const { t } = useLanguage();
   const [aiBetaOpen, setAiBetaOpen] = useState(false);
+  const [pwaModalOpen, setPwaModalOpen] = useState(false);
 
   return (
     <section className="py-20 bg-hero-gradient relative overflow-hidden">
@@ -60,7 +62,12 @@ const FinalCTASection = () => {
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" variant="secondary" className="group min-w-64">
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="group min-w-64"
+              onClick={() => setPwaModalOpen(true)}
+            >
               <Download className="w-5 h-5 group-hover:animate-bounce" />
               {t('finalcta.free')}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -105,6 +112,7 @@ const FinalCTASection = () => {
       </div>
       
       <AIBetaModal open={aiBetaOpen} onOpenChange={setAiBetaOpen} />
+      <PWAInstallModal open={pwaModalOpen} onOpenChange={setPwaModalOpen} />
     </section>
   );
 };
