@@ -66,18 +66,6 @@ const Footer = () => {
                 <Phone className="w-4 h-4" />
                 <span>{contactInfo.phone}</span>
               </div>
-              <button 
-                onClick={() => openWhatsApp(t("whatsapp.welcomeFooter"))}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-              >
-                <MessageCircle className="w-4 h-4 text-green-500" />
-                <span className="text-green-400">
-                  {language === 'pt' 
-                    ? 'WhatsApp Smart (11) 98806-6403'
-                    : 'WhatsApp Smart +55(11) 98806-6403'
-                  }
-                </span>
-              </button>
               
               {/* WhatsApp Smart destacado */}
               <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
