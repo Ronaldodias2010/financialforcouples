@@ -35,9 +35,9 @@ export const ExportSelector: React.FC<ExportSelectorProps> = ({
   };
 
   return (
-    <div className={`flex gap-2 items-center ${className}`}>
+    <div className={`flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto ${className}`}>
       <Select value={selectedFormat} onValueChange={(value: ExportFormat) => setSelectedFormat(value)}>
-        <SelectTrigger className="w-32">
+        <SelectTrigger className="w-full sm:w-32">
           <SelectValue placeholder={t('export.selectFormat')} />
         </SelectTrigger>
         <SelectContent>
@@ -66,7 +66,7 @@ export const ExportSelector: React.FC<ExportSelectorProps> = ({
         onClick={handleExport}
         disabled={disabled || isExporting}
         size="sm"
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 w-full sm:w-auto"
       >
         {isExporting ? (
           <Loader2 className="h-4 w-4 animate-spin" />
