@@ -58,7 +58,7 @@ const SecuritySection = () => {
             {t('security.badge')}
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 py-2 leading-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
             {t('security.title')}
           </h2>
           
