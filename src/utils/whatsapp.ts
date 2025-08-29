@@ -35,19 +35,17 @@ export const openWhatsApp = async (message?: string) => {
   const fallbackUrls: string[] = [];
   
   if (isMobile) {
-    // Mobile: Try native app first, then web versions
+    // Mobile: Try native app first, then wa.me
     fallbackUrls.push(
       `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`,
       `https://wa.me/${phoneNumber}?text=${encodedMessage}`,
-      `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`,
-      `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`
+      `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`
     );
   } else {
-    // Desktop: Try web versions
+    // Desktop: Prioritize web.whatsapp.com over wa.me
     fallbackUrls.push(
-      `https://wa.me/${phoneNumber}?text=${encodedMessage}`,
       `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`,
-      `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`
+      `https://wa.me/${phoneNumber}?text=${encodedMessage}`
     );
   }
   
