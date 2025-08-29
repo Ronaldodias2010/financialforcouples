@@ -12,12 +12,21 @@ concurrency:
   group: deploy-${{ github.ref_name }}
   cancel-in-progress: true
 
+# Configurações globais para resiliência
+defaults:
+  run:
+    shell: bash
+    
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: couples-financials
   ECS_SERVICE: couples-financials
   ECS_CLUSTER: couples-financials-cluster
   CONTAINER_NAME: couples-financials
+  # Configurações Git para resiliência
+  GIT_CURL_VERBOSE: 1
+  GIT_TRACE_CURL: 1
+  GIT_HTTP_TIMEOUT: 300
 
 jobs:
   # Job de testes e validação
@@ -29,6 +38,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        timeout: 300
+      env:
+        GIT_CURL_VERBOSE: 1
+        GIT_TRACE_CURL: 1
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -68,6 +83,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        timeout: 300
+      env:
+        GIT_CURL_VERBOSE: 1
+        GIT_TRACE_CURL: 1
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -122,6 +143,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        timeout: 300
+      env:
+        GIT_CURL_VERBOSE: 1
+        GIT_TRACE_CURL: 1
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -259,6 +286,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        timeout: 300
+      env:
+        GIT_CURL_VERBOSE: 1
+        GIT_TRACE_CURL: 1
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
