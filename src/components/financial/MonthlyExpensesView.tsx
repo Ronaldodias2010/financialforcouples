@@ -16,9 +16,7 @@ import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
 import { formatLocalDate, getLocaleForLanguage } from "@/utils/date";
-import { Download, FileText } from "lucide-react";
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { ExportUtils } from "./ExportUtils";
 
 interface Transaction {
   id: string;
@@ -303,129 +301,6 @@ if (selectedCategory !== "all") {
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const exportToCSV = () => {
-    if (transactions.length === 0) {
-      toast({
-        title: "Aviso",
-        description: "Não há transações para exportar",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const headers = [
-      'Data',
-      'Descrição',
-      'Categoria',
-      'Subcategoria',
-      'Realizado por',
-      'Pagamento',
-      'Conta/Cartão',
-      'Valor'
-    ];
-
-    const csvData = transactions.map(transaction => [
-      formatDate(transaction.purchase_date || transaction.created_at?.split('T')[0] || transaction.transaction_date),
-      transaction.description,
-      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
-      transaction.subcategory || '',
-      getUserName(transaction.owner_user || 'user1'),
-      getPaymentMethodText(transaction.payment_method),
-      transaction.cards?.name || transaction.accounts?.name || '',
-      formatCurrency(transaction.amount)
-    ]);
-
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const monthDate = new Date(year, month - 1, 1);
-    const monthLabel = format(monthDate, "MMMM-yyyy", { locale: getLocale() });
-    const categoryLabel = selectedCategory === 'all' ? 'todas-categorias' : selectedCategory;
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `gastos-${monthLabel}-${categoryLabel}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast({
-      title: "Sucesso",
-      description: "Arquivo CSV exportado com sucesso",
-    });
-  };
-
-  const exportToPDF = () => {
-    if (transactions.length === 0) {
-      toast({
-        title: "Aviso",
-        description: "Não há transações para exportar",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const doc = new jsPDF();
-    
-    // Título
-    doc.setFontSize(16);
-    doc.text(t('monthlyExpenses.pdfTitle'), 14, 20);
-    
-    // Informações do período
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const monthDate = new Date(year, month - 1, 1);
-    const labelFormat = language === 'en' ? "MMMM yyyy" : language === 'es' ? "MMMM 'de' yyyy" : "MMMM 'de' yyyy";
-    const monthLabel = format(monthDate, labelFormat, { locale: getLocale() });
-    const categoryLabel = selectedCategory === 'all' ? t('monthlyExpenses.allCategories') : 
-      translateCategoryName(categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory, language as 'pt' | 'en' | 'es');
-    
-    doc.setFontSize(12);
-    doc.text(`${t('monthlyExpenses.pdfPeriod')}: ${monthLabel}`, 14, 30);
-    doc.text(`${t('monthlyExpenses.category')}: ${categoryLabel}`, 14, 38);
-    doc.text(`${t('monthlyExpenses.pdfTotalExpenses')}: ${formatCurrency(totalExpenses)}`, 14, 46);
-    
-    // Tabela com cabeçalhos traduzidos
-    const tableHeaders = [
-      t('monthlyExpenses.date'),
-      t('monthlyExpenses.description'),
-      t('monthlyExpenses.category'),
-      t('monthlyExpenses.pdfUser'),
-      t('monthlyExpenses.pdfPaymentMethod'),
-      t('monthlyExpenses.amount')
-    ];
-    
-    const tableData = transactions.map(transaction => [
-      formatDate(transaction.purchase_date || transaction.created_at?.split('T')[0] || transaction.transaction_date),
-      transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
-      translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
-      getUserName(transaction.owner_user || 'user1'),
-      getPaymentMethodText(transaction.payment_method),
-      formatCurrency(transaction.amount)
-    ]);
-
-    autoTable(doc, {
-      head: [tableHeaders],
-      body: tableData,
-      startY: 55,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [66, 66, 66] },
-    });
-
-    const fileName = `gastos-${format(monthDate, "MMMM-yyyy", { locale: getLocale() })}-${categoryLabel.replace(/\s+/g, '-')}.pdf`;
-    doc.save(fileName);
-
-    toast({
-      title: "Sucesso",
-      description: "Arquivo PDF exportado com sucesso",
-    });
-  };
-
   return (
     <Tabs defaultValue="current" className="space-y-6">
       <TabsList className="grid w-full grid-cols-2">
@@ -493,28 +368,67 @@ if (selectedCategory !== "all") {
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-md font-semibold">{t('monthlyExpenses.periodTransactions')}</h4>
-              {transactions.length > 0 && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={exportToCSV}
-                    className="flex items-center gap-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    CSV
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={exportToPDF}
-                    className="flex items-center gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    PDF
-                  </Button>
-                </div>
-              )}
+              <ExportUtils
+                data={transactions}
+                filename={(() => {
+                  const [year, month] = selectedMonth.split('-').map(Number);
+                  const monthDate = new Date(year, month - 1, 1);
+                  const monthLabel = format(monthDate, "MMMM-yyyy", { locale: getLocale() });
+                  const categoryLabel = selectedCategory === 'all' ? 'todas-categorias' : selectedCategory;
+                  return `gastos-${monthLabel}-${categoryLabel}`;
+                })()}
+                headers={[
+                  t('monthlyExpenses.date'),
+                  t('monthlyExpenses.description'), 
+                  t('monthlyExpenses.category'),
+                  'Subcategoria',
+                  t('monthlyExpenses.performedBy'),
+                  t('monthlyExpenses.payment'),
+                  'Conta/Cartão',
+                  t('monthlyExpenses.amount')
+                ]}
+                tableHeaders={[
+                  t('monthlyExpenses.date'),
+                  t('monthlyExpenses.description'),
+                  t('monthlyExpenses.category'),
+                  t('monthlyExpenses.pdfUser'),
+                  t('monthlyExpenses.pdfPaymentMethod'),
+                  t('monthlyExpenses.amount')
+                ]}
+                formatRowForCSV={(transaction) => [
+                  formatDate(transaction.purchase_date || transaction.transaction_date),
+                  transaction.description,
+                  translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
+                  '',
+                  getUserName(transaction.owner_user || 'user1'),
+                  getPaymentMethodText(transaction.payment_method),
+                  transaction.cards?.name || transaction.accounts?.name || '',
+                  formatCurrency(transaction.amount)
+                ]}
+                formatRowForPDF={(transaction) => [
+                  formatDate(transaction.purchase_date || transaction.transaction_date),
+                  transaction.description.length > 25 ? transaction.description.substring(0, 25) + '...' : transaction.description,
+                  translateCategoryName(transaction.categories?.name || 'N/A', language as 'pt' | 'en' | 'es'),
+                  getUserName(transaction.owner_user || 'user1'),
+                  getPaymentMethodText(transaction.payment_method),
+                  formatCurrency(transaction.amount)
+                ]}
+                title={t('monthlyExpenses.pdfTitle')}
+                additionalInfo={(() => {
+                  const [year, month] = selectedMonth.split('-').map(Number);
+                  const monthDate = new Date(year, month - 1, 1);
+                  const labelFormat = language === 'en' ? "MMMM yyyy" : language === 'es' ? "MMMM 'de' yyyy" : "MMMM 'de' yyyy";
+                  const monthLabel = format(monthDate, labelFormat, { locale: getLocale() });
+                  const categoryLabel = selectedCategory === 'all' ? t('monthlyExpenses.allCategories') : 
+                    translateCategoryName(categoryOptions.find(opt => opt.key === selectedCategory)?.name || selectedCategory, language as 'pt' | 'en' | 'es');
+                  
+                  return [
+                    { label: t('monthlyExpenses.pdfPeriod'), value: monthLabel },
+                    { label: t('monthlyExpenses.category'), value: categoryLabel },
+                    { label: t('monthlyExpenses.pdfTotalExpenses'), value: formatCurrency(totalExpenses) }
+                  ];
+                })()}
+              />
             </div>
             
             {transactions.length === 0 ? (
@@ -558,7 +472,7 @@ if (selectedCategory !== "all") {
                         {transaction.cards?.owner_user && (
                           <p>{t('monthlyExpenses.cardOwner')}: {getCardOwnerName(transaction.cards.owner_user)}</p>
                         )}
-                        <p>{t('monthlyExpenses.purchaseDate')}: {formatDate(transaction.purchase_date || transaction.created_at?.split('T')[0] || transaction.transaction_date)}</p>
+                        <p>{t('monthlyExpenses.purchaseDate')}: {formatDate(transaction.purchase_date || transaction.transaction_date)}</p>
                         {transaction.payment_method === 'credit_card' && (
                           <p>{t('monthlyExpenses.dueDate')}: {formatDate(transaction.transaction_date)}</p>
                         )}

@@ -304,6 +304,19 @@ const translations = {
     'monthlyExpenses.bankAccount': 'Conta Bancária',
     'monthlyExpenses.date': 'Data',
     
+    // Export functionality
+    'export.selectFormat': 'Formato',
+    'export.export': 'Exportar',
+    'export.exporting': 'Exportando...',
+    'export.success.csv': 'Arquivo CSV exportado com sucesso!',
+    'export.success.pdf': 'Arquivo PDF exportado com sucesso!',
+    'export.success.excel': 'Arquivo Excel exportado com sucesso!',
+    'export.error': 'Erro ao exportar arquivo',
+    'export.noData': 'Não há dados para exportar',
+    'export.formats.csv': 'CSV (Comma Separated Values)',
+    'export.formats.pdf': 'PDF (Portable Document Format)', 
+    'export.formats.excel': 'Excel (Planilha Eletrônica)',
+    
     // Future Expenses PDF/CSV Export
     'futureExpenses.description': 'Descrição',
     'futureExpenses.amount': 'Valor',
@@ -320,6 +333,8 @@ const translations = {
     'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
     'monthlyExpenses.pdfUser': 'Usuário',
     'monthlyExpenses.pdfPaymentMethod': 'Forma de Pagamento',
+    'monthlyExpenses.description': 'Descrição',
+    'monthlyExpenses.amount': 'Valor',
     
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
@@ -2448,6 +2463,19 @@ const translations = {
     'aiBeta.waitButton': 'I\'ll wait',
     'aiBeta.emails': 'Our contacts:',
     
+    // Export functionality
+    'export.selectFormat': 'Format',
+    'export.export': 'Export',
+    'export.exporting': 'Exporting...',
+    'export.success.csv': 'CSV file exported successfully!',
+    'export.success.pdf': 'PDF file exported successfully!',
+    'export.success.excel': 'Excel file exported successfully!',
+    'export.error': 'Error exporting file',
+    'export.noData': 'No data to export',
+    'export.formats.csv': 'CSV (Comma Separated Values)',
+    'export.formats.pdf': 'PDF (Portable Document Format)', 
+    'export.formats.excel': 'Excel (Spreadsheet)',
+
     // Monthly Income translations
     'monthlyIncome.monthLabel': 'Month',
     'monthlyIncome.selectMonth': 'Select month',
@@ -2720,8 +2748,37 @@ const translations = {
     'common.refresh': 'Actualizar',
     'back': 'Atrás',
     
-    // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Gastos Actuales',
+    // Export functionality
+    'export.selectFormat': 'Formato',
+    'export.export': 'Exportar',
+    'export.exporting': 'Exportando...',
+    'export.success.csv': '¡Archivo CSV exportado con éxito!',
+    'export.success.pdf': '¡Archivo PDF exportado con éxito!',
+    'export.success.excel': '¡Archivo Excel exportado con éxito!',
+    'export.error': 'Error al exportar archivo',
+    'export.noData': 'No hay datos para exportar',
+    'export.formats.csv': 'CSV (Valores Separados por Comas)',
+    'export.formats.pdf': 'PDF (Formato de Documento Portátil)', 
+    'export.formats.excel': 'Excel (Hoja de Cálculo)',
+    
+    // Monthly Income translations
+    'monthlyIncome.monthLabel': 'Mes',
+    'monthlyIncome.selectMonth': 'Seleccionar mes',
+    'monthlyIncome.categoryLabel': 'Categoría',
+    'monthlyIncome.allCategories': 'Todas las categorías',
+    'monthlyIncome.totalIncome': 'Total de Ingresos del Período',
+    'monthlyIncome.periodIncome': 'Ingresos del Período',
+    'monthlyIncome.noneFound': 'No se encontraron ingresos para este período',
+    'monthlyIncome.receivedBy': 'Recibido por',
+    'monthlyIncome.subcategoryLabel': 'Subcategoría',
+    'monthlyIncome.receiptMethod': 'Método de recibo',
+    'monthlyIncome.receivedAccount': 'Cuenta bancaria',
+    'monthlyIncome.date': 'Fecha',
+    'monthlyIncome.description': 'Descripción',
+    'monthlyIncome.amount': 'Cantidad',
+    'monthlyIncome.pdfTitle': 'Informe de Ingresos Mensuales',
+    'monthlyIncome.pdfPeriod': 'Período',
+    'monthlyIncome.pdfTotalIncome': 'Total de Ingresos',
     'monthlyExpenses.futureExpenses': 'Gastos Futuros',
     'monthlyExpenses.title': 'Gastos Mensuales',
     'monthlyExpenses.month': 'Mes',
@@ -2763,6 +2820,8 @@ const translations = {
     'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
     'monthlyExpenses.pdfUser': 'Usuario',
     'monthlyExpenses.pdfPaymentMethod': 'Método de Pago',
+    'monthlyExpenses.description': 'Descripción',
+    'monthlyExpenses.amount': 'Valor',
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',
@@ -3660,22 +3719,21 @@ const translations = {
     'aiBeta.contactButton': 'Quiero ser probador beta',
     'aiBeta.waitButton': 'Voy a esperar',
     'aiBeta.emails': 'Nuestros contactos:',
-    
     // Monthly Income translations
     'monthlyIncome.monthLabel': 'Mes',
     'monthlyIncome.selectMonth': 'Seleccionar mes',
     'monthlyIncome.categoryLabel': 'Categoría',
     'monthlyIncome.allCategories': 'Todas las categorías',
-    'monthlyIncome.totalIncome': 'Ingresos Totales del Período',
+    'monthlyIncome.totalIncome': 'Total de Ingresos del Período',
     'monthlyIncome.periodIncome': 'Ingresos del Período',
     'monthlyIncome.noneFound': 'No se encontraron ingresos para este período',
     'monthlyIncome.receivedBy': 'Recibido por',
     'monthlyIncome.subcategoryLabel': 'Subcategoría',
-    'monthlyIncome.receiptMethod': 'Método de recepción',
+    'monthlyIncome.receiptMethod': 'Método de recibo',
     'monthlyIncome.receivedAccount': 'Cuenta bancaria',
     'monthlyIncome.date': 'Fecha',
     'monthlyIncome.description': 'Descripción',
-    'monthlyIncome.amount': 'Importe',
+    'monthlyIncome.amount': 'Cantidad',
     'monthlyIncome.pdfTitle': 'Informe de Ingresos Mensuales',
     'monthlyIncome.pdfPeriod': 'Período',
     'monthlyIncome.pdfTotalIncome': 'Total de Ingresos',
