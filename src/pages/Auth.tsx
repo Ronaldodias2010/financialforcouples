@@ -16,8 +16,6 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [isCodeSent, setIsCodeSent] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
   const [isInviteAccess, setIsInviteAccess] = useState(false);
   
@@ -153,46 +151,10 @@ export default function Auth() {
     }
   };
 
-  const sendVerificationCode = async () => {
-    if (!phoneNumber) {
-      toast({
-        variant: "destructive",
-        title: t('auth.phoneRequired'),
-        description: t('auth.phoneRequiredDesc'),
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-phone-verification', {
-        body: {
-          phoneNumber: phoneNumber,
-          language: language
-        }
-      });
-
-      if (error) throw error;
-
-      setIsCodeSent(true);
-      toast({
-        title: t('auth.codeSent'),
-        description: t('auth.codeSentDesc'),
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: t('auth.codeSendError'),
-        description: error.message || t('auth.codeSendErrorDesc'),
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !phoneNumber || !verificationCode) {
+    if (!email || !password || !phoneNumber) {
       toast({
         variant: "destructive",
         title: t('auth.fieldsRequired'),
@@ -203,17 +165,6 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-      // Verificar código SMS primeiro
-      const { data: verificationData, error: verificationError } = await supabase.functions.invoke('verify-phone-code', {
-        body: {
-          phoneNumber: phoneNumber,
-          code: verificationCode
-        }
-      });
-
-      if (verificationError || !verificationData?.verified) {
-        throw new Error(t('auth.invalidCode'));
-      }
 
       const redirectUrl = `${window.location.origin}/email-confirmation`;
       
@@ -254,8 +205,6 @@ export default function Auth() {
         setPassword('');
         setDisplayName('');
         setPhoneNumber('');
-        setVerificationCode('');
-        setIsCodeSent(false);
       }
     } catch (error: any) {
       toast({
@@ -480,58 +429,20 @@ export default function Auth() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-phone">{t('auth.phone')} *</Label>
-                  <div className="space-y-2">
-                    <Input
-                      id="signup-phone"
-                      type="tel"
-                      placeholder={t('auth.phonePlaceholder')}
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('auth.phoneVerificationRequired')}
-                    </p>
-                    {!isCodeSent ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={sendVerificationCode}
-                        disabled={isLoading || !phoneNumber}
-                        className="w-full"
-                      >
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {t('auth.sendCode')}
-                      </Button>
-                    ) : (
-                      <div className="space-y-2">
-                        <Label htmlFor="verification-code">{t('auth.verificationCode')} *</Label>
-                        <Input
-                          id="verification-code"
-                          type="text"
-                          placeholder={t('auth.verificationCodePlaceholder')}
-                          value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value)}
-                          maxLength={6}
-                          required
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => {
-                            setIsCodeSent(false);
-                            setVerificationCode('');
-                          }}
-                          className="text-sm w-full"
-                        >
-                          Enviar novo código
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="signup-phone">{t('auth.phone')} *</Label>
+                   <Input
+                     id="signup-phone"
+                     type="tel"
+                     placeholder={t('auth.phonePlaceholder')}
+                     value={phoneNumber}
+                     onChange={(e) => setPhoneNumber(e.target.value)}
+                     required
+                   />
+                   <p className="text-xs text-muted-foreground">
+                     {language === 'pt' ? 'Campo obrigatório para contato' : 'Required field for contact'}
+                   </p>
+                 </div>
                <div className="space-y-2">
                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
                  <div className="relative">
