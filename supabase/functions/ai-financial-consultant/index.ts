@@ -987,6 +987,9 @@ function generateIndividualContext(
     context += '\n';
   }
 
+  return context;
+}
+
 async function saveToAIHistory(supabase: any, userId: string, entryType: string, message: string) {
   try {
     await supabase
