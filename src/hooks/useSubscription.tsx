@@ -24,7 +24,8 @@ const premiumFeatures = [
   'investmentSuggestions',
   'customGoals',
   'advancedAnalytics',
-  'prioritySupport'
+  'prioritySupport',
+  'aiRecommendations' // AI Recommendations should be premium only
 ];
 
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
@@ -78,7 +79,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const hasAccess = (feature: string): boolean => {
     if (!premiumFeatures.includes(feature)) return true;
-    return subscriptionTier === 'premium' && subscribed;
+    const hasValidAccess = subscriptionTier === 'premium' && subscribed;
+    console.log(`🔐 [ACCESS CHECK] Feature: ${feature}, Tier: ${subscriptionTier}, Subscribed: ${subscribed}, Access: ${hasValidAccess}`);
+    return hasValidAccess;
   };
 
   const createCheckoutSession = async (priceId?: string) => {

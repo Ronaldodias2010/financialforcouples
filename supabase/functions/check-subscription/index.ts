@@ -43,6 +43,48 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // First check for manual premium access (takes priority over Stripe)
+    const { data: manualAccess } = await supabaseClient
+      .from("manual_premium_access")
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .gte('end_date', new Date().toISOString().split('T')[0])
+      .maybeSingle();
+
+    if (manualAccess) {
+      logStep("Active manual premium access found", { 
+        email: manualAccess.email, 
+        endDate: manualAccess.end_date 
+      });
+      
+      await supabaseClient.from("subscribers").upsert({
+        email: user.email,
+        user_id: user.id,
+        stripe_customer_id: null,
+        subscribed: true,
+        subscription_tier: 'premium',
+        subscription_end: `${manualAccess.end_date}T23:59:59+00:00`,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'email' });
+      
+      await supabaseClient.from("profiles").update({
+        subscribed: true,
+        subscription_tier: 'premium'
+      }).eq('user_id', user.id);
+
+      return new Response(JSON.stringify({ 
+        subscribed: true,
+        subscription_tier: 'premium',
+        subscription_end: `${manualAccess.end_date}T23:59:59+00:00`,
+        manual_access: true
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+
     // Check if user is admin - admins automatically get premium access
     const adminEmails = ['admin@arxexperience.com.br', 'admin@example.com'];
     if (adminEmails.includes(user.email)) {

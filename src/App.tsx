@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
@@ -44,7 +44,19 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const AppRoutes = () => {
+  const navigate = useNavigate();
+  
+  const handleNavBack = () => {
+    // Use React Router navigation instead of window.history.back()
+    // This prevents the black screen issue in Chrome SPAs
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/app'); // Fallback to dashboard
+    }
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
@@ -77,11 +89,11 @@ const App = () => {
                         
                         {/* Protected Routes */}
                         <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
-                        <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
-                        <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
-                        <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={() => window.history.back()} /></ProtectedRoute>} />
-                        <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={() => window.history.back()} /></ProtectedRoute>} />
-                        <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                        <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={handleNavBack} /></ProtectedRoute>} />
+                        <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={handleNavBack} /></ProtectedRoute>} />
+                        <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={handleNavBack} /></ProtectedRoute>} />
+                        <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={handleNavBack} /></ProtectedRoute>} />
+                        <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={handleNavBack} /></ProtectedRoute>} />
                         <Route path="/subscription-success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
                         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                         <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
@@ -100,6 +112,33 @@ const App = () => {
                </SafeTooltipProvider>
              </ClientOnly>
            
+           </LanguageProvider>
+          </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <AuthProvider>
+          <LanguageProvider>
+            <ClientOnly>
+              <SafeTooltipProvider>
+                <SubscriptionProvider>
+                  <GlobalErrorBoundary>
+                    <AppRoutes />
+                  </GlobalErrorBoundary>
+                 </SubscriptionProvider>
+               </SafeTooltipProvider>
+             </ClientOnly>
            </LanguageProvider>
           </AuthProvider>
       </ThemeProvider>

@@ -502,12 +502,15 @@ const PremiumUpgradeFallback = () => {
 };
 
 export const AIRecommendations = () => {
-  return (
-    <PremiumFeatureGuard 
-      feature="aiPlanning"
-      fallback={<PremiumUpgradeFallback />}
-    >
-      <AIRecommendationsContent />
-    </PremiumFeatureGuard>
-  );
+  const { hasAccess } = useSubscription();
+  
+  console.log('🤖 [AI RECOMMENDATIONS] Checking access for aiRecommendations feature');
+  
+  if (!hasAccess('aiRecommendations')) {
+    console.log('❌ [AI RECOMMENDATIONS] Access denied - showing fallback');
+    return <PremiumUpgradeFallback />;
+  }
+  
+  console.log('✅ [AI RECOMMENDATIONS] Access granted - showing content');
+  return <AIRecommendationsContent />;
 };
