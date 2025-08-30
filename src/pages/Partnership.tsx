@@ -84,11 +84,13 @@ const Partnership = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.audienceType || !formData.socialMedia.trim()) {
+    if (!formData.name || !formData.email || !formData.audienceType || !formData.socialMedia.trim() || !formData.paymentInfo.trim()) {
       toast({
         title: "Campos obrigatórios",
         description: !formData.socialMedia.trim() 
           ? "Por favor, informe seus links de redes sociais. Este campo é obrigatório para análise da sua candidatura."
+          : !formData.paymentInfo.trim()
+          ? "Por favor, informe seus dados PIX ou conta bancária. Este campo é obrigatório para pagamento das comissões."
           : "Por favor, preencha todos os campos obrigatórios.",
         variant: "destructive",
       });
@@ -409,16 +411,17 @@ const Partnership = () => {
                    </div>
 
                    <div className="space-y-2">
-                     <Label htmlFor="paymentInfo">Para compensações financeiras adicione seu PIX ou sua melhor C/C</Label>
+                     <Label htmlFor="paymentInfo">Para compensações financeiras adicione seu PIX ou sua melhor C/C *</Label>
                       <Textarea
                         id="paymentInfo"
                         value={formData.paymentInfo}
                         onChange={(e) => setFormData(prev => ({ ...prev, paymentInfo: e.target.value }))}
                         placeholder="PIX: exemplo@email.com ou Banco: Banco do Brasil, Agência: 1234-5, Conta: 67890-1"
                         rows={3}
+                        required
                       />
                       <p className="text-sm text-muted-foreground">
-                        Informe seus dados bancários ou chave PIX para recebimento das comissões.
+                        Informe seus dados bancários ou chave PIX para recebimento das comissões. Campo obrigatório.
                       </p>
                    </div>
                   
