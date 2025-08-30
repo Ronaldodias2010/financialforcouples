@@ -1558,6 +1558,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_temp_password: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1625,6 +1629,10 @@ export type Database = {
           p_target_currency: string
         }
         Returns: undefined
+      }
+      use_referral_code: {
+        Args: { p_code: string; p_referred_user_id: string }
+        Returns: Json
       }
       verify_temp_password: {
         Args: { hash: string; password: string }
