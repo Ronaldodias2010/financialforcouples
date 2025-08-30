@@ -11,7 +11,7 @@ on:
       bypass_cloudfront:
         description: 'Bypass CloudFront during deployment'
         required: false
-        default: 'false'
+        default: 'true'
         type: choice
         options:
           - 'true'

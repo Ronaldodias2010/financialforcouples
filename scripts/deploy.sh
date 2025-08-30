@@ -160,11 +160,15 @@ deploy_infrastructure() {
     
     # Planejar deploy (com configuração CloudFront)
     log_info "Planejando deploy..."
-    if [ "$bypass_cloudfront" = true ]; then
+    if [ "$BYPASS_CLOUDFRONT" = "true" ]; then
         log_warn "CloudFront será desabilitado para deploy mais rápido"
         terraform plan -var="container_image=$CONTAINER_IMAGE" -var="enable_cloudfront=false" -out=tfplan
     else
-        terraform plan -var="container_image=$CONTAINER_IMAGE" -out=tfplan
+        echo "🚀 Tentando deploy com CloudFront..."
+        if terraform plan -var="container_image=$CONTAINER_IMAGE" -out=tfplan 2>&1 | grep -q "TooManyDistributions"; then
+            log_error "❌ Quota do CloudFront excedida - use --bypass-cloudfront"
+            exit 1
+        fi
     fi
     
     # Aplicar mudanças (com confirmação)
@@ -233,15 +237,22 @@ verify_deployment() {
         fi
         
         # Invalidar cache se solicitado
-        if [ "$invalidate_cache" = true ] && [ "$bypass_cloudfront" = false ]; then
+        if [ "$INVALIDATE_CACHE" = "true" ] && [ "$BYPASS_CLOUDFRONT" = "false" ]; then
             invalidate_cloudfront_cache
         fi
         
         log_info "🎉 Deploy concluído!"
-        log_info "📍 Acesse via ALB (mais rápido): $ALB_URL"
+        echo ""
+        log_info "📍 URLs de acesso:"
+        echo -e "${GREEN}🔗 ALB (Direto - Use para testes imediatos):${NC} $ALB_URL"
         
-        if [ "$bypass_cloudfront" = false ]; then
-            log_info "📍 CloudFront será disponibilizado em alguns minutos"
+        if [ "$BYPASS_CLOUDFRONT" = "false" ]; then
+            CLOUDFRONT_URL=$(get_cloudfront_url)
+            if [ -n "$CLOUDFRONT_URL" ]; then
+                echo -e "${YELLOW}🌐 CloudFront (Global - Pode demorar para propagar):${NC} $CLOUDFRONT_URL"
+            fi
+        else
+            log_warn "CloudFront desabilitado - usando apenas ALB para acesso direto"
         fi
     else
         log_warn "Não foi possível obter URL do Load Balancer"
@@ -339,7 +350,6 @@ main() {
     local skip_tests=false
     local infrastructure_only=false
     local app_only=false
-    local bypass_cloudfront=false
     local invalidate_cache=false
     local get_alb_url_only=false
     
@@ -367,11 +377,11 @@ main() {
                 shift
                 ;;
             --bypass-cloudfront)
-                bypass_cloudfront=true
+                export BYPASS_CLOUDFRONT=true
                 shift
                 ;;
             --invalidate-cache)
-                invalidate_cache=true
+                export INVALIDATE_CACHE=true
                 shift
                 ;;
             --get-alb-url)

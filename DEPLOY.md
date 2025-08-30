@@ -1,215 +1,132 @@
-# 🚀 Guia de Deploy - Couples Financials
+# Guia de Deploy - Couples Financials
 
-Este guia orienta como configurar e fazer deploy da aplicação Couples Financials na AWS.
+## Deploy Rápido (Recomendado)
 
-## 📋 Pré-requisitos
+Para deployments de desenvolvimento mais ágeis, use o **bypass do CloudFront**:
 
-### Ferramentas necessárias:
-- [AWS CLI](https://aws.amazon.com/cli/) configurado
-- [Terraform](https://terraform.io/) versão 1.5+
-- [Docker](https://docker.com/)
-- [Node.js](https://nodejs.org/) versão 18+
+### Opção 1: GitHub Actions (Recomendado)
+1. Vá para **Actions** no GitHub
+2. Selecione **"Deploy to AWS"**
+3. Clique **"Run workflow"**
+4. Mantenha **"Bypass CloudFront"** = `true` (padrão)
+5. ✅ Deploy será feito diretamente no ALB
 
-### Permissões AWS necessárias:
-- ECS (Elastic Container Service)
-- ECR (Elastic Container Registry)
-- ALB (Application Load Balancer)
-- IAM (Identity and Access Management)
-- CloudWatch Logs
-- Secrets Manager
-- CloudFront (opcional)
-
-## 🔧 Configuração Inicial
-
-### 1. Configure AWS CLI
+### Opção 2: Script Local
 ```bash
-aws configure
-```
-Forneça suas credenciais de acesso AWS.
+# Deploy rápido (sem testes)
+./scripts/quick-deploy.sh --skip-tests
 
-### 2. Configure variáveis do Terraform
+# Deploy completo (com testes)
+./scripts/deploy.sh --bypass-cloudfront
+```
+
+## URLs de Acesso
+
+### ALB (Application Load Balancer)
+- ✅ **Acesso imediato** após o deploy
+- 🔗 URL: `https://[alb-dns-name]`
+- 🎯 Use para testes e desenvolvimento
+
+### CloudFront (CDN Global)
+- ⏳ **Demora 5-15 minutos** para propagar
+- 🌐 URL: `https://[cloudfront-domain]`
+- 🚀 Use para produção (performance global)
+
+## Deploy com CloudFront
+
+Quando você tiver quota disponível no CloudFront:
+
+### GitHub Actions
+1. Use o workflow **"Deploy with CloudFront"**
+2. Ou no workflow normal, mude **"Bypass CloudFront"** = `false`
+
+### Script Local
 ```bash
-cd terraform
-cp terraform.tfvars.example terraform.tfvars
+./scripts/deploy.sh --invalidate-cache
 ```
 
-Edite `terraform.tfvars` com suas configurações:
-```hcl
-aws_region = "us-east-1"
-app_name = "couples-financials"
-supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
-supabase_anon_key = "sua_chave_aqui"
-supabase_service_role_key = "sua_chave_aqui"
-```
+## Scripts Úteis
 
-### 3. Configure secrets no GitHub (para CI/CD)
-No repositório GitHub, vá em Settings > Secrets and Variables > Actions:
-
-- `AWS_ACCESS_KEY_ID`: Sua chave de acesso AWS
-- `AWS_SECRET_ACCESS_KEY`: Sua chave secreta AWS
-- `SUPABASE_ANON_KEY`: Chave anônima do Supabase
-- `SUPABASE_SERVICE_ROLE_KEY`: Chave service role do Supabase
-
-## 🚀 Deploy Manual
-
-### Deploy completo
+### Verificar Status
 ```bash
-./scripts/deploy.sh
+# Ver URLs atuais
+./scripts/cloudfront-utils.sh alb-url
+./scripts/cloudfront-utils.sh cloudfront-url
+
+# Ver status do CloudFront
+./scripts/cloudfront-utils.sh status
 ```
 
-### Opções do script de deploy
+### Invalidar Cache do CloudFront
 ```bash
-# Deploy sem testes
-./scripts/deploy.sh --skip-tests
-
-# Deploy apenas da infraestrutura
-./scripts/deploy.sh --infrastructure-only
-
-# Deploy apenas da aplicação
-./scripts/deploy.sh --app-only
-
-# Pular build da aplicação
-./scripts/deploy.sh --skip-build
+./scripts/cloudfront-utils.sh invalidate
 ```
-
-## 🔄 Deploy Automático (CI/CD)
-
-O deploy automático acontece quando você faz push para:
-- `main` branch: Deploy para produção
-- `production` branch: Deploy para produção
-
-O workflow inclui:
-1. Testes e validação
-2. Build e push da imagem Docker
-3. Deploy da infraestrutura com Terraform
-4. Deploy da aplicação no ECS
-5. Testes pós-deploy
-
-## 🏗️ Infraestrutura
-
-A aplicação é deployada usando:
-
-### AWS ECS (Elastic Container Service)
-- **Cluster**: `couples-financials-cluster`
-- **Service**: `couples-financials`
-- **Task Definition**: Container com a aplicação React
-
-### Application Load Balancer (ALB)
-- **DNS**: `couples-financials-alb-xxxxx.us-east-1.elb.amazonaws.com`
-- **Health Check**: `/health`
-- **Portas**: 80 (HTTP), 443 (HTTPS se domínio configurado)
-
-### Amazon ECR (Container Registry)
-- **Repository**: `couples-financials`
-- **Images**: Tagged com timestamp e `latest`
-
-### CloudWatch Logs
-- **Log Group**: `/ecs/couples-financials`
-- **Retention**: 7 dias (configurável)
-
-### AWS Secrets Manager
-- **Supabase Credentials**: Chaves de acesso ao Supabase
-- **App Config**: Configurações da aplicação
-
-## 🔍 Monitoramento
 
 ### Health Check
-A aplicação expõe um endpoint de health check:
+```bash
+./scripts/cloudfront-utils.sh health-check https://seu-alb-url
 ```
-GET /health
+
+### Comparar Performance
+```bash
+./scripts/cloudfront-utils.sh compare
 ```
+
+## Troubleshooting
+
+### Erro: TooManyDistributions
+```
+Error: creating CloudFront Distribution: TooManyDistributions
+```
+
+**Solução**: Use o bypass do CloudFront:
+- GitHub Actions: `bypass_cloudfront: true`
+- Local: `--bypass-cloudfront`
+
+### Deploy Lento
+- ✅ Use ALB direto: `./scripts/quick-deploy.sh`
+- ⚡ Pule testes: `--skip-tests`
+
+### Cache do CloudFront Desatualizado
+```bash
+./scripts/cloudfront-utils.sh invalidate
+```
+
+### App Não Carrega
+1. Teste ALB primeiro: `./scripts/cloudfront-utils.sh alb-url`
+2. Verifique health: `./scripts/cloudfront-utils.sh health-check`
+3. Se ALB funciona mas CloudFront não, aguarde propagação
+
+## Configuração de Produção
+
+Para produção, recomendamos:
+
+1. **Enable CloudFront** quando houver quota
+2. **Custom Domain** configurado
+3. **SSL Certificate** válido
+4. **Auto-invalidação** habilitada
+
+```bash
+# terraform/terraform.tfvars
+enable_cloudfront = true
+auto_invalidate_cloudfront = true
+domain_name = "seudominio.com"
+```
+
+## Monitoramento
 
 ### Logs
-Visualize logs da aplicação:
-```bash
-aws logs tail /ecs/couples-financials --follow
-```
+- ECS Logs: CloudWatch
+- ALB Logs: S3 (se configurado)
+- CloudFront Logs: CloudWatch
 
-### Status do serviço ECS
-```bash
-aws ecs describe-services \
-  --cluster couples-financials-cluster \
-  --services couples-financials
-```
+### Métricas
+- ALB: Target Health, Response Time
+- CloudFront: Cache Hit Rate, Origin Requests
+- ECS: CPU, Memory Usage
 
-## 🌐 Domínio Personalizado (Opcional)
-
-Para usar um domínio personalizado:
-
-1. Configure o domínio no Route 53
-2. Adicione `domain_name` no `terraform.tfvars`
-3. Execute deploy novamente
-
-O Terraform criará automaticamente:
-- Certificado SSL via ACM
-- Registros DNS no Route 53
-- Listener HTTPS no ALB
-
-## 🛠️ Troubleshooting
-
-### Problemas comuns:
-
-#### 1. Falha no build
-```bash
-# Limpe dependências e rebuilde
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
-
-#### 2. Falha no push ECR
-```bash
-# Re-login no ECR
-aws ecr get-login-password --region us-east-1 | \
-docker login --username AWS --password-stdin \
-$(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com
-```
-
-#### 3. Serviço ECS não estabiliza
-```bash
-# Verifique logs
-aws logs tail /ecs/couples-financials --follow
-
-# Force novo deployment
-aws ecs update-service \
-  --cluster couples-financials-cluster \
-  --service couples-financials \
-  --force-new-deployment
-```
-
-#### 4. Health check falha
-- Verifique se a aplicação está rodando na porta 80
-- Confirme que o endpoint `/health` existe
-- Aguarde alguns minutos para inicialização
-
-### Rollback
-Para fazer rollback para versão anterior:
-```bash
-# Liste task definitions
-aws ecs list-task-definitions --family-prefix couples-financials
-
-# Deploy versão anterior
-aws ecs update-service \
-  --cluster couples-financials-cluster \
-  --service couples-financials \
-  --task-definition couples-financials:REVISION_NUMBER
-```
-
-## 📞 Suporte
-
-Se encontrar problemas:
-1. Verifique logs do CloudWatch
-2. Confirme configurações no `terraform.tfvars`
-3. Valide credenciais AWS
-4. Execute `terraform plan` para ver mudanças
-
-## 🔒 Segurança
-
-- Todas as chaves sensíveis são armazenadas no AWS Secrets Manager
-- Container roda com usuário não-root
-- ALB tem security groups restritivos
-- Logs não contêm informações sensíveis
-
----
-
-✅ **Deploy realizado com sucesso!** Sua aplicação estará disponível no URL do ALB.
+### Alertas
+Configure alertas para:
+- ALB Target Unhealthy
+- ECS Service Stopped
+- CloudFront High Error Rate
