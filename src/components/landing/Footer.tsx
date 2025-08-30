@@ -68,7 +68,7 @@ const Footer = () => {
               </div>
               
               {/* WhatsApp Smart destacado */}
-              <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg cursor-pointer hover:bg-green-500/20 transition-colors" onClick={() => openWhatsApp(language === 'pt' ? 'Olá! Gostaria de saber mais sobre o Couples Financials.' : 'Hello! I would like to know more about Couples Financials.')}>
                 <div className="flex items-center gap-2 mb-1">
                   <MessageCircle className="w-5 h-5 text-green-500" />
                   <span className="text-green-400 font-semibold text-sm">

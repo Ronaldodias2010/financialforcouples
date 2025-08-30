@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { openWhatsApp } from "@/utils/whatsapp";
 import { useLanguage } from "@/hooks/useLanguage";
 import { usePWA } from "@/hooks/usePWA";
 import { supabase } from "@/integrations/supabase/client";
@@ -392,7 +393,7 @@ export const FinancialDashboard = () => {
               </div>
               
               {/* WhatsApp Smart - Automação */}
-              <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg max-w-xs">
+              <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg max-w-xs cursor-pointer hover:bg-green-500/20 transition-colors" onClick={() => openWhatsApp(language === 'pt' ? 'Olá! Gostaria de saber mais sobre o WhatsApp Smart.' : language === 'es' ? 'Hola! Me gustaría saber más sobre WhatsApp Smart.' : 'Hello! I would like to know more about WhatsApp Smart.')}>
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-green-500" />
                   <span className="text-xs text-green-400 font-medium">
