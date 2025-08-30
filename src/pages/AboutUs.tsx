@@ -210,28 +210,29 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Header with navigation */}
       <header className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
             {onBack && (
               <Button variant="ghost" size="icon" onClick={onBack}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">{currentContent.title}</h1>
-              <p className="text-lg text-muted-foreground mt-2">{currentContent.subtitle}</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">{currentContent.title}</h1>
+              <p className="text-base sm:text-lg text-muted-foreground mt-1 sm:mt-2">{currentContent.subtitle}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 flex-shrink-0">
             <ThemeSwitcher />
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => navigate('/')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 whitespace-nowrap"
             >
               <Home className="h-4 w-4" />
-              {currentContent.backToHome}
+              <span className="hidden xs:inline">{currentContent.backToHome}</span>
+              <span className="xs:hidden">Início</span>
             </Button>
           </div>
         </div>
