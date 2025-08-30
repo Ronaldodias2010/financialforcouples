@@ -534,15 +534,15 @@ export const MileageSystem = () => {
         <Card 
           className="border"
           style={{
-            background: "linear-gradient(135deg, hsl(var(--cherry-light) / 0.08), hsl(var(--background)))",
-            borderColor: "hsl(var(--cherry-light) / 0.2)"
+            background: "linear-gradient(135deg, hsl(8 85% 72% / 0.08), hsl(var(--background)))",
+            borderColor: "hsl(8 85% 72% / 0.2)"
           }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('mileage.totalMiles')}</CardTitle>
             <Plane 
               className="h-4 w-4"
-              style={{ color: "hsl(var(--cherry-light))" }}
+              style={{ color: "hsl(8 85% 72%)" }}
             />
           </CardHeader>
           <CardContent>
@@ -554,15 +554,15 @@ export const MileageSystem = () => {
         <Card 
           className="border"
           style={{
-            background: "linear-gradient(135deg, hsl(var(--blue-soft) / 0.1), hsl(var(--background)))",
-            borderColor: "hsl(var(--blue-soft) / 0.3)"
+            background: "linear-gradient(135deg, hsl(205 95% 90% / 0.15), hsl(var(--background)))",
+            borderColor: "hsl(205 95% 90% / 0.4)"
           }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('mileage.activeCards')}</CardTitle>
             <CreditCard 
               className="h-4 w-4"
-              style={{ color: "hsl(var(--blue-soft) / 0.8)" }}
+              style={{ color: "hsl(205 70% 65%)" }}
             />
           </CardHeader>
           <CardContent>
