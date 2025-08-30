@@ -19,6 +19,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import LandingSimple from "./pages/LandingSimple";
 const PrivacyPolicy = lazy(() => import("./components/landing/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
 import Auth from "./pages/Auth";
 const Landing = lazy(() => import("./pages/Landing"));
 const DirectCheckout = lazy(() => import("./pages/DirectCheckout"));
@@ -86,6 +87,8 @@ const AppRoutes = () => {
                         <Route path="/email-test" element={<EmailTest />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfUse />} />
+                        <Route path="/sobre-nos" element={<AboutUs />} />
+                        <Route path="/about-us" element={<AboutUs />} />
                         
                         {/* Protected Routes */}
                         <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />

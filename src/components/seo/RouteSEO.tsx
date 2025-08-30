@@ -93,6 +93,16 @@ export const RouteSEO = () => {
         title: "Admin | Couples Financials",
         description: "Ferramentas administrativas e visões internas do sistema.",
         canonical: `${base}/admin`,
+      },
+      "/sobre-nos": {
+        title: "Sobre Nós | Couples Financials - Nossa História e Missão",
+        description: "Conheça a história da Couples Financials, a primeira plataforma brasileira especializada em gestão financeira para casais. Nossa missão é ajudar casais a organizarem suas finanças juntos.",
+        canonical: `${base}/sobre-nos`,
+      },
+      "/about-us": {
+        title: "About Us | Couples Financials - Our Story and Mission",
+        description: "Learn about Couples Financials' story, the first Brazilian platform specialized in financial management for couples. Our mission is to help couples organize their finances together.",
+        canonical: `${base}/about-us`,
       }
     };
 

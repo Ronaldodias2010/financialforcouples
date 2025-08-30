@@ -51,6 +51,22 @@ const HeroSection = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Content */}
             <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-2 sm:px-4">
+            {/* SEO-optimized headers */}
+            <header role="banner">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
+                  Gestão Financeira para Casais
+                </span>
+                <br />
+                <span className="text-white/90 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                  Controle Financeiro Casal
+                </span>
+              </h1>
+              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white/80 mt-4">
+                App para Orçamento Familiar e Investimentos
+              </h2>
+            </header>
+            
             <div className="flex justify-center lg:justify-start mb-4 lg:mb-6">
               <div
                 className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56"
@@ -80,19 +96,18 @@ const HeroSection = () => {
               {t('hero.badge')}
             </div>
             
-            {/* Main heading */}
+            {/* Subtitle and description */}
             <div className="space-y-4 lg:space-y-6">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight">
-                {t('hero.title')}
-              </h1>
-              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-white/90 leading-tight">
+              <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-white/90 leading-tight">
                 {t('hero.subtitle')}
-              </h2>
+              </h3>
             </div>
             
             {/* Description */}
             <p className="text-sm sm:text-base lg:text-lg text-white/80 max-w-xl mx-auto lg:mx-0">
-              {t('hero.description')}
+              A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, 
+              compartilharem gastos e realizarem sonhos juntos. Aplicativo para controle financeiro casal 
+              com orçamento familiar, investimentos e muito mais.
             </p>
             
             {/* CTA Buttons */}
@@ -162,8 +177,9 @@ const HeroSection = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-elegant">
               <img 
                 src={heroCouple} 
-                alt="Casal feliz gerenciando finanças" 
+                alt="Casal feliz usando aplicativo de gestão financeira para casais - controle financeiro casal e orçamento familiar" 
                 className="w-full h-auto object-cover"
+                loading="eager"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             </div>

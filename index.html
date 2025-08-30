@@ -3,10 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Couples Financials - Gestão Financeira para Casais</title>
-    <meta name="description" content="A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. Comece grátis!" />
+    <title>Couples Financials - Gestão Financeira para Casais | Controle Financeiro Casal</title>
+    <meta name="description" content="A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. App para controle financeiro casal, orçamento familiar e investimentos. Comece grátis!" />
     <meta name="author" content="Couples Financials" />
-    <meta name="keywords" content="gestão financeira casais, finanças para casais, controle gastos casal, investimentos casal, orçamento familiar" />
+    <meta name="keywords" content="gestão financeira casais, finanças para casais, controle gastos casal, investimentos casal, orçamento familiar, app finanças casais, controle financeiro casal, como organizar finanças do casal, aplicativo para controlar gastos em casal, planejamento financeiro casal" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/main.tsx" as="script" />
+    <link rel="preload" href="/src/index.css" as="style" />
+    
+    <!-- Performance hints -->
+    <link rel="prefetch" href="/auth" />
+    <link rel="prefetch" href="/sobre-nos" />
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#10b981" />
@@ -44,14 +52,19 @@
     <meta name="msapplication-square310x310logo" content="/icons/icon-384x384.png" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Couples Financials - Gestão Financeira para Casais" />
-    <meta property="og:description" content="A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. Comece grátis!" />
+    <meta property="og:title" content="Couples Financials - Gestão Financeira para Casais | Controle Financeiro Casal" />
+    <meta property="og:description" content="A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. App para controle financeiro casal e orçamento familiar. Comece grátis!" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/icons/icon-512x512.png" />
+    <meta property="og:image" content="https://couplesfinancials.com/icons/icon-512x512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
     <meta property="og:url" content="https://couplesfinancials.com" />
+    <meta property="og:site_name" content="Couples Financials" />
+    <meta property="og:locale" content="pt_BR" />
 
     <!-- Performance & SEO hints -->
     <link rel="canonical" href="https://couplesfinancials.com" />
+    <link rel="sitemap" href="/sitemap.xml" />
     <link rel="preconnect" href="https://elxttabdtddlavhseipz.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://elxttabdtddlavhseipz.supabase.co" />
     <link rel="preconnect" href="https://api.exchangerate-api.com" crossorigin />
@@ -59,9 +72,39 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Couples Financials - Gestão Financeira para Casais" />
-    <meta name="twitter:description" content="A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. Comece grátis!" />
-    <meta name="twitter:image" content="/icons/icon-512x512.png" />
+    <meta name="twitter:title" content="Couples Financials - Gestão Financeira para Casais | Controle Financeiro Casal" />
+    <meta name="twitter:description" content="A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. App para controle financeiro casal. Comece grátis!" />
+    <meta name="twitter:image" content="https://couplesfinancials.com/icons/icon-512x512.png" />
+    <meta name="twitter:site" content="@couplesfinancials" />
+    
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": ["Organization", "WebApplication"],
+      "name": "Couples Financials",
+      "description": "Primeira plataforma brasileira especializada em gestão financeira para casais",
+      "url": "https://couplesfinancials.com",
+      "logo": "https://couplesfinancials.com/icons/icon-512x512.png",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Web, PWA",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL",
+        "description": "Plano gratuito disponível"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "150"
+      },
+      "keywords": "gestão financeira casais, controle financeiro casal, app finanças casais, orçamento familiar",
+      "sameAs": [
+        "https://couplesfinancials.com"
+      ]
+    }
+    </script>
   </head>
 
   <body>

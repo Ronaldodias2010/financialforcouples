@@ -114,6 +114,9 @@ const Footer = () => {
           <div className="flex gap-6">
             <Link to="/privacy" className="hover:text-background transition-colors">{t('footer.privacy')}</Link>
             <Link to="/terms" className="hover:text-background transition-colors">{t('footer.terms')}</Link>
+            <Link to="/sobre-nos" className="hover:text-background transition-colors">
+              {language === 'pt' ? 'Sobre Nós' : language === 'es' ? 'Sobre Nosotros' : 'About Us'}
+            </Link>
           </div>
         </div>
       </div>

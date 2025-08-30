@@ -5,6 +5,7 @@ import useInView from "@/hooks/use-in-view";
 
 const BenefitsSection = () => {
   const { t } = useLanguage();
+  const { ref, inView } = useInView({ threshold: 0.1 });
 
   const benefits = [
     {
@@ -40,27 +41,30 @@ const BenefitsSection = () => {
   ];
 
   return (
-    <section id="benefits" className="py-20 bg-background">
+    <section id="benefits" className="py-20 bg-background" ref={ref}>
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-16">
+        {/* Header with SEO-optimized structure */}
+        <header className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-            {t('benefits.title')}{" "}
+            Por que escolher{" "}
             <span className="bg-hero-gradient bg-clip-text text-transparent">
               Couples Financials?
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t('benefits.subtitle')}
-          </p>
-        </div>
+          <h3 className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            O melhor app para controle financeiro casal e gestão de orçamento familiar
+          </h3>
+        </header>
         
-        {/* Benefits Grid */}
+        {/* Benefits Grid with lazy loading */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {benefits.map((benefit, index) => (
             <Card 
               key={index} 
-              className="p-6 hover:shadow-elegant transition-all duration-300 hover:-translate-y-2 group border-2 hover:border-primary/20"
+              className={`p-6 hover:shadow-elegant transition-all duration-300 hover:-translate-y-2 group border-2 hover:border-primary/20 ${
+                inView ? 'animate-in slide-in-from-bottom-4' : 'opacity-0'
+              }`}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
@@ -69,9 +73,9 @@ const BenefitsSection = () => {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                  <h4 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                     {benefit.title}
-                  </h3>
+                  </h4>
                   <p className="text-muted-foreground leading-relaxed">
                     {benefit.description}
                   </p>
