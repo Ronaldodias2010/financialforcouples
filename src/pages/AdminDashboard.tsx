@@ -19,7 +19,7 @@ import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
 import AbandonedCheckouts from "@/components/admin/AbandonedCheckouts";
 import { EducationalContentManager } from "@/components/admin/EducationalContentManager";
 import { AIControlSection } from '@/components/admin/AIControlSection';
-import { ReferralCodesManager } from '@/components/admin/ReferralCodesManager';
+import { PartnershipApplicationsManager } from '@/components/admin/PartnershipApplicationsManager';
 import { PromoCodesManager } from '@/components/admin/PromoCodesManager';
 
 
@@ -961,7 +961,7 @@ const AdminDashboardContent = () => {
             </TabsContent>
 
             <TabsContent value="referrals">
-            <ReferralCodesManager />
+            <PartnershipApplicationsManager />
             <PromoCodesManager />
             </TabsContent>
 

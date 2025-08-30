@@ -108,6 +108,7 @@ export const ReferralCodesManager = () => {
         .from('referral_codes')
         .insert({
           code: newCode,
+          user_id: (await supabase.auth.getUser()).data.user?.id || '',
           max_uses: formData.maxUses,
           reward_amount: formData.rewardAmount,
           free_days_granted: formData.freeDays,

@@ -976,6 +976,59 @@ export type Database = {
           },
         ]
       }
+      partnership_applications: {
+        Row: {
+          approved_at: string | null
+          approved_by_admin_id: string | null
+          audience_type: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          referral_code_id: string | null
+          social_media: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by_admin_id?: string | null
+          audience_type?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          referral_code_id?: string | null
+          social_media?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by_admin_id?: string | null
+          audience_type?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          referral_code_id?: string | null
+          social_media?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_partnership_referral_code"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_verifications: {
         Row: {
           created_at: string | null
@@ -1334,7 +1387,7 @@ export type Database = {
           max_uses: number
           reward_amount: number
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           code: string
@@ -1348,7 +1401,7 @@ export type Database = {
           max_uses?: number
           reward_amount?: number
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           code?: string
@@ -1362,7 +1415,7 @@ export type Database = {
           max_uses?: number
           reward_amount?: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { supabase } from '@/integrations/supabase/client';
 import {
   Select,
   SelectContent,
@@ -27,7 +28,7 @@ const Partnership = () => {
     name: '',
     email: '',
     phone: '',
-    audience: '',
+    audienceType: '',
     socialMedia: ''
   });
 
@@ -82,7 +83,7 @@ const Partnership = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.audience) {
+    if (!formData.name || !formData.email || !formData.audienceType) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos obrigatórios.",
@@ -94,8 +95,13 @@ const Partnership = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call - replace with actual implementation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { error } = await supabase.functions.invoke('send-partnership-application', {
+        body: formData
+      });
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Sucesso!",
@@ -107,13 +113,14 @@ const Partnership = () => {
         name: '',
         email: '',
         phone: '',
-        audience: '',
+        audienceType: '',
         socialMedia: ''
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Partnership application error:', error);
       toast({
         title: "Erro",
-        description: t('partnership.form.error'),
+        description: error.message || t('partnership.form.error'),
         variant: "destructive",
       });
     } finally {
@@ -367,7 +374,7 @@ const Partnership = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="audience">{t('partnership.form.audience')} *</Label>
-                    <Select value={formData.audience} onValueChange={(value) => setFormData(prev => ({ ...prev, audience: value }))}>
+                    <Select value={formData.audienceType} onValueChange={(value) => setFormData(prev => ({ ...prev, audienceType: value }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o tipo de audiência" />
                       </SelectTrigger>
