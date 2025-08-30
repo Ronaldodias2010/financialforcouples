@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, CreditCard, Eye, EyeOff, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/hooks/useLanguage';
+import { PasswordValidation, PasswordMatchValidation, validatePassword } from '@/components/ui/PasswordValidation';
+import { translateAuthError } from '@/utils/authErrors';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -119,10 +121,11 @@ export default function Auth() {
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      const translatedError = translateAuthError(error.message || '', language);
       toast({
         variant: "destructive",
         title: t('auth.loginErrorTitle'),
-        description: error.message || t('auth.loginErrorDesc'),
+        description: translatedError,
       });
     } finally {
       setIsLoading(false);
@@ -142,10 +145,11 @@ export default function Auth() {
       if (error) throw error;
       
     } catch (error: any) {
+      const translatedError = translateAuthError(error.message || '', language);
       toast({
         variant: "destructive",
         title: t('auth.googleErrorTitle'),
-        description: error.message || t('auth.loginErrorDesc'),
+        description: translatedError,
       });
       setIsLoading(false);
     }
@@ -159,6 +163,17 @@ export default function Auth() {
         variant: "destructive",
         title: t('auth.fieldsRequired'),
         description: t('auth.fieldsRequiredDesc'),
+      });
+      return;
+    }
+
+    // Validar senha antes de submeter
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      toast({
+        variant: "destructive",
+        title: t('password.error.weakTitle'),
+        description: t('password.error.invalid'),
       });
       return;
     }
@@ -207,10 +222,11 @@ export default function Auth() {
         setPhoneNumber('');
       }
     } catch (error: any) {
+      const translatedError = translateAuthError(error.message || '', language);
       toast({
         variant: "destructive",
         title: t('auth.signupErrorTitle'),
-        description: error.message || t('auth.signupErrorDesc'),
+        description: translatedError,
       });
     } finally {
       setIsLoading(false);
@@ -450,25 +466,29 @@ export default function Auth() {
                      id="signup-password"
                      type={showSignUpPassword ? "text" : "password"}
                      placeholder={"••••••••"}
-                     value={password}
-                     onChange={(e) => setPassword(e.target.value)}
-                     required
-                     className="pr-10"
-                   />
-                   <button
-                     type="button"
-                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                     onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                   >
-                     {showSignUpPassword ? (
-                       <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                     ) : (
-                       <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                     )}
-                   </button>
-                 </div>
-               </div>
-                <Button 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                    >
+                      {showSignUpPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Validação visual da senha em tempo real */}
+                <PasswordValidation password={password} />
+                
+                <Button
                   type="submit" 
                   className="w-full" 
                   disabled={isLoading}
