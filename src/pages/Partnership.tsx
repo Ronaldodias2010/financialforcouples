@@ -376,10 +376,10 @@ const Partnership = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="audience">{t('partnership.form.audience')} *</Label>
-                    <Select value={formData.audienceType} onValueChange={(value) => setFormData(prev => ({ ...prev, audienceType: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo de audiência" />
-                      </SelectTrigger>
+                     <Select value={formData.audienceType} onValueChange={(value) => setFormData(prev => ({ ...prev, audienceType: value }))}>
+                       <SelectTrigger>
+                         <SelectValue placeholder={t('partnership.form.audienceSelectPlaceholder')} />
+                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="lifestyle">{t('partnership.form.audienceOptions.lifestyle')}</SelectItem>
                         <SelectItem value="finance">{t('partnership.form.audienceOptions.finance')}</SelectItem>
@@ -393,17 +393,17 @@ const Partnership = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="socialMedia">{t('partnership.form.socialMedia')} *</Label>
-                    <Textarea
-                      id="socialMedia"
-                      value={formData.socialMedia}
-                      onChange={(e) => setFormData(prev => ({ ...prev, socialMedia: e.target.value }))}
-                      placeholder="Instagram: @seuusuario, YouTube: youtube.com/seucanal, TikTok: @seuusuario, LinkedIn: linkedin.com/in/seuperfil..."
-                      rows={3}
-                      required
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Informe seus principais canais de mídia social para avaliarmos sua audiência.
-                    </p>
+                     <Textarea
+                       id="socialMedia"
+                       value={formData.socialMedia}
+                       onChange={(e) => setFormData(prev => ({ ...prev, socialMedia: e.target.value }))}
+                       placeholder={t('partnership.form.socialMediaPlaceholder')}
+                       rows={3}
+                       required
+                     />
+                     <p className="text-sm text-muted-foreground">
+                       {t('partnership.form.socialMediaHelper')}
+                     </p>
                   </div>
                   
                   <Button 
