@@ -51,21 +51,12 @@ const HeroSection = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Content */}
             <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-2 sm:px-4">
-            {/* SEO-optimized headers */}
-            <header role="banner">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
-                  Gestão Financeira para Casais
-                </span>
-                <br />
-                <span className="text-white/90 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-                  Controle Financeiro Casal
-                </span>
-              </h1>
-              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white/80 mt-4">
-                App para Orçamento Familiar e Investimentos
-              </h2>
-            </header>
+            {/* Main title - clean and elegant */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
+                Couples Financials
+              </span>
+            </h1>
             
             <div className="flex justify-center lg:justify-start mb-4 lg:mb-6">
               <div
@@ -105,9 +96,7 @@ const HeroSection = () => {
             
             {/* Description */}
             <p className="text-sm sm:text-base lg:text-lg text-white/80 max-w-xl mx-auto lg:mx-0">
-              A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, 
-              compartilharem gastos e realizarem sonhos juntos. Aplicativo para controle financeiro casal 
-              com orçamento familiar, investimentos e muito mais.
+              {t('hero.mainDescription')}
             </p>
             
             {/* CTA Buttons */}
