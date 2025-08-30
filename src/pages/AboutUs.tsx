@@ -277,29 +277,29 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
           {/* Couple Photos Section */}
           <section>
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-0 shadow-sm overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="aspect-square bg-muted/30 flex items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-lg">
+              <Card className="border-2 border-dashed border-primary/40 shadow-lg p-4 bg-background/50">
+                <CardContent className="p-4">
+                  <div className="aspect-square bg-muted/20 flex items-center justify-center border-3 border-dashed border-primary/60 rounded-xl p-6">
                     <div className="text-center text-muted-foreground">
-                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
-                        <Heart className="h-8 w-8" />
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary/40">
+                        <Heart className="h-10 w-10 text-primary/70" />
                       </div>
-                      <p className="text-sm font-medium">Foto do Casal 1</p>
-                      <p className="text-xs mt-1">Será adicionada em breve</p>
+                      <p className="text-base font-medium text-foreground">📸 Foto do Casal 1</p>
+                      <p className="text-sm mt-2 text-muted-foreground">Adicionar foto aqui</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="border-0 shadow-sm overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="aspect-square bg-muted/30 flex items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-lg">
+              <Card className="border-2 border-dashed border-primary/40 shadow-lg p-4 bg-background/50">
+                <CardContent className="p-4">
+                  <div className="aspect-square bg-muted/20 flex items-center justify-center border-3 border-dashed border-primary/60 rounded-xl p-6">
                     <div className="text-center text-muted-foreground">
-                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
-                        <Users className="h-8 w-8" />
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary/40">
+                        <Users className="h-10 w-10 text-primary/70" />
                       </div>
-                      <p className="text-sm font-medium">Foto do Casal 2</p>
-                      <p className="text-xs mt-1">Será adicionada em breve</p>
+                      <p className="text-base font-medium text-foreground">📸 Foto do Casal 2</p>
+                      <p className="text-sm mt-2 text-muted-foreground">Adicionar foto aqui</p>
                     </div>
                   </div>
                 </CardContent>
