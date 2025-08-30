@@ -20,13 +20,16 @@ const Footer = () => {
   return (
     <footer className="bg-foreground text-background py-12">
       {/* Partner highlight banner */}
-      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary py-6 text-center">
+      <Link 
+        to="/parceria" 
+        className="block bg-gradient-to-r from-primary via-primary-glow to-primary py-6 text-center hover:from-primary-glow hover:via-primary hover:to-primary-glow transition-all duration-300"
+      >
         <div className="container mx-auto px-4">
           <p className="text-white font-semibold text-lg md:text-xl leading-relaxed">
-            💼 Seja nosso parceiro, transforme sua audiência em oportunidades. Indique e ganhe junto com eles.
+            {t('footer.partnerBanner')}
           </p>
         </div>
-      </div>
+      </Link>
       
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

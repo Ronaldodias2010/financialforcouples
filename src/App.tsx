@@ -20,6 +20,7 @@ import LandingSimple from "./pages/LandingSimple";
 const PrivacyPolicy = lazy(() => import("./components/landing/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
 const AboutUs = lazy(() => import("./pages/AboutUs"));
+const Partnership = lazy(() => import("./pages/Partnership"));
 import Auth from "./pages/Auth";
 const Landing = lazy(() => import("./pages/Landing"));
 const DirectCheckout = lazy(() => import("./pages/DirectCheckout"));
@@ -89,6 +90,9 @@ const AppRoutes = () => {
                         <Route path="/terms" element={<TermsOfUse />} />
                         <Route path="/sobre-nos" element={<AboutUs />} />
                         <Route path="/about-us" element={<AboutUs />} />
+                        <Route path="/parceria" element={<Partnership />} />
+                        <Route path="/partnership" element={<Partnership />} />
+                        <Route path="/asociacion" element={<Partnership />} />
                         
                         {/* Protected Routes */}
                         <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
