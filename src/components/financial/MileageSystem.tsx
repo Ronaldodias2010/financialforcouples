@@ -531,10 +531,19 @@ export const MileageSystem = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+        <Card 
+          className="border"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--cherry-light) / 0.08), hsl(var(--background)))",
+            borderColor: "hsl(var(--cherry-light) / 0.2)"
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('mileage.totalMiles')}</CardTitle>
-            <Plane className="h-4 w-4 text-muted-foreground" />
+            <Plane 
+              className="h-4 w-4"
+              style={{ color: "hsl(var(--cherry-light))" }}
+            />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalMiles.toLocaleString()}</div>
@@ -542,10 +551,19 @@ export const MileageSystem = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="border"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--blue-soft) / 0.1), hsl(var(--background)))",
+            borderColor: "hsl(var(--blue-soft) / 0.3)"
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('mileage.activeCards')}</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CreditCard 
+              className="h-4 w-4"
+              style={{ color: "hsl(var(--blue-soft) / 0.8)" }}
+            />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{mileageRules.filter(r => r.is_active).length}</div>
@@ -553,10 +571,16 @@ export const MileageSystem = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="border"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--background)))",
+            borderColor: "hsl(var(--primary) / 0.2)"
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('mileage.activeGoals')}</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <Target className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{mileageGoals.filter(g => !g.is_completed).length}</div>
