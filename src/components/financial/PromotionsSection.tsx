@@ -169,45 +169,49 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2">
-            <Plane className="h-5 w-5" />
-            Promoções de Companhias Aéreas
-            {activeFiltersCount > 0 && (
-              <Badge variant="secondary">{activeFiltersCount} filtros</Badge>
-            )}
-            {hiddenCards.size > 0 && !showHidden && (
-              <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-                {hiddenCards.size} escondidos
-              </Badge>
-            )}
-          </CardTitle>
-          <div className="flex items-center gap-2">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div className="flex flex-col gap-2">
+            <CardTitle className="flex items-center gap-2 flex-wrap">
+              <Plane className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-base sm:text-lg">Promoções de Companhias Aéreas</span>
+              {activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="text-xs">{activeFiltersCount} filtros</Badge>
+              )}
+              {hiddenCards.size > 0 && !showHidden && (
+                <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs">
+                  {hiddenCards.size} escondidos
+                </Badge>
+              )}
+            </CardTitle>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             {hiddenCards.size > 0 && (
               <Button
                 variant={showHidden ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowHidden(!showHidden)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-xs sm:text-sm"
               >
-                {showHidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                {showHidden ? 'Ver ativos' : `Ver escondidos (${hiddenCards.size})`}
+                {showHidden ? <Eye className="h-3 w-3 sm:h-4 sm:w-4" /> : <EyeOff className="h-3 w-3 sm:h-4 sm:w-4" />}
+                <span className="hidden sm:inline">{showHidden ? 'Ver ativos' : `Ver escondidos (${hiddenCards.size})`}</span>
+                <span className="sm:hidden">{showHidden ? 'Ativos' : `Escondidos (${hiddenCards.size})`}</span>
               </Button>
             )}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-xs sm:text-sm"
             >
-              <Filter className="h-4 w-4" />
-              Filtros
+              <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Filtros</span>
+              <span className="sm:hidden">Filtros</span>
             </Button>
             <SyncPromotionsButton onSyncComplete={loadPromotions} />
           </div>
         </div>
-        <CardDescription>
+        <CardDescription className="text-sm">
           {showHidden 
             ? `Exibindo ${hiddenCards.size} promoções escondidas`
             : `Promoções ativas baseadas nas suas milhas (${userTotalMiles.toLocaleString()} milhas)`
@@ -261,7 +265,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
             )}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {visiblePromotions.map((promotion) => {
               const isEligible = !promotion.miles_required || userTotalMiles >= promotion.miles_required;
               const daysRemaining = formatDaysRemaining(promotion.end_date);
@@ -270,36 +274,36 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
               return (
                 <div
                   key={promotion.id}
-                  className={`rounded-lg border p-4 transition-all hover:shadow-md ${
+                  className={`rounded-lg border p-3 sm:p-4 transition-all hover:shadow-md ${
                     isEligible 
                       ? 'border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800' 
                       : 'border-border bg-card'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 min-w-0 flex-1">
                       <Badge 
                         variant="outline" 
-                        className={getPromotionTypeColor(promotion.promotion_type)}
+                        className={`${getPromotionTypeColor(promotion.promotion_type)} text-xs`}
                       >
                         {getPromotionTypeLabel(promotion.promotion_type)}
                       </Badge>
                       {isEligible && (
-                        <Badge variant="default" className="bg-green-600">
+                        <Badge variant="default" className="bg-green-600 text-xs">
                           Elegível
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleFavorite(promotion.id)}
-                        className="h-8 w-8 p-0"
+                        className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                         title={isPromotionFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                       >
                         <Heart 
-                          className={`h-4 w-4 ${isPromotionFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} 
+                          className={`h-3 w-3 sm:h-4 sm:w-4 ${isPromotionFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} 
                         />
                       </Button>
                       {showHidden ? (
@@ -307,78 +311,81 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                           variant="ghost"
                           size="sm"
                           onClick={() => showCard(promotion.id)}
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                           title="Mostrar card novamente"
                         >
-                          <Eye className="h-4 w-4 text-green-600" />
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                         </Button>
                       ) : (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => hideCard(promotion.id)}
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                           title="Esconder card temporariamente"
                         >
-                          <X className="h-4 w-4 text-muted-foreground hover:text-red-500" />
+                          <X className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hover:text-red-500" />
                         </Button>
                       )}
-                      <p className="text-xs text-muted-foreground">{daysRemaining}</p>
                     </div>
+                  </div>
+                  
+                  <div className="mb-1 sm:mb-2">
+                    <p className="text-xs text-muted-foreground text-right">{daysRemaining}</p>
                   </div>
 
                   <div className="mb-3">
-                    <h4 className="font-semibold text-sm mb-1">{promotion.airline_name}</h4>
-                    <h3 className="font-bold text-base mb-2">{promotion.title}</h3>
-                    <p className="text-sm text-muted-foreground">{promotion.description}</p>
+                    <h4 className="font-semibold text-xs sm:text-sm mb-1">{promotion.airline_name}</h4>
+                    <h3 className="font-bold text-sm sm:text-base mb-2 line-clamp-2">{promotion.title}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{promotion.description}</p>
                   </div>
 
                   {promotion.route_from && promotion.route_to && (
-                    <div className="flex items-center gap-2 mb-2 text-sm">
-                      <Plane className="h-4 w-4" />
-                      <span>{promotion.route_from} → {promotion.route_to}</span>
+                    <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm">
+                      <Plane className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">{promotion.route_from} → {promotion.route_to}</span>
                     </div>
                   )}
 
                   {promotion.miles_required && (
-                    <div className="flex items-center gap-2 mb-2 text-sm">
-                      <Target className="h-4 w-4" />
-                      <span>{promotion.miles_required.toLocaleString()} milhas necessárias</span>
+                    <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm">
+                      <Target className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">{promotion.miles_required.toLocaleString()} milhas necessárias</span>
                     </div>
                   )}
 
                   {promotion.bonus_percentage && (
-                    <div className="flex items-center gap-2 mb-2 text-sm text-green-600">
-                      <Gift className="h-4 w-4" />
+                    <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm text-green-600">
+                      <Gift className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                       <span>+{promotion.bonus_percentage}% de bônus</span>
                     </div>
                   )}
 
                   {promotion.discount_percentage && (
-                    <div className="flex items-center gap-2 mb-2 text-sm text-blue-600">
-                      <Percent className="h-4 w-4" />
+                    <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm text-blue-600">
+                      <Percent className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                       <span>{promotion.discount_percentage}% de desconto</span>
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 mt-4">
+                  <div className="flex flex-col sm:flex-row items-stretch gap-2 mt-4">
                     <Button 
                       size="sm" 
-                      className="flex-1"
+                      className="flex-1 text-xs sm:text-sm"
                       onClick={() => promotion.promotion_url && window.open(promotion.promotion_url, '_blank')}
                     >
                       Ver Promoção
-                      <ExternalLink className="h-4 w-4 ml-2" />
+                      <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 ml-2" />
                     </Button>
                     {showHidden && (
                       <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => showCard(promotion.id)}
-                        className="flex items-center gap-2"
+                        className="flex items-center justify-center gap-2 text-xs sm:text-sm"
                       >
-                        <Eye className="h-4 w-4" />
-                        Restaurar
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Restaurar</span>
                       </Button>
                     )}
                   </div>

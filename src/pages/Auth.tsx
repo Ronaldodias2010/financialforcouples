@@ -258,33 +258,33 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-primary/20">
-        <CardHeader className="text-center space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <Card className="w-full max-w-md mx-auto bg-card/80 backdrop-blur-sm border-primary/20">
+        <CardHeader className="text-center space-y-4 px-4 sm:px-6 pt-4 sm:pt-6">
           <div className="flex justify-end">
-            <div className="inline-flex gap-2">
-              <Button variant={language === 'pt' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('pt')}>PT</Button>
-              <Button variant={language === 'en' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('en')}>EN</Button>
-              <Button variant={language === 'es' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('es')}>ES</Button>
+            <div className="inline-flex gap-1 sm:gap-2">
+              <Button variant={language === 'pt' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('pt')} className="text-xs sm:text-sm px-2 sm:px-3">PT</Button>
+              <Button variant={language === 'en' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('en')} className="text-xs sm:text-sm px-2 sm:px-3">EN</Button>
+              <Button variant={language === 'es' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('es')} className="text-xs sm:text-sm px-2 sm:px-3">ES</Button>
             </div>
           </div>
           <div className="flex justify-center">
             <img 
               src="/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png" 
               alt="Financial App Logo" 
-              className="h-32 w-32 object-contain"
+              className="h-24 w-24 sm:h-32 sm:w-32 object-contain"
             />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <CardTitle className="text-xl sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               {t('auth.appName')}
             </CardTitle>
-            <CardDescription className="text-muted-foreground mt-2">
+            <CardDescription className="text-muted-foreground mt-2 text-sm sm:text-base">
               {t('auth.tagline')}
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
           {isInviteAccess && (
             <Alert className="mb-4 border-primary/20 bg-primary/5">
               <Mail className="h-4 w-4" />
@@ -295,9 +295,9 @@ export default function Auth() {
           )}
           
           <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
-              <TabsTrigger value="signup" disabled={isInviteAccess}>
+            <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10">
+              <TabsTrigger value="signin" className="text-sm sm:text-base">{t('auth.signIn')}</TabsTrigger>
+              <TabsTrigger value="signup" disabled={isInviteAccess} className="text-sm sm:text-base">
                 {t('auth.signUp')}
               </TabsTrigger>
             </TabsList>
