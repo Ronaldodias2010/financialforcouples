@@ -412,8 +412,8 @@ const translations = {
     'smartMileage.cta': 'Ativar Notificações',
     'smartMileage.notification.title': 'Promoção Disponível!',
     'smartMileage.notification.subtitle': 'Você tem milhas suficientes',
-    'smartMileage.notification.promotion': 'LATAM - São Paulo → Rio de Janeiro',
-    'smartMileage.notification.miles': '25.000 milhas',
+    'smartMileage.notification.promotion': 'LATAM - São Paulo → Miami',
+    'smartMileage.notification.miles': '75.000 milhas',
     'smartMileage.notification.savings': 'Economize R$ 350',
     
     // TransactionForm
@@ -2685,8 +2685,8 @@ const translations = {
     'smartMileage.cta': 'Enable Notifications',
     'smartMileage.notification.title': 'Promotion Available!',
     'smartMileage.notification.subtitle': 'You have enough miles',
-    'smartMileage.notification.promotion': 'LATAM - São Paulo → Rio de Janeiro',
-    'smartMileage.notification.miles': '25,000 miles',
+    'smartMileage.notification.promotion': 'LATAM - São Paulo → Miami',
+    'smartMileage.notification.miles': '75,000 miles',
     'smartMileage.notification.savings': 'Save $60',
   },
   
@@ -4007,8 +4007,8 @@ const translations = {
     'smartMileage.cta': 'Activar Notificaciones',
     'smartMileage.notification.title': '¡Promoción Disponible!',
     'smartMileage.notification.subtitle': 'Tienes millas suficientes',
-    'smartMileage.notification.promotion': 'LATAM - São Paulo → Rio de Janeiro',
-    'smartMileage.notification.miles': '25.000 millas',
+    'smartMileage.notification.promotion': 'LATAM - São Paulo → Miami',
+    'smartMileage.notification.miles': '75.000 millas',
     'smartMileage.notification.savings': 'Ahorra $60',
   },
 };
