@@ -55,7 +55,7 @@ const HeroSection = () => {
           {/* Content */}
             <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-2 sm:px-4">
             {/* Main title - clean and elegant */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 sm:mb-8">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
                 Couples Financials
               </span>
