@@ -45,17 +45,11 @@ const SmartMileageSection = () => {
                 <Target className="w-4 h-4 mr-2" />
                 {t('smartMileage.badge')}
               </Badge>
-              <h2 
-                className="text-4xl font-bold leading-tight pb-1"
-                style={{
-                  background: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--blue-soft) / 0.8), hsl(var(--primary)))",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  color: "transparent",
-                  lineHeight: "1.2"
-                }}
-              >
-                {t('smartMileage.title')}
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                {t('smartMileage.title')}{" "}
+                <span className="bg-hero-gradient bg-clip-text text-transparent">
+                  {t('smartMileage.title.highlight')}
+                </span>
               </h2>
               <p className="text-xl text-muted-foreground">
                 {t('smartMileage.subtitle')}
