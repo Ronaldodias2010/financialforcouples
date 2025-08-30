@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to admin
     const emailResponse = await resend.emails.send({
-      from: "Couples Financials <noreply@couplesfinancials.com.br>",
+      from: "Couples Financials <noreply@couplesfinancials.com>",
       to: ["contato@couplesfinancials.com.br"],
       subject: `Nova Solicitação de Parceria - ${name}`,
       html: `

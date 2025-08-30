@@ -52,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const emailResponse = await resend.emails.send({
-      from: "Couples Financials <noreply@couplesfinancials.com.br>",
+      from: "Couples Financials <noreply@couplesfinancials.com>",
       to: [partnerEmail],
       subject: "🎉 Sua solicitação de parceria foi aprovada!",
       html: `
