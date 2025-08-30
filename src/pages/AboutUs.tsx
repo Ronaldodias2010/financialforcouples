@@ -326,7 +326,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
                 <CardContent className="p-0">
                   <div className="aspect-square">
                     <img 
-                      src="/lovable-uploads/005e71bd-a61e-47c0-b5b8-9e577ae8a19d.png" 
+                      src="/lovable-uploads/ba0734ec-c81a-4476-8d2b-cdc7f71ccefc.png" 
                       alt="Casal Couples Financials - Fundadores da plataforma"
                       className="w-full h-full object-cover"
                     />
