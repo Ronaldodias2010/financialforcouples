@@ -30,6 +30,7 @@ interface PromoCode {
   reward_type?: string;
   reward_currency?: string;
   reward_description?: string;
+  reward_amount?: number;
 }
 
 interface ApprovedPartner {
@@ -476,6 +477,13 @@ export const PromoCodesManager = () => {
                     {promo.partner_email ? (
                       <div className="text-sm">
                         <div className="font-medium">{promo.partner_email}</div>
+                        {/* Get partner name from approved partners list */}
+                        {(() => {
+                          const partner = approvedPartners.find(p => p.email === promo.partner_email);
+                          return partner ? (
+                            <div className="text-muted-foreground text-xs">{partner.name}</div>
+                          ) : null;
+                        })()}
                       </div>
                     ) : (
                       <span className="text-muted-foreground">-</span>
@@ -483,14 +491,24 @@ export const PromoCodesManager = () => {
                   </TableCell>
                   <TableCell>
                     {promo.reward_type === 'monetary' ? (
-                      <div className="text-sm">
-                        <span className="font-medium">{promo.reward_currency} {promo.discount_value?.toFixed(2)}</span>
-                        <div className="text-muted-foreground">por uso</div>
+                      <div className="flex items-center gap-1 text-sm">
+                        <span className="text-lg">💰</span>
+                        <div>
+                          <div className="font-medium">
+                            {promo.reward_currency === 'USD' ? '$' : 'R$'} {(promo.reward_amount || promo.discount_value)?.toFixed(2)}
+                          </div>
+                          <div className="text-muted-foreground text-xs">por conversão</div>
+                        </div>
                       </div>
                     ) : (
-                      <div className="text-sm">
-                        <div className="font-medium">Outro tipo</div>
-                        <div className="text-muted-foreground text-xs">{promo.reward_description}</div>
+                      <div className="flex items-center gap-1 text-sm">
+                        <span className="text-lg">🎁</span>
+                        <div>
+                          <div className="font-medium">Personalizada</div>
+                          <div className="text-muted-foreground text-xs max-w-[150px] truncate" title={promo.reward_description}>
+                            {promo.reward_description || 'Recompensa especial'}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </TableCell>
