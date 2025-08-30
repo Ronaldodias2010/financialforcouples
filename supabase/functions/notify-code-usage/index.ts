@@ -107,14 +107,14 @@ const handler = async (req: Request): Promise<Response> => {
               Quanto mais pessoas usarem seu código <strong>${codeUsed}</strong>, maior será sua renda mensal!
             </p>
             <p style="color: #475569; margin: 0;">
-              Lembre sua audiência de acessar <strong>couplesfinancials.com.br</strong> e usar seu código no cadastro.
+              Lembre sua audiência de acessar <strong>couplesfinancials.com</strong> e usar seu código no cadastro.
             </p>
           </div>
 
           <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; border-left: 4px solid #0284c7;">
             <h4 style="color: #0369a1; margin: 0 0 8px 0;">📞 Dúvidas ou Suporte</h4>
             <p style="margin: 0; color: #0369a1; font-size: 14px;">
-              Entre em contato: <strong>contato@couplesfinancials.com.br</strong><br>
+              Entre em contato: <strong>contato@couplesfinancials.com</strong><br>
               Estamos aqui para apoiar seu sucesso!
             </p>
           </div>

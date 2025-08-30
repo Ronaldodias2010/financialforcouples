@@ -90,7 +90,7 @@ const handler = async (req: Request): Promise<Response> => {
             <h3 style="color: #1e293b; margin: 0 0 16px 0;">📝 Como Usar Seu Código</h3>
             <ol style="color: #475569; margin: 0; padding-left: 20px;">
               <li>Compartilhe seu código <strong>${referralCode}</strong> com sua audiência</li>
-              <li>Oriente para acessarem: <strong>couplesfinancials.com.br</strong></li>
+              <li>Oriente para acessarem: <strong>couplesfinancials.com</strong></li>
               <li>No cadastro, eles devem inserir seu código na seção "Código Promocional"</li>
               <li>Acompanhe seus resultados no painel que enviaremos mensalmente</li>
             </ol>
@@ -99,7 +99,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; border-left: 4px solid #0284c7;">
             <h4 style="color: #0369a1; margin: 0 0 8px 0;">📞 Suporte e Dúvidas</h4>
             <p style="margin: 0; color: #0369a1; font-size: 14px;">
-              Entre em contato conosco: <strong>contato@couplesfinancials.com.br</strong><br>
+              Entre em contato conosco: <strong>contato@couplesfinancials.com</strong><br>
               Estamos aqui para ajudar você a ter sucesso em nossa parceria!
             </p>
           </div>
