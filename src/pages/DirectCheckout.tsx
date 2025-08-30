@@ -358,16 +358,16 @@ const DirectCheckout = () => {
                      <div>
                        <Label htmlFor="password">{t('directCheckout.password')}</Label>
                        <div className="relative">
-                         <Input
-                           id="password"
-                           type={showPassword ? "text" : "password"}
-                           placeholder={t('directCheckout.passwordPlaceholder')}
-                           value={formData.password}
-                           onChange={handleInputChange}
-                           required
-                           minLength={6}
-                           className="pr-10"
-                         />
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            required
+                            minLength={6}
+                            className="pr-10"
+                          />
                          <button
                            type="button"
                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -381,15 +381,15 @@ const DirectCheckout = () => {
                       <div>
                         <Label htmlFor="confirmPassword">{t('directCheckout.confirmPassword')}</Label>
                         <div className="relative">
-                          <Input
-                            id="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder={t('directCheckout.confirmPasswordPlaceholder')}
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            required
-                            className="pr-10"
-                          />
+                           <Input
+                             id="confirmPassword"
+                             type={showConfirmPassword ? "text" : "password"}
+                             placeholder="••••••••"
+                             value={formData.confirmPassword}
+                             onChange={handleInputChange}
+                             required
+                             className="pr-10"
+                           />
                           <button
                             type="button"
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"

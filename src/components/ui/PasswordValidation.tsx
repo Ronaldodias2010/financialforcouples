@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Square } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 
 interface PasswordValidationProps {
@@ -9,16 +9,25 @@ interface PasswordValidationProps {
 interface ValidationItemProps {
   isValid: boolean;
   text: string;
+  hasPassword: boolean;
 }
 
-const ValidationItem = ({ isValid, text }: ValidationItemProps) => (
+const ValidationItem = ({ isValid, text, hasPassword }: ValidationItemProps) => (
   <div className="flex items-center space-x-2">
-    {isValid ? (
+    {!hasPassword ? (
+      <Square className="h-3 w-3 text-muted-foreground" />
+    ) : isValid ? (
       <CheckCircle className="h-3 w-3 text-green-500" />
     ) : (
       <XCircle className="h-3 w-3 text-red-500" />
     )}
-    <span className={`text-xs ${isValid ? 'text-green-500' : 'text-red-500'}`}>
+    <span className={`text-xs ${
+      !hasPassword 
+        ? 'text-muted-foreground' 
+        : isValid 
+          ? 'text-green-500' 
+          : 'text-red-500'
+    }`}>
       {text}
     </span>
   </div>
@@ -44,8 +53,7 @@ export const validatePassword = (password: string) => {
 export const PasswordValidation = ({ password, className = "" }: PasswordValidationProps) => {
   const { t } = useLanguage();
   const validation = validatePassword(password);
-
-  if (!password) return null;
+  const hasPassword = password.length > 0;
 
   return (
     <div className={`bg-muted/50 p-3 rounded-md space-y-1.5 ${className}`}>
@@ -53,22 +61,27 @@ export const PasswordValidation = ({ password, className = "" }: PasswordValidat
       <ValidationItem 
         isValid={validation.hasMinLength} 
         text={t('password.validation.minLength')} 
+        hasPassword={hasPassword}
       />
       <ValidationItem 
         isValid={validation.hasUppercase} 
         text={t('password.validation.uppercase')} 
+        hasPassword={hasPassword}
       />
       <ValidationItem 
         isValid={validation.hasLowercase} 
         text={t('password.validation.lowercase')} 
+        hasPassword={hasPassword}
       />
       <ValidationItem 
         isValid={validation.hasNumber} 
         text={t('password.validation.number')} 
+        hasPassword={hasPassword}
       />
       <ValidationItem 
         isValid={validation.hasSpecialChar} 
         text={t('password.validation.specialChar')} 
+        hasPassword={hasPassword}
       />
     </div>
   );
