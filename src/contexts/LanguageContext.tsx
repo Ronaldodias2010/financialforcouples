@@ -23,9 +23,11 @@ const translations = {
     'password.validation.number': 'Pelo menos 1 número',
     'password.validation.match': 'Senhas coincidem',
     'password.validation.noMatch': 'Senhas não coincidem',
-    'password.error.invalid': 'A senha deve atender todos os critérios de segurança.',
-    'password.error.noMatch': 'As senhas digitadas devem ser iguais.',
-    'password.error.weakTitle': 'Senha muito fraca',
+     'password.error.invalid': 'A senha deve atender todos os critérios de segurança.',
+     'password.error.noMatch': 'As senhas digitadas devem ser iguais.',
+     'password.error.weakTitle': 'Senha muito fraca',
+     'password.error.mismatchTitle': 'Senhas não coincidem',
+     'password.error.mismatch': 'As senhas digitadas devem ser iguais.',
     'password.error.emailNotConfirmed': 'E-mail não confirmado. Verifique sua caixa de entrada.',
     'password.error.invalidCredentials': 'Credenciais inválidas. Verifique seu e-mail e senha.',
     'password.error.userNotFound': 'Usuário não encontrado.',
@@ -1433,8 +1435,22 @@ const translations = {
     'monthlyIncome.pdfTotalIncome': 'Total de Receitas',
   },
   
-  en: {
-    // Hero Section
+   en: {
+     // Password Validation
+     'password.validation.title': 'Security criteria:',
+     'password.validation.minLength': 'Minimum 6 characters',
+     'password.validation.uppercase': 'At least 1 uppercase letter',
+     'password.validation.lowercase': 'At least 1 lowercase letter',
+     'password.validation.number': 'At least 1 number',
+     'password.validation.match': 'Passwords match',
+     'password.validation.noMatch': 'Passwords do not match',
+     'password.error.invalid': 'Password must meet all security criteria.',
+     'password.error.noMatch': 'The passwords entered must be the same.',
+     'password.error.weakTitle': 'Password too weak',
+     'password.error.mismatchTitle': 'Passwords do not match',
+     'password.error.mismatch': 'The passwords entered must be the same.',
+     
+     // Hero Section
     'hero.badge': 'Launch',
     'nav.aboutUs': 'About Us',
     'hero.title': 'Couples Financials',
@@ -2834,8 +2850,22 @@ const translations = {
     'smartMileage.notification.savings': 'Save $60',
   },
   
-  es: {
-    // Hero Section
+   es: {
+     // Password Validation
+     'password.validation.title': 'Criterios de seguridad:',
+     'password.validation.minLength': 'Mínimo 6 caracteres',
+     'password.validation.uppercase': 'Al menos 1 letra mayúscula',
+     'password.validation.lowercase': 'Al menos 1 letra minúscula',
+     'password.validation.number': 'Al menos 1 número',
+     'password.validation.match': 'Las contraseñas coinciden',
+     'password.validation.noMatch': 'Las contraseñas no coinciden',
+     'password.error.invalid': 'La contraseña debe cumplir todos los criterios de seguridad.',
+     'password.error.noMatch': 'Las contraseñas ingresadas deben ser iguales.',
+     'password.error.weakTitle': 'Contraseña muy débil',
+     'password.error.mismatchTitle': 'Las contraseñas no coinciden',
+     'password.error.mismatch': 'Las contraseñas ingresadas deben ser iguales.',
+     
+     // Hero Section
     'hero.badge': 'Lanzamiento',
     'nav.aboutUs': 'Sobre Nosotros',
     'hero.title': 'Couples Financials',

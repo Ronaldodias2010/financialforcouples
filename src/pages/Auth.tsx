@@ -16,6 +16,7 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
@@ -158,7 +159,7 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !phoneNumber) {
+    if (!email || !password || !confirmPassword || !phoneNumber) {
       toast({
         variant: "destructive",
         title: t('auth.fieldsRequired'),
@@ -174,6 +175,16 @@ export default function Auth() {
         variant: "destructive",
         title: t('password.error.weakTitle'),
         description: t('password.error.invalid'),
+      });
+      return;
+    }
+
+    // Validar se as senhas coincidem
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: t('password.error.mismatchTitle'),
+        description: t('password.error.mismatch'),
       });
       return;
     }
@@ -218,6 +229,7 @@ export default function Auth() {
         // Limpar formulário
         setEmail('');
         setPassword('');
+        setConfirmPassword('');
         setDisplayName('');
         setPhoneNumber('');
       }
@@ -459,34 +471,51 @@ export default function Auth() {
                      {language === 'pt' ? 'Campo obrigatório para contato' : 'Required field for contact'}
                    </p>
                  </div>
-               <div className="space-y-2">
-                 <Label htmlFor="signup-password">{t('auth.password')}</Label>
-                 <div className="relative">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showSignUpPassword ? "text" : "password"}
+                      placeholder={"••••••••"}
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       required
+                       className="pr-10"
+                     />
+                     <button
+                       type="button"
+                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                       onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                     >
+                       {showSignUpPassword ? (
+                         <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                       ) : (
+                         <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                       )}
+                     </button>
+                   </div>
+                 </div>
+                 
+                 {/* Validação visual da senha em tempo real */}
+                 <PasswordValidation password={password} />
+
+                 <div className="space-y-2">
+                   <Label htmlFor="confirm-password">{t('auth.confirmPassword')}</Label>
                    <Input
-                     id="signup-password"
-                     type={showSignUpPassword ? "text" : "password"}
+                     id="confirm-password"
+                     type="password"
                      placeholder={"••••••••"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                    >
-                      {showSignUpPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Validação visual da senha em tempo real */}
-                <PasswordValidation password={password} />
+                     value={confirmPassword}
+                     onChange={(e) => setConfirmPassword(e.target.value)}
+                     required
+                   />
+                 </div>
+                 
+                 {/* Validação de correspondência das senhas */}
+                 {confirmPassword && (
+                   <PasswordMatchValidation passwordsMatch={password === confirmPassword} />
+                 )}
                 
                 <Button
                   type="submit" 
