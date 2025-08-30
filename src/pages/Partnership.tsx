@@ -45,21 +45,21 @@ const Partnership = () => {
       el.setAttribute("content", content);
     };
 
-    setMeta("description", "Torne-se um parceiro influenciador da Couples Financials. Ganhe comissões exclusivas promovendo a melhor plataforma financeira para casais.");
-    setMeta("keywords", "parceiro influenciador, programa afiliados, códigos promocionais, comissões, couples financials");
+    setMeta("description", t('partnership.seo.description'));
+    setMeta("keywords", t('partnership.seo.keywords'));
 
     // Structured data for Service
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "Service",
-      "name": "Programa de Parceria Influenciadores",
+      "name": t('partnership.seo.name'),
       "provider": {
         "@type": "Organization",
         "name": "Couples Financials"
       },
-      "description": "Programa de parcerias para influenciadores digitais promoverem gestão financeira para casais",
-      "serviceType": "Programa de Afiliados",
-      "areaServed": "BR"
+      "description": t('partnership.seo.description'),
+      "serviceType": t('partnership.seo.serviceType'),
+      "areaServed": t('partnership.seo.areaServed')
     };
 
     let script = document.querySelector('script[type="application/ld+json"]');
