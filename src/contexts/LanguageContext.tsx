@@ -400,7 +400,8 @@ const translations = {
 
     // Smart Mileage Section
     'smartMileage.badge': 'Exclusivo',
-    'smartMileage.title': 'Notificações Inteligentes de Milhas',
+    'smartMileage.title': 'Notificações Inteligentes de',
+    'smartMileage.title.highlight': 'Milhas',
     'smartMileage.subtitle': 'Seja alertado automaticamente quando suas milhas podem ser usadas em promoções exclusivas',
     'smartMileage.benefit1.title': 'Alertas Automáticos',
     'smartMileage.benefit1.description': 'Sistema monitora promoções 24/7 e te avisa quando você tem milhas suficientes',
@@ -2672,7 +2673,8 @@ const translations = {
 
     // Smart Mileage Section
     'smartMileage.badge': 'Exclusive',
-    'smartMileage.title': 'Smart Mileage Notifications',
+    'smartMileage.title': 'Smart Mileage',
+    'smartMileage.title.highlight': 'Notifications',
     'smartMileage.subtitle': 'Get automatically notified when your miles can be used for exclusive promotions',
     'smartMileage.benefit1.title': 'Automatic Alerts',
     'smartMileage.benefit1.description': 'System monitors promotions 24/7 and alerts you when you have enough miles',
@@ -3993,7 +3995,8 @@ const translations = {
 
     // Smart Mileage Section
     'smartMileage.badge': 'Exclusivo',
-    'smartMileage.title': 'Notificaciones Inteligentes de Millas',
+    'smartMileage.title': 'Notificaciones Inteligentes de',
+    'smartMileage.title.highlight': 'Millas',
     'smartMileage.subtitle': 'Recibe alertas automáticas cuando tus millas pueden usarse en promociones exclusivas',
     'smartMileage.benefit1.title': 'Alertas Automáticas',
     'smartMileage.benefit1.description': 'El sistema monitorea promociones 24/7 y te avisa cuando tienes millas suficientes',
