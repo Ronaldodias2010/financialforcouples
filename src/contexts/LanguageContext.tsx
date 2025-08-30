@@ -21,7 +21,7 @@ const translations = {
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Controle suas finanças de forma inteligente',
     'hero.description': 'Idealizado para casais, mas recomendamos para todos. Planeje, economize e invista com ajuda da IA.',
-    'hero.mainDescription': 'A primeira plataforma criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. Aplicativo para controle financeiro com orçamento familiar, investimentos, controle de milhagem IA e muito mais.',
+    'hero.mainDescription': 'A primeira plataforma criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. Aplicativo para controle financeiro com orçamento familiar, investimentos, controle de milhagem, IA e muito mais.',
     'hero.cta.free': 'Baixe Gratuitamente (PWA)',
     'hero.cta.access': 'Acesse gratuitamente',
     'hero.cta.premium': 'Experimente a versão com IA',
