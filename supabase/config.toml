@@ -20,3 +20,12 @@ verify_jwt = true
 
 [functions.ai-financial-consultant]
 verify_jwt = true
+
+[functions.send-approval-email]
+verify_jwt = false
+
+[functions.notify-code-usage]
+verify_jwt = false
+
+[functions.test-partner-email]
+verify_jwt = false

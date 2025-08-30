@@ -98,7 +98,15 @@ export const PartnershipApplicationsManager = () => {
       if (!application) throw new Error('Aplicação não encontrada');
 
       if (approved) {
-        // Just update application status to approved - no code creation yet
+        // First, generate a unique referral code
+        const { data: codeData, error: codeError } = await supabase
+          .rpc('generate_referral_code');
+
+        if (codeError) throw codeError;
+
+        const newCode = codeData;
+
+        // Update application status to approved and associate with new code
         const { error: updateError } = await supabase
           .from('partnership_applications')
           .update({
@@ -109,7 +117,41 @@ export const PartnershipApplicationsManager = () => {
           .eq('id', applicationId);
 
         if (updateError) throw updateError;
-        toast.success('Parceria aprovada! Agora você pode criar um código promocional para este parceiro.');
+
+        // Create referral code for this partner
+        const { error: codeInsertError } = await supabase
+          .from('referral_codes')
+          .insert({
+            code: newCode,
+            user_id: (await supabase.auth.getUser()).data.user?.id || '',
+            max_uses: 100,
+            reward_amount: 10.00,
+            free_days_granted: 7,
+            expiry_date: null,
+            partner_email: application.email
+          });
+
+        if (codeInsertError) throw codeInsertError;
+
+        // Send approval email with referral code
+        const { error: emailError } = await supabase.functions.invoke('send-approval-email', {
+          body: {
+            applicationId,
+            partnerName: application.name,
+            partnerEmail: application.email,
+            referralCode: newCode,
+            rewardAmount: 10.00,
+            rewardType: 'monetary',
+            rewardCurrency: 'BRL'
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending approval email:', emailError);
+          toast.error('Parceria aprovada mas erro ao enviar email. Verifique os logs.');
+        } else {
+          toast.success('Parceria aprovada e email enviado com sucesso!');
+        }
       } else {
         // Reject application
         const { error: updateError } = await supabase

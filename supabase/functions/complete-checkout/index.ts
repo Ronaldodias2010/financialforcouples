@@ -90,14 +90,17 @@ serve(async (req) => {
 
     // Check if there's a promo code with specific price ID
     let priceId;
+    let promoCodeData = null;
     if (checkoutSession.promo_code) {
       // Validate promo code and get special price ID
       const { data: promoCode } = await supabaseService
         .from('promo_codes')
-        .select('stripe_price_id, discount_value')
+        .select('stripe_price_id, discount_value, partner_email, owner_user_id, code')
         .eq('code', checkoutSession.promo_code)
         .eq('is_active', true)
         .single();
+      
+      promoCodeData = promoCode;
       
       if (promoCode && promoCode.stripe_price_id) {
         priceId = promoCode.stripe_price_id;
@@ -155,6 +158,56 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       })
       .eq("id", checkoutSession.id);
+
+    // If promo code was used, record usage and send notification to partner
+    if (checkoutSession.promo_code && promoCodeData) {
+      try {
+        // Record promo code usage
+        const { data: usageRecord } = await supabaseService
+          .from('promo_code_usage')
+          .insert({
+            promo_code_id: promoCodeData.owner_user_id,
+            user_id: user.id,
+            email: user.email,
+            checkout_session_id: checkoutSession.id,
+            stripe_session_id: stripeSession.id,
+            amount_paid: 0, // Will be updated when payment completes
+            status: 'pending'
+          })
+          .select()
+          .single();
+
+        // Get partner info to send notification
+        if (promoCodeData.partner_email) {
+          const { data: partnerData } = await supabaseService
+            .from('partnership_applications')
+            .select('name')
+            .eq('email', promoCodeData.partner_email)
+            .single();
+
+          // Send notification to partner about code usage
+          await supabaseService.functions.invoke('notify-code-usage', {
+            body: {
+              codeUsed: promoCodeData.code,
+              partnerEmail: promoCodeData.partner_email,
+              partnerName: partnerData?.name || 'Parceiro',
+              newUserEmail: user.email,
+              rewardAmount: 10.00, // Default reward amount
+              rewardCurrency: 'BRL',
+              transactionDate: new Date().toISOString()
+            }
+          });
+
+          logStep("Promo code usage recorded and notification sent", { 
+            code: promoCodeData.code,
+            partner: promoCodeData.partner_email 
+          });
+        }
+      } catch (error) {
+        logStep("Error recording promo usage", { error: error.message });
+        // Don't fail checkout if promo tracking fails
+      }
+    }
 
     return new Response(JSON.stringify({ url: stripeSession.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
