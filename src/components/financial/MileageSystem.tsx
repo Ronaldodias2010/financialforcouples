@@ -571,9 +571,12 @@ export const MileageSystem = () => {
       {/* Main Content */}
       <Tabs defaultValue="rules" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="rules">{t('mileage.rules')}</TabsTrigger>
-          <TabsTrigger value="goals">{t('mileage.goals')}</TabsTrigger>
-          <TabsTrigger value="history">{t('mileage.history')}</TabsTrigger>
+          <TabsTrigger value="rules" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">{t('mileage.rules')}</span>
+            <span className="sm:hidden">Regras</span>
+          </TabsTrigger>
+          <TabsTrigger value="goals" className="text-xs sm:text-sm">{t('mileage.goals')}</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm">{t('mileage.history')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rules" className="space-y-4">
