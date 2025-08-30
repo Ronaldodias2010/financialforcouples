@@ -41,7 +41,7 @@ env:
   ECS_CLUSTER: couples-financials-cluster
   CONTAINER_NAME: couples-financials
   # CloudFront bypass for faster deployments
-  BYPASS_CLOUDFRONT: ${{ github.event.inputs.bypass_cloudfront || 'false' }}
+  BYPASS_CLOUDFRONT: ${{ github.event.inputs.bypass_cloudfront || 'true' }}
   # Configurações Git para resiliência
   GIT_CURL_VERBOSE: 1
   GIT_TRACE_CURL: 1
@@ -288,13 +288,44 @@ jobs:
       working-directory: terraform
       if: github.ref == 'refs/heads/main'
       run: |
-        terraform apply -lock=true -lock-timeout=10m -auto-approve \
-          -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
-          -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
-          -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-          -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}" \
-          -var="cloudfront_create_spa_function=false" \
-          -var="enable_cloudfront=${{ env.BYPASS_CLOUDFRONT == 'false' }}"
+        set -e
+        ENABLE_CF="${{ env.BYPASS_CLOUDFRONT == 'false' }}"
+        echo "BYPASS_CLOUDFRONT=${{ env.BYPASS_CLOUDFRONT }} -> enable_cloudfront=$ENABLE_CF"
+        if [ "$ENABLE_CF" = "true" ]; then
+          echo "Attempting apply with CloudFront enabled..."
+          set +e
+          terraform apply -lock=true -lock-timeout=10m -auto-approve \
+            -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
+            -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
+            -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}" \
+            -var="cloudfront_create_spa_function=false" \
+            -var="enable_cloudfront=true" 2>&1 | tee apply.log
+          APPLY_EXIT=${PIPESTATUS[0]}
+          set -e
+          if grep -q "TooManyDistributions" apply.log; then
+            echo "CloudFront quota exceeded. Falling back to ALB-only deployment..."
+            terraform apply -lock=true -lock-timeout=10m -auto-approve \
+              -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
+              -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
+              -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+              -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}" \
+              -var="cloudfront_create_spa_function=false" \
+              -var="enable_cloudfront=false"
+          elif [ $APPLY_EXIT -ne 0 ]; then
+            echo "Terraform apply failed. See logs above."
+            exit $APPLY_EXIT
+          fi
+        else 
+          echo "Bypass enabled. Applying without CloudFront..."
+          terraform apply -lock=true -lock-timeout=10m -auto-approve \
+            -var="container_image=${{ needs.build-and-push.outputs.image-uri }}" \
+            -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
+            -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}" \
+            -var="cloudfront_create_spa_function=false" \
+            -var="enable_cloudfront=false"
+        fi
 
   # Job de deploy da aplicação no ECS
   deploy-application:
