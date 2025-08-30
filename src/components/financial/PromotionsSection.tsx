@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, ExternalLink, Clock, CheckCircle, Plane } from 'lucide-react';
 
@@ -32,6 +33,7 @@ interface PromotionsSectionProps {
 export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [promotions, setPromotions] = useState<AirlinePromotion[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,8 +64,8 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
     } catch (error) {
       console.error('Error loading promotions:', error);
       toast({
-        title: 'Erro',
-        description: 'Erro ao carregar promoções',
+        title: t('common.error'),
+        description: t('promotions.loadError'),
         variant: 'destructive'
       });
     } finally {
@@ -74,13 +76,13 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
   const getPromotionTypeLabel = (type: string) => {
     switch (type) {
       case 'transfer_bonus':
-        return 'Bônus Transferência';
+        return t('promotions.type.transferBonus');
       case 'purchase_discount':
-        return 'Desconto Compra';
+        return t('promotions.type.purchaseDiscount');
       case 'route_promotion':
-        return 'Promoção Rota';
+        return t('promotions.type.routePromotion');
       default:
-        return 'Promoção';
+        return t('promotions.type.general');
     }
   };
 
@@ -103,9 +105,9 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
     const diffTime = end.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays <= 0) return 'Expirada';
-    if (diffDays === 1) return '1 dia restante';
-    return `${diffDays} dias restantes`;
+    if (diffDays <= 0) return t('promotions.expired');
+    if (diffDays === 1) return `1 ${t('promotions.dayRemaining')}`;
+    return `${diffDays} ${t('promotions.daysRemaining')}`;
   };
 
   if (loading) {
@@ -114,7 +116,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5 text-primary" />
-            Promoções Ativas
+            {t('promotions.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -136,21 +138,21 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Gift className="h-5 w-5 text-primary" />
-          Promoções Ativas
+          {t('promotions.title')}
           <Badge variant="outline" className="ml-2">
-            {promotions.length} disponíveis
+            {promotions.length} {t('promotions.available')}
           </Badge>
         </CardTitle>
         <CardDescription>
-          Oportunidades personalizadas baseadas no seu saldo atual de {userTotalMiles.toLocaleString()} milhas
+          {t('promotions.subtitle')} de {userTotalMiles.toLocaleString()} {t('promotions.miles')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {promotions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Plane className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nenhuma promoção ativa no momento</p>
-            <p className="text-sm">Volte em breve para novas oportunidades!</p>
+            <p>{t('promotions.noPromotions')}</p>
+            <p className="text-sm">{t('promotions.checkBackSoon')}</p>
           </div>
         ) : (
           promotions.map((promo) => (
@@ -189,7 +191,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                     )}
                     {promo.miles_required && (
                       <span className={promo.is_eligible ? 'text-green-600 font-medium' : ''}>
-                        ✈️ {promo.miles_required.toLocaleString()} milhas
+                        ✈️ {promo.miles_required.toLocaleString()} {t('promotions.miles')}
                       </span>
                     )}
                     {promo.bonus_percentage && (
@@ -208,7 +210,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                 <div className="flex flex-col items-end gap-2">
                   {promo.is_eligible && (
                     <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                      Elegível!
+                      {t('promotions.eligible')}
                     </Badge>
                   )}
                   {promo.promotion_url && (
@@ -223,7 +225,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                         rel="noopener noreferrer"
                         className="flex items-center gap-1"
                       >
-                        Resgatar
+                        {t('promotions.redeem')}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     </Button>
@@ -235,7 +237,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                 <Clock className="h-3 w-3" />
                 <span>{formatDaysRemaining(promo.end_date)}</span>
                 <span>•</span>
-                <span>Válida até {new Date(promo.end_date).toLocaleDateString('pt-BR')}</span>
+                <span>{t('promotions.validUntil')} {new Date(promo.end_date).toLocaleDateString()}</span>
               </div>
             </div>
           ))
@@ -248,7 +250,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
             onClick={loadPromotions}
             disabled={loading}
           >
-            🔄 Atualizar Promoções
+            🔄 {t('promotions.updatePromotions')}
           </Button>
         </div>
       </CardContent>
