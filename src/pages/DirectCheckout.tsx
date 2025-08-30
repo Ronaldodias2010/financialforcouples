@@ -44,7 +44,7 @@ const DirectCheckout = () => {
     
     return baseYearlyPrice;
   };
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [promoCode, setPromoCode] = useState('');
   const [promoValidation, setPromoValidation] = useState<{
     valid: boolean;
