@@ -4,7 +4,7 @@ import { AccountList } from "@/components/accounts/AccountList";
 import { Button } from "@/components/ui/button";
 
 import { useLanguage } from "@/hooks/useLanguage";
-import { ArrowLeft, Wallet } from "lucide-react";
+import { ArrowLeft, Wallet, Eye } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
@@ -145,16 +145,31 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 
       {/* Seletor de visualização + Card de Limite disponível das Contas */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
-          <div className="flex gap-2">
-            <Button variant={viewMode === 'both' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('both')}>
+        <div className="flex items-center gap-3">
+          <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <div className="flex flex-wrap gap-2 min-w-0">
+            <Button 
+              variant={viewMode === 'both' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setViewMode('both')}
+              className="text-xs px-2 py-1 h-7"
+            >
               {t('dashboard.both')}
             </Button>
-            <Button variant={viewMode === 'user1' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('user1')}>
+            <Button 
+              variant={viewMode === 'user1' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setViewMode('user1')}
+              className="text-xs px-2 py-1 h-7 truncate max-w-24 sm:max-w-none"
+            >
               {getUserLabel('user1')}
             </Button>
-            <Button variant={viewMode === 'user2' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('user2')}>
+            <Button 
+              variant={viewMode === 'user2' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setViewMode('user2')}
+              className="text-xs px-2 py-1 h-7 truncate max-w-24 sm:max-w-none"
+            >
               {getUserLabel('user2')}
             </Button>
           </div>
