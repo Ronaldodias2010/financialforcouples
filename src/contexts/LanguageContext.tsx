@@ -1960,7 +1960,7 @@ const translations = {
     'auth.name': 'Name',
     'auth.yourName': 'Your name',
     'auth.phone': 'Phone (WhatsApp)',
-    'auth.phonePlaceholder': '+1 555-0000',
+    'auth.phonePlaceholder': '+1 (555) 123-4567',
     'auth.phoneRequired': 'Phone required',
     'auth.phoneRequiredDesc': 'Please enter your phone number.',
     'auth.verificationCode': 'Verification Code',
