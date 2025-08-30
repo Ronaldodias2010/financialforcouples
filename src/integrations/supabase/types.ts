@@ -1209,7 +1209,11 @@ export type Database = {
           is_active: boolean
           max_uses: number
           owner_user_id: string
+          partner_email: string | null
           reward_amount: number | null
+          reward_currency: string | null
+          reward_description: string | null
+          reward_type: string | null
           stripe_price_id: string | null
           updated_at: string
           valid_for_countries: string[] | null
@@ -1226,7 +1230,11 @@ export type Database = {
           is_active?: boolean
           max_uses?: number
           owner_user_id: string
+          partner_email?: string | null
           reward_amount?: number | null
+          reward_currency?: string | null
+          reward_description?: string | null
+          reward_type?: string | null
           stripe_price_id?: string | null
           updated_at?: string
           valid_for_countries?: string[] | null
@@ -1243,7 +1251,11 @@ export type Database = {
           is_active?: boolean
           max_uses?: number
           owner_user_id?: string
+          partner_email?: string | null
           reward_amount?: number | null
+          reward_currency?: string | null
+          reward_description?: string | null
+          reward_type?: string | null
           stripe_price_id?: string | null
           updated_at?: string
           valid_for_countries?: string[] | null

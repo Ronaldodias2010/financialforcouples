@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ interface PromoCodeUsage {
 export const PromoCodesManager = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [usages, setUsages] = useState<PromoCodeUsage[]>([]);
   const [approvedPartners, setApprovedPartners] = useState<ApprovedPartner[]>([]);
@@ -151,6 +153,16 @@ export const PromoCodesManager = () => {
   };
 
   const handleCreatePromoCode = async () => {
+    // Verificar se usuário está autenticado
+    if (!user?.id) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado. Faça login novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!formData.code || !formData.partner_email) {
       toast({
         title: "Erro",
@@ -180,26 +192,39 @@ export const PromoCodesManager = () => {
 
     setLoading(true);
     try {
-      // Create promo code with partner email and reward info
+      console.log('📝 Creating promo code with data:', {
+        code: formData.code,
+        owner_user_id: user.id, // UUID do admin logado
+        partner_email: formData.partner_email,
+        reward_type: formData.reward_type,
+        reward_amount: formData.reward_type === 'monetary' ? formData.discount_value : 0
+      });
+
+      // Create promo code com owner_user_id correto e partner_email separado
       const { error: createError } = await supabase
         .from('promo_codes')
         .insert({
           code: formData.code,
-          owner_user_id: formData.partner_email, // Using email as identifier
+          owner_user_id: user.id, // UUID do admin logado
           discount_type: formData.discount_type,
           discount_value: formData.discount_value,
           stripe_price_id: formData.stripe_price_id,
           max_uses: formData.max_uses,
           valid_for_countries: formData.valid_for_countries,
           expiry_date: formData.expiry_date || null,
-          partner_email: formData.partner_email,
+          partner_email: formData.partner_email, // Email do parceiro na coluna correta
           reward_type: formData.reward_type,
           reward_currency: formData.reward_type === 'monetary' ? formData.reward_currency : null,
           reward_description: formData.reward_type === 'other' ? formData.reward_description : null,
           reward_amount: formData.reward_type === 'monetary' ? formData.discount_value : 0
         });
 
-      if (createError) throw createError;
+      if (createError) {
+        console.error('❌ Database error:', createError);
+        throw createError;
+      }
+
+      console.log('✅ Promo code created successfully');
 
       // Send email to partner with code and reward details
       const partner = approvedPartners.find(p => p.email === formData.partner_email);
@@ -244,11 +269,11 @@ export const PromoCodesManager = () => {
       });
       
       fetchPromoCodes();
-    } catch (error) {
-      console.error('Error creating promo code:', error);
+    } catch (error: any) {
+      console.error('❌ Error creating promo code:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar código promocional",
+        description: error.message || "Erro ao criar código promocional",
         variant: "destructive",
       });
     } finally {
