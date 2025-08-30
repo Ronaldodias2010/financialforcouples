@@ -11,7 +11,7 @@ export interface SubscriptionContextType {
   loading: boolean;
   checkSubscription: () => Promise<void>;
   hasAccess: (feature: string) => boolean;
-  createCheckoutSession: (priceId?: string) => Promise<void>;
+  createCheckoutSession: (priceId?: string, promoData?: any) => Promise<void>;
   openCustomerPortal: () => Promise<void>;
 }
 
@@ -84,15 +84,19 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return hasValidAccess;
   };
 
-  const createCheckoutSession = async (priceId?: string) => {
+  const createCheckoutSession = async (priceId?: string, promoData?: any) => {
     if (!session) throw new Error('User not authenticated');
 
     try {
+      const requestBody: any = {};
+      if (priceId) requestBody.priceId = priceId;
+      if (promoData) requestBody.promoData = promoData;
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
-        ...(priceId ? { body: { priceId } } : {}),
+        ...(Object.keys(requestBody).length > 0 ? { body: requestBody } : {}),
       });
 
       if (error) throw error;

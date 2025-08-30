@@ -53,15 +53,48 @@ serve(async (req) => {
 
     // Determine which price to use (defaults to monthly)
     let selectedPrice = "price_1S1qdSFOhUY5r0H1b7o1WG2Z";
+    let promoData = null;
+    let sessionConfig: any = {};
+    
     try {
       const body = await req.json();
       if (body?.priceId && typeof body.priceId === 'string') {
         selectedPrice = body.priceId;
       }
+      if (body?.promoData) {
+        promoData = body.promoData;
+        logStep("Promo data received", promoData);
+        
+        // If promo has a specific Stripe price ID, use it
+        if (promoData.stripe_price_id) {
+          selectedPrice = promoData.stripe_price_id;
+          logStep("Using promo price ID", { priceId: selectedPrice });
+        }
+        
+        // Configure discount for the session if no specific price ID
+        if (!promoData.stripe_price_id && promoData.discount_value) {
+          if (promoData.discount_type === 'percentage') {
+            sessionConfig.discounts = [{
+              coupon: await stripe.coupons.create({
+                percent_off: promoData.discount_value,
+                duration: 'once'
+              })
+            }];
+          } else if (promoData.discount_type === 'fixed') {
+            sessionConfig.discounts = [{
+              coupon: await stripe.coupons.create({
+                amount_off: Math.round(promoData.discount_value * 100), // Convert to cents
+                currency: 'brl',
+                duration: 'once'
+              })
+            }];
+          }
+        }
+      }
     } catch (_) {
       // No body provided; keep default price
     }
-    logStep("Using price", { priceId: selectedPrice });
+    logStep("Using price", { priceId: selectedPrice, hasPromo: !!promoData });
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -79,7 +112,8 @@ serve(async (req) => {
       customer_update: {
         address: 'auto',
         name: 'auto'
-      }
+      },
+      ...sessionConfig
     });
 
     logStep("Created checkout session", { sessionId: session.id, url: session.url });
