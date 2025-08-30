@@ -534,12 +534,12 @@ const DirectCheckout = () => {
                                     <div className="font-bold text-xl text-green-600">{getDisplayPrice()}</div>
                                     <div className="text-xs text-green-600">Economia: R$ {(217.10 - (promoValidation.discount_value || 0)).toFixed(2).replace('.', ',')}</div>
                                   </div>
-                                ) : (
-                                  <div>
-                                    <div className="font-bold text-xl">{getDisplayPrice()}</div>
-                                    <div className="text-sm text-muted-foreground">{t('directCheckout.perYear')}</div>
-                                  </div>
-                                )}
+                                 ) : (
+                                   <div>
+                                     <div className="font-bold text-xl">{baseYearlyPrice}</div>
+                                     <div className="text-sm text-muted-foreground">{t('directCheckout.perYear')}</div>
+                                   </div>
+                                 )}
                               </div>
                           </div>
                         </div>
