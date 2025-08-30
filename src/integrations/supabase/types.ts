@@ -1160,6 +1160,125 @@ export type Database = {
           },
         ]
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by_admin_id: string | null
+          current_uses: number
+          expiry_date: string | null
+          free_days_granted: number
+          id: string
+          is_active: boolean
+          max_uses: number
+          reward_amount: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by_admin_id?: string | null
+          current_uses?: number
+          expiry_date?: string | null
+          free_days_granted?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          reward_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by_admin_id?: string | null
+          current_uses?: number
+          expiry_date?: string | null
+          free_days_granted?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          reward_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          payment_date: string | null
+          referral_id: string | null
+          referrer_user_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_date?: string | null
+          referral_id?: string | null
+          referrer_user_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_date?: string | null
+          referral_id?: string | null
+          referrer_user_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          free_days_granted: number
+          id: string
+          referral_code: string
+          referred_user_id: string | null
+          referrer_user_id: string | null
+          status: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          free_days_granted?: number
+          id?: string
+          referral_code: string
+          referred_user_id?: string | null
+          referrer_user_id?: string | null
+          status?: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          free_days_granted?: number
+          id?: string
+          referral_code?: string
+          referred_user_id?: string | null
+          referrer_user_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           action_type: string

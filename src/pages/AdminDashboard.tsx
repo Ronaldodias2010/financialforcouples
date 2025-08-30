@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck, FileSpreadsheet, FileText } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck, FileSpreadsheet, FileText, Gift } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { toast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
@@ -19,6 +19,7 @@ import { NonPremiumUsersList } from "@/components/admin/NonPremiumUsersList";
 import AbandonedCheckouts from "@/components/admin/AbandonedCheckouts";
 import { EducationalContentManager } from "@/components/admin/EducationalContentManager";
 import { AIControlSection } from '@/components/admin/AIControlSection';
+import { ReferralCodesManager } from '@/components/admin/ReferralCodesManager';
 
 
 interface SubscriptionMetrics {
@@ -765,7 +766,7 @@ const AdminDashboardContent = () => {
 
         <TabsContent value="users" className="space-y-6">
           <Tabs defaultValue="users" className="space-y-6" onValueChange={(value) => setActiveUsersSubTab(value)}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger 
             value="users" 
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
@@ -793,6 +794,13 @@ const AdminDashboardContent = () => {
           >
             <Search className="h-4 w-4 mr-2" />
             {language === 'pt' ? 'Carrinho Abandonado' : language === 'en' ? 'Abandoned Checkouts' : 'Carritos Abandonados'}
+          </TabsTrigger>
+          <TabsTrigger 
+            value="referrals"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <Gift className="h-4 w-4 mr-2" />
+            {language === 'pt' ? 'Códigos de Indicação' : language === 'en' ? 'Referral Codes' : 'Códigos de Referencia'}
           </TabsTrigger>
           <TabsTrigger 
             value="alerts"
@@ -949,6 +957,10 @@ const AdminDashboardContent = () => {
 
             <TabsContent value="abandoned">
               <AbandonedCheckouts />
+            </TabsContent>
+
+            <TabsContent value="referrals">
+              <ReferralCodesManager />
             </TabsContent>
 
             <TabsContent value="alerts">
