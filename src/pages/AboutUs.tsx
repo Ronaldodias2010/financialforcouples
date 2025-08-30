@@ -244,11 +244,26 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
                   {currentContent.story.title}
                 </h2>
                 <div className="space-y-4">
-                  {currentContent.story.description.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className="text-muted-foreground leading-relaxed text-lg">
-                      {paragraph}
-                    </p>
-                  ))}
+                  {currentContent.story.description.split('\n\n').map((paragraph, index) => {
+                    const isLastParagraph = index === currentContent.story.description.split('\n\n').length - 1;
+                    
+                    if (isLastParagraph && paragraph.includes('Couples Financials')) {
+                      const parts = paragraph.split('Couples Financials');
+                      return (
+                        <p key={index} className="text-muted-foreground leading-relaxed text-lg">
+                          {parts[0]}
+                          <strong>Couples Financials</strong>
+                          {parts[1]}
+                        </p>
+                      );
+                    }
+                    
+                    return (
+                      <p key={index} className="text-muted-foreground leading-relaxed text-lg">
+                        {paragraph}
+                      </p>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
