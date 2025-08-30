@@ -17,10 +17,11 @@ const translations = {
   pt: {
     // Password Validation
     'password.validation.title': 'Critérios de segurança:',
-    'password.validation.minLength': 'Mínimo 6 caracteres',
+    'password.validation.minLength': 'Mínimo 8 caracteres',
     'password.validation.uppercase': 'Pelo menos 1 letra maiúscula',
     'password.validation.lowercase': 'Pelo menos 1 letra minúscula',
     'password.validation.number': 'Pelo menos 1 número',
+    'password.validation.specialChar': 'Pelo menos 1 caractere especial',
     'password.validation.match': 'Senhas coincidem',
     'password.validation.noMatch': 'Senhas não coincidem',
      'password.error.invalid': 'A senha deve atender todos os critérios de segurança.',
@@ -1438,10 +1439,11 @@ const translations = {
    en: {
      // Password Validation
      'password.validation.title': 'Security criteria:',
-     'password.validation.minLength': 'Minimum 6 characters',
+     'password.validation.minLength': 'Minimum 8 characters',
      'password.validation.uppercase': 'At least 1 uppercase letter',
      'password.validation.lowercase': 'At least 1 lowercase letter',
      'password.validation.number': 'At least 1 number',
+     'password.validation.specialChar': 'At least 1 special character',
      'password.validation.match': 'Passwords match',
      'password.validation.noMatch': 'Passwords do not match',
      'password.error.invalid': 'Password must meet all security criteria.',
@@ -2853,10 +2855,11 @@ const translations = {
    es: {
      // Password Validation
      'password.validation.title': 'Criterios de seguridad:',
-     'password.validation.minLength': 'Mínimo 6 caracteres',
+     'password.validation.minLength': 'Mínimo 8 caracteres',
      'password.validation.uppercase': 'Al menos 1 letra mayúscula',
      'password.validation.lowercase': 'Al menos 1 letra minúscula',
      'password.validation.number': 'Al menos 1 número',
+     'password.validation.specialChar': 'Al menos 1 carácter especial',
      'password.validation.match': 'Las contraseñas coinciden',
      'password.validation.noMatch': 'Las contraseñas no coinciden',
      'password.error.invalid': 'La contraseña debe cumplir todos los criterios de seguridad.',

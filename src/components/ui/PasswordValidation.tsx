@@ -25,17 +25,19 @@ const ValidationItem = ({ isValid, text }: ValidationItemProps) => (
 );
 
 export const validatePassword = (password: string) => {
-  const hasMinLength = password.length >= 6;
+  const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
   
   return {
     hasMinLength,
     hasUppercase,
     hasLowercase,
     hasNumber,
-    isValid: hasMinLength && hasUppercase && hasLowercase && hasNumber
+    hasSpecialChar,
+    isValid: hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar
   };
 };
 
@@ -63,6 +65,10 @@ export const PasswordValidation = ({ password, className = "" }: PasswordValidat
       <ValidationItem 
         isValid={validation.hasNumber} 
         text={t('password.validation.number')} 
+      />
+      <ValidationItem 
+        isValid={validation.hasSpecialChar} 
+        text={t('password.validation.specialChar')} 
       />
     </div>
   );

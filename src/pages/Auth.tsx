@@ -517,14 +517,14 @@ export default function Auth() {
                    <PasswordMatchValidation passwordsMatch={password === confirmPassword} />
                  )}
                 
-                <Button
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t('auth.createAccount')}
-                </Button>
+                 <Button
+                   type="submit" 
+                   className="w-full" 
+                   disabled={isLoading || !validatePassword(password).isValid || password !== confirmPassword}
+                 >
+                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   {t('auth.createAccount')}
+                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
