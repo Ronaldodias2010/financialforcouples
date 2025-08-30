@@ -112,7 +112,8 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
         title: "Nossa Equipe",
         description: "Somos um time apaixonado por tecnologia e relacionamentos, dedicado a criar a melhor experiência possível para casais que querem construir um futuro financeiro sólido juntos."
       },
-      cta: "Comece sua jornada financeira conosco"
+      cta: "Comece sua jornada financeira conosco",
+      backToHome: "Voltar ao Início"
     },
     en: {
       title: "About Us",
@@ -154,7 +155,8 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
         title: "Our Team",
         description: "We are a team passionate about technology and relationships, dedicated to creating the best possible experience for couples who want to build a solid financial future together."
       },
-      cta: "Start your financial journey with us"
+      cta: "Start your financial journey with us",
+      backToHome: "Back to Home"
     },
     es: {
       title: "Sobre Nosotros",
@@ -196,7 +198,8 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
         title: "Nuestro Equipo",
         description: "Somos un equipo apasionado por la tecnología y las relaciones, dedicado a crear la mejor experiencia posible para parejas que quieren construir un futuro financiero sólido juntos."
       },
-      cta: "Comienza tu jornada financiera con nosotros"
+      cta: "Comienza tu jornada financiera con nosotros",
+      backToHome: "Volver al Inicio"
     }
   };
 
@@ -225,7 +228,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
             className="flex items-center gap-2"
           >
             <Home className="h-4 w-4" />
-            Voltar ao Início
+            {currentContent.backToHome}
           </Button>
         </div>
       </header>
