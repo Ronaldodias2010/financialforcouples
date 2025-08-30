@@ -23,6 +23,9 @@ interface ReferralCode {
   free_days_granted: number;
   created_at: string;
   user_id: string | null;
+  partner_payment_info?: string;
+  partner_name?: string;
+  partner_email?: string;
 }
 
 interface ReferralStats {
@@ -52,13 +55,28 @@ export const ReferralCodesManager = () => {
     try {
       setLoading(true);
       
-      // Buscar códigos de indicação
+      // Buscar códigos de indicação com informações dos parceiros
       const { data: codesData, error: codesError } = await supabase
         .from('referral_codes')
-        .select('*')
+        .select(`
+          *,
+          partnership_applications!left(
+            name,
+            email,
+            payment_info
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (codesError) throw codesError;
+
+      // Processar dados para incluir informações do parceiro
+      const processedCodes = codesData?.map(code => ({
+        ...code,
+        partner_name: code.partnership_applications?.[0]?.name || null,
+        partner_email: code.partnership_applications?.[0]?.email || null,
+        partner_payment_info: code.partnership_applications?.[0]?.payment_info || null,
+      })) || [];
 
       // Buscar estatísticas
       const { data: referralsData, error: referralsError } = await supabase
@@ -74,10 +92,10 @@ export const ReferralCodesManager = () => {
 
       const totalRewards = rewardsData?.reduce((sum, reward) => sum + (reward.amount || 0), 0) || 0;
 
-      setCodes(codesData || []);
+      setCodes(processedCodes);
       setStats({
-        totalCodes: codesData?.length || 0,
-        activeCodes: codesData?.filter(code => code.is_active).length || 0,
+        totalCodes: processedCodes?.length || 0,
+        activeCodes: processedCodes?.filter(code => code.is_active).length || 0,
         totalReferrals: referralsData?.length || 0,
         totalRewards,
       });
@@ -316,18 +334,33 @@ export const ReferralCodesManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Parceiro</TableHead>
                 <TableHead>Usos</TableHead>
                 <TableHead>Recompensa</TableHead>
                 <TableHead>Dias Gratuitos</TableHead>
                 <TableHead>Expira em</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Formato de Pagamento</TableHead>
+                <TableHead>Dados de Pagamento</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {codes.map((code) => (
                 <TableRow key={code.id}>
+                  <TableCell>
+                    {code.partner_name ? (
+                      <div className="space-y-1">
+                        <div className="font-medium">{code.partner_name}</div>
+                        <div className="text-sm text-muted-foreground">{code.partner_email}</div>
+                        <div className="text-xs font-mono bg-muted px-2 py-1 rounded">{code.code}</div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="font-mono font-semibold">{code.code}</div>
+                        <div className="text-sm text-muted-foreground">Sem parceiro</div>
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell>{code.current_uses} / {code.max_uses}</TableCell>
                   <TableCell>R$ {code.reward_amount.toFixed(2)}</TableCell>
                   <TableCell>{code.free_days_granted} dias</TableCell>
@@ -340,7 +373,18 @@ export const ReferralCodesManager = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm text-muted-foreground">PIX/Transferência</span>
+                    {code.partner_payment_info ? (
+                      <div className="text-sm bg-blue-50 dark:bg-blue-950 p-2 rounded border">
+                        <div className="font-medium text-blue-700 dark:text-blue-300 mb-1">
+                          Dados de Pagamento:
+                        </div>
+                        <div className="text-blue-600 dark:text-blue-400 text-xs whitespace-pre-wrap">
+                          {code.partner_payment_info}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Não informado</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">

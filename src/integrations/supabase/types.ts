@@ -985,6 +985,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          payment_info: string | null
           phone: string | null
           referral_code_id: string | null
           social_media: string
@@ -999,6 +1000,7 @@ export type Database = {
           email: string
           id?: string
           name: string
+          payment_info?: string | null
           phone?: string | null
           referral_code_id?: string | null
           social_media: string
@@ -1013,6 +1015,7 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          payment_info?: string | null
           phone?: string | null
           referral_code_id?: string | null
           social_media?: string

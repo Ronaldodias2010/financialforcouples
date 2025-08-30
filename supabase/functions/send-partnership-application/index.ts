@@ -19,6 +19,7 @@ interface PartnershipRequest {
   phone?: string;
   audienceType: string;
   socialMedia?: string;
+  paymentInfo?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -27,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, phone, audienceType, socialMedia }: PartnershipRequest = await req.json();
+    const { name, email, phone, audienceType, socialMedia, paymentInfo }: PartnershipRequest = await req.json();
 
     console.log('Processing partnership application:', { name, email, audienceType });
     
@@ -45,6 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
         phone: phone || null,
         audience_type: audienceType,
         social_media: socialMedia,
+        payment_info: paymentInfo || null,
         status: 'pending'
       })
       .select()
@@ -71,6 +73,7 @@ const handler = async (req: Request): Promise<Response> => {
             ${phone ? `<p><strong>Telefone:</strong> ${phone}</p>` : ''}
             <p><strong>Tipo de Audiência:</strong> ${audienceType}</p>
             <p><strong>Redes Sociais:</strong> ${socialMedia}</p>
+            ${paymentInfo ? `<p><strong>Dados para Pagamento:</strong> ${paymentInfo}</p>` : ''}
           </div>
 
           <div style="background: #e0f2fe; padding: 16px; border-radius: 8px; border-left: 4px solid #0284c7;">
