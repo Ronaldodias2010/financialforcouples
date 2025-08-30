@@ -274,6 +274,39 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
             </Card>
           </section>
 
+          {/* Couple Photos Section */}
+          <section>
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="aspect-square bg-muted/30 flex items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-lg">
+                    <div className="text-center text-muted-foreground">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
+                        <Heart className="h-8 w-8" />
+                      </div>
+                      <p className="text-sm font-medium">Foto do Casal 1</p>
+                      <p className="text-xs mt-1">Será adicionada em breve</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="aspect-square bg-muted/30 flex items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-lg">
+                    <div className="text-center text-muted-foreground">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
+                        <Users className="h-8 w-8" />
+                      </div>
+                      <p className="text-sm font-medium">Foto do Casal 2</p>
+                      <p className="text-xs mt-1">Será adicionada em breve</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
           {/* Mission Section */}
           <section>
             <Card className="border-0 shadow-sm">
