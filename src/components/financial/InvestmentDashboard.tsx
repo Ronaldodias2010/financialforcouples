@@ -11,7 +11,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Target, PieChart, Calculator, Plus, ArrowLeft, User, Minus } from "lucide-react";
+import { TrendingUp, Target, PieChart, Calculator, Plus, ArrowLeft, User, Minus, Eye } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
@@ -468,22 +468,17 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
         </Button>
       </div>
 
-      {/* View Mode Selector - PWA simplified version */}
+      {/* View Mode Selector - Mobile optimized */}
       <div className="flex items-center justify-center gap-4 py-4">
-        <div className="flex items-center gap-2">
-          {/* Check if PWA mode to hide the label */}
-          {!(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://')) && (
-            <>
-              <User className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('dashboard.viewMode')}:</span>
-            </>
-          )}
-          <div className="flex gap-2">
+        <div className="flex items-center gap-3">
+          <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <div className="flex flex-wrap gap-2 min-w-0">
             <Button
               variant={currentViewMode === "both" ? "default" : "outline"}
               size="sm"
               onClick={() => setCurrentViewMode("both")}
               disabled={!isPartOfCouple}
+              className="text-xs px-2 py-1 h-7"
             >
               {t('dashboard.both')}
             </Button>
@@ -491,6 +486,7 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
               variant={currentViewMode === "user1" ? "default" : "outline"}
               size="sm"
               onClick={() => setCurrentViewMode("user1")}
+              className="text-xs px-2 py-1 h-7 truncate max-w-24 sm:max-w-none"
             >
               {getUserLabel("user1")}
             </Button>
@@ -499,6 +495,7 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
               size="sm"
               onClick={() => setCurrentViewMode("user2")}
               disabled={!isPartOfCouple}
+              className="text-xs px-2 py-1 h-7 truncate max-w-24 sm:max-w-none"
             >
               {getUserLabel("user2")}
             </Button>
