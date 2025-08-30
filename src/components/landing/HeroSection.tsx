@@ -53,7 +53,7 @@ const HeroSection = () => {
         {/* Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Content */}
-            <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-2 sm:px-4">
+            <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-2 sm:px-4 pt-16 sm:pt-20">
             {/* Main title - clean and elegant */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-8 sm:mb-10 lg:mb-12">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
