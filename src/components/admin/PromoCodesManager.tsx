@@ -208,7 +208,7 @@ export const PromoCodesManager = () => {
           partnerEmail: formData.partner_email,
           referralCode: formData.code,
           rewardType: formData.reward_type,
-          rewardAmount: formData.reward_type === 'monetary' ? formData.discount_value : undefined,
+          rewardAmount: formData.reward_type === 'monetary' ? formData.discount_value : 0,
           rewardCurrency: formData.reward_type === 'monetary' ? formData.reward_currency : undefined,
           rewardDescription: formData.reward_type === 'other' ? formData.reward_description : undefined
         }

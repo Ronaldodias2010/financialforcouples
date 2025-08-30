@@ -14,11 +14,14 @@ const corsHeaders = {
 };
 
 interface ApprovalRequest {
-  applicationId: string;
+  applicationId?: string;
   partnerName: string;
   partnerEmail: string;
   referralCode: string;
   rewardAmount: number;
+  rewardType: 'monetary' | 'other';
+  rewardCurrency?: string;
+  rewardDescription?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -27,9 +30,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { applicationId, partnerName, partnerEmail, referralCode, rewardAmount }: ApprovalRequest = await req.json();
+    const { 
+      applicationId, 
+      partnerName, 
+      partnerEmail, 
+      referralCode, 
+      rewardAmount, 
+      rewardType = 'monetary',
+      rewardCurrency = 'BRL',
+      rewardDescription 
+    }: ApprovalRequest = await req.json();
 
-    console.log('Sending approval email:', { partnerName, partnerEmail, referralCode });
+    console.log('💌 Sending approval email:', { 
+      partnerName, 
+      partnerEmail, 
+      referralCode, 
+      rewardType, 
+      rewardAmount,
+      rewardCurrency,
+      rewardDescription 
+    });
 
     const emailResponse = await resend.emails.send({
       from: "Couples Financials <noreply@couplesfinancials.com.br>",
@@ -53,12 +73,16 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
 
           <div style="background: #fffbeb; padding: 24px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #fde68a;">
-            <h3 style="color: #92400e; margin: 0 0 16px 0;">💰 Como Funciona a Recompensa</h3>
+            <h3 style="color: #92400e; margin: 0 0 16px 0;">${rewardType === 'monetary' ? '💰' : '🎁'} Como Funciona a Recompensa</h3>
             <ul style="color: #92400e; margin: 0; padding-left: 20px;">
               <li>Para cada pessoa que se cadastrar usando seu código e efetuar o pagamento</li>
-              <li>Você receberá <strong>R$ ${rewardAmount.toFixed(2)}</strong> de comissão</li>
-              <li>O pagamento será processado após a confirmação do pagamento do usuário</li>
-              <li>Você receberá um relatório mensal com seus ganhos</li>
+              <li>Você receberá: <strong>${
+                rewardType === 'monetary' 
+                  ? `${rewardCurrency === 'USD' ? '$' : 'R$'} ${rewardAmount.toFixed(2)}` 
+                  : rewardDescription || `Recompensa: ${rewardAmount}`
+              }</strong></li>
+              <li>${rewardType === 'monetary' ? 'O pagamento será processado após a confirmação do pagamento do usuário' : 'A recompensa será processada conforme os termos acordados'}</li>
+              <li>Você receberá um relatório mensal com seus ${rewardType === 'monetary' ? 'ganhos' : 'resultados'}</li>
             </ul>
           </div>
 
