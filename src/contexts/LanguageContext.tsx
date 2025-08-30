@@ -17,6 +17,7 @@ const translations = {
   pt: {
     // Hero Section
     'hero.badge': 'Lançamento',
+    'nav.aboutUs': 'Sobre Nós',
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Controle suas finanças de forma inteligente',
     'hero.description': 'Idealizado para casais, mas recomendamos para todos. Planeje, economize e invista com ajuda da IA.',
@@ -1358,6 +1359,7 @@ const translations = {
   en: {
     // Hero Section
     'hero.badge': 'Launch',
+    'nav.aboutUs': 'About Us',
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Control your finances intelligently',
     'hero.description': 'Designed for couples, but we recommend it for everyone. Plan, save and invest with AI help.',
@@ -2695,6 +2697,7 @@ const translations = {
   es: {
     // Hero Section
     'hero.badge': 'Lanzamiento',
+    'nav.aboutUs': 'Sobre Nosotros',
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Controla tus finanzas de forma inteligente',
     'hero.description': 'Diseñado para parejas, pero lo recomendamos para todos. Planifica, ahorra e invierte con ayuda de IA.',

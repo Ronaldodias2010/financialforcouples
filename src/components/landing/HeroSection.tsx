@@ -37,10 +37,13 @@ const HeroSection = () => {
       </div>
       
       <div className="container mx-auto px-2 sm:px-4 py-12 sm:py-16 lg:py-20 relative z-10">
-        {/* Language Selector + Login */}
+        {/* Language Selector + About Us + Login */}
         <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageSelector />
+            <Button asChild size="sm" variant="outline" className="bg-white text-black border-white hover:bg-gray-100">
+              <Link to="/sobre-nos">{t('nav.aboutUs')}</Link>
+            </Button>
             <Button asChild size="sm" variant="outline" className="text-xs sm:text-sm px-2 sm:px-3">
               <Link to="/auth">{t('header.login')}</Link>
             </Button>
@@ -146,14 +149,6 @@ const HeroSection = () => {
               </Dialog>
               
               <AIBetaModal open={aiBetaOpen} onOpenChange={setAiBetaOpen} />
-              
-              <div className="flex justify-center lg:justify-start">
-                <Button asChild size="sm" variant="outline" className="text-white border-white/30 hover:bg-white/10">
-                  <Link to="/sobre-nos">
-                    Sobre Nós
-                  </Link>
-                </Button>
-              </div>
             </div>
             
             {/* Social proof */}
