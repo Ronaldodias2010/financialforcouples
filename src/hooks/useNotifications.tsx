@@ -6,8 +6,10 @@ interface NotificationData {
   id: string;
   user_id: string;
   promotion_id: string;
-  message: string;
+  notification_type: string;
+  sent_at: string;
   is_read: boolean;
+  user_miles_at_notification: number;
   created_at: string;
   promotion?: {
     title: string;

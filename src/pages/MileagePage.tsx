@@ -5,6 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { MileageSystem } from '@/components/financial/MileageSystem';
 import { PromotionsSection } from '@/components/financial/PromotionsSection';
 import { SmartAlertsSection } from '@/components/financial/SmartAlertsSection';
+import { NotificationCenter } from '@/components/financial/NotificationCenter';
 import { PremiumFeatureGuard } from '@/components/subscription/PremiumFeatureGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -82,12 +83,15 @@ export const MileagePage = ({ onBack }: MileagePageProps) => {
 
       {/* Premium Features */}
       {hasAccess('aiMileage') ? (
-        <div className="grid gap-6">
-          {/* Promotions and Alerts */}
-          <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          {/* Main promotions and alerts */}
+          <div className="grid gap-6 lg:grid-cols-2">
             <PromotionsSection userTotalMiles={userTotalMiles} />
             <SmartAlertsSection userTotalMiles={userTotalMiles} />
           </div>
+          
+          {/* Notification Center */}
+          <NotificationCenter />
 
           {/* Redemption Suggestions */}
           <Card>

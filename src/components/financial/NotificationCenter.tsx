@@ -116,7 +116,7 @@ export const NotificationCenter = () => {
                     </div>
                     
                     <p className="text-sm text-muted-foreground mb-2">
-                      {notification.message}
+                      Nova promoção disponível para suas milhas
                     </p>
                     
                     <p className="text-xs text-muted-foreground">
