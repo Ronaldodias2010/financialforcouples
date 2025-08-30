@@ -25,7 +25,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { email, fullName, phone, selectedPlan } = await req.json();
+    const { email, fullName, phone, selectedPlan, promoCode } = await req.json();
     
     if (!email || !fullName) {
       throw new Error("Email and fullName are required");
@@ -41,6 +41,7 @@ serve(async (req) => {
         full_name: fullName,
         phone,
         selected_plan: selectedPlan || 'monthly',
+        promo_code: promoCode || null,
         status: 'pending'
       })
       .select()

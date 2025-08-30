@@ -20,6 +20,7 @@ import AbandonedCheckouts from "@/components/admin/AbandonedCheckouts";
 import { EducationalContentManager } from "@/components/admin/EducationalContentManager";
 import { AIControlSection } from '@/components/admin/AIControlSection';
 import { ReferralCodesManager } from '@/components/admin/ReferralCodesManager';
+import { PromoCodesManager } from '@/components/admin/PromoCodesManager';
 
 
 interface SubscriptionMetrics {
@@ -960,7 +961,8 @@ const AdminDashboardContent = () => {
             </TabsContent>
 
             <TabsContent value="referrals">
-              <ReferralCodesManager />
+            <ReferralCodesManager />
+            <PromoCodesManager />
             </TabsContent>
 
             <TabsContent value="alerts">

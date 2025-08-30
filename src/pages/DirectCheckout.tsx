@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Shield, CreditCard, Check, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Sparkles, Shield, CreditCard, Check, ArrowLeft, Eye, EyeOff, Tag, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -32,8 +32,28 @@ const DirectCheckout = () => {
 
   const isUSD = language !== 'pt' || !inBrazil;
   const monthlyPrice = isUSD ? '$9.90' : 'R$25,90';
-  const yearlyPrice = isUSD ? '$67.10' : 'R$217,10';
+  const baseYearlyPrice = isUSD ? '$67.10' : 'R$217,10';
+  
+  // Calculate displayed price (with promo if applied)
+  const getDisplayPrice = () => {
+    if (selectedPlan === 'monthly') return monthlyPrice;
+    
+    if (promoApplied && promoValidation?.valid && promoValidation.discount_type === 'fixed_price') {
+      return `R$ ${promoValidation.discount_value?.toFixed(2)}`;
+    }
+    
+    return baseYearlyPrice;
+  };
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoValidation, setPromoValidation] = useState<{
+    valid: boolean;
+    message?: string;
+    discount_value?: number;
+    discount_type?: string;
+  } | null>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
 
   const features = [
     t('pricing.premium.feature1'),
@@ -164,6 +184,7 @@ const DirectCheckout = () => {
               fullName: formData.fullName,
               phone: formData.phone,
               selectedPlan: selectedPlan,
+              promoCode: promoApplied ? promoCode : null,
             }
           }
         );
@@ -377,11 +398,93 @@ const DirectCheckout = () => {
                          </button>
                        </div>
                      </div>
-                    </div>
+                     </div>
 
-                    <Separator />
+                     <Separator />
 
-                    {/* Plan Selection */}
+                     {/* Promo Code Section - Only for BR users */}
+                     {inBrazil && language === 'pt' && (
+                       <div className="space-y-4">
+                         <Label className="flex items-center gap-2">
+                           <Tag className="w-4 h-4" />
+                           {t('subscription.promoCode')} (Opcional)
+                         </Label>
+                         
+                         {!promoApplied ? (
+                           <div className="flex gap-2">
+                             <Input
+                               placeholder={t('subscription.promoCodePlaceholder')}
+                               value={promoCode}
+                               onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                               disabled={validatingPromo}
+                               className="flex-1"
+                             />
+                             <Button
+                               type="button"
+                               variant="outline"
+                               disabled={!promoCode.trim() || validatingPromo}
+                               onClick={async () => {
+                                 setValidatingPromo(true);
+                                 try {
+                                   const { data } = await supabase.functions.invoke('validate-promo-code', {
+                                     body: { code: promoCode.trim(), country: 'BR' }
+                                   });
+                                   setPromoValidation(data);
+                                   if (data.valid) {
+                                     setPromoApplied(true);
+                                     toast({
+                                       title: "Código aplicado!",
+                                       description: data.message,
+                                     });
+                                   } else {
+                                     toast({
+                                       title: "Código inválido",
+                                       description: data.message,
+                                       variant: "destructive",
+                                     });
+                                   }
+                                 } catch (error) {
+                                   toast({
+                                     title: "Erro",
+                                     description: "Erro ao validar código. Tente novamente.",
+                                     variant: "destructive",
+                                   });
+                                 } finally {
+                                   setValidatingPromo(false);
+                                 }
+                               }}
+                             >
+                               {validatingPromo ? t('subscription.validatingPromo') : t('subscription.validatePromo')}
+                             </Button>
+                           </div>
+                         ) : (
+                           <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                             <div className="flex items-center gap-2">
+                               <Check className="w-4 h-4 text-green-600" />
+                               <span className="text-green-800 font-medium">{promoCode}</span>
+                               <span className="text-green-700 text-sm">{promoValidation?.message}</span>
+                             </div>
+                             <Button
+                               type="button"
+                               variant="ghost"
+                               size="sm"
+                               onClick={() => {
+                                 setPromoApplied(false);
+                                 setPromoCode('');
+                                 setPromoValidation(null);
+                               }}
+                             >
+                               <X className="w-4 h-4" />
+                               {t('subscription.removePromo')}
+                             </Button>
+                           </div>
+                         )}
+                       </div>
+                     )}
+
+                     <Separator />
+
+                     {/* Plan Selection */}
                     <div className="space-y-4">
                       <Label>{t('directCheckout.selectPlan')}</Label>
                       
@@ -424,10 +527,10 @@ const DirectCheckout = () => {
                               </div>
                               <div className="text-sm text-muted-foreground">{t('directCheckout.bestValue')}</div>
                             </div>
-                            <div className="text-right">
-                              <div className="font-bold text-xl">{yearlyPrice}</div>
-                              <div className="text-sm text-muted-foreground">{t('directCheckout.perYear')}</div>
-                            </div>
+                             <div className="text-right">
+                               <div className="font-bold text-xl">{getDisplayPrice()}</div>
+                               <div className="text-sm text-muted-foreground">{t('directCheckout.perYear')}</div>
+                             </div>
                           </div>
                         </div>
                       </div>
@@ -444,7 +547,7 @@ const DirectCheckout = () => {
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4 mr-2" />
-                          {t('directCheckout.createAccountButton')} {selectedPlan === 'monthly' ? monthlyPrice : yearlyPrice}
+                          {t('directCheckout.createAccountButton')} {getDisplayPrice()}
                         </>
                       )}
                     </Button>

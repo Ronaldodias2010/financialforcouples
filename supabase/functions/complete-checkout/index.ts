@@ -88,9 +88,32 @@ serve(async (req) => {
     // Se português E no Brasil = BRL (Real), senão USD (Dólar)
     const useBRL = selectedLanguage === 'pt' && inBr;
 
-    const priceId = checkoutSession.selected_plan === 'yearly' 
-      ? (useBRL ? 'price_1S1qudFOhUY5r0H1ZqGYFERQ' : 'price_1RuutYFOhUY5r0H1VSEQO2oI') // anual: BRL vs USD
-      : (useBRL ? 'price_1S1qdSFOhUY5r0H1b7o1WG2Z' : 'price_1Ruut0FOhUY5r0H1vV43Vj4L'); // mensal: BRL vs USD
+    // Check if there's a promo code with specific price ID
+    let priceId;
+    if (checkoutSession.promo_code) {
+      // Validate promo code and get special price ID
+      const { data: promoCode } = await supabaseService
+        .from('promo_codes')
+        .select('stripe_price_id, discount_value')
+        .eq('code', checkoutSession.promo_code)
+        .eq('is_active', true)
+        .single();
+      
+      if (promoCode && promoCode.stripe_price_id) {
+        priceId = promoCode.stripe_price_id;
+        logStep("Using promo code price", { promoCode: checkoutSession.promo_code, priceId });
+      } else {
+        // Fall back to regular pricing if promo code invalid
+        priceId = checkoutSession.selected_plan === 'yearly' 
+          ? (useBRL ? 'price_1S1qudFOhUY5r0H1ZqGYFERQ' : 'price_1RuutYFOhUY5r0H1VSEQO2oI') 
+          : (useBRL ? 'price_1S1qdSFOhUY5r0H1b7o1WG2Z' : 'price_1Ruut0FOhUY5r0H1vV43Vj4L');
+      }
+    } else {
+      // Regular pricing
+      priceId = checkoutSession.selected_plan === 'yearly' 
+        ? (useBRL ? 'price_1S1qudFOhUY5r0H1ZqGYFERQ' : 'price_1RuutYFOhUY5r0H1VSEQO2oI') // anual: BRL vs USD
+        : (useBRL ? 'price_1S1qdSFOhUY5r0H1b7o1WG2Z' : 'price_1Ruut0FOhUY5r0H1vV43Vj4L'); // mensal: BRL vs USD
+    }
 
     logStep("Determined pricing", { 
       selectedLanguage,

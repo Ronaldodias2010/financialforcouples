@@ -398,12 +398,15 @@ export type Database = {
       }
       checkout_sessions: {
         Row: {
+          applied_promo_discount: number | null
           created_at: string
           email: string
           expires_at: string
           full_name: string
           id: string
           phone: string | null
+          promo_code: string | null
+          promo_final_price: number | null
           selected_plan: string
           session_token: string | null
           status: string
@@ -412,12 +415,15 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          applied_promo_discount?: number | null
           created_at?: string
           email: string
           expires_at?: string
           full_name: string
           id?: string
           phone?: string | null
+          promo_code?: string | null
+          promo_final_price?: number | null
           selected_plan?: string
           session_token?: string | null
           status?: string
@@ -426,12 +432,15 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          applied_promo_discount?: number | null
           created_at?: string
           email?: string
           expires_at?: string
           full_name?: string
           id?: string
           phone?: string | null
+          promo_code?: string | null
+          promo_final_price?: number | null
           selected_plan?: string
           session_token?: string | null
           status?: string
@@ -1083,6 +1092,158 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      promo_code_usage: {
+        Row: {
+          amount_paid: number | null
+          applied_at: string
+          checkout_session_id: string | null
+          currency: string | null
+          email: string
+          id: string
+          payment_completed_at: string | null
+          promo_code_id: string
+          status: string
+          stripe_session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_paid?: number | null
+          applied_at?: string
+          checkout_session_id?: string | null
+          currency?: string | null
+          email: string
+          id?: string
+          payment_completed_at?: string | null
+          promo_code_id: string
+          status?: string
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_paid?: number | null
+          applied_at?: string
+          checkout_session_id?: string | null
+          currency?: string | null
+          email?: string
+          id?: string
+          payment_completed_at?: string | null
+          promo_code_id?: string
+          status?: string
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_usage_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by_admin_id: string | null
+          current_uses: number
+          discount_type: string
+          discount_value: number
+          expiry_date: string | null
+          id: string
+          is_active: boolean
+          max_uses: number
+          owner_user_id: string
+          stripe_price_id: string | null
+          updated_at: string
+          valid_for_countries: string[] | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by_admin_id?: string | null
+          current_uses?: number
+          discount_type?: string
+          discount_value?: number
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          owner_user_id: string
+          stripe_price_id?: string | null
+          updated_at?: string
+          valid_for_countries?: string[] | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by_admin_id?: string | null
+          current_uses?: number
+          discount_type?: string
+          discount_value?: number
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          owner_user_id?: string
+          stripe_price_id?: string | null
+          updated_at?: string
+          valid_for_countries?: string[] | null
+        }
+        Relationships: []
+      }
+      promo_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          owner_user_id: string
+          paid_at: string | null
+          promo_code_id: string
+          reward_amount: number
+          reward_currency: string
+          status: string
+          usage_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_user_id: string
+          paid_at?: string | null
+          promo_code_id: string
+          reward_amount?: number
+          reward_currency?: string
+          status?: string
+          usage_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_user_id?: string
+          paid_at?: string | null
+          promo_code_id?: string
+          reward_amount?: number
+          reward_currency?: string
+          status?: string
+          usage_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_rewards_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_rewards_usage_id_fkey"
+            columns: ["usage_id"]
+            isOneToOne: false
+            referencedRelation: "promo_code_usage"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recurring_expenses: {
         Row: {
