@@ -125,7 +125,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       },
       mission: {
         title: "Our Mission",
-        description: "Empower Brazilian couples to make intelligent financial decisions together, promoting transparency, communication and mutual financial growth through innovative technology and specialized financial education."
+        description: "Empower couples worldwide to make intelligent financial decisions together, promoting transparency, communication and mutual financial growth through innovative technology and specialized financial education."
       },
       values: {
         title: "Our Values",
@@ -168,7 +168,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       },
       mission: {
         title: "Nuestra Misión",
-        description: "Capacitar a las parejas brasileñas para tomar decisiones financieras inteligentes juntas, promoviendo transparencia, comunicación y crecimiento financiero mutuo a través de tecnología innovadora y educación financiera especializada."
+        description: "Capacitar a las parejas de todo el mundo para tomar decisiones financieras inteligentes juntas, promoviendo transparencia, comunicación y crecimiento financiero mutuo a través de tecnología innovadora y educación financiera especializada."
       },
       values: {
         title: "Nuestros Valores",
