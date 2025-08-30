@@ -101,8 +101,8 @@ const PricingSection = () => {
                   <div className="mt-2 text-sm text-muted-foreground">
                     {language === 'pt' && inBrazil ? (
                       <>
-                        ou <span className="font-semibold text-foreground">R$ 179,80/ano</span>
-                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~25% OFF no anual</span>
+                        ou <span className="font-semibold text-foreground">R$ 217,10/ano</span>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~30% OFF no anual</span>
                       </>
                     ) : language === 'es' ? (
                       <>

@@ -25,7 +25,7 @@ export const AbandonedCartEmailPT = ({
   selectedPlan,
   checkoutUrl 
 }: AbandonedCartEmailProps) => {
-  const planPrice = selectedPlan === 'yearly' ? 'R$ 179,80/ano' : 'R$ 25,90/mês';
+  const planPrice = selectedPlan === 'yearly' ? 'R$ 217,10/ano' : 'R$ 25,90/mês';
   const planName = selectedPlan === 'yearly' ? 'Plano Anual Premium' : 'Plano Mensal Premium';
 
   return React.createElement(

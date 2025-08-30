@@ -32,7 +32,7 @@ const DirectCheckout = () => {
 
   const isUSD = language !== 'pt' || !inBrazil;
   const monthlyPrice = isUSD ? '$9.90' : 'R$25,90';
-  const yearlyPrice = isUSD ? '$67.10' : 'R$179,80';
+  const yearlyPrice = isUSD ? '$67.10' : 'R$217,10';
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
 
   const features = [

@@ -534,7 +534,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                       {creatingCheckout ? t('subscription.loading') : t('subscription.subscribeMonthly')}
                     </Button>
                     <Button 
-                      onClick={() => handleUpgrade('price_1Ruie7FOhUY5r0H1qXXFouNn')}
+                      onClick={() => handleUpgrade('price_1S1qudFOhUY5r0H1ZqGYFERQ')}
                       disabled={creatingCheckout}
                       variant="outline"
                       className="w-full"

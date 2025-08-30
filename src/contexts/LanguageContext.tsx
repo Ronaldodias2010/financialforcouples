@@ -1145,7 +1145,7 @@ const translations = {
     'subscription.free': 'Gratuito',
     'subscription.month': 'mês',
     'subscription.year': 'ano',
-    'subscription.annualDiscount': 'Com o plano anual você economiza aproximadamente 25%',
+    'subscription.annualDiscount': 'Com o plano anual você economiza aproximadamente 30%',
     'subscription.includesEssential': 'Inclui todos os recursos essenciais +',
     'subscription.whyPremium': 'Por que Premium?',
     'subscription.premiumBenefits': 'Vantagens exclusivas do plano premium',

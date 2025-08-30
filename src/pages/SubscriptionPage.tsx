@@ -21,10 +21,10 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
   // Language-based pricing and Stripe price IDs
   const isEnglishPricing = !inBrazil || language === 'en';
   const monthlyDisplay = isEnglishPricing ? '$ 9.90' : 'R$ 25,90';
-  const annualDisplay = isEnglishPricing ? '$ 67.10' : 'R$ 179,80';
+  const annualDisplay = isEnglishPricing ? '$ 67.10' : 'R$ 217,10';
   // NOTE: Using the provided USD price IDs for English pricing
   const monthlyPriceId = isEnglishPricing ? 'price_1Ruut0FOhUY5r0H1vV43Vj4L' : 'price_1S1qdSFOhUY5r0H1b7o1WG2Z';
-  const annualPriceId = isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1Ruie7FOhUY5r0H1qXXFouNn';
+  const annualPriceId = isEnglishPricing ? 'price_1RuutYFOhUY5r0H1VSEQO2oI' : 'price_1S1qudFOhUY5r0H1ZqGYFERQ';
   const handleUpgrade = async (priceId: string) => {
     try {
       setCreatingSession(true);
