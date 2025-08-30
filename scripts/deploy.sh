@@ -158,9 +158,14 @@ deploy_infrastructure() {
     log_info "Validando configuração..."
     terraform validate
     
-    # Planejar deploy
+    # Planejar deploy (com configuração CloudFront)
     log_info "Planejando deploy..."
-    terraform plan -var="container_image=$CONTAINER_IMAGE" -out=tfplan
+    if [ "$bypass_cloudfront" = true ]; then
+        log_warn "CloudFront será desabilitado para deploy mais rápido"
+        terraform plan -var="container_image=$CONTAINER_IMAGE" -var="enable_cloudfront=false" -out=tfplan
+    else
+        terraform plan -var="container_image=$CONTAINER_IMAGE" -out=tfplan
+    fi
     
     # Aplicar mudanças (com confirmação)
     echo
@@ -209,20 +214,35 @@ verify_deployment() {
         --region $AWS_REGION)
     
     if [ "$ALB_DNS" != "None" ] && [ -n "$ALB_DNS" ]; then
-        APP_URL="http://$ALB_DNS"
-        log_info "URL da aplicação: $APP_URL"
+        ALB_URL="http://$ALB_DNS"
+        log_info "📍 URL direta do ALB: $ALB_URL"
+        
+        # Verificar se CloudFront está habilitado
+        if [ "$bypass_cloudfront" = false ]; then
+            get_cloudfront_url
+        fi
         
         # Aguardar alguns segundos
         sleep 30
         
-        # Verificar health check
-        if curl -f -s "$APP_URL/health" &> /dev/null; then
-            log_info "✅ Health check passou!"
+        # Verificar health check no ALB
+        if curl -f -s "$ALB_URL/health" &> /dev/null; then
+            log_info "✅ Health check do ALB passou!"
         else
-            log_warn "Health check falhou, mas a aplicação pode estar inicializando..."
+            log_warn "Health check do ALB falhou, mas a aplicação pode estar inicializando..."
         fi
         
-        log_info "🎉 Deploy concluído! Acesse: $APP_URL"
+        # Invalidar cache se solicitado
+        if [ "$invalidate_cache" = true ] && [ "$bypass_cloudfront" = false ]; then
+            invalidate_cloudfront_cache
+        fi
+        
+        log_info "🎉 Deploy concluído!"
+        log_info "📍 Acesse via ALB (mais rápido): $ALB_URL"
+        
+        if [ "$bypass_cloudfront" = false ]; then
+            log_info "📍 CloudFront será disponibilizado em alguns minutos"
+        fi
     else
         log_warn "Não foi possível obter URL do Load Balancer"
     fi
@@ -237,6 +257,59 @@ cleanup() {
     log_info "✅ Limpeza concluída"
 }
 
+get_alb_url() {
+    log_info "Obtendo URL direta do ALB..."
+    
+    ALB_DNS=$(aws elbv2 describe-load-balancers \
+        --names $APP_NAME-alb \
+        --query 'LoadBalancers[0].DNSName' \
+        --output text \
+        --region $AWS_REGION 2>/dev/null)
+    
+    if [ "$ALB_DNS" != "None" ] && [ -n "$ALB_DNS" ]; then
+        echo "📍 URL direta do ALB: http://$ALB_DNS"
+    else
+        log_error "ALB não encontrado"
+        exit 1
+    fi
+}
+
+get_cloudfront_url() {
+    log_info "Obtendo URL do CloudFront..."
+    
+    DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+        --query "DistributionList.Items[?contains(Comment, '$APP_NAME')].Id" \
+        --output text 2>/dev/null | head -1)
+    
+    if [ -n "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+        CLOUDFRONT_DOMAIN=$(aws cloudfront get-distribution \
+            --id "$DISTRIBUTION_ID" \
+            --query 'Distribution.DomainName' \
+            --output text 2>/dev/null)
+        echo "📍 URL do CloudFront: https://$CLOUDFRONT_DOMAIN"
+    else
+        log_warn "CloudFront não encontrado"
+    fi
+}
+
+invalidate_cloudfront_cache() {
+    log_info "Invalidando cache do CloudFront..."
+    
+    DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+        --query "DistributionList.Items[?contains(Comment, '$APP_NAME')].Id" \
+        --output text 2>/dev/null | head -1)
+    
+    if [ -n "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+        aws cloudfront create-invalidation \
+            --distribution-id "$DISTRIBUTION_ID" \
+            --paths "/*" \
+            --region $AWS_REGION
+        log_info "✅ Cache do CloudFront invalidado"
+    else
+        log_warn "CloudFront não encontrado para invalidação"
+    fi
+}
+
 show_help() {
     echo "Script de deploy para Couples Financials"
     echo ""
@@ -248,10 +321,15 @@ show_help() {
     echo "  --skip-tests          Pular execução de testes"
     echo "  --infrastructure-only  Apenas deploy da infraestrutura"
     echo "  --app-only            Apenas deploy da aplicação"
+    echo "  --bypass-cloudfront   Desabilitar CloudFront durante deploy"
+    echo "  --invalidate-cache    Invalidar cache do CloudFront"
+    echo "  --get-alb-url         Mostrar URL direta do ALB"
     echo ""
     echo "Exemplo:"
-    echo "  $0                    Deploy completo"
-    echo "  $0 --skip-tests       Deploy sem executar testes"
+    echo "  $0                           Deploy completo"
+    echo "  $0 --skip-tests              Deploy sem executar testes"
+    echo "  $0 --bypass-cloudfront       Deploy direto para ALB"
+    echo "  $0 --get-alb-url            Obter URL direta do ALB"
     echo ""
 }
 
@@ -261,6 +339,9 @@ main() {
     local skip_tests=false
     local infrastructure_only=false
     local app_only=false
+    local bypass_cloudfront=false
+    local invalidate_cache=false
+    local get_alb_url_only=false
     
     # Processar argumentos
     while [[ $# -gt 0 ]]; do
@@ -285,6 +366,18 @@ main() {
                 app_only=true
                 shift
                 ;;
+            --bypass-cloudfront)
+                bypass_cloudfront=true
+                shift
+                ;;
+            --invalidate-cache)
+                invalidate_cache=true
+                shift
+                ;;
+            --get-alb-url)
+                get_alb_url_only=true
+                shift
+                ;;
             *)
                 log_error "Opção desconhecida: $1"
                 show_help
@@ -292,6 +385,19 @@ main() {
                 ;;
         esac
     done
+    
+    # Se apenas URL do ALB foi solicitada
+    if [ "$get_alb_url_only" = true ]; then
+        get_alb_url
+        get_cloudfront_url
+        exit 0
+    fi
+    
+    # Se apenas invalidação foi solicitada
+    if [ "$invalidate_cache" = true ] && [ "$skip_build" = false ] && [ "$infrastructure_only" = false ] && [ "$app_only" = false ]; then
+        invalidate_cloudfront_cache
+        exit 0
+    fi
     
     log_info "🚀 Iniciando deploy do Couples Financials"
     

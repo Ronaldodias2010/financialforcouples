@@ -7,6 +7,23 @@ on:
       - main
       - production
   workflow_dispatch:
+    inputs:
+      bypass_cloudfront:
+        description: 'Bypass CloudFront during deployment'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      invalidate_cloudfront:
+        description: 'Invalidate CloudFront cache after deployment'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 concurrency:
   group: deploy-${{ github.ref_name }}
@@ -23,6 +40,8 @@ env:
   ECS_SERVICE: couples-financials
   ECS_CLUSTER: couples-financials-cluster
   CONTAINER_NAME: couples-financials
+  # CloudFront bypass for faster deployments
+  BYPASS_CLOUDFRONT: ${{ github.event.inputs.bypass_cloudfront || 'false' }}
   # Configurações Git para resiliência
   GIT_CURL_VERBOSE: 1
   GIT_TRACE_CURL: 1
@@ -194,6 +213,7 @@ jobs:
         supabase_service_role_key = "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
         cloudfront_oac_id = "${{ secrets.CLOUDFRONT_OAC_ID }}"
         cloudfront_create_spa_function = false
+        enable_cloudfront = ${{ env.BYPASS_CLOUDFRONT == 'false' }}
         EOF
         if [ -z "${{ secrets.CLOUDFRONT_OAC_ID }}" ]; then
           echo "Note: CLOUDFRONT_OAC_ID not set; Terraform will attempt to create a new OAC."
@@ -273,7 +293,8 @@ jobs:
           -var="supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}" \
           -var="supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
           -var="cloudfront_oac_id=${{ secrets.CLOUDFRONT_OAC_ID }}" \
-          -var="cloudfront_create_spa_function=false"
+          -var="cloudfront_create_spa_function=false" \
+          -var="enable_cloudfront=${{ env.BYPASS_CLOUDFRONT == 'false' }}"
 
   # Job de deploy da aplicação no ECS
   deploy-application:
@@ -352,15 +373,30 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Get application URL
+    - name: Get application URLs
       id: get-url
       run: |
-        # Obter URL do Load Balancer
+        # Obter URL do Load Balancer (direto)
         ALB_DNS=$(aws elbv2 describe-load-balancers \
           --names couples-financials-alb \
           --query 'LoadBalancers[0].DNSName' \
           --output text)
-        echo "url=http://$ALB_DNS" >> $GITHUB_OUTPUT
+        echo "alb_url=http://$ALB_DNS" >> $GITHUB_OUTPUT
+        
+        # Obter URL do CloudFront (se habilitado)
+        if [ "${{ env.BYPASS_CLOUDFRONT }}" == "false" ]; then
+          CLOUDFRONT_DOMAIN=$(aws cloudfront list-distributions \
+            --query "DistributionList.Items[?contains(Comment, 'couples-financials')].DomainName" \
+            --output text | head -1)
+          if [ -n "$CLOUDFRONT_DOMAIN" ] && [ "$CLOUDFRONT_DOMAIN" != "None" ]; then
+            echo "cloudfront_url=https://$CLOUDFRONT_DOMAIN" >> $GITHUB_OUTPUT
+            echo "url=https://$CLOUDFRONT_DOMAIN" >> $GITHUB_OUTPUT
+          else
+            echo "url=http://$ALB_DNS" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "url=http://$ALB_DNS" >> $GITHUB_OUTPUT
+        fi
 
     - name: Health check
       run: |
@@ -393,6 +429,31 @@ jobs:
         fi
         
         echo "🎉 All smoke tests passed!"
+        
+        # Mostrar URLs disponíveis
+        echo "📍 Application URLs:"
+        echo "   ALB (direct): ${{ steps.get-url.outputs.alb_url }}"
+        if [ -n "${{ steps.get-url.outputs.cloudfront_url }}" ]; then
+          echo "   CloudFront: ${{ steps.get-url.outputs.cloudfront_url }}"
+        fi
+
+    - name: Invalidate CloudFront cache
+      if: env.BYPASS_CLOUDFRONT == 'false' && github.event.inputs.invalidate_cloudfront == 'true'
+      run: |
+        # Invalidar cache do CloudFront
+        DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+          --query "DistributionList.Items[?contains(Comment, 'couples-financials')].Id" \
+          --output text | head -1)
+        
+        if [ -n "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+          echo "Invalidating CloudFront cache for distribution: $DISTRIBUTION_ID"
+          aws cloudfront create-invalidation \
+            --distribution-id "$DISTRIBUTION_ID" \
+            --paths "/*"
+          echo "✅ CloudFront cache invalidated"
+        else
+          echo "⚠️  CloudFront distribution not found"
+        fi
 
   # Job de notificação
   notify:

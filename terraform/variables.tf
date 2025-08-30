@@ -101,3 +101,15 @@ variable "cloudfront_create_spa_function" {
   type        = bool
   default     = false
 }
+
+variable "bypass_cloudfront_during_deploy" {
+  description = "Desabilitar CloudFront temporariamente durante deploys para maior velocidade."
+  type        = bool
+  default     = false
+}
+
+variable "auto_invalidate_cloudfront" {
+  description = "Invalidar automaticamente o cache do CloudFront após deploys."
+  type        = bool
+  default     = true
+}

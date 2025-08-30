@@ -62,6 +62,16 @@ output "application_url" {
   ) : "http://${aws_lb.app.dns_name}"
 }
 
+output "alb_direct_url" {
+  description = "URL direta do ALB (bypass CloudFront)"
+  value       = "http://${aws_lb.app.dns_name}"
+}
+
+output "cloudfront_status" {
+  description = "Status do CloudFront (habilitado/desabilitado)"
+  value       = var.enable_cloudfront ? "enabled" : "disabled"
+}
+
 output "ssl_certificate_arn" {
   description = "ARN do certificado SSL (se configurado)"
   value       = var.domain_name != "" ? aws_acm_certificate.app[0].arn : null
