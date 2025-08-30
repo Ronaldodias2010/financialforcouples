@@ -151,7 +151,7 @@ const AbandonedCheckouts = () => {
   };
 
   const getPlanPrice = (plan: string) => {
-    return plan === 'yearly' ? 'R$ 179,80/ano' : 'R$ 19,90/mês';
+    return plan === 'yearly' ? 'R$ 179,80/ano' : 'R$ 25,90/mês';
   };
 
   const generateEmailTemplate = (session: CheckoutSession) => {

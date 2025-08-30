@@ -31,7 +31,7 @@ const DirectCheckout = () => {
   const sessionToken = searchParams.get('token');
 
   const isUSD = language !== 'pt' || !inBrazil;
-  const monthlyPrice = isUSD ? '$9.90' : 'R$19,90';
+  const monthlyPrice = isUSD ? '$9.90' : 'R$25,90';
   const yearlyPrice = isUSD ? '$67.10' : 'R$179,80';
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
 

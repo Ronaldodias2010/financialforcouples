@@ -52,7 +52,7 @@ serve(async (req) => {
     }
 
     // Determine which price to use (defaults to monthly)
-    let selectedPrice = "price_1RsLL5FOhUY5r0H1WIXv7yuP";
+    let selectedPrice = "price_1S1qdSFOhUY5r0H1b7o1WG2Z";
     try {
       const body = await req.json();
       if (body?.priceId && typeof body.priceId === 'string') {

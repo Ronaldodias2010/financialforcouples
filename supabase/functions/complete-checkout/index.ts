@@ -90,7 +90,7 @@ serve(async (req) => {
 
     const priceId = checkoutSession.selected_plan === 'yearly' 
       ? (useBRL ? 'price_1Ruie7FOhUY5r0H1qXXFouNn' : 'price_1RuutYFOhUY5r0H1VSEQO2oI') // anual: BRL vs USD
-      : (useBRL ? 'price_1RsLL5FOhUY5r0H1WIXv7yuP' : 'price_1Ruut0FOhUY5r0H1vV43Vj4L'); // mensal: BRL vs USD
+      : (useBRL ? 'price_1S1qdSFOhUY5r0H1b7o1WG2Z' : 'price_1Ruut0FOhUY5r0H1vV43Vj4L'); // mensal: BRL vs USD
 
     logStep("Determined pricing", { 
       selectedLanguage,

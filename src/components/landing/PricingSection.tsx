@@ -9,7 +9,7 @@ import AIBetaModal from "@/components/landing/AIBetaModal";
 const PricingSection = () => {
   const { t, language, inBrazil } = useLanguage();
   const isUSD = language !== 'pt' || !inBrazil;
-  const premiumPrice = isUSD ? '$ 9.90' : 'R$ 19,90';
+  const premiumPrice = isUSD ? '$ 9.90' : 'R$ 25,90';
   const [aiBetaOpen, setAiBetaOpen] = useState(false);
   const plans = [
     {
