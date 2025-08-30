@@ -100,7 +100,7 @@ serve(async (req) => {
       discount_value: promoCode.discount_value,
       stripe_price_id: promoCode.stripe_price_id,
       message: promoCode.discount_type === 'fixed_price' 
-        ? `Preço especial: R$ ${promoCode.discount_value.toFixed(2)}`
+        ? `Preço especial aplicado! R$ ${promoCode.discount_value.toFixed(2).replace('.', ',')}`
         : `Desconto aplicado: ${promoCode.discount_value}%`
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

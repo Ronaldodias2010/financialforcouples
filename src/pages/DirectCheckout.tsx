@@ -39,7 +39,7 @@ const DirectCheckout = () => {
     if (selectedPlan === 'monthly') return monthlyPrice;
     
     if (promoApplied && promoValidation?.valid && promoValidation.discount_type === 'fixed_price') {
-      return `R$ ${promoValidation.discount_value?.toFixed(2)}`;
+      return `R$ ${promoValidation.discount_value?.toFixed(2).replace('.', ',')}`;
     }
     
     return baseYearlyPrice;
@@ -405,20 +405,20 @@ const DirectCheckout = () => {
                      {/* Promo Code Section - Only for BR users */}
                      {inBrazil && language === 'pt' && (
                        <div className="space-y-4">
-                         <Label className="flex items-center gap-2">
-                           <Tag className="w-4 h-4" />
-                           {t('subscription.promoCode')} (Opcional)
-                         </Label>
+                          <Label className="flex items-center gap-2">
+                            <Tag className="w-4 h-4" />
+                            Cupom Promocional (Opcional)
+                          </Label>
                          
                          {!promoApplied ? (
                            <div className="flex gap-2">
-                             <Input
-                               placeholder={t('subscription.promoCodePlaceholder')}
-                               value={promoCode}
-                               onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                               disabled={validatingPromo}
-                               className="flex-1"
-                             />
+                              <Input
+                                placeholder="Digite seu código promocional"
+                                value={promoCode}
+                                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                disabled={validatingPromo}
+                                className="flex-1"
+                              />
                              <Button
                                type="button"
                                variant="outline"
@@ -528,9 +528,19 @@ const DirectCheckout = () => {
                               <div className="text-sm text-muted-foreground">{t('directCheckout.bestValue')}</div>
                             </div>
                              <div className="text-right">
-                               <div className="font-bold text-xl">{getDisplayPrice()}</div>
-                               <div className="text-sm text-muted-foreground">{t('directCheckout.perYear')}</div>
-                             </div>
+                                {promoApplied && promoValidation?.valid && promoValidation.discount_type === 'fixed_price' ? (
+                                  <div>
+                                    <div className="text-sm text-muted-foreground line-through">{baseYearlyPrice}</div>
+                                    <div className="font-bold text-xl text-green-600">{getDisplayPrice()}</div>
+                                    <div className="text-xs text-green-600">Economia: R$ {(217.10 - (promoValidation.discount_value || 0)).toFixed(2).replace('.', ',')}</div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <div className="font-bold text-xl">{getDisplayPrice()}</div>
+                                    <div className="text-sm text-muted-foreground">{t('directCheckout.perYear')}</div>
+                                  </div>
+                                )}
+                              </div>
                           </div>
                         </div>
                       </div>
