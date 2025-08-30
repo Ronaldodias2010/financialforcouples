@@ -161,6 +161,84 @@ export type Database = {
         }
         Relationships: []
       }
+      airline_promotions: {
+        Row: {
+          airline_code: string
+          airline_name: string
+          bonus_percentage: number | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          discount_percentage: number | null
+          end_date: string
+          external_promotion_id: string | null
+          id: string
+          is_active: boolean
+          last_synced_at: string | null
+          miles_required: number | null
+          original_price: number | null
+          promotion_type: string
+          promotion_url: string | null
+          promotional_price: number | null
+          route_from: string | null
+          route_to: string | null
+          start_date: string
+          terms_conditions: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          airline_code: string
+          airline_name: string
+          bonus_percentage?: number | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          end_date: string
+          external_promotion_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          miles_required?: number | null
+          original_price?: number | null
+          promotion_type?: string
+          promotion_url?: string | null
+          promotional_price?: number | null
+          route_from?: string | null
+          route_to?: string | null
+          start_date: string
+          terms_conditions?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          airline_code?: string
+          airline_name?: string
+          bonus_percentage?: number | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          end_date?: string
+          external_promotion_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          miles_required?: number | null
+          original_price?: number | null
+          promotion_type?: string
+          promotion_url?: string | null
+          promotional_price?: number | null
+          route_from?: string | null
+          route_to?: string | null
+          start_date?: string
+          terms_conditions?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       card_mileage_rules: {
         Row: {
           amount_threshold: number
@@ -1370,6 +1448,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_promotion_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          notification_type: string
+          promotion_id: string
+          sent_at: string
+          user_id: string
+          user_miles_at_notification: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          notification_type?: string
+          promotion_id: string
+          sent_at?: string
+          user_id: string
+          user_miles_at_notification?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          notification_type?: string
+          promotion_id?: string
+          sent_at?: string
+          user_id?: string
+          user_miles_at_notification?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_promotion_notifications_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "airline_promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1389,6 +1508,10 @@ export type Database = {
       check_manual_premium_expiration: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      check_user_promotion_eligibility: {
+        Args: { p_promotion_id: string; p_user_id: string }
+        Returns: boolean
       }
       create_default_categories_for_user: {
         Args: { user_id: string; user_language?: string }

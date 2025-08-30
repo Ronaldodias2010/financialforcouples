@@ -16,6 +16,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User } from "lucide-react";
+import { PromotionsSection } from './PromotionsSection';
 import { format } from "date-fns";
 
 interface Card {
@@ -563,6 +564,9 @@ export const MileageSystem = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Promotions Section */}
+      <PromotionsSection userTotalMiles={totalMiles} />
 
       {/* Main Content */}
       <Tabs defaultValue="rules" className="space-y-4">
