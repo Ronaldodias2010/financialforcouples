@@ -194,8 +194,8 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                     </td>
                     <td className="p-4 align-middle">
                       <Badge 
-                        variant={u.isManualAccess ? "outline" : "outline"}
-                        className={u.isManualAccess ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300" : ""}
+                        variant={u.isManualAccess ? "secondary" : "default"}
+                        className={u.isManualAccess ? "border-amber-500 bg-amber-100 text-amber-800 dark:border-amber-400 dark:bg-amber-900/30 dark:text-amber-300" : ""}
                       >
                         {u.subscription_tier}
                       </Badge>
