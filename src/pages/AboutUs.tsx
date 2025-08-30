@@ -25,7 +25,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       el.setAttribute("content", content);
     };
 
-    setMeta("description", "Conheça a história da Couples Financials, a primeira plataforma brasileira especializada em gestão financeira para casais. Nossa missão é ajudar casais a organizarem suas finanças juntos.");
+    setMeta("description", "Conheça a história da Couples Financials, a primeira plataforma especializada em gestão financeira para casais. Nossa missão é ajudar casais a organizarem suas finanças juntos.");
     setMeta("keywords", "sobre couples financials, história empresa, gestão financeira casais, missão valores, equipe");
 
     // Structured data for Organization
@@ -35,7 +35,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       "name": "Couples Financials",
       "url": "https://couplesfinancials.com",
       "logo": "https://couplesfinancials.com/icons/icon-512x512.png",
-      "description": "Primeira plataforma brasileira especializada em gestão financeira para casais",
+      "description": "Primeira plataforma especializada em gestão financeira para casais",
       "foundingDate": "2024",
       "founder": {
         "@type": "Person",
@@ -72,10 +72,10 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
   const content = {
     pt: {
       title: "Sobre Nós",
-      subtitle: "A primeira plataforma brasileira criada especialmente para casais",
+      subtitle: "A primeira plataforma criada especialmente para casais, porém solteiros podem e devem utilizar!",
       story: {
         title: "Nossa História",
-        description: "Nascemos da necessidade real de casais brasileiros que buscavam uma solução completa para organizar suas finanças de forma colaborativa. Percebemos que o mercado oferecia apenas soluções individuais, mas as finanças em relacionamentos são únicas e merecem ferramentas específicas."
+        description: "Nascemos da necessidade real de casais que buscavam uma solução completa para organizar suas finanças, todo início de mês era uma confusão com muitas discussões e brigas por não entender como dois executivos com um salário tão alto não conseguiam chegar no final do mês com dinheiro sobrando, sempre brigávamos e um olhava a planilha de gasto do outro e não conseguia enxergar onde estava o problema até que entendemos que se trabalhássemos em conjunto de forma colaborativa conseguiríamos ajustar este problema que afetava completamente nosso relacionamento, mas não encontramos nada que fosse prático e pudesse nos auxiliar. Percebemos que o mercado oferecia apenas soluções individuais, até existe plataformas com gastos em conjunto com a família, mas ainda se mantinham frio e sem conexão, então resolvemos montar a nossa plataforma que são perfeitas para nossas finanças, que olham para quando entramos no vermelho e com auxílio de uma IA nos ajuda a sair e nos policiar para que isto não ocorra novamente, após fazer isto notamos que mais casais precisavam resolver este mesmo problema e assim nasceu Couples Financials a melhor plataforma para cuidar do seu dinheiro e fazer planos para o futuro, seja em casal ou solteiro!"
       },
       mission: {
         title: "Nossa Missão",
