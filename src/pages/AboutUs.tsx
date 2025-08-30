@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { ArrowLeft, Heart, Target, Users, Award } from "lucide-react";
+import { ArrowLeft, Heart, Target, Users, Award, Home } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 interface AboutUsProps {
   onBack?: () => void;
@@ -10,6 +11,7 @@ interface AboutUsProps {
 
 const AboutUs = ({ onBack }: AboutUsProps) => {
   const { language } = useLanguage();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // SEO optimization for About Us page
@@ -117,7 +119,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       subtitle: "The first Brazilian platform created especially for couples",
       story: {
         title: "Our Story",
-        description: "We were born from the real need of Brazilian couples seeking a complete solution to organize their finances collaboratively. We realized that the market only offered individual solutions, but relationship finances are unique and deserve specific tools."
+        description: "We were born from a real need. We have been married for 21 years and, as a couple, we were looking for a complete solution to organize our finances. Every beginning of the month was marked by confusion, arguments and fights. We didn't understand how two executives, with high salaries, couldn't finish the month with money left over.\n\nImagine: if it was difficult for us, how would it be for those who earn less? We always argued. Each one analyzed the other's expense spreadsheet, but no one could identify where the problem was.\n\nUntil we realized: if we worked together, collaboratively, we could solve this issue that deeply affected our relationship. However, we couldn't find any practical tool that really helped us.\n\nWe observed that the market only offered individual solutions. Some platforms even allowed family expense control, but they were cold, disconnected from the reality of couples.\n\nThat's when we decided to create our own platform — tailor-made for our finances. It helps us identify when we're in the red and, with the support of artificial intelligence, guides us out of this situation and prevents it from happening again.\n\nWhen implementing this solution, we realized that many other couples faced the same challenge. Thus Couples Financials was born — the best platform to take care of your money and build plans for the future, whether as a couple or single."
       },
       mission: {
         title: "Our Mission",
@@ -159,7 +161,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       subtitle: "La primera plataforma brasileña creada especialmente para parejas",
       story: {
         title: "Nuestra Historia",
-        description: "Nacimos de la necesidad real de parejas brasileñas que buscaban una solución completa para organizar sus finanzas de forma colaborativa. Nos dimos cuenta de que el mercado solo ofrecía soluciones individuales, pero las finanzas en relaciones son únicas y merecen herramientas específicas."
+        description: "Nacimos de una necesidad real. Estamos casados desde hace 21 años y, como pareja, buscábamos una solución completa para organizar nuestras finanzas. Cada inicio de mes estaba marcado por confusión, discusiones y peleas. No entendíamos cómo dos ejecutivos, con salarios altos, no podían terminar el mes con dinero sobrante.\n\nImaginen: si era difícil para nosotros, ¿cómo sería para quienes ganan menos? Siempre discutíamos. Cada uno analizaba la hoja de gastos del otro, pero nadie podía identificar dónde estaba el problema.\n\nHasta que nos dimos cuenta: si trabajáramos juntos, de forma colaborativa, podríamos resolver esta cuestión que afectaba profundamente nuestra relación. Sin embargo, no encontramos ninguna herramienta práctica que realmente nos ayudara.\n\nObservamos que el mercado ofrecía solo soluciones individuales. Algunas plataformas incluso permitían el control de gastos familiares, pero eran frías, desconectadas de la realidad de las parejas.\n\nFue entonces cuando decidimos crear nuestra propia plataforma — hecha a medida para nuestras finanzas. Nos ayuda a identificar cuando estamos en números rojos y, con el apoyo de una inteligencia artificial, nos orienta para salir de esta situación y evitar que se repita.\n\nAl implementar esta solución, nos dimos cuenta de que muchas otras parejas enfrentaban el mismo desafío. Así nació Couples Financials — la mejor plataforma para cuidar tu dinero y construir planes para el futuro, ya sea en pareja o soltero."
       },
       mission: {
         title: "Nuestra Misión",
@@ -204,16 +206,27 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Header with navigation */}
       <header className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-4">
-          {onBack && (
-            <Button variant="ghost" size="icon" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">{currentContent.title}</h1>
-            <p className="text-lg text-muted-foreground mt-2">{currentContent.subtitle}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {onBack && (
+              <Button variant="ghost" size="icon" onClick={onBack}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">{currentContent.title}</h1>
+              <p className="text-lg text-muted-foreground mt-2">{currentContent.subtitle}</p>
+            </div>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <Home className="h-4 w-4" />
+            Voltar ao Início
+          </Button>
         </div>
       </header>
 
@@ -227,9 +240,13 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
                 <h2 className="text-2xl font-semibold text-primary mb-4">
                   {currentContent.story.title}
                 </h2>
-                <p className="text-muted-foreground leading-relaxed text-lg">
-                  {currentContent.story.description}
-                </p>
+                <div className="space-y-4">
+                  {currentContent.story.description.split('\n\n').map((paragraph, index) => (
+                    <p key={index} className="text-muted-foreground leading-relaxed text-lg">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </section>
