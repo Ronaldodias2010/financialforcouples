@@ -6,6 +6,7 @@ import SecuritySection from "@/components/landing/SecuritySection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import WhatsAppSection from "@/components/landing/WhatsAppSection";
 import AIRecommendationsSection from "@/components/landing/AIRecommendationsSection";
+import SmartMileageSection from "@/components/landing/SmartMileageSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
 import Footer from "@/components/landing/Footer";
@@ -28,6 +29,7 @@ const Landing = () => {
         <PricingSection />
         <WhatsAppSection />
         <AIRecommendationsSection />
+        <SmartMileageSection />
         <SecuritySection />
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-muted/30 h-32"></div>

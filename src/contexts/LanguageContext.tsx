@@ -397,6 +397,23 @@ const translations = {
     'conta basica': 'Basic Bills',
     'presente ou doacao': 'Presente ou Doação',
     'reembolso': 'Reembolso',
+
+    // Smart Mileage Section
+    'smartMileage.badge': 'Exclusivo',
+    'smartMileage.title': 'Notificações Inteligentes de Milhas',
+    'smartMileage.subtitle': 'Seja alertado automaticamente quando suas milhas podem ser usadas em promoções exclusivas',
+    'smartMileage.benefit1.title': 'Alertas Automáticos',
+    'smartMileage.benefit1.description': 'Sistema monitora promoções 24/7 e te avisa quando você tem milhas suficientes',
+    'smartMileage.benefit2.title': 'Múltiplas Companhias',
+    'smartMileage.benefit2.description': 'Integração com LATAM, Azul, GOL, TAP e principais companhias aéreas',
+    'smartMileage.benefit3.title': 'Economia Garantida',
+    'smartMileage.benefit3.description': 'Economize até 40% em passagens aproveitando as melhores promoções',
+    'smartMileage.cta': 'Ativar Notificações',
+    'smartMileage.notification.title': 'Promoção Disponível!',
+    'smartMileage.notification.subtitle': 'Você tem milhas suficientes',
+    'smartMileage.notification.promotion': 'LATAM - São Paulo → Rio de Janeiro',
+    'smartMileage.notification.miles': '25.000 milhas',
+    'smartMileage.notification.savings': 'Economize R$ 350',
     
     // TransactionForm
     'transactionForm.title': 'Nova Transação',
@@ -2652,6 +2669,23 @@ const translations = {
     'monthlyIncome.pdfTitle': 'Monthly Income Report',
     'monthlyIncome.pdfPeriod': 'Period',
     'monthlyIncome.pdfTotalIncome': 'Total Income',
+
+    // Smart Mileage Section
+    'smartMileage.badge': 'Exclusive',
+    'smartMileage.title': 'Smart Mileage Notifications',
+    'smartMileage.subtitle': 'Get automatically notified when your miles can be used for exclusive promotions',
+    'smartMileage.benefit1.title': 'Automatic Alerts',
+    'smartMileage.benefit1.description': 'System monitors promotions 24/7 and alerts you when you have enough miles',
+    'smartMileage.benefit2.title': 'Multiple Airlines',
+    'smartMileage.benefit2.description': 'Integration with LATAM, Azul, GOL, TAP and major airlines',
+    'smartMileage.benefit3.title': 'Guaranteed Savings',
+    'smartMileage.benefit3.description': 'Save up to 40% on flights by taking advantage of the best promotions',
+    'smartMileage.cta': 'Enable Notifications',
+    'smartMileage.notification.title': 'Promotion Available!',
+    'smartMileage.notification.subtitle': 'You have enough miles',
+    'smartMileage.notification.promotion': 'LATAM - São Paulo → Rio de Janeiro',
+    'smartMileage.notification.miles': '25,000 miles',
+    'smartMileage.notification.savings': 'Save $60',
   },
   
   es: {
@@ -3956,6 +3990,23 @@ const translations = {
     'aiBeta.contactButton': 'Quiero ser probador beta',
     'aiBeta.waitButton': 'Voy a esperar',
     'aiBeta.emails': 'Nuestros contactos:',
+
+    // Smart Mileage Section
+    'smartMileage.badge': 'Exclusivo',
+    'smartMileage.title': 'Notificaciones Inteligentes de Millas',
+    'smartMileage.subtitle': 'Recibe alertas automáticas cuando tus millas pueden usarse en promociones exclusivas',
+    'smartMileage.benefit1.title': 'Alertas Automáticas',
+    'smartMileage.benefit1.description': 'El sistema monitorea promociones 24/7 y te avisa cuando tienes millas suficientes',
+    'smartMileage.benefit2.title': 'Múltiples Aerolíneas',
+    'smartMileage.benefit2.description': 'Integración con LATAM, Azul, GOL, TAP y principales aerolíneas',
+    'smartMileage.benefit3.title': 'Ahorro Garantizado',
+    'smartMileage.benefit3.description': 'Ahorra hasta 40% en vuelos aprovechando las mejores promociones',
+    'smartMileage.cta': 'Activar Notificaciones',
+    'smartMileage.notification.title': '¡Promoción Disponible!',
+    'smartMileage.notification.subtitle': 'Tienes millas suficientes',
+    'smartMileage.notification.promotion': 'LATAM - São Paulo → Rio de Janeiro',
+    'smartMileage.notification.miles': '25.000 millas',
+    'smartMileage.notification.savings': 'Ahorra $60',
   },
 };
 
