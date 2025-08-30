@@ -41,6 +41,7 @@ interface SubscriptionUser {
   status: 'active' | 'overdue' | 'canceled' | 'expired';
   isCoupled?: boolean;
   partnerName?: string;
+  isManualAccess?: boolean;
 }
 
 interface RecentAlert {
@@ -198,6 +199,18 @@ const AdminDashboardContent = () => {
       
       console.log('📊 Premium subscribers result:', { data: premiumSubscribers, error: profilesError });
 
+      // Fetch active manual premium access users
+      const { data: manualAccessUsers, error: manualError } = await supabase
+        .from('manual_premium_access')
+        .select('user_id, email')
+        .eq('status', 'active')
+        .lte('start_date', new Date().toISOString().split('T')[0])
+        .gte('end_date', new Date().toISOString().split('T')[0]);
+
+      console.log('🎯 Manual access users:', { data: manualAccessUsers, error: manualError });
+
+      const manualAccessUserIds = new Set(manualAccessUsers?.map(u => u.user_id) || []);
+
       let formattedUsers: SubscriptionUser[] = [];
       
       if (!profilesError && premiumSubscribers) {
@@ -275,7 +288,8 @@ const AdminDashboardContent = () => {
             last_payment: subscriber.updated_at,
             status,
             isCoupled,
-            partnerName
+            partnerName,
+            isManualAccess: manualAccessUserIds.has(subscriber.user_id)
           };
           
           console.log('✨ Formatted premium user:', formattedUser);
@@ -874,9 +888,14 @@ const AdminDashboardContent = () => {
                              user.status === 'canceled' ? t('admin.status.canceled') : t('admin.status.expired')}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{user.subscription_tier}</Badge>
-                        </TableCell>
+                         <TableCell>
+                           <Badge 
+                             variant={user.isManualAccess ? "secondary" : "outline"}
+                             className={user.isManualAccess ? "border-amber-500 bg-amber-100 text-amber-800 dark:border-amber-400 dark:bg-amber-900/30 dark:text-amber-300" : ""}
+                           >
+                             {user.subscription_tier}
+                           </Badge>
+                         </TableCell>
                         <TableCell>
                           {user.last_payment ? new Date(user.last_payment).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR') : '—'}
                         </TableCell>
