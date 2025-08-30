@@ -310,30 +310,26 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
           {/* Couple Photos Section */}
           <section>
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-2 border-dashed border-primary/40 shadow-lg p-4 bg-background/50">
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-muted/20 flex items-center justify-center border-3 border-dashed border-primary/60 rounded-xl p-6">
-                    <div className="text-center text-muted-foreground">
-                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary/40">
-                        <Heart className="h-10 w-10 text-primary/70" />
-                      </div>
-                      <p className="text-base font-medium text-foreground">📸 Foto do Casal 1</p>
-                      <p className="text-sm mt-2 text-muted-foreground">Adicionar foto aqui</p>
-                    </div>
+              <Card className="border-0 shadow-lg overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="aspect-square">
+                    <img 
+                      src="/lovable-uploads/6df94207-a3c6-4ddc-a6db-38566a8247d3.png" 
+                      alt="Casal Couples Financials - Momentos especiais juntos"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="border-2 border-dashed border-primary/40 shadow-lg p-4 bg-background/50">
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-muted/20 flex items-center justify-center border-3 border-dashed border-primary/60 rounded-xl p-6">
-                    <div className="text-center text-muted-foreground">
-                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary/40">
-                        <Users className="h-10 w-10 text-primary/70" />
-                      </div>
-                      <p className="text-base font-medium text-foreground">📸 Foto do Casal 2</p>
-                      <p className="text-sm mt-2 text-muted-foreground">Adicionar foto aqui</p>
-                    </div>
+              <Card className="border-0 shadow-lg overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="aspect-square">
+                    <img 
+                      src="/lovable-uploads/005e71bd-a61e-47c0-b5b8-9e577ae8a19d.png" 
+                      alt="Casal Couples Financials - Fundadores da plataforma"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </CardContent>
               </Card>
