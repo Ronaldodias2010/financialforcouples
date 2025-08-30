@@ -55,28 +55,40 @@ export const ReferralCodesManager = () => {
     try {
       setLoading(true);
       
-      // Buscar códigos de indicação com informações dos parceiros
+      // Buscar códigos de indicação
       const { data: codesData, error: codesError } = await supabase
         .from('referral_codes')
-        .select(`
-          *,
-          partnership_applications!left(
-            name,
-            email,
-            payment_info
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (codesError) throw codesError;
 
+      // Buscar aplicações de parceria aprovadas
+      const { data: partnershipData, error: partnershipError } = await supabase
+        .from('partnership_applications')
+        .select('id, name, email, payment_info, referral_code_id')
+        .eq('status', 'approved');
+
+      if (partnershipError) throw partnershipError;
+
+      // Criar mapa de parcerias por referral_code_id
+      const partnershipMap = new Map();
+      partnershipData?.forEach(partner => {
+        if (partner.referral_code_id) {
+          partnershipMap.set(partner.referral_code_id, partner);
+        }
+      });
+
       // Processar dados para incluir informações do parceiro
-      const processedCodes = codesData?.map(code => ({
-        ...code,
-        partner_name: code.partnership_applications?.[0]?.name || null,
-        partner_email: code.partnership_applications?.[0]?.email || null,
-        partner_payment_info: code.partnership_applications?.[0]?.payment_info || null,
-      })) || [];
+      const processedCodes = codesData?.map(code => {
+        const partner = partnershipMap.get(code.id);
+        return {
+          ...code,
+          partner_name: partner?.name || null,
+          partner_email: partner?.email || null,
+          partner_payment_info: partner?.payment_info || null,
+        };
+      }) || [];
 
       // Buscar estatísticas
       const { data: referralsData, error: referralsError } = await supabase
