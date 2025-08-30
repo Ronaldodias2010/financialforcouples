@@ -111,7 +111,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       },
       team: {
         title: "Nossa Equipe",
-        description: "Somos um time apaixonado por tecnologia e relacionamentos, dedicado a criar a melhor experiência possível para casais que querem construir um futuro financeiro sólido juntos."
+        description: "Somos um time que nasceu pequeno, impulsionado por grandes ideias e um propósito claro. Ao longo do caminho, crescemos com dedicação, aprendizados e muita paixão — e hoje estamos prontos para atender com excelência, sensibilidade e inovação.\n\nO que nos move é o amor pela tecnologia e pelos relacionamentos humanos. Cada membro da nossa equipe compartilha o compromisso de criar experiências únicas e transformadoras para casais que desejam construir juntos um futuro financeiro sólido, equilibrado e cheio de significado.\n\nMais do que especialistas, somos apaixonados pelo que fazemos. E é essa paixão que nos conecta, nos fortalece e nos inspira a entregar sempre o melhor."
       },
       cta: "Comece sua jornada financeira conosco",
       backToHome: "Voltar ao Início"
@@ -154,7 +154,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       },
       team: {
         title: "Our Team",
-        description: "We are a team passionate about technology and relationships, dedicated to creating the best possible experience for couples who want to build a solid financial future together."
+        description: "We are a team that started small, driven by big ideas and a clear purpose. Along the way, we grew with dedication, learning and great passion — and today we are ready to serve with excellence, sensitivity and innovation.\n\nWhat moves us is the love for technology and human relationships. Each member of our team shares the commitment to create unique and transformative experiences for couples who want to build together a solid, balanced and meaningful financial future.\n\nMore than specialists, we are passionate about what we do. And it's this passion that connects us, strengthens us and inspires us to always deliver the best."
       },
       cta: "Start your financial journey with us",
       backToHome: "Back to Home"
@@ -197,7 +197,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       },
       team: {
         title: "Nuestro Equipo",
-        description: "Somos un equipo apasionado por la tecnología y las relaciones, dedicado a crear la mejor experiencia posible para parejas que quieren construir un futuro financiero sólido juntos."
+        description: "Somos un equipo que comenzó pequeño, impulsado por grandes ideas y un propósito claro. A lo largo del camino, crecimos con dedicación, aprendizaje y mucha pasión — y hoy estamos listos para atender con excelencia, sensibilidad e innovación.\n\n¿Qué nos mueve es el amor por la tecnología y las relaciones humanas. Cada miembro de nuestro equipo comparte el compromiso de crear experiencias únicas y transformadoras para parejas que desean construir juntos un futuro financiero sólido, equilibrado y lleno de significado.\n\nMás que especialistas, somos apasionados por lo que hacemos. Y es esta pasión la que nos conecta, nos fortalece y nos inspira a entregar siempre lo mejor."
       },
       cta: "Comienza tu jornada financiera con nosotros",
       backToHome: "Volver al Inicio"
@@ -388,9 +388,13 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
                 <h2 className="text-2xl font-semibold text-primary mb-4">
                   {currentContent.team.title}
                 </h2>
-                <p className="text-muted-foreground leading-relaxed text-lg">
-                  {currentContent.team.description}
-                </p>
+                <div className="space-y-4">
+                  {currentContent.team.description.split('\n\n').map((paragraph, index) => (
+                    <p key={index} className="text-muted-foreground leading-relaxed text-lg">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </section>
