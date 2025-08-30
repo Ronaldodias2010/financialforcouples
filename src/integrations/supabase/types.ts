@@ -1385,7 +1385,11 @@ export type Database = {
           id: string
           is_active: boolean
           max_uses: number
+          partner_email: string | null
           reward_amount: number
+          reward_currency: string | null
+          reward_description: string | null
+          reward_type: string | null
           updated_at: string
           user_id: string
         }
@@ -1399,7 +1403,11 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number
+          partner_email?: string | null
           reward_amount?: number
+          reward_currency?: string | null
+          reward_description?: string | null
+          reward_type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1413,7 +1421,11 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number
+          partner_email?: string | null
           reward_amount?: number
+          reward_currency?: string | null
+          reward_description?: string | null
+          reward_type?: string | null
           updated_at?: string
           user_id?: string
         }
