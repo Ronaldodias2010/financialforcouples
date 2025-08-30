@@ -316,19 +316,18 @@ export const ReferralCodesManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Código</TableHead>
                 <TableHead>Usos</TableHead>
                 <TableHead>Recompensa</TableHead>
                 <TableHead>Dias Gratuitos</TableHead>
                 <TableHead>Expira em</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Formato de Pagamento</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {codes.map((code) => (
                 <TableRow key={code.id}>
-                  <TableCell className="font-mono font-semibold">{code.code}</TableCell>
                   <TableCell>{code.current_uses} / {code.max_uses}</TableCell>
                   <TableCell>R$ {code.reward_amount.toFixed(2)}</TableCell>
                   <TableCell>{code.free_days_granted} dias</TableCell>
@@ -339,6 +338,9 @@ export const ReferralCodesManager = () => {
                     <Badge variant={code.is_active ? 'default' : 'secondary'}>
                       {code.is_active ? 'Ativo' : 'Inativo'}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">PIX/Transferência</span>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
