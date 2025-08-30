@@ -79,7 +79,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
       },
       mission: {
         title: "Nossa Missão",
-        description: "Capacitar casais brasileiros a tomarem decisões financeiras inteligentes juntos, promovendo transparência, comunicação e crescimento financeiro mútuo através de tecnologia inovadora e educação financeira especializada."
+        description: "Capacitar casais do mundo todo a tomarem decisões financeiras inteligentes juntos, promovendo transparência, comunicação e crescimento financeiro mútuo através de tecnologia inovadora e educação financeira especializada."
       },
       values: {
         title: "Nossos Valores",
