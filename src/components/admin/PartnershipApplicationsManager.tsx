@@ -16,6 +16,7 @@ interface PartnershipApplication {
   phone?: string;
   audience_type: string;
   social_media?: string;
+  payment_info?: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   approved_at?: string;
@@ -262,6 +263,7 @@ export const PartnershipApplicationsManager = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Audiência</TableHead>
                 <TableHead>Redes Sociais</TableHead>
+                <TableHead>Código Bancário</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Código</TableHead>
@@ -281,6 +283,20 @@ export const PartnershipApplicationsManager = () => {
                     >
                       {application.social_media || 'Não informado'}
                     </div>
+                  </TableCell>
+                  <TableCell className="max-w-xs">
+                    {application.payment_info ? (
+                      <div className="text-sm bg-blue-50 dark:bg-blue-950 p-2 rounded border max-w-48">
+                        <div className="font-medium text-blue-700 dark:text-blue-300 text-xs mb-1">
+                          Dados PIX/Bancários:
+                        </div>
+                        <div className="text-blue-600 dark:text-blue-400 text-xs whitespace-pre-wrap break-words">
+                          {application.payment_info}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Não informado</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     {format(new Date(application.created_at), 'dd/MM/yyyy', { locale: ptBR })}
