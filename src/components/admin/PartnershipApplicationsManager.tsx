@@ -219,6 +219,7 @@ export const PartnershipApplicationsManager = () => {
                 <TableHead>Nome</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Audiência</TableHead>
+                <TableHead>Redes Sociais</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Código</TableHead>
@@ -231,6 +232,14 @@ export const PartnershipApplicationsManager = () => {
                   <TableCell className="font-medium">{application.name}</TableCell>
                   <TableCell>{application.email}</TableCell>
                   <TableCell>{application.audience_type}</TableCell>
+                  <TableCell className="max-w-xs">
+                    <div 
+                      className="truncate text-sm cursor-pointer hover:text-primary transition-colors"
+                      title={application.social_media || 'Não informado'}
+                    >
+                      {application.social_media || 'Não informado'}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     {format(new Date(application.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                   </TableCell>

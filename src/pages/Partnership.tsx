@@ -83,10 +83,12 @@ const Partnership = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.audienceType) {
+    if (!formData.name || !formData.email || !formData.audienceType || !formData.socialMedia.trim()) {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        description: !formData.socialMedia.trim() 
+          ? "Por favor, informe seus links de redes sociais. Este campo é obrigatório para análise da sua candidatura."
+          : "Por favor, preencha todos os campos obrigatórios.",
         variant: "destructive",
       });
       return;
@@ -390,14 +392,18 @@ const Partnership = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="socialMedia">{t('partnership.form.socialMedia')}</Label>
+                    <Label htmlFor="socialMedia">{t('partnership.form.socialMedia')} *</Label>
                     <Textarea
                       id="socialMedia"
                       value={formData.socialMedia}
                       onChange={(e) => setFormData(prev => ({ ...prev, socialMedia: e.target.value }))}
-                      placeholder={t('partnership.form.socialMediaPlaceholder')}
+                      placeholder="Instagram: @seuusuario, YouTube: youtube.com/seucanal, TikTok: @seuusuario, LinkedIn: linkedin.com/in/seuperfil..."
                       rows={3}
+                      required
                     />
+                    <p className="text-sm text-muted-foreground">
+                      Informe seus principais canais de mídia social para avaliarmos sua audiência.
+                    </p>
                   </div>
                   
                   <Button 

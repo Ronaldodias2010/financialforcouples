@@ -987,7 +987,7 @@ export type Database = {
           name: string
           phone: string | null
           referral_code_id: string | null
-          social_media: string | null
+          social_media: string
           status: string
           updated_at: string
         }
@@ -1001,7 +1001,7 @@ export type Database = {
           name: string
           phone?: string | null
           referral_code_id?: string | null
-          social_media?: string | null
+          social_media: string
           status?: string
           updated_at?: string
         }
@@ -1015,7 +1015,7 @@ export type Database = {
           name?: string
           phone?: string | null
           referral_code_id?: string | null
-          social_media?: string | null
+          social_media?: string
           status?: string
           updated_at?: string
         }

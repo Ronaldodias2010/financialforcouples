@@ -30,6 +30,11 @@ const handler = async (req: Request): Promise<Response> => {
     const { name, email, phone, audienceType, socialMedia }: PartnershipRequest = await req.json();
 
     console.log('Processing partnership application:', { name, email, audienceType });
+    
+    // Server-side validation for required fields
+    if (!name || !email || !audienceType || !socialMedia?.trim()) {
+      throw new Error('Nome, email, tipo de audiência e redes sociais são campos obrigatórios');
+    }
 
     // Store in database
     const { data: application, error: dbError } = await supabase
@@ -39,7 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
         email,
         phone: phone || null,
         audience_type: audienceType,
-        social_media: socialMedia || null,
+        social_media: socialMedia,
         status: 'pending'
       })
       .select()
@@ -65,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
             <p><strong>Email:</strong> ${email}</p>
             ${phone ? `<p><strong>Telefone:</strong> ${phone}</p>` : ''}
             <p><strong>Tipo de Audiência:</strong> ${audienceType}</p>
-            ${socialMedia ? `<p><strong>Redes Sociais:</strong> ${socialMedia}</p>` : ''}
+            <p><strong>Redes Sociais:</strong> ${socialMedia}</p>
           </div>
 
           <div style="background: #e0f2fe; padding: 16px; border-radius: 8px; border-left: 4px solid #0284c7;">
