@@ -100,7 +100,7 @@ export const ApprovalEmailEN = ({
           React.createElement(
             'ul',
             { style: list },
-            React.createElement('li', null, "For each person who signs up using your code and makes a payment"),
+            React.createElement('li', null, "For each person who signs up using your code and makes the ANNUAL FEE payment"),
             React.createElement('li', null, `You will receive: ${
               rewardType === 'monetary' 
                 ? `${rewardCurrency === 'USD' ? '$' : 'R$'} ${rewardAmount.toFixed(2)}` 
