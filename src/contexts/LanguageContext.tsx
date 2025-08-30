@@ -613,6 +613,11 @@ const translations = {
     'auth.resetEmailErrorTitle': 'Erro ao enviar email',
     'auth.resetEmailErrorDesc': 'Tente novamente mais tarde.',
     
+    // Partnership
+    'partnership.form.paymentInfoLabel': 'Para compensações financeiras adicione seu PIX ou sua melhor C/C *',
+    'partnership.form.paymentInfoPlaceholder': 'PIX: exemplo@email.com ou Banco: Banco do Brasil, Agência: 1234-5, Conta: 67890-1',
+    'partnership.form.paymentInfoHelper': 'Informe seus dados bancários ou chave PIX para recebimento das comissões. Campo obrigatório.',
+    
     // Categories
     'categories.title': 'Gerenciar Categorias',
     'categories.add': 'Adicionar Categoria',
@@ -1995,6 +2000,11 @@ const translations = {
     'auth.resetEmailDesc': 'Check your inbox.',
     'auth.resetEmailErrorTitle': 'Error sending email',
     'auth.resetEmailErrorDesc': 'Please try again later.',
+    
+    // Partnership
+    'partnership.form.paymentInfoLabel': 'For financial compensation add your ZELLE or best checking account *',
+    'partnership.form.paymentInfoPlaceholder': 'ZELLE: example@email.com or Bank: Chase Bank, Routing: 123456789, Account: 1234567890',
+    'partnership.form.paymentInfoHelper': 'Enter your banking information or ZELLE key to receive commissions. Required field.',
     
     // Categories
     'categories.title': 'Manage Categories',
@@ -3433,6 +3443,11 @@ const translations = {
     'auth.resetEmailDesc': 'Revisa tu bandeja de entrada.',
     'auth.resetEmailErrorTitle': 'Error al enviar email',
     'auth.resetEmailErrorDesc': 'Inténtalo nuevamente más tarde.',
+    
+    // Partnership
+    'partnership.form.paymentInfoLabel': 'Para compensación financiera añade tu ZELLE o mejor cuenta corriente *',
+    'partnership.form.paymentInfoPlaceholder': 'ZELLE: ejemplo@email.com o Banco: Bank of America, Routing: 123456789, Cuenta: 1234567890',
+    'partnership.form.paymentInfoHelper': 'Ingresa tus datos bancarios o clave ZELLE para recibir comisiones. Campo obligatorio.',
     
     // Categories
     'categories.title': 'Gestionar Categorías',

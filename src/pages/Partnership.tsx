@@ -410,20 +410,20 @@ const Partnership = () => {
                       </p>
                    </div>
 
-                   <div className="space-y-2">
-                     <Label htmlFor="paymentInfo">Para compensações financeiras adicione seu PIX ou sua melhor C/C *</Label>
-                      <Textarea
-                        id="paymentInfo"
-                        value={formData.paymentInfo}
-                        onChange={(e) => setFormData(prev => ({ ...prev, paymentInfo: e.target.value }))}
-                        placeholder="PIX: exemplo@email.com ou Banco: Banco do Brasil, Agência: 1234-5, Conta: 67890-1"
-                        rows={3}
-                        required
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Informe seus dados bancários ou chave PIX para recebimento das comissões. Campo obrigatório.
-                      </p>
-                   </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="paymentInfo">{t('partnership.form.paymentInfoLabel')}</Label>
+                       <Textarea
+                         id="paymentInfo"
+                         value={formData.paymentInfo}
+                         onChange={(e) => setFormData(prev => ({ ...prev, paymentInfo: e.target.value }))}
+                         placeholder={t('partnership.form.paymentInfoPlaceholder')}
+                         rows={3}
+                         required
+                       />
+                       <p className="text-sm text-muted-foreground">
+                         {t('partnership.form.paymentInfoHelper')}
+                       </p>
+                    </div>
                   
                   <Button 
                     type="submit" 
