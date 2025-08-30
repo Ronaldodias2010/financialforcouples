@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="background: #fffbeb; padding: 24px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #fde68a;">
             <h3 style="color: #92400e; margin: 0 0 16px 0;">${rewardType === 'monetary' ? '💰' : '🎁'} Como Funciona a Recompensa</h3>
             <ul style="color: #92400e; margin: 0; padding-left: 20px;">
-              <li>Para cada pessoa que se cadastrar usando seu código e efetuar o pagamento</li>
+              <li>Para cada pessoa que se cadastrar usando seu código e efetuar o pagamento da ANUIDADE</li>
               <li>Você receberá: <strong>${
                 rewardType === 'monetary' 
                   ? `${rewardCurrency === 'USD' ? '$' : 'R$'} ${rewardAmount.toFixed(2)}` 
