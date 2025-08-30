@@ -1448,6 +1448,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_promotion_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          promotion_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          promotion_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          promotion_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_promotion_notifications: {
         Row: {
           created_at: string
