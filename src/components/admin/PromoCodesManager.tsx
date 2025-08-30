@@ -97,6 +97,7 @@ export const PromoCodesManager = () => {
   };
 
   const fetchApprovedPartners = async () => {
+    console.log('🔍 Fetching approved partners...');
     try {
       const { data, error } = await supabase
         .from('partnership_applications')
@@ -104,10 +105,13 @@ export const PromoCodesManager = () => {
         .eq('status', 'approved')
         .order('approved_at', { ascending: false });
 
+      console.log('📊 Approved partners query result:', { data, error });
+      
       if (error) throw error;
       setApprovedPartners(data || []);
+      console.log('✅ Approved partners set:', data);
     } catch (error) {
-      console.error('Error fetching approved partners:', error);
+      console.error('❌ Error fetching approved partners:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar parceiros aprovados",
@@ -289,9 +293,14 @@ export const PromoCodesManager = () => {
             <Tag className="w-5 h-5" />
             Códigos Promocionais
           </CardTitle>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <Dialog open={showCreateDialog} onOpenChange={(open) => {
+            setShowCreateDialog(open);
+            if (open) {
+              fetchApprovedPartners(); // Refresh partners when opening dialog
+            }
+          }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => fetchApprovedPartners()}>
                 <Plus className="w-4 h-4 mr-2" />
                 Criar Código
               </Button>
@@ -325,13 +334,24 @@ export const PromoCodesManager = () => {
                       <SelectValue placeholder="Selecione um parceiro aprovado" />
                     </SelectTrigger>
                     <SelectContent>
-                      {approvedPartners.map((partner) => (
-                        <SelectItem key={partner.id} value={partner.email}>
-                          {partner.name} - {partner.email}
-                        </SelectItem>
-                      ))}
+                      {approvedPartners.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">
+                          Nenhum parceiro aprovado encontrado
+                        </div>
+                      ) : (
+                        approvedPartners.map((partner) => (
+                          <SelectItem key={partner.id} value={partner.email}>
+                            {partner.name} - {partner.email}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
+                  {approvedPartners.length === 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Aprove parceiros na aba "Solicitações de Parceria" primeiro
+                    </p>
+                  )}
                 </div>
 
                 <div>
