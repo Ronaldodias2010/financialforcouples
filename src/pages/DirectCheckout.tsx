@@ -454,7 +454,7 @@ const DirectCheckout = () => {
                                  }
                                }}
                              >
-                               {validatingPromo ? t('subscription.validatingPromo') : t('subscription.validatePromo')}
+                               {validatingPromo ? 'Validando...' : 'Aplicar Cupom'}
                              </Button>
                            </div>
                          ) : (
