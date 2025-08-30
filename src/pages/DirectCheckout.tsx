@@ -397,16 +397,16 @@ const DirectCheckout = () => {
                           >
                             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
-                        </div>
-                      </div>
+                         </div>
+                       </div>
 
-                      {/* Password validation visual feedback */}
-                      <PasswordValidation password={formData.password} />
-                      
-                      {/* Password match validation */}
-                      {formData.confirmPassword && (
-                        <PasswordMatchValidation passwordsMatch={formData.password === formData.confirmPassword} />
-                      )}
+                       {/* Password validation visual feedback */}
+                       <PasswordValidation password={formData.password} />
+                       
+                       {/* Password match validation */}
+                       {formData.confirmPassword && (
+                         <PasswordMatchValidation passwordsMatch={formData.password === formData.confirmPassword} />
+                       )}
                       </div>
 
                      <Separator />

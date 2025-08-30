@@ -496,26 +496,25 @@ export default function Auth() {
                      </button>
                    </div>
                  </div>
-                 
-                 {/* Validação visual da senha em tempo real */}
-                 <PasswordValidation password={password} />
-
-                 <div className="space-y-2">
-                   <Label htmlFor="confirm-password">{t('auth.confirmPassword')}</Label>
-                   <Input
-                     id="confirm-password"
-                     type="password"
-                     placeholder={"••••••••"}
-                     value={confirmPassword}
-                     onChange={(e) => setConfirmPassword(e.target.value)}
-                     required
-                   />
-                 </div>
-                 
-                 {/* Validação de correspondência das senhas */}
-                 {confirmPassword && (
-                   <PasswordMatchValidation passwordsMatch={password === confirmPassword} />
-                 )}
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">{t('auth.confirmPassword')}</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      placeholder={"••••••••"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  {/* Validação visual da senha em tempo real */}
+                  <PasswordValidation password={password} />
+                  
+                  {/* Validação de correspondência das senhas */}
+                  {confirmPassword && (
+                    <PasswordMatchValidation passwordsMatch={password === confirmPassword} />
+                  )}
                 
                  <Button
                    type="submit" 
