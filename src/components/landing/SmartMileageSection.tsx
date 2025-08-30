@@ -11,7 +11,7 @@ const SmartMileageSection = () => {
     <section 
       className="py-20 relative overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, hsl(var(--cherry-light) / 0.03), hsl(var(--blue-soft) / 0.05), hsl(var(--background)))"
+        background: "linear-gradient(135deg, hsl(var(--blue-soft) / 0.15), hsl(var(--blue-soft) / 0.08), hsl(var(--background) / 0.95))"
       }}
     >
       {/* Decorative elements */}
