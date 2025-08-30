@@ -521,9 +521,9 @@ const DirectCheckout = () => {
                             <div>
                               <div className="font-semibold flex items-center gap-2">
                                 {t('directCheckout.yearlyPlan')} 
-                                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                                  25% OFF
-                                </Badge>
+                                 <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                   30% OFF
+                                 </Badge>
                               </div>
                               <div className="text-sm text-muted-foreground">{t('directCheckout.bestValue')}</div>
                             </div>

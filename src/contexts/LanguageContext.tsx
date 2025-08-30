@@ -2541,7 +2541,7 @@ const translations = {
     'subscription.free': 'Free',
     'subscription.month': 'month',
     'subscription.year': 'year',
-    'subscription.annualDiscount': 'With the annual plan you get approximately 25% off',
+    'subscription.annualDiscount': 'With the annual plan you get approximately 30% off',
     'subscription.includesEssential': 'Includes all essential features +',
     'subscription.whyPremium': 'Why Premium?',
     'subscription.premiumBenefits': 'Exclusive premium plan benefits',
@@ -2580,6 +2580,8 @@ const translations = {
     'subscription.benefits.voiceControl': 'Voice control via WhatsApp',
     'subscription.benefits.prioritySupport': 'Priority support',
     'subscription.benefits.unlimitedFeatures': 'Unlimited features',
+    'subscription.validatePromo': 'Apply Coupon',
+    'subscription.validatingPromo': 'Validating...',
     
     // Goals
     'goals.title': 'Investment Goals',
@@ -3960,7 +3962,7 @@ const translations = {
     'subscription.free': 'Gratuito',
     'subscription.month': 'mes',
     'subscription.year': 'año',
-    'subscription.annualDiscount': 'Con el plan anual obtienes aproximadamente 25% de descuento',
+    'subscription.annualDiscount': 'Con el plan anual obtienes aproximadamente 30% de descuento',
     'subscription.includesEssential': 'Incluye todas las características esenciales +',
     'subscription.whyPremium': '¿Por qué Premium?',
     'subscription.premiumBenefits': 'Beneficios exclusivos del plan premium',
@@ -3999,6 +4001,8 @@ const translations = {
     'subscription.benefits.voiceControl': 'Control por voz vía WhatsApp',
     'subscription.benefits.prioritySupport': 'Soporte prioritario',
     'subscription.benefits.unlimitedFeatures': 'Funcionalidades ilimitadas',
+    'subscription.validatePromo': 'Aplicar Cupom',
+    'subscription.validatingPromo': 'Validando...',
     
     // Goals
     'goals.title': 'Objetivos de Inversión',

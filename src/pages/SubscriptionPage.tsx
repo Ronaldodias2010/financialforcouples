@@ -172,7 +172,7 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
               {annualDisplay}<span className="text-sm font-normal text-muted-foreground">/{t('subscription.year')}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {language === 'en' ? 'With the annual plan you get approximately 25% off.' : t('subscription.annualDiscount')}
+              {language === 'en' ? 'With the annual plan you get approximately 30% off.' : t('subscription.annualDiscount')}
             </p>
           </CardHeader>
           <CardContent className="space-y-4">

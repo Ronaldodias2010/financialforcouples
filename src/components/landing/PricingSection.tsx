@@ -107,12 +107,12 @@ const PricingSection = () => {
                     ) : language === 'es' ? (
                       <>
                         o <span className="font-semibold text-foreground">$ 67.10/año</span>
-                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~25% OFF anual</span>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~30% OFF anual</span>
                       </>
                     ) : (
                       <>
                         or <span className="font-semibold text-foreground">$ 67.10/year</span>
-                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~25% OFF annually</span>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">~30% OFF annually</span>
                       </>
                     )}
                   </div>
