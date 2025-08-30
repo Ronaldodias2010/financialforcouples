@@ -20,16 +20,16 @@ const Footer = () => {
   return (
     <footer className="bg-foreground text-background py-12">
       {/* Partner highlight banner */}
-      <Link 
-        to="/parceria" 
-        className="block bg-gradient-to-r from-primary via-primary-glow to-primary py-6 text-center hover:from-primary-glow hover:via-primary hover:to-primary-glow transition-all duration-300"
-      >
-        <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 mb-12">
+        <Link 
+          to="/parceria" 
+          className="block max-w-4xl mx-auto bg-gradient-to-r from-primary via-primary-glow to-primary py-6 px-8 text-center hover:from-primary-glow hover:via-primary hover:to-primary-glow transition-all duration-300 rounded-3xl shadow-lg hover:shadow-xl hover:scale-[1.02]"
+        >
           <p className="text-white font-semibold text-lg md:text-xl leading-relaxed">
             {t('footer.partnerBanner')}
           </p>
-        </div>
-      </Link>
+        </Link>
+      </div>
       
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
