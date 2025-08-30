@@ -118,6 +118,24 @@ const DirectCheckout = () => {
     }
   }, [sessionToken, toast, t, navigate]);
 
+  const getPhonePlaceholder = () => {
+    if (inBrazil) return "(11) 98765-4321";
+    if (language === 'es') return "+34 123 456 789";
+    return "+1 (555) 123-4567"; // Default for English/USA
+  };
+
+  const getPhoneHelperText = () => {
+    if (inBrazil) return "Formato: (11) 98765-4321";
+    if (language === 'es') return "Formato: +34 123 456 789 para España";
+    return t('directCheckout.phoneHelp'); // USA/Canada format
+  };
+
+  const getPhoneMaxLength = () => {
+    if (inBrazil) return 15;
+    if (language === 'es') return 13;
+    return 14; // USA format
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     let newValue = value;
@@ -133,9 +151,19 @@ const DirectCheckout = () => {
         newValue = part1 ? `(${part1}${part1.length === 2 ? ') ' : ''}` : '';
         newValue += part2;
         newValue += part3 ? `-${part3}` : '';
-        // Ensure closing parenthesis when area code is complete
         if (newValue && !newValue.includes(')') && part1.length === 2) {
           newValue = `(${part1}) ${part2}${part3 ? `-${part3}` : ''}`;
+        }
+      } else if (language === 'es') {
+        // Format ES phone as +34 ### ### ###
+        const d = digits.slice(0, 9);
+        if (d.length === 0) {
+          newValue = '';
+        } else {
+          const part1 = d.slice(0, 3);
+          const part2 = d.length > 3 ? d.slice(3, 6) : '';
+          const part3 = d.length > 6 ? d.slice(6, 9) : '';
+          newValue = `+34 ${part1}${part2 ? ` ${part2}` : ''}${part3 ? ` ${part3}` : ''}`;
         }
       } else {
         // Format US phone as (###) ###-####
@@ -339,20 +367,20 @@ const DirectCheckout = () => {
                       </div>
                       
                       <div>
-                       <Label htmlFor="phone">{t('directCheckout.phone')}</Label>
-                       <Input
-                         id="phone"
-                         type="tel"
-                         inputMode="tel"
-                         placeholder={inBrazil ? "(11) 98765-4321" : t('directCheckout.phonePlaceholder')}
-                         value={formData.phone}
-                         onChange={handleInputChange}
-                         required
-                         maxLength={inBrazil ? 15 : 14}
-                       />
-                       <p className="text-xs text-muted-foreground mt-1">
-                         {inBrazil ? "Formato: (11) 98765-4321" : t('directCheckout.phoneHelp')}
-                       </p>
+                        <Label htmlFor="phone">{t('directCheckout.phone')}</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          inputMode="tel"
+                          placeholder={getPhonePlaceholder()}
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          required
+                          maxLength={getPhoneMaxLength()}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {getPhoneHelperText()}
+                        </p>
                      </div>
                      
                      <div>
