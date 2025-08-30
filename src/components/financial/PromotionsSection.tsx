@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Calendar, Plane, Gift, Percent, Target, Zap, Star, Heart, Filter, Clock, CheckCircle } from 'lucide-react';
+import { ExternalLink, Calendar, Plane, Gift, Percent, Target, Zap, Star, Heart, Filter, Clock, CheckCircle, X, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { SyncPromotionsButton } from './SyncPromotionsButton';
@@ -38,6 +38,8 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
   const [promotions, setPromotions] = useState<AirlinePromotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [hiddenCards, setHiddenCards] = useState<Set<string>>(new Set());
+  const [showHidden, setShowHidden] = useState(false);
   const { toggleFavorite, isFavorite } = useFavorites();
   
   const {
@@ -113,6 +115,36 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
     return `${diffDays} dias restantes`;
   };
 
+  const hideCard = (promotionId: string) => {
+    setHiddenCards(prev => new Set(prev).add(promotionId));
+    toast({
+      title: "Card escondido",
+      description: "Use o botão 'Mostrar escondidos' para ver novamente",
+    });
+  };
+
+  const showCard = (promotionId: string) => {
+    setHiddenCards(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(promotionId);
+      return newSet;
+    });
+  };
+
+  const showAllCards = () => {
+    setHiddenCards(new Set());
+    setShowHidden(false);
+    toast({
+      title: "Cards restaurados",
+      description: "Todos os cards escondidos foram exibidos novamente",
+    });
+  };
+
+  // Filter out hidden cards unless showing hidden
+  const visiblePromotions = showHidden 
+    ? filteredPromotions.filter(p => hiddenCards.has(p.id))
+    : filteredPromotions.filter(p => !hiddenCards.has(p.id));
+
   if (loading) {
     return (
       <Card>
@@ -145,8 +177,24 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
             {activeFiltersCount > 0 && (
               <Badge variant="secondary">{activeFiltersCount} filtros</Badge>
             )}
+            {hiddenCards.size > 0 && !showHidden && (
+              <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                {hiddenCards.size} escondidos
+              </Badge>
+            )}
           </CardTitle>
           <div className="flex items-center gap-2">
+            {hiddenCards.size > 0 && (
+              <Button
+                variant={showHidden ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowHidden(!showHidden)}
+                className="flex items-center gap-2"
+              >
+                {showHidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {showHidden ? 'Ver ativos' : `Ver escondidos (${hiddenCards.size})`}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -160,7 +208,10 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
           </div>
         </div>
         <CardDescription>
-          Promoções ativas baseadas nas suas milhas ({userTotalMiles.toLocaleString()} milhas)
+          {showHidden 
+            ? `Exibindo ${hiddenCards.size} promoções escondidas`
+            : `Promoções ativas baseadas nas suas milhas (${userTotalMiles.toLocaleString()} milhas)`
+          }
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -189,10 +240,15 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
               </div>
             ))}
           </div>
-        ) : filteredPromotions.length === 0 ? (
+        ) : visiblePromotions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Plane className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            {promotions.length === 0 ? (
+            {showHidden ? (
+              <>
+                <p>Nenhuma promoção escondida</p>
+                <p className="text-sm">Esconda algumas promoções para organizar sua visualização</p>
+              </>
+            ) : promotions.length === 0 ? (
               <>
                 <p>Nenhuma promoção ativa encontrada</p>
                 <p className="text-sm">Sincronize para buscar novas promoções</p>
@@ -206,7 +262,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredPromotions.map((promotion) => {
+            {visiblePromotions.map((promotion) => {
               const isEligible = !promotion.miles_required || userTotalMiles >= promotion.miles_required;
               const daysRemaining = formatDaysRemaining(promotion.end_date);
               const isPromotionFavorite = isFavorite(promotion.id);
@@ -234,17 +290,39 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleFavorite(promotion.id)}
                         className="h-8 w-8 p-0"
+                        title={isPromotionFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                       >
                         <Heart 
                           className={`h-4 w-4 ${isPromotionFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} 
                         />
                       </Button>
+                      {showHidden ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => showCard(promotion.id)}
+                          className="h-8 w-8 p-0"
+                          title="Mostrar card novamente"
+                        >
+                          <Eye className="h-4 w-4 text-green-600" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => hideCard(promotion.id)}
+                          className="h-8 w-8 p-0"
+                          title="Esconder card temporariamente"
+                        >
+                          <X className="h-4 w-4 text-muted-foreground hover:text-red-500" />
+                        </Button>
+                      )}
                       <p className="text-xs text-muted-foreground">{daysRemaining}</p>
                     </div>
                   </div>
@@ -292,10 +370,35 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                       Ver Promoção
                       <ExternalLink className="h-4 w-4 ml-2" />
                     </Button>
+                    {showHidden && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => showCard(promotion.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Restaurar
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
             })}
+          </div>
+        )}
+        
+        {/* Action buttons */}
+        {(showHidden && hiddenCards.size > 0) && (
+          <div className="flex justify-center pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={showAllCards}
+              className="flex items-center gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              Restaurar Todos os Cards
+            </Button>
           </div>
         )}
       </CardContent>
