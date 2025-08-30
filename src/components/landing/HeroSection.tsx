@@ -78,8 +78,8 @@ const HeroSection = () => {
                       "linear-gradient(135deg, hsl(var(--cherry-light) / 0.08), hsl(var(--blue-soft) / 0.08))",
                   }}
                 />
-              </div>
-            </div>
+               </div>
+             </div>
             
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full backdrop-blur-sm text-white text-xs sm:text-sm font-medium border border-white/20 mx-auto lg:mx-0" style={{backgroundColor: 'hsl(8 85% 72% / 0.2)'}}>
@@ -146,6 +146,14 @@ const HeroSection = () => {
               </Dialog>
               
               <AIBetaModal open={aiBetaOpen} onOpenChange={setAiBetaOpen} />
+              
+              <div className="flex justify-center lg:justify-start">
+                <Button asChild size="sm" variant="outline" className="text-white border-white/30 hover:bg-white/10">
+                  <Link to="/sobre-nos">
+                    Sobre Nós
+                  </Link>
+                </Button>
+              </div>
             </div>
             
             {/* Social proof */}
