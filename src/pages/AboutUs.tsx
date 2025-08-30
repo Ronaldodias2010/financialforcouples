@@ -4,6 +4,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 
 interface AboutUsProps {
   onBack?: () => void;
@@ -221,15 +222,18 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
               <p className="text-lg text-muted-foreground mt-2">{currentContent.subtitle}</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2"
-          >
-            <Home className="h-4 w-4" />
-            {currentContent.backToHome}
-          </Button>
+          <div className="flex items-center gap-3">
+            <ThemeSwitcher />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              {currentContent.backToHome}
+            </Button>
+          </div>
         </div>
       </header>
 
