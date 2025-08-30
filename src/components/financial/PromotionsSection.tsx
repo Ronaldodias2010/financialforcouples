@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, ExternalLink, Clock, CheckCircle, Plane } from 'lucide-react';
+import { SyncPromotionsButton } from './SyncPromotionsButton';
 
 interface AirlinePromotion {
   id: string;
@@ -243,7 +244,8 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
           ))
         )}
         
-        <div className="text-center pt-4 border-t">
+        <div className="flex justify-center gap-2 pt-4 border-t">
+          <SyncPromotionsButton onSyncComplete={loadPromotions} />
           <Button 
             variant="outline" 
             size="sm"

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useLanguage } from '@/hooks/useLanguage';
 import { MileageSystem } from '@/components/financial/MileageSystem';
+import { PromotionsSection } from '@/components/financial/PromotionsSection';
+import { SmartAlertsSection } from '@/components/financial/SmartAlertsSection';
 import { PremiumFeatureGuard } from '@/components/subscription/PremiumFeatureGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import { Bell, TrendingUp, Gift, Clock, ArrowLeft, User } from 'lucide-react';
 
 interface MileagePageProps {
@@ -13,19 +17,41 @@ interface MileagePageProps {
 }
 
 export const MileagePage = ({ onBack }: MileagePageProps) => {
+  const { user } = useAuth();
   const { t } = useLanguage();
   const { hasAccess, subscriptionTier } = useSubscription();
+  const [userTotalMiles, setUserTotalMiles] = useState(0);
 
-  // Mock data for premium features
-  const promotions = [
-    { id: 1, title: 'Latam Pass - 100% Bonus', description: 'Transfira pontos com 100% de bônus até 31/01', expires: '2025-01-31' },
-    { id: 2, title: 'Smiles - Promoção Fidelidade', description: 'Milhas com 50% de desconto para assinantes', expires: '2025-02-15' }
-  ];
+  // Calculate user's total miles
+  useEffect(() => {
+    const calculateTotalMiles = async () => {
+      if (!user?.id) return;
 
-  const alerts = [
-    { id: 1, type: 'expiring', message: '15.000 milhas expiram em 30 dias', urgent: true },
-    { id: 2, type: 'goal', message: 'Meta "Viagem Europa" 80% concluída!', urgent: false }
-  ];
+      try {
+        // Get miles from mileage history
+        const { data: historyMiles } = await supabase
+          .from('mileage_history')
+          .select('miles_earned')
+          .eq('user_id', user.id);
+
+        // Get existing miles from card rules
+        const { data: existingMiles } = await supabase
+          .from('card_mileage_rules')
+          .select('existing_miles')
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        const totalFromHistory = historyMiles?.reduce((sum, item) => sum + (item.miles_earned || 0), 0) || 0;
+        const totalFromExisting = existingMiles?.reduce((sum, item) => sum + (item.existing_miles || 0), 0) || 0;
+
+        setUserTotalMiles(totalFromHistory + totalFromExisting);
+      } catch (error) {
+        console.error('Error calculating total miles:', error);
+      }
+    };
+
+    calculateTotalMiles();
+  }, [user?.id]);
 
   const redemptionSuggestions = [
     { route: 'São Paulo → Paris', miles: 45000, value: 'R$ 2.800', availability: 'Alta' },
@@ -59,51 +85,8 @@ export const MileagePage = ({ onBack }: MileagePageProps) => {
         <div className="grid gap-6">
           {/* Promotions and Alerts */}
           <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gift className="h-5 w-5 text-primary" />
-                  Promoções Ativas
-                </CardTitle>
-                <CardDescription>
-                  Oportunidades para maximizar suas milhas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {promotions.map((promo) => (
-                  <div key={promo.id} className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-sm">{promo.title}</h4>
-                    <p className="text-xs text-muted-foreground">{promo.description}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Clock className="h-3 w-3" />
-                      <span className="text-xs">Expira: {promo.expires}</span>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-orange-500" />
-                  Alertas Inteligentes
-                </CardTitle>
-                <CardDescription>
-                  Notificações importantes sobre suas milhas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {alerts.map((alert) => (
-                  <div key={alert.id} className={`p-3 border rounded-lg ${alert.urgent ? 'border-red-200 bg-red-50' : 'border-blue-200 bg-blue-50'}`}>
-                    <p className="text-sm">{alert.message}</p>
-                    <Badge variant={alert.urgent ? "destructive" : "secondary"} className="mt-2 text-xs">
-                      {alert.urgent ? 'Urgente' : 'Informativo'}
-                    </Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <PromotionsSection userTotalMiles={userTotalMiles} />
+            <SmartAlertsSection userTotalMiles={userTotalMiles} />
           </div>
 
           {/* Redemption Suggestions */}
