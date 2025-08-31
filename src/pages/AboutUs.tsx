@@ -395,6 +395,17 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
             </Card>
           </section>
 
+          {/* Team Photo Section */}
+          <section className="flex justify-center">
+            <div className="max-w-md mx-auto">
+              <img 
+                src="/lovable-uploads/43f4a76c-d2be-4d8a-873e-ae3335bc61d6.png" 
+                alt="Equipe Couples Financials - Nossa equipe unida"
+                className="w-full h-auto rounded-lg shadow-lg aspect-[3/4] object-cover"
+              />
+            </div>
+          </section>
+
           {/* CTA Section */}
           <section className="text-center">
             <Card className="border-0 shadow-sm bg-gradient-to-r from-primary/5 to-primary/10">
