@@ -220,6 +220,7 @@ const translations = {
     'nav.admin': 'Admin',
     'nav.subscription': 'Planos',
     'nav.testEmail': 'Teste Email',
+    'nav.tutorial': 'Tutorial',
     'nav.logout': 'Sair',
     
     // Cards

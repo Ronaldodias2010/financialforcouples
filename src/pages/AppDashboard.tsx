@@ -2,13 +2,15 @@ import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings, Mail, ArrowLeft } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { PremiumExpirationWarning } from "@/components/subscription/PremiumExpirationWarning";
+import { downloadTutorialPDF, openTutorialHTML } from "@/utils/tutorialUtils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
@@ -61,6 +63,24 @@ const AppDashboard = () => {
               <User className="h-4 w-4 flex-shrink-0" />
               <span className="truncate max-w-[100px] sm:max-w-none">{displayName}</span>
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  {!inBrazil ? tFor('en','nav.tutorial') : t('nav.tutorial')}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={openTutorialHTML}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Visualizar Online
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={downloadTutorialPDF}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button 
               variant="outline" 
               size="sm" 

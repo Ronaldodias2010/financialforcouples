@@ -1,8 +1,9 @@
-import { Heart, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import { Heart, Mail, Phone, MapPin, MessageCircle, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import logo from "/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
 import { openWhatsApp } from "@/utils/whatsapp";
+import { downloadTutorialPDF } from "@/utils/tutorialUtils";
 
 const Footer = () => {
   const { t, language } = useLanguage();
@@ -63,6 +64,15 @@ const Footer = () => {
               <li><a href="#" className="hover:text-background transition-colors">{t('footer.help')}</a></li>
               <li><a href={`mailto:${contactInfo.email}`} className="hover:text-background transition-colors">{t('footer.contact')}</a></li>
               <li><a href="#faq" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('faq')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.faq')}</a></li>
+              <li>
+                <button 
+                  onClick={downloadTutorialPDF}
+                  className="hover:text-background transition-colors flex items-center gap-1"
+                >
+                  <Download className="w-3 h-3" />
+                  {t('footer.tutorialComplete')}
+                </button>
+              </li>
             </ul>
           </div>
           
