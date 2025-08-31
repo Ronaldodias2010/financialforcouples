@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Banknote } from "lucide-react";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage, type Language } from "@/hooks/useLanguage";
 
 interface CashAccountCardProps {
   cashAccounts: Array<{
@@ -13,8 +13,22 @@ interface CashAccountCardProps {
 }
 
 export const CashAccountCard = ({ cashAccounts, className }: CashAccountCardProps) => {
-  const { formatCurrency } = useCurrencyConverter();
-  const { t } = useLanguage();
+  const { formatCurrency, convertCurrency } = useCurrencyConverter();
+  const { t, language } = useLanguage();
+
+  // Get display currency based on language
+  const getDisplayCurrency = (): CurrencyCode => {
+    switch (language) {
+      case 'en':
+        return 'USD';
+      case 'es':
+        return 'EUR';
+      default:
+        return 'BRL';
+    }
+  };
+
+  const displayCurrency = getDisplayCurrency();
 
   // Find the main cash account (BRL or first one)
   const mainAccount = cashAccounts.find(acc => acc.currency === 'BRL') || cashAccounts[0];
@@ -31,7 +45,7 @@ export const CashAccountCard = ({ cashAccounts, className }: CashAccountCardProp
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-muted-foreground">
-            {formatCurrency(0, 'BRL')}
+            {formatCurrency(0, displayCurrency)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             {t('cashBalance')}
@@ -41,7 +55,9 @@ export const CashAccountCard = ({ cashAccounts, className }: CashAccountCardProp
     );
   }
 
-  const isMainNegative = mainAccount.balance < 0;
+  // Convert balance to display currency
+  const convertedBalance = convertCurrency(mainAccount.balance, mainAccount.currency, displayCurrency);
+  const isMainNegative = convertedBalance < 0;
 
   return (
     <Card className={`border-dashed border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 ${className}`}>
@@ -55,7 +71,7 @@ export const CashAccountCard = ({ cashAccounts, className }: CashAccountCardProp
         {/* Main currency balance */}
         <div className="text-2xl font-bold">
           <span className={isMainNegative ? "text-destructive" : "text-foreground"}>
-            {formatCurrency(mainAccount.balance, mainAccount.currency)}
+            {formatCurrency(convertedBalance, displayCurrency)}
           </span>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
