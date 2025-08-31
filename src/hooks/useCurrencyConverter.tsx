@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
+export type CurrencyCode = 'BRL' | 'USD' | 'EUR' | 'GBP';
 
 interface ExchangeRates {
   BRL: number;
   USD: number;
   EUR: number;
+  GBP: number;
 }
 
 interface CurrencyInfo {
@@ -18,15 +19,17 @@ interface CurrencyInfo {
 export const CURRENCY_INFO: Record<CurrencyCode, CurrencyInfo> = {
   BRL: { code: 'BRL', symbol: 'R$', name: 'Real' },
   USD: { code: 'USD', symbol: '$', name: 'Dólar' },
-  EUR: { code: 'EUR', symbol: '€', name: 'Euro' }
+  EUR: { code: 'EUR', symbol: '€', name: 'Euro' },
+  GBP: { code: 'GBP', symbol: '£', name: 'Libra' }
 };
 
 export const useCurrencyConverter = () => {
-  const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
-    BRL: 1,
-    USD: 0.19, // Fallback: 1 BRL -> 0.19 USD
-    EUR: 0.17  // Fallback: 1 BRL -> 0.17 EUR
-  });
+const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
+  BRL: 1,
+  USD: 0.1843, // Fallback: 1 BRL -> 0.1843 USD
+  EUR: 0.1572, // Fallback: 1 BRL -> 0.1572 EUR
+  GBP: 0.1285  // Fallback: 1 BRL -> 0.1285 GBP
+});
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -46,17 +49,18 @@ export const useCurrencyConverter = () => {
       }
       
       if (data && data.length > 0) {
-        const rates: ExchangeRates = { BRL: 1, USD: 0.19, EUR: 0.17 };
-        
-        data.forEach((row) => {
-          const raw = Number(row.rate);
-          const normalized = raw > 1 ? 1 / raw : raw; // ensure rate = BRL->currency
-          if (row.target_currency === 'USD') {
-            rates.USD = normalized;
-          } else if (row.target_currency === 'EUR') {
-            rates.EUR = normalized;
-          }
-        });
+const rates: ExchangeRates = { BRL: 1, USD: 0.1843, EUR: 0.1572, GBP: 0.1285 };
+
+data.forEach((row) => {
+  const rate = Number(row.rate); // Already BRL -> target currency
+  if (row.target_currency === 'USD') {
+    rates.USD = rate;
+  } else if (row.target_currency === 'EUR') {
+    rates.EUR = rate;
+  } else if (row.target_currency === 'GBP') {
+    rates.GBP = rate;
+  }
+});
         
         console.log('[FX] Using exchange rates (BRL->currency):', rates);
         setExchangeRates(rates);

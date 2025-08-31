@@ -1,7 +1,7 @@
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Euro, RefreshCw } from "lucide-react";
+import { DollarSign, Euro, PoundSterling, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 
 export const CurrencyRatesDisplay = () => {
@@ -18,42 +18,57 @@ export const CurrencyRatesDisplay = () => {
   const getCurrencyData = () => {
     if (language === 'pt') {
       // PT: Show how much 1 foreign currency is worth in BRL
-      return [
-        {
-          icon: DollarSign,
-          code: 'USD',
-          value: `R$ ${(1 / exchangeRates.USD).toFixed(2)}`,
-          label: '1 Dólar',
-          color: 'text-expense'
-        },
-        {
-          icon: Euro,
-          code: 'EUR', 
-          value: `R$ ${(1 / exchangeRates.EUR).toFixed(2)}`,
-          label: '1 Euro',
-          color: 'text-secondary'
-        }
-      ];
+return [
+  {
+    icon: DollarSign,
+    code: 'USD',
+    value: `R$ ${(1 / exchangeRates.USD).toFixed(2)}`,
+    label: '1 Dólar',
+    color: 'text-expense'
+  },
+  {
+    icon: Euro,
+    code: 'EUR', 
+    value: `R$ ${(1 / exchangeRates.EUR).toFixed(2)}`,
+    label: '1 Euro',
+    color: 'text-secondary'
+  },
+  {
+    icon: PoundSterling,
+    code: 'GBP', 
+    value: `R$ ${(1 / exchangeRates.GBP).toFixed(2)}`,
+    label: '1 Libra',
+    color: 'text-primary'
+  }
+];
     } else {
-      // EN/ES: Show how much 1 foreign currency is worth in USD
-      const usdToEur = exchangeRates.EUR / exchangeRates.USD;
-      
-      return [
-        {
-          icon: DollarSign,
-          code: 'BRL',
-          value: `$${exchangeRates.USD.toFixed(3)}`,
-          label: '1 Real',
-          color: 'text-income'
-        },
-        {
-          icon: Euro,
-          code: 'EUR',
-          value: `$${usdToEur.toFixed(3)}`,
-          label: '1 Euro',
-          color: 'text-secondary'
-        }
-      ];
+// EN/ES: Show how much 1 foreign currency is worth in USD
+const eurToUsd = exchangeRates.USD / exchangeRates.EUR;
+const gbpToUsd = exchangeRates.USD / exchangeRates.GBP;
+
+return [
+  {
+    icon: DollarSign,
+    code: 'BRL',
+    value: `$${exchangeRates.USD.toFixed(3)}`,
+    label: '1 Real',
+    color: 'text-income'
+  },
+  {
+    icon: Euro,
+    code: 'EUR',
+    value: `$${eurToUsd.toFixed(3)}`,
+    label: '1 Euro',
+    color: 'text-secondary'
+  },
+  {
+    icon: PoundSterling,
+    code: 'GBP',
+    value: `$${gbpToUsd.toFixed(3)}`,
+    label: '1 Pound',
+    color: 'text-primary'
+  }
+];
     }
   };
 
