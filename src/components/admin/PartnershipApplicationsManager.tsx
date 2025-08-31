@@ -259,15 +259,14 @@ export const PartnershipApplicationsManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Audiência</TableHead>
-                <TableHead>Redes Sociais</TableHead>
-                <TableHead>Código Bancário</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Código</TableHead>
-                <TableHead>Ações</TableHead>
+                <TableHead className="w-[15%]">Nome</TableHead>
+                <TableHead className="w-[20%]">Email</TableHead>
+                <TableHead className="w-[12%]">Audiência</TableHead>
+                <TableHead className="w-[15%]">Redes Sociais</TableHead>
+                <TableHead className="w-[15%]">Código Bancário</TableHead>
+                <TableHead className="w-[10%]">Data</TableHead>
+                <TableHead className="w-[8%]">Status</TableHead>
+                <TableHead className="w-[5%]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -302,15 +301,6 @@ export const PartnershipApplicationsManager = () => {
                     {format(new Date(application.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                   </TableCell>
                   <TableCell>{getStatusBadge(application.status)}</TableCell>
-                  <TableCell>
-                    {application.referral_codes?.code ? (
-                      <Badge variant="secondary" className="font-mono">
-                        {application.referral_codes.code}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
                   <TableCell>
                     {application.status === 'pending' && (
                       <div className="flex gap-2">
