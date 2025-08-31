@@ -257,13 +257,13 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
             {t('cashAccount')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCashAccounts.map((account) => (
-              <CashAccountCard
-                key={account.id}
-                balance={account.balance || 0}
-                currency={account.currency || 'BRL'}
-              />
-            ))}
+            <CashAccountCard
+              cashAccounts={filteredCashAccounts.map(account => ({
+                id: account.id,
+                balance: account.balance || 0,
+                currency: account.currency || 'BRL'
+              }))}
+            />
           </div>
         </div>
       )}

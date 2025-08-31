@@ -305,6 +305,14 @@ const translations = {
     'cashBalance': 'Saldo em Dinheiro',
     'insufficientCashBalance': 'Saldo insuficiente em dinheiro',
     'cashBalanceError': 'Saldo insuficiente em dinheiro para esta transação',
+    
+    // Saque translations
+    'saque': 'Saque',
+    'saqueDescription': 'Retirada de dinheiro em caixa eletrônico',
+    'saqueSelectAccount': 'Selecione a conta para saque',
+    'saqueSuccess': 'Saque realizado com sucesso!',
+    'saqueError': 'Erro ao realizar saque',
+    'saqueInsufficientBalance': 'Saldo insuficiente na conta para realizar o saque',
     'accounts.deactivation.deactivating': 'Desativando...',
     'accounts.deactivation.deleting': 'Excluindo...',
     'accounts.deactivation.deactivated': 'Conta desativada com sucesso!',
@@ -1749,6 +1757,14 @@ const translations = {
     'insufficientCashBalance': 'Insufficient cash balance',
     'cashBalanceError': 'Insufficient cash balance for this transaction',
     
+    // Saque translations
+    'saque': 'Withdrawal',
+    'saqueDescription': 'ATM cash withdrawal',
+    'saqueSelectAccount': 'Select account for withdrawal',
+    'saqueSuccess': 'Withdrawal completed successfully!',
+    'saqueError': 'Error processing withdrawal',
+    'saqueInsufficientBalance': 'Insufficient account balance for withdrawal',
+    
     // Common
     'common.required': 'required',
     'common.cancel': 'Cancel',
@@ -3175,6 +3191,14 @@ const translations = {
     'cashBalance': 'Saldo en Efectivo',
     'insufficientCashBalance': 'Saldo insuficiente en efectivo',
     'cashBalanceError': 'Saldo insuficiente en efectivo para esta transacción',
+    
+    // Saque translations
+    'saque': 'Retiro',
+    'saqueDescription': 'Retiro de efectivo en cajero automático',
+    'saqueSelectAccount': 'Seleccione cuenta para retiro',
+    'saqueSuccess': '¡Retiro realizado con éxito!',
+    'saqueError': 'Error al procesar retiro',
+    'saqueInsufficientBalance': 'Saldo insuficiente en la cuenta para realizar el retiro',
     
     // Common
     'common.required': 'requerido',

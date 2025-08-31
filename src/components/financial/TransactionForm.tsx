@@ -64,6 +64,7 @@ interface Account {
   currency: string;
   owner_user?: string;
   overdraft_limit?: number;
+  is_cash_account?: boolean;
 }
 
 interface Investment {
@@ -120,11 +121,13 @@ const [paymentMethod, setPaymentMethod] = useState<
   | "payment_transfer"
   | "account_transfer"
   | "account_investment"
+  | "saque"
 >("cash");
 const [accountId, setAccountId] = useState("");
 const [fromAccountId, setFromAccountId] = useState("");
 const [toAccountId, setToAccountId] = useState("");
 const [investmentId, setInvestmentId] = useState("");
+const [saqueSourceAccountId, setSaqueSourceAccountId] = useState("");
 const [investments, setInvestments] = useState<Investment[]>([]);
 const [cardId, setCardId] = useState("");
 const [currency, setCurrency] = useState<CurrencyCode>("BRL");
@@ -426,6 +429,29 @@ const getAccountOwnerName = (account: Account) => {
     }
   }
 
+  // Validar saque
+  if (type === "expense" && paymentMethod === "saque") {
+    if (!saqueSourceAccountId) {
+      toast({ title: t('saqueError'), description: t('saqueSelectAccount'), variant: "destructive" });
+      return;
+    }
+    
+    // Verificar se a conta de origem tem saldo suficiente
+    const sourceAccount = accounts.find(a => a.id === saqueSourceAccountId);
+    if (sourceAccount) {
+      const transactionAmount = parseFloat(amount);
+      const convertedAmount = convertCurrency(transactionAmount, currency, sourceAccount.currency as CurrencyCode);
+      if (sourceAccount.balance < convertedAmount) {
+        toast({ 
+          title: t('saqueError'), 
+          description: t('saqueInsufficientBalance'),
+          variant: "destructive" 
+        });
+        return;
+      }
+    }
+  }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
@@ -501,7 +527,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           const now = new Date();
           return new Date(now.getFullYear(), now.getMonth(), now.getDate());
         });
-        setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
+        setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setSaqueSourceAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
         return;
       }
 
@@ -541,7 +567,96 @@ const invTxn: TablesInsert<'transactions'> = {
           const now = new Date();
           return new Date(now.getFullYear(), now.getMonth(), now.getDate());
         });
-        setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setCardId(""); setCurrency(userPreferredCurrency);
+        setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setSaqueSourceAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
+        return;
+      }
+
+      // Handle SAQUE (withdrawal) - expenses only
+      if (type === "expense" && paymentMethod === "saque") {
+        const sourceAccount = accounts.find(a => a.id === saqueSourceAccountId);
+        if (!sourceAccount) throw new Error("Conta de origem não encontrada");
+        
+        const transactionAmount = parseFloat(amount);
+        const convertedAmount = convertCurrency(transactionAmount, currency, sourceAccount.currency as CurrencyCode);
+        
+        // Debit from source account
+        await supabase
+          .from('accounts')
+          .update({ balance: Number(sourceAccount.balance) - convertedAmount })
+          .eq('id', sourceAccount.id);
+        
+        // Credit to cash account
+        let cashAccount = await supabase
+          .from('accounts')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_cash_account', true)
+          .eq('currency', currency)
+          .single();
+        
+        if (cashAccount.error) {
+          // Create cash account if it doesn't exist
+          const { data: newCashAccount, error: createError } = await supabase
+            .from('accounts')
+            .insert({
+              user_id: user.id,
+              name: currency === 'BRL' ? t('cash') : `${t('cash')} (${currency})`,
+              account_type: 'checking',
+              currency: currency,
+              balance: transactionAmount,
+              is_cash_account: true,
+              owner_user: ownerUser
+            })
+            .select()
+            .single();
+          
+          if (createError) throw createError;
+          cashAccount.data = newCashAccount;
+        } else {
+          // Update existing cash account
+          await supabase
+            .from('accounts')
+            .update({ balance: Number(cashAccount.data.balance) + transactionAmount })
+            .eq('id', cashAccount.data.id);
+        }
+        
+        // Record the saque transaction (expense from source account perspective)
+        const saqueTransaction: TablesInsert<'transactions'> = {
+          user_id: user.id,
+          owner_user: ownerUser,
+          type: 'expense',
+          amount: convertedAmount,
+          currency: sourceAccount.currency as Enums<'currency_type'>,
+          description: description || t('saqueDescription'),
+          category_id: categoryId || null,
+          subcategory: subcategory || null,
+          transaction_date: format(transactionDate, 'yyyy-MM-dd'),
+          payment_method: 'saque' as any,
+          card_id: null,
+          account_id: sourceAccount.id,
+          is_installment: false,
+          total_installments: null,
+          installment_number: null
+        };
+        
+        const { error: saqueError } = await supabase
+          .from('transactions')
+          .insert(saqueTransaction);
+        
+        if (saqueError) throw saqueError;
+        
+        toast({ 
+          title: t('transactionForm.success'), 
+          description: t('saqueSuccess') 
+        });
+        
+        // Reset form
+        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); 
+        setTransactionDate(() => {
+          const now = new Date();
+          return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        });
+        setPaymentMethod("cash"); setAccountId(""); setSaqueSourceAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
         return;
       }
 
@@ -820,6 +935,7 @@ const invTxn: TablesInsert<'transactions'> = {
       });
       setPaymentMethod("cash");
       setAccountId("");
+      setSaqueSourceAccountId("");
       setCardId("");
       setCurrency(userPreferredCurrency);
     } catch (error: any) {
@@ -985,7 +1101,7 @@ const invTxn: TablesInsert<'transactions'> = {
                     <SelectItem value="account_transfer">{t('transactionForm.accountTransfer')}</SelectItem>
                     <SelectItem value="account_investment">{t('transactionForm.accountInvestmentTransfer')}</SelectItem>
                   </>
-                ) : (
+                  ) : (
                   <>
                     <SelectItem value="debit_card">{t('transactionForm.debitCard')}</SelectItem>
                      <SelectItem value="payment_transfer">
@@ -995,6 +1111,7 @@ const invTxn: TablesInsert<'transactions'> = {
                        </span>
                      </SelectItem>
                     <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
+                    <SelectItem value="saque">{t('saque')}</SelectItem>
                   </>
                 )}
               </SelectContent>
@@ -1226,6 +1343,61 @@ const invTxn: TablesInsert<'transactions'> = {
                     Limite utilizado igual ao limite desta conta. Despesa via débito bloqueada.
                   </div>
                 ) : null;
+              })()}
+            </div>
+          )}
+
+          {/* Source Account Selection for SAQUE */}
+          {type === "expense" && paymentMethod === "saque" && (
+            <div>
+              <Label htmlFor="saqueAccount">{t('saqueSelectAccount')}</Label>
+              <Select value={saqueSourceAccountId} onValueChange={setSaqueSourceAccountId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.filter(account => !account.is_cash_account).map((account) => {
+                    const hasBalance = Number(account.balance || 0) > 0;
+                    const convertedAmount = amount ? convertCurrency(parseFloat(amount), currency, account.currency as CurrencyCode) : 0;
+                    const sufficientBalance = hasBalance && Number(account.balance) >= convertedAmount;
+                    
+                    return (
+                      <SelectItem 
+                        key={account.id} 
+                        value={account.id}
+                        disabled={!sufficientBalance}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span>{account.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                            {!sufficientBalance && amount && (
+                              <span className="ml-2 text-destructive">• Saldo insuficiente</span>
+                            )}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              
+              {/* Show balance validation message */}
+              {saqueSourceAccountId && amount && (() => {
+                const sourceAccount = accounts.find(a => a.id === saqueSourceAccountId);
+                if (!sourceAccount) return null;
+                const convertedAmount = convertCurrency(parseFloat(amount), currency, sourceAccount.currency as CurrencyCode);
+                const sufficientBalance = sourceAccount.balance >= convertedAmount;
+                
+                return !sufficientBalance ? (
+                  <div className="mt-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                    ⚠️ {t('saqueInsufficientBalance')}
+                  </div>
+                ) : (
+                  <div className="mt-2 text-sm text-green-600 bg-green-50 p-3 rounded-md border border-green-200">
+                    ✅ Saldo suficiente para saque
+                  </div>
+                );
               })()}
             </div>
           )}
