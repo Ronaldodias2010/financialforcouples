@@ -41,11 +41,16 @@ const HeroSection = () => {
         <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageSelector />
-            <Button asChild size="sm" variant="outline" className="bg-white text-black border-white hover:bg-gray-100">
-              <Link to="/sobre-nos">{t('nav.aboutUs')}</Link>
+            <div className="hidden sm:flex">
+              <Button asChild size="sm" variant="outline" className="bg-white text-black border-white hover:bg-gray-100">
+                <Link to="/sobre-nos">{t('nav.aboutUs')}</Link>
+              </Button>
+            </div>
+            <Button asChild size="sm" variant="outline" className="text-xs sm:text-sm px-2 sm:px-3">
+              <Link to="/checkout-direto">Tutorial</Link>
             </Button>
             <Button asChild size="sm" variant="outline" className="text-xs sm:text-sm px-2 sm:px-3">
-              <Link to="/auth">{t('header.login')}</Link>
+              <Link to="/checkout-direto">Planos</Link>
             </Button>
           </div>
         </div>
