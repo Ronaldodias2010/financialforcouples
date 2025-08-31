@@ -397,7 +397,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
 
           {/* Team Photo Section */}
           <section className="flex justify-center">
-            <div className="max-w-md mx-auto">
+            <div className="max-w-xs mx-auto">
               <img 
                 src="/lovable-uploads/43f4a76c-d2be-4d8a-873e-ae3335bc61d6.png" 
                 alt="Equipe Couples Financials - Nossa equipe unida"
