@@ -66,7 +66,7 @@ const Footer = () => {
               <li><a href="#faq" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('faq')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.faq')}</a></li>
               <li>
                 <button 
-                  onClick={downloadTutorialPDF}
+                  onClick={() => downloadTutorialPDF(language as 'pt' | 'en' | 'es')}
                   className="hover:text-background transition-colors flex items-center gap-1"
                 >
                   <Download className="w-3 h-3" />

@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
-  const { t, tFor, inBrazil } = useLanguage();
+  const { t, tFor, inBrazil, language } = useLanguage();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
   const [displayName, setDisplayName] = useState<string>('');
@@ -71,11 +71,11 @@ const AppDashboard = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={openTutorialHTML}>
+                <DropdownMenuItem onClick={() => openTutorialHTML(language as 'pt' | 'en' | 'es')}>
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Visualizar Online
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={downloadTutorialPDF}>
+                <DropdownMenuItem onClick={() => downloadTutorialPDF(language as 'pt' | 'en' | 'es')}>
                   <Download className="h-4 w-4 mr-2" />
                   Baixar PDF
                 </DropdownMenuItem>
