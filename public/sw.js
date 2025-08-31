@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v7';
-const STATIC_CACHE_NAME = 'couples-financials-static-v7';
-const API_CACHE_NAME = 'couples-financials-api-v7';
+const CACHE_NAME = 'couples-financials-v8';
+const STATIC_CACHE_NAME = 'couples-financials-static-v8';
+const API_CACHE_NAME = 'couples-financials-api-v8';
 
 const urlsToCache = [
   '/',
@@ -52,7 +52,15 @@ self.addEventListener('fetch', (event) => {
 
   // Always bypass SW for tutorial static pages to avoid SPA/Cache interference
   if (/^\/tutorial-couples-financials(-[a-z]{2})?\.html$/.test(url.pathname)) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Se o arquivo específico do idioma der erro, tentar o principal
+        if (url.pathname !== '/tutorial-couples-financials.html') {
+          return fetch('/tutorial-couples-financials.html');
+        }
+        throw new Error('Tutorial not found');
+      })
+    );
     return;
   }
 

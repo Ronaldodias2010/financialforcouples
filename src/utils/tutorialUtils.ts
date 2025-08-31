@@ -18,9 +18,12 @@ const sanitizeText = (input: string): string => {
 
 export const downloadTutorialPDF = async (language: Language = 'pt') => {
   try {
-    // Fetch the tutorial HTML based on language
-    const tutorialUrl = `/tutorial-couples-financials-${language}.html`;
+    // SEMPRE usar o arquivo principal completo (1348 linhas) para garantir conteúdo completo
+    const tutorialUrl = `/tutorial-couples-financials.html`;
     const response = await fetch(tutorialUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tutorial: ${response.status}`);
+    }
     const htmlContent = await response.text();
     
     // Create a temporary element to parse the HTML
@@ -54,108 +57,79 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
     pdf.text(titles[language], margin, currentY);
     currentY += 15;
     
-    // Add content sections - Fixed: use .section instead of section
-    const sections = tempDiv.querySelectorAll('.section');
+    // Capturar TODO o conteúdo da div.container, não apenas seções
+    const container = tempDiv.querySelector('.container') || tempDiv;
+    const allContent = container.querySelectorAll('h1, h2, h3, h4, h5, h6, p, li, div.feature-card, div.step, div.tip-box');
     
-    sections.forEach((section) => {
+    allContent.forEach((element) => {
       // Check if we need a new page
-      if (currentY > pageHeight - 40) {
+      if (currentY > pageHeight - 30) {
         pdf.addPage();
         currentY = margin;
       }
       
-      // Add section title
-      const title = section.querySelector('h2');
-      if (title) {
+      const tagName = element.tagName.toLowerCase();
+      const textContent = sanitizeText(element.textContent || '');
+      
+      if (!textContent.trim()) return; // Skip empty elements
+      
+      // Handle different element types
+      if (tagName === 'h1') {
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        currentY += 8;
+      } else if (tagName === 'h2') {
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        const titleText = sanitizeText(title.textContent || '');
-        const titleLines = pdf.splitTextToSize(titleText, pageWidth - 2 * margin);
-        titleLines.forEach((line: string) => {
-          if (currentY > pageHeight - 20) {
-            pdf.addPage();
-            currentY = margin;
-          }
-          pdf.text(line, margin, currentY);
-          currentY += 8;
-        });
-        currentY += 5;
-      }
-      
-      // Add subsection titles
-      const subtitles = section.querySelectorAll('h3');
-      subtitles.forEach((subtitle) => {
-        if (currentY > pageHeight - 30) {
-          pdf.addPage();
-          currentY = margin;
-        }
-        
+        currentY += 6;
+      } else if (tagName === 'h3') {
         pdf.setFontSize(12);
         pdf.setFont('helvetica', 'bold');
-        const subtitleText = sanitizeText(subtitle.textContent || '');
-        const subtitleLines = pdf.splitTextToSize(subtitleText, pageWidth - 2 * margin);
-        subtitleLines.forEach((line: string) => {
-          if (currentY > pageHeight - 20) {
-            pdf.addPage();
-            currentY = margin;
-          }
-          pdf.text(line, margin, currentY);
-          currentY += 7;
-        });
+        currentY += 4;
+      } else if (tagName === 'h4' || tagName === 'h5' || tagName === 'h6') {
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
         currentY += 3;
-      });
-      
-      // Add section content
-      const paragraphs = section.querySelectorAll('p');
-      paragraphs.forEach((p) => {
-        if (currentY > pageHeight - 25) {
-          pdf.addPage();
-          currentY = margin;
-        }
-        
+      } else if (tagName === 'li') {
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
-        const text = sanitizeText(p.textContent || '');
-        const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
-        
-        lines.forEach((line: string) => {
+        // Add bullet point
+        const bulletText = `• ${textContent}`;
+        const lines = pdf.splitTextToSize(bulletText, pageWidth - 2 * margin - 5);
+        lines.forEach((line: string, index: number) => {
           if (currentY > pageHeight - 15) {
             pdf.addPage();
             currentY = margin;
           }
-          pdf.text(line, margin, currentY);
+          pdf.text(line, margin + (index === 0 ? 0 : 5), currentY);
           currentY += lineHeight;
         });
-        
-        currentY += 3; // Extra spacing between paragraphs
-      });
+        currentY += 2;
+        return;
+      } else {
+        // Regular paragraphs and other content
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+      }
       
-      // Add list items
-      const listItems = section.querySelectorAll('li');
-      listItems.forEach((li) => {
-        if (currentY > pageHeight - 25) {
+      // Split text to fit page width
+      const lines = pdf.splitTextToSize(textContent, pageWidth - 2 * margin);
+      
+      lines.forEach((line: string) => {
+        if (currentY > pageHeight - 15) {
           pdf.addPage();
           currentY = margin;
         }
-        
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'normal');
-        const text = sanitizeText(`- ${li.textContent || ''}`);
-        const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
-
-        lines.forEach((line: string) => {
-          if (currentY > pageHeight - 15) {
-            pdf.addPage();
-            currentY = margin;
-          }
-          pdf.text(line, margin + 5, currentY);
-          currentY += lineHeight;
-        });
-        
-        currentY += 2; // Extra spacing between list items
+        pdf.text(line, margin, currentY);
+        currentY += (tagName.startsWith('h') ? lineHeight + 1 : lineHeight);
       });
       
-      currentY += 10; // Extra spacing between sections
+      // Add extra spacing after headers
+      if (tagName.startsWith('h')) {
+        currentY += 4;
+      } else {
+        currentY += 2;
+      }
     });
     
     // Download the PDF with language suffix
@@ -170,6 +144,21 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
 };
 
 export const openTutorialHTML = (language: Language = 'pt') => {
+  // Tentar arquivo específico do idioma primeiro, com fallback para o principal
   const tutorialUrl = `/tutorial-couples-financials-${language}.html`;
-  window.open(tutorialUrl, '_blank');
+  
+  // Verificar se o arquivo existe antes de abrir
+  fetch(tutorialUrl, { method: 'HEAD' })
+    .then(response => {
+      if (response.ok) {
+        window.open(tutorialUrl, '_blank');
+      } else {
+        // Fallback para o arquivo principal
+        window.open('/tutorial-couples-financials.html', '_blank');
+      }
+    })
+    .catch(() => {
+      // Se der erro, usar o arquivo principal
+      window.open('/tutorial-couples-financials.html', '_blank');
+    });
 };
