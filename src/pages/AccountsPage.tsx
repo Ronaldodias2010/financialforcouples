@@ -249,28 +249,33 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 )}
       </div>
 
-      {/* Cash Accounts Section */}
-      {filteredCashAccounts.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Wallet className="h-5 w-5" />
-            {t('cashAccount')}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <CashAccountCard
-              cashAccounts={filteredCashAccounts.map(account => ({
-                id: account.id,
-                balance: account.balance || 0,
-                currency: account.currency || 'BRL'
-              }))}
-            />
-          </div>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Account Form and List */}
+        <div className="lg:col-span-2 space-y-6">
+          <AccountForm onAccountAdded={handleAccountAdded} />
+          <AccountList refreshTrigger={refreshTrigger} />
         </div>
-      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <AccountForm onAccountAdded={handleAccountAdded} />
-        <AccountList refreshTrigger={refreshTrigger} />
+        {/* Right Column - Cash Account */}
+        <div className="lg:col-span-1">
+          {filteredCashAccounts.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                {t('cashAccount')}
+              </h2>
+              <CashAccountCard
+                cashAccounts={filteredCashAccounts.map(account => ({
+                  id: account.id,
+                  balance: account.balance || 0,
+                  currency: account.currency || 'BRL'
+                }))}
+                className="w-full"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
