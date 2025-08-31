@@ -11,6 +11,7 @@ import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { PremiumExpirationWarning } from "@/components/subscription/PremiumExpirationWarning";
 import { downloadTutorialPDF, openTutorialHTML } from "@/utils/tutorialUtils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { CurrencyRatesDisplay } from "@/components/financial/CurrencyRatesDisplay";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
@@ -124,8 +125,9 @@ const AppDashboard = () => {
       <main>
         {currentPage === 'dashboard' ? (
           <div>
-            <div className="container mx-auto px-4 py-4">
+            <div className="container mx-auto px-4 py-4 space-y-4">
               <PremiumExpirationWarning />
+              <CurrencyRatesDisplay />
             </div>
             <FinancialDashboard />
           </div>

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useCouple } from "@/hooks/useCouple";
+import { usePromoCode } from "@/hooks/usePromoCode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User, CreditCard, Lock, DollarSign } from "lucide-react";
@@ -22,9 +23,12 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   const { t, language } = useLanguage();
   const { subscribed, subscriptionTier, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading: subscriptionLoading } = useSubscription();
   const { isPartOfCouple } = useCouple();
+  const { validatePromoCode, validating } = usePromoCode();
   const [loading, setLoading] = useState(false);
   const [creatingCheckout, setCreatingCheckout] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
   const [profile, setProfile] = useState({
     display_name: "",
     phone_number: "",
@@ -250,10 +254,53 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   }
 };
 
-  const handleUpgrade = async (priceId: string) => {
+  // Determine pricing based on language/country like SubscriptionPage does
+  const pricing = language === 'pt' ? {
+    monthly: { priceId: 'price_1QjjrpKjNOwKU3wlPRdkcF6s', price: 39.90 },
+    annual: { priceId: 'price_1QjjsaKjNOwKU3wlNu0vTyFr', price: 350.00 }
+  } : {
+    monthly: { priceId: 'price_1QjjtrKjNOwKU3wlBwU3qp7I', price: 7.99 },
+    annual: { priceId: 'price_1QjjvKKjNOwKU3wlcmOTaJSI', price: 70.00 }
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      toast.error("Digite um código promocional");
+      return;
+    }
+
+    try {
+      const result = await validatePromoCode(promoCode, language === 'pt' ? 'BR' : 'US');
+      if (result.valid) {
+        setAppliedPromo(result);
+        toast.success("Código promocional aplicado com sucesso!");
+      } else {
+        toast.error(result.message || "Código promocional inválido");
+      }
+    } catch (error) {
+      toast.error("Erro ao validar código promocional");
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode("");
+    toast.success("Código promocional removido");
+  };
+
+  const handleUpgrade = async (planType: 'monthly' | 'annual') => {
     setCreatingCheckout(true);
     try {
-      await createCheckoutSession(priceId);
+      const selectedPlan = pricing[planType];
+      const priceToUse = appliedPromo?.stripe_price_id || selectedPlan.priceId;
+      
+      const promoData = appliedPromo ? {
+        code: promoCode,
+        discount_type: appliedPromo.discount_type,
+        discount_value: appliedPromo.discount_value
+      } : undefined;
+
+      await createCheckoutSession(priceToUse, promoData);
       toast.success(t('subscription.redirectingToPayment'));
     } catch (error) {
       console.error("Error creating checkout:", error);
@@ -525,21 +572,62 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
                     <p className="text-sm">{t('userProfile.upgradeText')}</p>
                   </div>
 
+                  {/* Promo Code Section */}
+                  <div className="p-4 border rounded-lg bg-muted/50">
+                    <h4 className="font-medium mb-3">Código Promocional</h4>
+                    {appliedPromo ? (
+                      <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div>
+                          <p className="font-medium text-green-800">✅ Código aplicado: {promoCode}</p>
+                          <p className="text-sm text-green-600">
+                            {appliedPromo.discount_type === 'percentage' 
+                              ? `${appliedPromo.discount_value}% de desconto`
+                              : `${language === 'pt' ? 'R$' : '$'} ${appliedPromo.discount_value} de desconto`
+                            }
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={handleRemovePromo}>
+                          Remover
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Digite seu código promocional"
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && handleApplyPromo()}
+                        />
+                        <Button 
+                          onClick={handleApplyPromo} 
+                          disabled={validating || !promoCode.trim()}
+                          variant="outline"
+                        >
+                          {validating ? 'Validando...' : 'Aplicar'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Button 
-                      onClick={() => handleUpgrade('price_1RsLL5FOhUY5r0H1WIXv7yuP')}
+                      onClick={() => handleUpgrade('monthly')}
                       disabled={creatingCheckout}
                       className="w-full"
                     >
-                      {creatingCheckout ? t('subscription.loading') : t('subscription.subscribeMonthly')}
+                      {creatingCheckout ? t('subscription.loading') : 
+                        `${t('subscription.subscribeMonthly')} - ${language === 'pt' ? `R$ ${pricing.monthly.price}` : `$ ${pricing.monthly.price}`}`
+                      }
                     </Button>
                     <Button 
-                      onClick={() => handleUpgrade('price_1S1qudFOhUY5r0H1ZqGYFERQ')}
+                      onClick={() => handleUpgrade('annual')}
                       disabled={creatingCheckout}
                       variant="outline"
                       className="w-full"
                     >
-                      {creatingCheckout ? t('subscription.loading') : t('subscription.subscribeAnnually')}
+                      {creatingCheckout ? t('subscription.loading') : 
+                        `${t('subscription.subscribeAnnually')} - ${language === 'pt' ? `R$ ${pricing.annual.price}` : `$ ${pricing.annual.price}`}`
+                      }
                     </Button>
                   </div>
                 </div>
