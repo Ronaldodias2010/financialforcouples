@@ -23,7 +23,7 @@ const faqData = {
     },
     {
       question: "Meus dados estão seguros?",
-      answer: "Sim. Utilizamos Supabase como banco de dados, com criptografia em repouso e em trânsito. Toda a infraestrutura é hospedada na AWS, com práticas avançadas de segurança.",
+      answer: "Sim. Utilizamos PostgreSQL de Berkeley (ORDBMS) como banco de dados, com criptografia em repouso e em trânsito. Toda a infraestrutura é hospedada na AWS, com práticas avançadas de redundância e segurança.",
       icon: "🧠"
     },
     {
