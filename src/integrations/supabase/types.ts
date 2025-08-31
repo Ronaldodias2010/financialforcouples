@@ -23,6 +23,7 @@ export type Database = {
           currency: Database["public"]["Enums"]["currency_type"]
           id: string
           is_active: boolean | null
+          is_cash_account: boolean | null
           name: string
           overdraft_limit: number
           owner_user: string | null
@@ -37,6 +38,7 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           id?: string
           is_active?: boolean | null
+          is_cash_account?: boolean | null
           name: string
           overdraft_limit?: number
           owner_user?: string | null
@@ -51,6 +53,7 @@ export type Database = {
           currency?: Database["public"]["Enums"]["currency_type"]
           id?: string
           is_active?: boolean | null
+          is_cash_account?: boolean | null
           name?: string
           overdraft_limit?: number
           owner_user?: string | null
@@ -1809,6 +1812,10 @@ export type Database = {
       check_user_promotion_eligibility: {
         Args: { p_promotion_id: string; p_user_id: string }
         Returns: boolean
+      }
+      create_cash_accounts_for_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       create_default_categories_for_user: {
         Args: { user_id: string; user_language?: string }

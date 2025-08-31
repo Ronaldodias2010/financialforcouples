@@ -11,6 +11,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
+import { CashAccountCard } from "@/components/accounts/CashAccountCard";
 
 interface AccountsPageProps {
   onBack: () => void;
@@ -25,6 +26,7 @@ interface AccountRow {
   overdraft_limit: number | null;
   account_model: string | null;
   name?: string | null;
+  is_cash_account?: boolean | null;
 }
 
 export const AccountsPage = ({ onBack }: AccountsPageProps) => {
@@ -45,12 +47,12 @@ const partnerId = getPartnerUserId();
     const fetchAccounts = async () => {
       const { data, error } = await supabase
         .from("accounts")
-        .select("id, user_id, owner_user, currency, balance, overdraft_limit, account_model, name, is_active")
+        .select("id, user_id, owner_user, currency, balance, overdraft_limit, account_model, name, is_active, is_cash_account")
         .eq('is_active', true);
       if (!error && data) {
         setAccountsData(
           data.map((a) => ({
-id: (a as any).id as string,
+            id: (a as any).id as string,
 user_id: (a as any).user_id as string,
 owner_user: (a as any).owner_user as ("user1" | "user2" | null),
 currency: ((a as any).currency as CurrencyCode) ?? "BRL",
@@ -58,6 +60,7 @@ balance: Number((a as any).balance ?? 0),
 overdraft_limit: Number((a as any).overdraft_limit ?? 0),
 account_model: (a as any).account_model ?? 'personal',
 name: (a as any).name ?? null,
+is_cash_account: (a as any).is_cash_account ?? false,
           }))
         );
       }
@@ -72,6 +75,12 @@ const computeSuasContasTotal = (accounts: AccountRow[]) => {
     const bal = Number(a.balance ?? 0);
     const limit = Number(a.overdraft_limit ?? 0);
     const from = (a.currency ?? "BRL") as CurrencyCode;
+    
+    // For cash accounts, only use the balance (no overdraft)
+    if (a.is_cash_account) {
+      return sum + convertCurrency(bal, from, displayCurrency);
+    }
+    
     if (bal >= 0) {
       // Valor Disponível = Saldo atual + Limite do cheque especial
       return sum + convertCurrency(bal + limit, from, displayCurrency);
@@ -132,6 +141,33 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 
   const getUserLabel = (which: "user1" | "user2") =>
     which === "user1" ? (names.user1Name || t("dashboard.user1")) : (names.user2Name || t("dashboard.user2"));
+
+  // Separate cash accounts from regular accounts
+  const cashAccounts = accountsData.filter(a => a.is_cash_account);
+  const regularAccounts = accountsData.filter(a => !a.is_cash_account);
+
+  // Filter cash accounts by view mode
+  const getFilteredCashAccounts = () => {
+    if (viewMode === 'both') return cashAccounts;
+    
+    if (viewMode === 'user1') {
+      return cashAccounts.filter(a => {
+        if (isUserOne()) return a.user_id === user?.id;
+        return a.user_id === partnerId;
+      });
+    }
+    
+    if (viewMode === 'user2') {
+      return cashAccounts.filter(a => {
+        if (isUserOne()) return a.user_id === partnerId;
+        return a.user_id === user?.id;
+      });
+    }
+    
+    return [];
+  };
+
+  const filteredCashAccounts = getFilteredCashAccounts();
 
   return (
     <div className="space-y-6">
@@ -212,6 +248,25 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
   </div>
 )}
       </div>
+
+      {/* Cash Accounts Section */}
+      {filteredCashAccounts.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Wallet className="h-5 w-5" />
+            {t('cashAccount')}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCashAccounts.map((account) => (
+              <CashAccountCard
+                key={account.id}
+                balance={account.balance || 0}
+                currency={account.currency || 'BRL'}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <AccountForm onAccountAdded={handleAccountAdded} />

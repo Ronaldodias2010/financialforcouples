@@ -20,6 +20,7 @@ import { translateCategoryName as translateCategoryUtil } from "@/utils/category
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
+import { useCashBalance } from "@/hooks/useCashBalance";
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
 }
@@ -142,6 +143,7 @@ const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const { convertCurrency, formatCurrency, getCurrencySymbol, CURRENCY_INFO, loading: ratesLoading } = useCurrencyConverter();
 const { couple, isPartOfCouple } = useCouple();
 const { names } = usePartnerNames();
+const { canSpendCash, getCashBalanceError } = useCashBalance();
 
 const getOwnerName = (ownerUser?: string) => {
   if (ownerUser === 'user2') return names.user2Name;
@@ -689,7 +691,18 @@ const invTxn: TablesInsert<'transactions'> = {
             installment_number: null
           });
 
-        if (error) throw error;
+        if (error) {
+          // Handle specific cash balance error
+          if (error.message?.includes('Saldo insuficiente em dinheiro')) {
+            toast({
+              title: t('insufficientCashBalance'),
+              description: t('cashBalanceError'),
+              variant: "destructive",
+            });
+            return;
+          }
+          throw error;
+        }
 
         // Show limit exceeded warning if applicable
         if (limitExceeded) {
@@ -1258,6 +1271,21 @@ const invTxn: TablesInsert<'transactions'> = {
             </div>
           )}
 
+          {/* Cash Balance Warning */}
+          {type === "expense" && paymentMethod === "cash" && amount && (
+            <div className="mt-2">
+              {!canSpendCash(parseFloat(amount), currency) ? (
+                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                  ⚠️ {getCashBalanceError(parseFloat(amount), currency)}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  ✅ Saldo em dinheiro suficiente
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Subcategory */}
           <div>
             <Label htmlFor="subcategory">{t('transactionForm.subcategory')}</Label>
@@ -1275,24 +1303,33 @@ const invTxn: TablesInsert<'transactions'> = {
             className="w-full"
             disabled={
               type === "expense" &&
-              (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") &&
-              (() => {
-                const acc = accounts.find(a => a.id === accountId);
-                if (!acc) return false;
-                const limit = Number(acc.overdraft_limit || 0);
-                const bal = Number(acc.balance || 0);
-                if (amount) {
-                  const amtNum = parseFloat(amount || "0");
-                  const amtInAcc = convertCurrency(amtNum, currency, (acc.currency || "BRL") as CurrencyCode);
-                  const proposed = bal - amtInAcc;
-                  return proposed < -limit;
-                }
-                const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
-                return limit > 0 && used >= limit;
-              })()
+              (
+                // Cash payment validation
+                (paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency)) ||
+                // Debit card and transfer validation
+                ((paymentMethod === "debit_card" || paymentMethod === "payment_transfer") &&
+                (() => {
+                  const acc = accounts.find(a => a.id === accountId);
+                  if (!acc) return false;
+                  const limit = Number(acc.overdraft_limit || 0);
+                  const bal = Number(acc.balance || 0);
+                  if (amount) {
+                    const amtNum = parseFloat(amount || "0");
+                    const amtInAcc = convertCurrency(amtNum, currency, (acc.currency || "BRL") as CurrencyCode);
+                    const proposed = bal - amtInAcc;
+                    return proposed < -limit;
+                  }
+                  const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
+                  return limit > 0 && used >= limit;
+                })())
+              )
             }
             title={
-              type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") ? t('transactionForm.blockedLimitExhausted') : undefined
+              type === "expense" && paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency)
+                ? getCashBalanceError(parseFloat(amount), currency) || t('insufficientCashBalance')
+                : type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") 
+                ? t('transactionForm.blockedLimitExhausted') 
+                : undefined
             }
           >
             {t('transactionForm.addTransaction')}

@@ -298,6 +298,13 @@ const translations = {
     'accounts.deactivation.deactivateButton': 'Desativar Conta',
     'accounts.deactivation.deleteButton': 'Excluir Permanentemente',
     'accounts.deactivation.reactivate': 'Reativar',
+    
+    // Cash Account translations
+    'cash': 'Dinheiro',
+    'cashAccount': 'Conta de Dinheiro',
+    'cashBalance': 'Saldo em Dinheiro',
+    'insufficientCashBalance': 'Saldo insuficiente em dinheiro',
+    'cashBalanceError': 'Saldo insuficiente em dinheiro para esta transação',
     'accounts.deactivation.deactivating': 'Desativando...',
     'accounts.deactivation.deleting': 'Excluindo...',
     'accounts.deactivation.deactivated': 'Conta desativada com sucesso!',
@@ -1735,6 +1742,13 @@ const translations = {
     'accounts.deactivation.deleteError': 'Error removing account',
     'accounts.deactivation.reactivateError': 'Error reactivating account',
     
+    // Cash Account translations
+    'cash': 'Cash',
+    'cashAccount': 'Cash Account',
+    'cashBalance': 'Cash Balance',
+    'insufficientCashBalance': 'Insufficient cash balance',
+    'cashBalanceError': 'Insufficient cash balance for this transaction',
+    
     // Common
     'common.required': 'required',
     'common.cancel': 'Cancel',
@@ -3154,6 +3168,13 @@ const translations = {
     'accounts.deactivation.deactivateError': 'Error al desactivar cuenta',
     'accounts.deactivation.deleteError': 'Error al eliminar cuenta',
     'accounts.deactivation.reactivateError': 'Error al reactivar cuenta',
+    
+    // Cash Account translations
+    'cash': 'Efectivo',
+    'cashAccount': 'Cuenta de Efectivo',
+    'cashBalance': 'Saldo en Efectivo',
+    'insufficientCashBalance': 'Saldo insuficiente en efectivo',
+    'cashBalanceError': 'Saldo insuficiente en efectivo para esta transacción',
     
     // Common
     'common.required': 'requerido',
