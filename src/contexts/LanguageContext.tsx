@@ -1644,6 +1644,7 @@ const translations = {
     'nav.admin': 'Admin',
     'nav.subscription': 'Plans',
     'nav.testEmail': 'Test Email',
+    'nav.tutorial': 'Tutorial',
     'nav.logout': 'Logout',
     
     // Cards
@@ -3066,6 +3067,7 @@ const translations = {
     'nav.admin': 'Admin',
     'nav.subscription': 'Planes',
     'nav.testEmail': 'Prueba Email',
+    'nav.tutorial': 'Tutorial',
     'nav.logout': 'Cerrar sesión',
     
     // Cards

@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v6';
-const STATIC_CACHE_NAME = 'couples-financials-static-v6';
-const API_CACHE_NAME = 'couples-financials-api-v6';
+const CACHE_NAME = 'couples-financials-v7';
+const STATIC_CACHE_NAME = 'couples-financials-static-v7';
+const API_CACHE_NAME = 'couples-financials-api-v7';
 
 const urlsToCache = [
   '/',
@@ -49,7 +49,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const acceptHeader = event.request.headers.get('accept') || '';
-  
+
+  // Always bypass SW for tutorial static pages to avoid SPA/Cache interference
+  if (/^\/tutorial-couples-financials(-[a-z]{2})?\.html$/.test(url.pathname)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   // Handle API requests differently
   if (API_URLS.some(apiUrl => url.href.startsWith(apiUrl))) {
     const isGet = event.request.method === 'GET';

@@ -2,6 +2,20 @@ import jsPDF from 'jspdf';
 
 type Language = 'pt' | 'en' | 'es';
 
+// Sanitize text for jsPDF (remove emojis and unsupported chars, normalize quotes/bullets)
+const sanitizeText = (input: string): string => {
+  if (!input) return '';
+  let text = input
+    .replace(/[\u{1F300}-\u{1FAFF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}]/gu, '') // remove emojis
+    .replace(/\u2022/g, '-') // bullet • to -
+    .replace(/[\u2018\u2019]/g, "'") // smart single quotes
+    .replace(/[\u201C\u201D]/g, '"') // smart double quotes
+    .replace(/\u00A0/g, ' '); // non-breaking space
+  // Remove any remaining unsupported unicode (> 255)
+  text = Array.from(text).map(ch => ch.charCodeAt(0) > 255 ? '' : ch).join('');
+  return text.trim();
+};
+
 export const downloadTutorialPDF = async (language: Language = 'pt') => {
   try {
     // Fetch the tutorial HTML based on language
@@ -55,7 +69,7 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
       if (title) {
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        const titleText = title.textContent || '';
+        const titleText = sanitizeText(title.textContent || '');
         const titleLines = pdf.splitTextToSize(titleText, pageWidth - 2 * margin);
         titleLines.forEach((line: string) => {
           if (currentY > pageHeight - 20) {
@@ -78,7 +92,7 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
         
         pdf.setFontSize(12);
         pdf.setFont('helvetica', 'bold');
-        const subtitleText = subtitle.textContent || '';
+        const subtitleText = sanitizeText(subtitle.textContent || '');
         const subtitleLines = pdf.splitTextToSize(subtitleText, pageWidth - 2 * margin);
         subtitleLines.forEach((line: string) => {
           if (currentY > pageHeight - 20) {
@@ -101,7 +115,7 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
         
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
-        const text = p.textContent || '';
+        const text = sanitizeText(p.textContent || '');
         const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
         
         lines.forEach((line: string) => {
@@ -126,9 +140,9 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
         
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
-        const text = `• ${li.textContent || ''}`;
+        const text = sanitizeText(`- ${li.textContent || ''}`);
         const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
-        
+
         lines.forEach((line: string) => {
           if (currentY > pageHeight - 15) {
             pdf.addPage();
