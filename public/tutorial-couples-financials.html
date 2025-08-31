@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Completo - Couples Financials</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .toc {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .toc h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #555;
+            text-decoration: none;
+            padding: 8px 15px;
+            display: block;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .toc a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(10px);
+        }
+
+        .section {
+            background: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #eee;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.8rem;
+            margin: 30px 0 15px 0;
+        }
+
+        .section h4 {
+            color: #555;
+            font-size: 1.3rem;
+            margin: 20px 0 10px 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .step-by-step {
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            margin: 20px 0;
+        }
+
+        .step-by-step h4 {
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #ffc107;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .premium-feature {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #ffc107;
+        }
+
+        .premium-badge {
+            background: #ffc107;
+            color: #856404;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .tip-box {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #28a745;
+            margin: 20px 0;
+        }
+
+        .tip-box h4 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            margin: 20px 0;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .commission-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .commission-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .commission-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .commission-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            .header {
+                background: #667eea !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .section {
+                padding: 20px;
+            }
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Tutorial Couples Financials</h1>
+            <p>Guia Completo de Uso da Aplicação de Gestão Financeira para Casais</p>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>📋 Índice</h2>
+            <ul>
+                <li><a href="#introducao">1. Introdução Geral</a></li>
+                <li><a href="#primeiros-passos">2. Primeiros Passos</a></li>
+                <li><a href="#dashboard">3. Dashboard Financeiro</a></li>
+                <li><a href="#transacoes">4. Gestão de Transações</a></li>
+                <li><a href="#contas">5. Gestão de Contas Bancárias</a></li>
+                <li><a href="#cartoes">6. Gestão de Cartões</a></li>
+                <li><a href="#investimentos">7. Sistema de Investimentos</a></li>
+                <li><a href="#milhas">8. Sistema de Milhas (Premium)</a></li>
+                <li><a href="#ia">9. Funcionalidades de IA</a></li>
+                <li><a href="#casal">10. Gestão de Casais</a></li>
+                <li><a href="#relatorios">11. Relatórios e Exportações</a></li>
+                <li><a href="#configuracoes">12. Configurações e Perfil</a></li>
+                <li><a href="#parcerias">13. Programa de Parcerias</a></li>
+                <li><a href="#troubleshooting">14. Soluções de Problemas</a></li>
+            </ul>
+        </div>
+
+        <!-- Section 1: Introdução -->
+        <div class="section" id="introducao">
+            <h2>🏠 1. Introdução Geral</h2>
+            
+            <h3>O que é o Couples Financials?</h3>
+            <p>O Couples Financials é uma aplicação web completa de gestão financeira desenvolvida especialmente para casais que desejam organizar e acompanhar suas finanças de forma colaborativa. A plataforma oferece ferramentas avançadas para controle de receitas, despesas, investimentos, milhas aéreas e muito mais.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💼 Gestão Financeira Completa</h4>
+                    <p>Controle total de receitas, despesas, contas e cartões em uma única plataforma.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>👥 Colaboração em Casal</h4>
+                    <p>Visão compartilhada das finanças com controle individual e conjunto.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🤖 Inteligência Artificial</h4>
+                    <p>Recomendações personalizadas e insights automáticos sobre seus gastos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✈️ Sistema de Milhas</h4>
+                    <p>Acompanhamento inteligente de milhas aéreas e oportunidades de resgate.</p>
+                </div>
+            </div>
+
+            <h3>Principais Benefícios</h3>
+            <ul>
+                <li><strong>Transparência Financeira:</strong> Visão clara das finanças do casal</li>
+                <li><strong>Economia de Tempo:</strong> Automação de cálculos e relatórios</li>
+                <li><strong>Tomada de Decisão:</strong> Dados precisos para decisões financeiras</li>
+                <li><strong>Otimização de Milhas:</strong> Maximização do valor das milhas aéreas</li>
+                <li><strong>Segurança:</strong> Dados protegidos com criptografia avançada</li>
+            </ul>
+        </div>
+
+        <!-- Section 2: Primeiros Passos -->
+        <div class="section" id="primeiros-passos">
+            <h2>🚀 2. Primeiros Passos</h2>
+
+            <h3>Como Acessar a Aplicação</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acesso ao Sistema</h4>
+                <p>Acesse a aplicação através do seu navegador web no endereço fornecido.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Criar Conta ou Fazer Login</h4>
+                <p>Se é seu primeiro acesso, clique em "Criar Conta" e preencha seus dados. Se já possui conta, utilize "Entrar".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Configuração Inicial</h4>
+                <p>Defina suas preferências de moeda, idioma e configure seu perfil básico.</p>
+            </div>
+
+            <h3>Interface Principal</h3>
+            <p>A interface é dividida em seções principais:</p>
+            <ul>
+                <li><strong>Header:</strong> Navegação principal, configurações de usuário</li>
+                <li><strong>Dashboard:</strong> Visão geral das finanças</li>
+                <li><strong>Menu Lateral:</strong> Acesso rápido às funcionalidades</li>
+                <li><strong>Área de Conteúdo:</strong> Exibição das informações e formulários</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>💡 Dica</h4>
+                <p>Recomendamos começar configurando seu perfil e adicionando suas principais contas bancárias antes de registrar transações.</p>
+            </div>
+        </div>
+
+        <!-- Section 3: Dashboard -->
+        <div class="section" id="dashboard">
+            <h2>📊 3. Dashboard Financeiro</h2>
+
+            <h3>Visão Geral</h3>
+            <p>O Dashboard é o centro de controle da aplicação, fornecendo uma visão consolidada de suas finanças através de cards informativos e gráficos interativos.</p>
+
+            <h4>Cards Principais</h4>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Saldo Total</h4>
+                    <p>Soma de todas as contas bancárias ativas, convertida para sua moeda preferencial.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Receitas do Mês</h4>
+                    <p>Total de entradas financeiras no período atual.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📉 Despesas do Mês</h4>
+                    <p>Total de gastos realizados no período atual.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💎 Saldo Líquido</h4>
+                    <p>Diferença entre receitas e despesas (Receitas - Despesas).</p>
+                </div>
+            </div>
+
+            <h3>Modos de Visualização (Para Casais)</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Visão "Ambos"</h4>
+                <p>Exibe dados financeiros consolidados do casal.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Visão Individual</h4>
+                <p>Permite filtrar dados por usuário específico (Usuário 1 ou Usuário 2).</p>
+            </div>
+
+            <h3>Gráficos e Análises</h3>
+            <ul>
+                <li><strong>Gráfico de Pizza:</strong> Distribuição de gastos por categoria</li>
+                <li><strong>Gráfico de Barras:</strong> Evolução mensal de receitas vs despesas</li>
+                <li><strong>Comparativo Mensal:</strong> Variação percentual em relação ao mês anterior</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>💡 Dica de Uso</h4>
+                <p>Use o botão "Atualizar" no canto superior direito para sincronizar dados em tempo real.</p>
+            </div>
+        </div>
+
+        <!-- Section 4: Transações -->
+        <div class="section" id="transacoes">
+            <h2>💳 4. Gestão de Transações</h2>
+
+            <h3>Adicionar Nova Transação</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acesso ao Formulário</h4>
+                <p>No Dashboard, clique no botão "Nova Transação" ou acesse a aba "Transações".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Tipo da Transação</h4>
+                <p>Selecione entre "Receita" (entrada de dinheiro) ou "Despesa" (gasto).</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Informações Básicas</h4>
+                <ul>
+                    <li><strong>Valor:</strong> Quantia da transação</li>
+                    <li><strong>Descrição:</strong> Detalhamento do gasto/receita</li>
+                    <li><strong>Data:</strong> Data da transação</li>
+                    <li><strong>Categoria:</strong> Classificação (Alimentação, Transporte, etc.)</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Forma de Pagamento</h4>
+                <p>Selecione a conta bancária ou cartão utilizado na transação.</p>
+            </div>
+
+            <h3>Categorias Disponíveis</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🍔 Alimentação</h4>
+                    <p>Restaurantes, supermercado, delivery</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🚗 Transporte</h4>
+                    <p>Combustível, transporte público, Uber</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏠 Moradia</h4>
+                    <p>Aluguel, IPTU, condomínio</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Lazer</h4>
+                    <p>Cinema, viagens, entretenimento</p>
+                </div>
+            </div>
+
+            <h3>Gestão de Transações Existentes</h3>
+            <ul>
+                <li><strong>Visualização:</strong> Lista completa com filtros por data e categoria</li>
+                <li><strong>Edição:</strong> Clique no ícone de edição para modificar transações</li>
+                <li><strong>Exclusão:</strong> Remova transações incorretas com confirmação</li>
+                <li><strong>Busca:</strong> Encontre transações específicas usando a barra de pesquisa</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Atenção</h4>
+                <p>Exclusões de transações são permanentes. Sempre confirme os dados antes de deletar.</p>
+            </div>
+        </div>
+
+        <!-- Section 5: Contas -->
+        <div class="section" id="contas">
+            <h2>🏦 5. Gestão de Contas Bancárias</h2>
+
+            <h3>Adicionar Nova Conta</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acessar Seção de Contas</h4>
+                <p>No menu principal, clique em "Contas" ou acesse via Dashboard.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Informações da Conta</h4>
+                <ul>
+                    <li><strong>Nome da Conta:</strong> Identificação personalizada</li>
+                    <li><strong>Banco:</strong> Instituição financeira</li>
+                    <li><strong>Tipo:</strong> Conta Corrente, Poupança, etc.</li>
+                    <li><strong>Saldo Inicial:</strong> Valor atual na conta</li>
+                    <li><strong>Moeda:</strong> BRL, USD, EUR, etc.</li>
+                </ul>
+            </div>
+
+            <h3>Bancos Suportados</h3>
+            <p>A aplicação oferece suporte visual para os principais bancos:</p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🇧🇷 Bancos Brasileiros</h4>
+                    <p>Nubank, Itaú, Bradesco, Banco do Brasil, Caixa, Santander, Inter, C6 Bank, Avenue, Sicredi</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🇺🇸 Bancos Americanos</h4>
+                    <p>Chase, Bank of America, Wells Fargo, Capital One</p>
+                </div>
+            </div>
+
+            <h3>Funcionalidades das Contas</h3>
+            <ul>
+                <li><strong>Saldo Atualizado:</strong> Reflexo automático das transações</li>
+                <li><strong>Conversão de Moeda:</strong> Valores convertidos para moeda preferencial</li>
+                <li><strong>Histórico:</strong> Movimentações vinculadas à conta</li>
+                <li><strong>Status:</strong> Ativar/desativar contas</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>💡 Organização</h4>
+                <p>Mantenha apenas contas ativas visíveis para melhor organização do dashboard.</p>
+            </div>
+        </div>
+
+        <!-- Section 6: Cartões -->
+        <div class="section" id="cartoes">
+            <h2>💳 6. Gestão de Cartões</h2>
+
+            <h3>Adicionar Novo Cartão</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Informações Básicas</h4>
+                <ul>
+                    <li><strong>Nome do Cartão:</strong> Identificação personalizada</li>
+                    <li><strong>Tipo:</strong> Crédito ou Débito</li>
+                    <li><strong>Bandeira:</strong> Visa, Mastercard, Elo, etc.</li>
+                    <li><strong>Banco:</strong> Instituição emissora</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Configurações Avançadas</h4>
+                <ul>
+                    <li><strong>Limite:</strong> Valor limite do cartão (se crédito)</li>
+                    <li><strong>Vencimento:</strong> Dia do vencimento da fatura</li>
+                    <li><strong>Conta Vinculada:</strong> Conta bancária de débito</li>
+                    <li><strong>Status:</strong> Ativo ou inativo</li>
+                </ul>
+            </div>
+
+            <h3>Gestão de Gastos por Cartão</h3>
+            <ul>
+                <li><strong>Limite vs Gasto:</strong> Acompanhamento do uso do limite</li>
+                <li><strong>Fatura Atual:</strong> Valor acumulado no período</li>
+                <li><strong>Histórico:</strong> Transações realizadas com o cartão</li>
+                <li><strong>Alertas:</strong> Notificações de limite próximo</li>
+            </ul>
+
+            <div class="premium-feature">
+                <div class="premium-badge">Premium</div>
+                <h4>🎯 Funcionalidades Premium para Cartões</h4>
+                <ul>
+                    <li><strong>Integração com Milhas:</strong> Cálculo automático de milhas por gasto</li>
+                    <li><strong>Alertas Inteligentes:</strong> Notificações de melhores cartões para cada compra</li>
+                    <li><strong>Análise de Benefícios:</strong> Comparativo de vantagens por cartão</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 7: Investimentos -->
+        <div class="section" id="investimentos">
+            <h2>📈 7. Sistema de Investimentos</h2>
+
+            <h3>Adicionar Novo Investimento</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Informações Básicas</h4>
+                <ul>
+                    <li><strong>Nome:</strong> Identificação do investimento</li>
+                    <li><strong>Tipo:</strong> CDB, LCI, Ações, Fundos, etc.</li>
+                    <li><strong>Valor Investido:</strong> Quantia inicial aplicada</li>
+                    <li><strong>Data de Aplicação:</strong> Data do investimento</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Detalhes Financeiros</h4>
+                <ul>
+                    <li><strong>Rendimento:</strong> Taxa ou percentual de retorno</li>
+                    <li><strong>Vencimento:</strong> Data de resgate (se aplicável)</li>
+                    <li><strong>Instituição:</strong> Banco ou corretora</li>
+                    <li><strong>Risco:</strong> Baixo, Médio ou Alto</li>
+                </ul>
+            </div>
+
+            <h3>Dashboard de Investimentos</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Valor Total Investido</h4>
+                    <p>Soma de todos os aportes realizados</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Valor Atual</h4>
+                    <p>Valor atualizado com rendimentos</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Rentabilidade</h4>
+                    <p>Ganho total e percentual de retorno</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Distribuição</h4>
+                    <p>Alocação por tipo de investimento</p>
+                </div>
+            </div>
+
+            <h3>Gestão de Metas de Investimento</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Criar Meta</h4>
+                <p>Defina objetivos específicos como "Casa Própria" ou "Aposentadoria".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Configurar Valores</h4>
+                <p>Estabeleça valor alvo, prazo e aporte mensal planejado.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Acompanhar Progresso</h4>
+                <p>Visualize o progresso através de barras de progresso e gráficos.</p>
+            </div>
+
+            <h3>Simulador de Rentabilidade</h3>
+            <p>Ferramenta para projeção de investimentos:</p>
+            <ul>
+                <li><strong>Valor Inicial:</strong> Quantia a ser investida</li>
+                <li><strong>Aporte Mensal:</strong> Contribuição regular</li>
+                <li><strong>Taxa de Retorno:</strong> Rendimento esperado</li>
+                <li><strong>Período:</strong> Tempo de investimento</li>
+                <li><strong>Resultado:</strong> Valor final projetado</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>💡 Dica de Investimento</h4>
+                <p>Diversifique sua carteira entre diferentes tipos de investimento para reduzir riscos.</p>
+            </div>
+        </div>
+
+        <!-- Section 8: Milhas -->
+        <div class="section" id="milhas">
+            <h2>✈️ 8. Sistema de Milhas (Premium)</h2>
+
+            <div class="premium-feature">
+                <div class="premium-badge">Funcionalidade Premium</div>
+                <p>O sistema de milhas é uma funcionalidade avançada disponível para usuários Premium.</p>
+            </div>
+
+            <h3>Configuração de Cartões para Milhas</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Adicionar Regra de Milhas</h4>
+                <ul>
+                    <li><strong>Cartão:</strong> Selecione o cartão que gera milhas</li>
+                    <li><strong>Programa:</strong> TAM, GOL, LATAM, etc.</li>
+                    <li><strong>Proporção:</strong> Milhas por real gasto</li>
+                    <li><strong>Limite Mínimo:</strong> Valor mínimo para gerar milhas</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Milhas Existentes</h4>
+                <p>Registre o saldo atual de milhas já acumuladas.</p>
+            </div>
+
+            <h3>Metas de Milhas</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Criar Meta</h4>
+                <ul>
+                    <li><strong>Nome:</strong> "Viagem para Europa"</li>
+                    <li><strong>Milhas Necessárias:</strong> Quantidade alvo</li>
+                    <li><strong>Data Limite:</strong> Prazo para atingir</li>
+                    <li><strong>Cartão Principal:</strong> Cartão foco para acúmulo</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Acompanhar Progresso</h4>
+                <p>Visualize quantas milhas faltam e projeções baseadas no uso atual.</p>
+            </div>
+
+            <h3>Funcionalidades Premium</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🎯 Promoções Ativas</h4>
+                    <p>Monitoramento automático de ofertas de companhias aéreas</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔔 Alertas Inteligentes</h4>
+                    <p>Notificações sobre expiração e oportunidades</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Comparador de Resgates</h4>
+                    <p>Análise das melhores oportunidades de resgate</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🤖 IA para Milhas</h4>
+                    <p>Recomendações personalizadas de acúmulo</p>
+                </div>
+            </div>
+
+            <h3>Histórico de Milhas</h3>
+            <ul>
+                <li><strong>Ganhos:</strong> Milhas obtidas por transação</li>
+                <li><strong>Resgates:</strong> Uso de milhas para viagens</li>
+                <li><strong>Expirações:</strong> Controle de validade</li>
+                <li><strong>Saldo Atual:</strong> Total disponível para uso</li>
+            </ul>
+        </div>
+
+        <!-- Section 9: IA -->
+        <div class="section" id="ia">
+            <h2>🤖 9. Funcionalidades de IA</h2>
+
+            <h3>Recomendações Financeiras Personalizadas</h3>
+            <p>A Inteligência Artificial analisa seus gastos e oferece insights personalizados:</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 Análise de Padrões</h4>
+                    <p>Identificação de tendências de gastos e oportunidades de economia</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💡 Sugestões de Economia</h4>
+                    <p>Dicas personalizadas baseadas no seu perfil financeiro</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Otimização de Investimentos</h4>
+                    <p>Recomendações de alocação e diversificação</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚠️ Alertas Preventivos</h4>
+                    <p>Avisos sobre gastos excessivos ou metas em risco</p>
+                </div>
+            </div>
+
+            <h3>WhatsApp Smart (Premium)</h3>
+            <div class="premium-feature">
+                <div class="premium-badge">Premium</div>
+                <h4>Registro de Gastos via WhatsApp</h4>
+                <div class="step-by-step">
+                    <h4><span class="step-number">1</span>Configuração</h4>
+                    <p>Conecte seu número de WhatsApp na seção de configurações.</p>
+                </div>
+                
+                <div class="step-by-step">
+                    <h4><span class="step-number">2</span>Uso</h4>
+                    <p>Envie mensagens como "Gastei R$ 45 no restaurante" e a IA registra automaticamente.</p>
+                </div>
+                
+                <div class="step-by-step">
+                    <h4><span class="step-number">3</span>Confirmação</h4>
+                    <p>Receba confirmação instantânea e possibilidade de ajustes.</p>
+                </div>
+            </div>
+
+            <h3>Análises Preditivas</h3>
+            <ul>
+                <li><strong>Projeção de Gastos:</strong> Previsão de despesas futuras baseada no histórico</li>
+                <li><strong>Meta de Economia:</strong> Cálculo automático de metas realistas</li>
+                <li><strong>Risco de Endividamento:</strong> Alertas preventivos sobre situações críticas</li>
+                <li><strong>Oportunidades:</strong> Identificação de momentos ideais para investir</li>
+            </ul>
+
+            <h3>Consultor Financeiro IA</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Fazer Pergunta</h4>
+                <p>Digite perguntas sobre suas finanças: "Como posso economizar este mês?"</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Receber Análise</h4>
+                <p>A IA analisa seus dados e fornece resposta personalizada.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Implementar Sugestões</h4>
+                <p>Aplique as recomendações diretamente na plataforma.</p>
+            </div>
+        </div>
+
+        <!-- Section 10: Casal -->
+        <div class="section" id="casal">
+            <h2>👥 10. Gestão de Casais</h2>
+
+            <h3>Como Convidar seu Parceiro</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acessar Configurações</h4>
+                <p>No menu principal, clique em "Perfil" ou "Configurações".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Enviar Convite</h4>
+                <p>Insira o email do seu parceiro e clique em "Convidar".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Parceiro Aceita</h4>
+                <p>Seu parceiro receberá um email e deve aceitar o convite.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Vincular Contas</h4>
+                <p>As contas de ambos ficam visíveis com controle de privacidade.</p>
+            </div>
+
+            <h3>Modos de Visualização</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>👥 Visão Conjunta</h4>
+                    <p>Dados consolidados do casal para decisões compartilhadas</p>
+                </div>
+                <div class="feature-card">
+                    <h4>👤 Visão Individual</h4>
+                    <p>Filtro por usuário para análises pessoais</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔄 Alternância Rápida</h4>
+                    <p>Botões para alternar entre visualizações facilmente</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔒 Controle de Privacidade</h4>
+                    <p>Escolha quais dados compartilhar</p>
+                </div>
+            </div>
+
+            <h3>Funcionalidades Colaborativas</h3>
+            <ul>
+                <li><strong>Metas Compartilhadas:</strong> Objetivos financeiros em conjunto</li>
+                <li><strong>Orçamento Familiar:</strong> Planejamento conjunto de gastos</li>
+                <li><strong>Relatórios Comparativos:</strong> Análise individual vs conjunto</li>
+                <li><strong>Notificações:</strong> Alertas compartilhados sobre metas e gastos</li>
+            </ul>
+
+            <h3>Gestão de Permissões</h3>
+            <ul>
+                <li><strong>Administrador:</strong> Quem criou a conta tem controle total</li>
+                <li><strong>Parceiro:</strong> Pode visualizar e adicionar dados próprios</li>
+                <li><strong>Dados Privados:</strong> Transações marcadas como privadas</li>
+                <li><strong>Desvinculação:</strong> Opção de desfazer a parceria</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Importante</h4>
+                <p>A desvinculação de um casal é permanente e requer confirmação de ambos os usuários.</p>
+            </div>
+        </div>
+
+        <!-- Section 11: Relatórios -->
+        <div class="section" id="relatorios">
+            <h2>📋 11. Relatórios e Exportações</h2>
+
+            <h3>Tipos de Relatórios Disponíveis</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 Relatório Mensal</h4>
+                    <p>Resumo completo de receitas, despesas e saldo do mês</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Análise de Tendências</h4>
+                    <p>Comparação entre períodos e evolução financeira</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏷️ Gastos por Categoria</h4>
+                    <p>Detalhamento dos gastos por tipo de despesa</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💳 Relatório por Cartão</h4>
+                    <p>Análise de gastos por cartão de crédito</p>
+                </div>
+            </div>
+
+            <h3>Formatos de Exportação</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>PDF</h4>
+                <p>Relatórios formatados para impressão com gráficos e tabelas.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Excel (XLSX)</h4>
+                <p>Planilhas editáveis com dados detalhados para análise avançada.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>CSV</h4>
+                <p>Formato simples para importação em outras ferramentas.</p>
+            </div>
+
+            <h3>Como Gerar Relatórios</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Selecionar Período</h4>
+                <p>Escolha o intervalo de datas para o relatório.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Filtrar Dados</h4>
+                <p>Selecione categorias, cartões ou tipos específicos.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Escolher Formato</h4>
+                <p>Clique no botão de exportação e selecione o formato desejado.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Download</h4>
+                <p>O arquivo será gerado e baixado automaticamente.</p>
+            </div>
+
+            <h3>Gráficos Interativos</h3>
+            <ul>
+                <li><strong>Gráfico de Pizza:</strong> Distribuição percentual por categoria</li>
+                <li><strong>Gráfico de Barras:</strong> Comparação temporal de valores</li>
+                <li><strong>Gráfico de Linha:</strong> Evolução ao longo do tempo</li>
+                <li><strong>Gráfico de Área:</strong> Acumulado de receitas vs despesas</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>💡 Dica para Relatórios</h4>
+                <p>Exporte relatórios mensalmente para acompanhar a evolução e facilitar a declaração de imposto de renda.</p>
+            </div>
+        </div>
+
+        <!-- Section 12: Configurações -->
+        <div class="section" id="configuracoes">
+            <h2>⚙️ 12. Configurações e Perfil</h2>
+
+            <h3>Configurações de Usuário</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>👤 Perfil Pessoal</h4>
+                    <ul>
+                        <li>Nome de exibição</li>
+                        <li>Email</li>
+                        <li>Foto de perfil</li>
+                        <li>Informações pessoais</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🌍 Preferências Regionais</h4>
+                    <ul>
+                        <li>Idioma (Português, Inglês, Espanhol)</li>
+                        <li>Moeda principal</li>
+                        <li>Formato de data</li>
+                        <li>Fuso horário</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Configurações de Segurança</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Alterar Senha</h4>
+                <p>Atualize sua senha regularmente por segurança.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Autenticação em Dois Fatores</h4>
+                <p>Ative 2FA para proteção adicional da conta.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Sessões Ativas</h4>
+                <p>Monitore e encerre sessões de outros dispositivos.</p>
+            </div>
+
+            <h3>Configurações de Notificação</h3>
+            <ul>
+                <li><strong>Email:</strong> Relatórios, alertas e atualizações</li>
+                <li><strong>Push:</strong> Notificações no navegador</li>
+                <li><strong>WhatsApp:</strong> Alertas via WhatsApp (Premium)</li>
+                <li><strong>Frequência:</strong> Diária, semanal ou mensal</li>
+            </ul>
+
+            <h3>Configurações de Privacidade</h3>
+            <ul>
+                <li><strong>Dados Compartilhados:</strong> O que o parceiro pode ver</li>
+                <li><strong>Transações Privadas:</strong> Gastos pessoais não compartilhados</li>
+                <li><strong>Backup de Dados:</strong> Exportação automática</li>
+                <li><strong>Exclusão de Conta:</strong> Remoção completa dos dados</li>
+            </ul>
+
+            <h3>Configurações de Moeda</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Moeda Principal</h4>
+                <p>Defina a moeda para exibição dos totais consolidados.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Conversão Automática</h4>
+                <p>Valores em outras moedas são convertidos automaticamente.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Taxa de Câmbio</h4>
+                <p>Atualizações automáticas das cotações para conversão precisa.</p>
+            </div>
+        </div>
+
+        <!-- Section 13: Parcerias -->
+        <div class="section" id="parcerias">
+            <h2>🤝 13. Programa de Parcerias</h2>
+
+            <h3>O que é o Programa de Parcerias?</h3>
+            <p>O Programa de Parcerias do Couples Financials é uma oportunidade para influenciadores, criadores de conteúdo e profissionais da área financeira monetizarem sua audiência através da indicação da nossa plataforma.</p>
+
+            <h3>Como Funciona</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Candidatura</h4>
+                <p>Preencha o formulário de candidatura com suas informações e dados da audiência.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Análise</h4>
+                <p>Nossa equipe analisa seu perfil e audiência para aprovação.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Aprovação</h4>
+                <p>Parceiros aprovados recebem código exclusivo e materiais de marketing.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Divulgação</h4>
+                <p>Compartilhe seu código com a audiência através de redes sociais, blog ou vídeos.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">5</span>Ganhos</h4>
+                <p>Receba comissões por cada assinatura gerada através do seu código.</p>
+            </div>
+
+            <h3>Sistema de Comissões</h3>
+            <p>Nossa estrutura de comissões é progressiva e baseada no número de assinaturas geradas:</p>
+
+            <table class="commission-table">
+                <thead>
+                    <tr>
+                        <th>Nível</th>
+                        <th>Assinaturas/Mês</th>
+                        <th>Comissão por Assinatura</th>
+                        <th>Bônus de Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Iniciante</strong></td>
+                        <td>1-10</td>
+                        <td>US$ 5</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Parceiro</strong></td>
+                        <td>11-25</td>
+                        <td>US$ 7</td>
+                        <td>US$ 50 por meta atingida</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Especialista</strong></td>
+                        <td>26-50</td>
+                        <td>US$ 10</td>
+                        <td>US$ 150 por meta atingida</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Embaixador</strong></td>
+                        <td>51+</td>
+                        <td>US$ 12</td>
+                        <td>US$ 300 por meta atingida</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Benefícios para Parceiros</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Comissões Recorrentes</h4>
+                    <p>Ganhe enquanto o cliente mantiver a assinatura ativa</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Dashboard Exclusivo</h4>
+                    <p>Acompanhe suas métricas e ganhos em tempo real</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Materiais de Marketing</h4>
+                    <p>Assets visuais, templates e scripts para divulgação</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🚀 Acesso Antecipado</h4>
+                    <p>Teste novas funcionalidades antes do lançamento</p>
+                </div>
+            </div>
+
+            <h3>Benefícios para seus Seguidores</h3>
+            <ul>
+                <li><strong>Desconto Exclusivo:</strong> <span class="highlight">20% OFF</span> na primeira assinatura</li>
+                <li><strong>Conteúdo Especial:</strong> Acesso a guias financeiros exclusivos</li>
+                <li><strong>Suporte Prioritário:</strong> Atendimento preferencial</li>
+                <li><strong>Workshops Gratuitos:</strong> Participação em eventos exclusivos</li>
+            </ul>
+
+            <h3>Critérios para Aprovação</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>👥 Audiência Engajada</h4>
+                    <p>Mínimo de 1000 seguidores com engajamento ativo</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💼 Nicho Relevante</h4>
+                    <p>Conteúdo relacionado a finanças, lifestyle ou relacionamentos</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Presença Digital</h4>
+                    <p>Perfis ativos em redes sociais ou canal próprio</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Compromisso</h4>
+                    <p>Disposição para divulgar ativamente o produto</p>
+                </div>
+            </div>
+
+            <h3>Pagamentos</h3>
+            <ul>
+                <li><strong>Frequência:</strong> Pagamentos mensais</li>
+                <li><strong>Métodos:</strong> PIX, transferência bancária ou PayPal</li>
+                <li><strong>Comprovante:</strong> Relatório detalhado de comissões</li>
+                <li><strong>Impostos:</strong> Responsabilidade do parceiro conforme legislação local</li>
+            </ul>
+
+            <h3>Ferramentas de Acompanhamento</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Dashboard de Parceiro</h4>
+                <p>Acesse métricas em tempo real: cliques, conversões, ganhos.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Relatórios Mensais</h4>
+                <p>Receba relatórios detalhados sobre performance e pagamentos.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Suporte Dedicado</h4>
+                <p>Canal direto com nossa equipe para dúvidas e suporte.</p>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Dica para Sucesso</h4>
+                <p>Parceiros que criam conteúdo educativo sobre finanças pessoais têm 3x mais conversões do que apenas divulgações diretas.</p>
+            </div>
+
+            <h3>Como Se Candidatar</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acesse o Formulário</h4>
+                <p>Clique em "Programa de Parcerias" no menu principal da aplicação.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Preencha os Dados</h4>
+                <ul>
+                    <li>Informações pessoais e de contato</li>
+                    <li>Links das redes sociais</li>
+                    <li>Tipo de audiência e engajamento</li>
+                    <li>Dados para pagamento (PIX ou conta bancária)</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Aguarde Análise</h4>
+                <p>Nossa equipe analisa a candidatura em até 48 horas.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Receba Aprovação</h4>
+                <p>Parceiros aprovados recebem email com código e instruções.</p>
+            </div>
+        </div>
+
+        <!-- Section 14: Troubleshooting -->
+        <div class="section" id="troubleshooting">
+            <h2>🔧 14. Soluções de Problemas</h2>
+
+            <h3>Problemas Comuns e Soluções</h3>
+
+            <h4>🔐 Problemas de Login</h4>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Esqueci minha senha</h4>
+                    <p><strong>Solução:</strong> Clique em "Esqueci minha senha" na tela de login e siga as instruções enviadas por email.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Email não confirmado</h4>
+                    <p><strong>Solução:</strong> Verifique sua caixa de spam e clique no link de confirmação. Se não recebeu, solicite novo email.</p>
+                </div>
+            </div>
+
+            <h4>💾 Problemas com Dados</h4>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Transação não aparece</h4>
+                    <p><strong>Solução:</strong> Verifique se a data está no mês atual e se não há filtros ativos. Clique em "Atualizar" no dashboard.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Saldo incorreto</h4>
+                    <p><strong>Solução:</strong> Confirme se todas as transações foram registradas corretamente e se as contas estão ativas.</p>
+                </div>
+            </div>
+
+            <h4>👥 Problemas de Casal</h4>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Convite não chegou</h4>
+                    <p><strong>Solução:</strong> Verifique se o email está correto e peça ao parceiro para verificar spam. Tente enviar novamente.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Dados não sincronizam</h4>
+                    <p><strong>Solução:</strong> Ambos os usuários devem fazer logout e login novamente. Aguarde alguns minutos para sincronização.</p>
+                </div>
+            </div>
+
+            <h3>Dicas de Performance</h3>
+            <ul>
+                <li><strong>Internet:</strong> Mantenha conexão estável para melhor experiência</li>
+                <li><strong>Navegador:</strong> Use versões atualizadas do Chrome, Firefox ou Safari</li>
+                <li><strong>Cache:</strong> Limpe o cache do navegador se enfrentar lentidão</li>
+                <li><strong>JavaScript:</strong> Certifique-se que JavaScript está habilitado</li>
+            </ul>
+
+            <h3>Suporte Técnico</h3>
+            <div class="tip-box">
+                <h4>📧 Como Obter Ajuda</h4>
+                <ul>
+                    <li><strong>Email:</strong> Entre em contato através do email de suporte</li>
+                    <li><strong>FAQ:</strong> Consulte a seção de perguntas frequentes</li>
+                    <li><strong>Chat:</strong> Use o chat online durante horário comercial</li>
+                    <li><strong>Status:</strong> Verifique se há manutenções programadas</li>
+                </ul>
+            </div>
+
+            <h3>Backup e Segurança</h3>
+            <div class="warning-box">
+                <h4>⚠️ Recomendações de Segurança</h4>
+                <ul>
+                    <li>Faça backup regular dos dados (exportação mensal)</li>
+                    <li>Use senhas fortes e únicas</li>
+                    <li>Ative autenticação em dois fatores</li>
+                    <li>Não compartilhe suas credenciais</li>
+                    <li>Monitore atividades suspeitas na conta</li>
+                </ul>
+            </div>
+
+            <h3>Limites e Restrições</h3>
+            <ul>
+                <li><strong>Transações:</strong> Sem limite de registros</li>
+                <li><strong>Contas:</strong> Máximo de 50 contas por usuário</li>
+                <li><strong>Cartões:</strong> Máximo de 30 cartões por usuário</li>
+                <li><strong>Histórico:</strong> Dados mantidos permanentemente</li>
+                <li><strong>Exportação:</strong> Máximo de 12 meses por arquivo</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="section">
+            <h2>📞 Contato e Suporte</h2>
+            <p>Para dúvidas, sugestões ou suporte técnico:</p>
+            <ul>
+                <li><strong>Website:</strong> www.couplesfinancials.com</li>
+                <li><strong>Email:</strong> suporte@couplesfinancials.com</li>
+                <li><strong>WhatsApp:</strong> +55 (11) 99999-9999</li>
+                <li><strong>Horário:</strong> Segunda a Sexta, 9h às 18h (horário de Brasília)</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>📚 Recursos Adicionais</h4>
+                <ul>
+                    <li><strong>Blog:</strong> Artigos sobre educação financeira</li>
+                    <li><strong>YouTube:</strong> Tutoriais em vídeo</li>
+                    <li><strong>Webinars:</strong> Eventos educativos ao vivo</li>
+                    <li><strong>Newsletter:</strong> Dicas semanais por email</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3>🎯 Couples Financials</h3>
+                <p><em>"Transformando a gestão financeira de casais com tecnologia e inteligência artificial"</em></p>
+                <p><strong>Versão do Tutorial:</strong> 1.0 | <strong>Última Atualização:</strong> Agosto 2025</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Print function
+        function printTutorial() {
+            window.print();
+        }
+
+        // Add print button
+        const printButton = document.createElement('button');
+        printButton.innerHTML = '🖨️ Imprimir Tutorial';
+        printButton.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        `;
+        printButton.onclick = printTutorial;
+        document.body.appendChild(printButton);
+    </script>
+</body>
+</html>
