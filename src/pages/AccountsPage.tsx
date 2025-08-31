@@ -251,15 +251,10 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Account Form and List */}
-        <div className="lg:col-span-2 space-y-6">
-          <AccountForm onAccountAdded={handleAccountAdded} />
-          <AccountList refreshTrigger={refreshTrigger} />
-        </div>
-
         {/* Right Column - Cash Account */}
         <div className="lg:col-span-1">
-          {filteredCashAccounts.length > 0 && (
+          <div className="space-y-6">
+            {/* Cash Account Card - Always visible */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <Wallet className="h-5 w-5" />
@@ -274,7 +269,21 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
                 className="w-full"
               />
             </div>
-          )}
+
+            {/* Suas Contas Section */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                {t('accounts.manage')}
+              </h2>
+              <AccountForm onAccountAdded={handleAccountAdded} />
+            </div>
+          </div>
+        </div>
+
+        {/* Left Column - Account List */}
+        <div className="lg:col-span-2 space-y-6">
+          <AccountList refreshTrigger={refreshTrigger} />
         </div>
       </div>
     </div>
