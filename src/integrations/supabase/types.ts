@@ -1062,39 +1062,6 @@ export type Database = {
         }
         Relationships: []
       }
-      premium_expiration_emails: {
-        Row: {
-          created_at: string
-          email: string
-          expiration_date: string
-          id: string
-          language: string
-          sent_at: string
-          user_id: string
-          warning_type: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          expiration_date: string
-          id?: string
-          language?: string
-          sent_at?: string
-          user_id: string
-          warning_type: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          expiration_date?: string
-          id?: string
-          language?: string
-          sent_at?: string
-          user_id?: string
-          warning_type?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1148,56 +1115,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      promo_code_usage: {
-        Row: {
-          amount_paid: number | null
-          applied_at: string
-          checkout_session_id: string | null
-          currency: string | null
-          email: string
-          id: string
-          payment_completed_at: string | null
-          promo_code_id: string
-          status: string
-          stripe_session_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          amount_paid?: number | null
-          applied_at?: string
-          checkout_session_id?: string | null
-          currency?: string | null
-          email: string
-          id?: string
-          payment_completed_at?: string | null
-          promo_code_id: string
-          status?: string
-          stripe_session_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          amount_paid?: number | null
-          applied_at?: string
-          checkout_session_id?: string | null
-          currency?: string | null
-          email?: string
-          id?: string
-          payment_completed_at?: string | null
-          promo_code_id?: string
-          status?: string
-          stripe_session_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "promo_code_usage_promo_code_id_fkey"
-            columns: ["promo_code_id"]
-            isOneToOne: false
-            referencedRelation: "promo_codes"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       promo_codes: {
         Row: {
@@ -1305,13 +1222,6 @@ export type Database = {
             columns: ["promo_code_id"]
             isOneToOne: false
             referencedRelation: "promo_codes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "promo_rewards_usage_id_fkey"
-            columns: ["usage_id"]
-            isOneToOne: false
-            referencedRelation: "promo_code_usage"
             referencedColumns: ["id"]
           },
         ]

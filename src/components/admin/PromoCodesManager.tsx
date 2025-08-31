@@ -125,14 +125,8 @@ export const PromoCodesManager = () => {
 
   const fetchUsages = async (promoCodeId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('promo_code_usage')
-        .select('*')
-        .eq('promo_code_id', promoCodeId)
-        .order('applied_at', { ascending: false });
-
-      if (error) throw error;
-      setUsages(data || []);
+      // Table was removed - no longer fetching usage data
+      setUsages([]);
     } catch (error) {
       console.error('Error fetching usages:', error);
       toast({

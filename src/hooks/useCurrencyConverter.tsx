@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type CurrencyCode = 'BRL' | 'USD' | 'EUR' | 'GBP';
+export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
 
 interface ExchangeRates {
   BRL: number;
   USD: number;
   EUR: number;
-  GBP: number;
 }
 
 interface CurrencyInfo {
@@ -19,16 +18,14 @@ interface CurrencyInfo {
 export const CURRENCY_INFO: Record<CurrencyCode, CurrencyInfo> = {
   BRL: { code: 'BRL', symbol: 'R$', name: 'Real' },
   USD: { code: 'USD', symbol: '$', name: 'Dólar' },
-  EUR: { code: 'EUR', symbol: '€', name: 'Euro' },
-  GBP: { code: 'GBP', symbol: '£', name: 'Libra' }
+  EUR: { code: 'EUR', symbol: '€', name: 'Euro' }
 };
 
 export const useCurrencyConverter = () => {
 const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
   BRL: 1,
   USD: 0.1843, // Fallback: 1 BRL -> 0.1843 USD
-  EUR: 0.1572, // Fallback: 1 BRL -> 0.1572 EUR
-  GBP: 0.1285  // Fallback: 1 BRL -> 0.1285 GBP
+  EUR: 0.1572  // Fallback: 1 BRL -> 0.1572 EUR
 });
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -49,7 +46,7 @@ const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
       }
       
       if (data && data.length > 0) {
-const rates: ExchangeRates = { BRL: 1, USD: 0.1843, EUR: 0.1572, GBP: 0.1285 };
+const rates: ExchangeRates = { BRL: 1, USD: 0.1843, EUR: 0.1572 };
 
 data.forEach((row) => {
   const rate = Number(row.rate); // Already BRL -> target currency
@@ -57,8 +54,6 @@ data.forEach((row) => {
     rates.USD = rate;
   } else if (row.target_currency === 'EUR') {
     rates.EUR = rate;
-  } else if (row.target_currency === 'GBP') {
-    rates.GBP = rate;
   }
 });
         

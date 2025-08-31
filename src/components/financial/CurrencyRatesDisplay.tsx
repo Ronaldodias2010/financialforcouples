@@ -18,57 +18,42 @@ export const CurrencyRatesDisplay = () => {
   const getCurrencyData = () => {
     if (language === 'pt') {
       // PT: Show how much 1 foreign currency is worth in BRL
-return [
-  {
-    icon: DollarSign,
-    code: 'USD',
-    value: `R$ ${(1 / exchangeRates.USD).toFixed(2)}`,
-    label: '1 Dólar',
-    color: 'text-expense'
-  },
-  {
-    icon: Euro,
-    code: 'EUR', 
-    value: `R$ ${(1 / exchangeRates.EUR).toFixed(2)}`,
-    label: '1 Euro',
-    color: 'text-secondary'
-  },
-  {
-    icon: PoundSterling,
-    code: 'GBP', 
-    value: `R$ ${(1 / exchangeRates.GBP).toFixed(2)}`,
-    label: '1 Libra',
-    color: 'text-primary'
-  }
-];
+      return [
+        {
+          icon: DollarSign,
+          code: 'USD',
+          value: `R$ ${(1 / exchangeRates.USD).toFixed(2)}`,
+          label: '1 Dólar',
+          color: 'text-expense'
+        },
+        {
+          icon: Euro,
+          code: 'EUR', 
+          value: `R$ ${(1 / exchangeRates.EUR).toFixed(2)}`,
+          label: '1 Euro',
+          color: 'text-secondary'
+        }
+      ];
     } else {
-// EN/ES: Show how much 1 foreign currency is worth in USD
-const eurToUsd = exchangeRates.USD / exchangeRates.EUR;
-const gbpToUsd = exchangeRates.USD / exchangeRates.GBP;
+      // EN/ES: Show how much 1 foreign currency is worth in USD
+      const eurToUsd = exchangeRates.USD / exchangeRates.EUR;
 
-return [
-  {
-    icon: DollarSign,
-    code: 'BRL',
-    value: `$${exchangeRates.USD.toFixed(3)}`,
-    label: '1 Real',
-    color: 'text-income'
-  },
-  {
-    icon: Euro,
-    code: 'EUR',
-    value: `$${eurToUsd.toFixed(3)}`,
-    label: '1 Euro',
-    color: 'text-secondary'
-  },
-  {
-    icon: PoundSterling,
-    code: 'GBP',
-    value: `$${gbpToUsd.toFixed(3)}`,
-    label: '1 Pound',
-    color: 'text-primary'
-  }
-];
+      return [
+        {
+          icon: DollarSign,
+          code: 'BRL',
+          value: `$${exchangeRates.USD.toFixed(3)}`,
+          label: '1 Real',
+          color: 'text-income'
+        },
+        {
+          icon: Euro,
+          code: 'EUR',
+          value: `$${eurToUsd.toFixed(3)}`,
+          label: '1 Euro',
+          color: 'text-secondary'
+        }
+      ];
     }
   };
 
