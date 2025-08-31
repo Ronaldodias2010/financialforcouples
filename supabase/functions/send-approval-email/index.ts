@@ -81,7 +81,7 @@ const handler = async (req: Request): Promise<Response> => {
                   ? `${rewardCurrency === 'USD' ? '$' : 'R$'} ${rewardAmount.toFixed(2)}` 
                   : rewardDescription || `Recompensa: ${rewardAmount}`
               }</strong></li>
-              <li>${rewardType === 'monetary' ? 'O pagamento será processado após a confirmação do pagamento do usuário' : 'A recompensa será processada conforme os termos acordados'}</li>
+              <li>${rewardType === 'monetary' ? 'O pagamento será processado em até 30 dias após a confirmação do pagamento do usuário' : 'A recompensa será processada conforme os termos acordados'}</li>
               <li>Você receberá um relatório mensal com seus ${rewardType === 'monetary' ? 'ganhos' : 'resultados'}</li>
             </ul>
           </div>
