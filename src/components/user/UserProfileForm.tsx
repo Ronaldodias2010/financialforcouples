@@ -134,9 +134,6 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
       if (error) throw error;
 
       toast.success("Perfil atualizado com sucesso!");
-      
-      // Force refresh the window to ensure currency changes are applied
-      window.location.reload();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Erro ao atualizar perfil");
