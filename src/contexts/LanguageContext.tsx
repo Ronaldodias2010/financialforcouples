@@ -1364,6 +1364,7 @@ const translations = {
     'footer.terms': 'Termos de Uso',
     'footer.help': 'Central de Ajuda',
     'footer.faq': 'FAQ',
+    'footer.tutorialComplete': 'Tutorial Completo (PDF)',
     'footer.partnerBanner': 'Seja parceiro(a) Couples Financials! Ganhe comissões exclusivas indicando a plataforma. Clique e saiba mais.',
     
     // Partnership
@@ -2754,6 +2755,7 @@ const translations = {
     'footer.terms': 'Terms of Use',
     'footer.help': 'Help Center',
     'footer.faq': 'FAQ',
+    'footer.tutorialComplete': 'Complete Tutorial (PDF)',
     'footer.partnerBanner': 'Become a Couples Financials partner! Earn exclusive commissions by promoting the platform. Click to learn more.',
     
     // Partnership
@@ -4193,6 +4195,7 @@ const translations = {
     'footer.terms': 'Términos de Uso',
     'footer.help': 'Centro de Ayuda',
     'footer.faq': 'Preguntas Frecuentes',
+    'footer.tutorialComplete': 'Tutorial Completo (PDF)',
     'footer.partnerBanner': '¡Sé socio de Couples Financials! Gana comisiones exclusivas recomendando la plataforma. Haz clic y conoce más.',
     
     // Partnership
