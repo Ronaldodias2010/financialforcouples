@@ -114,11 +114,16 @@ const Footer = () => {
         <div className="border-t border-background/20 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-background/70">
           <p>&copy; {t('footer.rights')}</p>
           
-          {/* Logo centralizado */}
-          <div className="flex items-center justify-center my-4 md:my-0">
+          {/* Logos centralizados */}
+          <div className="flex items-center justify-center gap-4 my-4 md:my-0">
             <img 
               src={logo} 
               alt="Couples Financials Logo" 
+              className="w-12 h-12 rounded-lg"
+            />
+            <img 
+              src="/lovable-uploads/f14c6e9f-fbe6-4deb-b2aa-30e7435c93dd.png" 
+              alt="ARx eXperience Logo" 
               className="w-12 h-12 rounded-lg"
             />
           </div>
