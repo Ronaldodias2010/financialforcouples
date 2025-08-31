@@ -208,9 +208,9 @@ const AIRecommendationsContent = () => {
             <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/30">
               {chatHistory.length === 0 ? (
                 <div className="text-center text-muted-foreground">
-                  <Brain className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>{t('aiRecommendations.askAnything')}</p>
-                  <p className="text-sm">{t('aiRecommendations.exampleQuestion')}</p>
+                  <Brain className="h-12 w-12 mx-auto mb-2 text-yellow-500" />
+                  <p className="text-yellow-500 font-medium">{t('aiRecommendations.askAnything')}</p>
+                  <p className="text-sm text-yellow-500">{t('aiRecommendations.exampleQuestion')}</p>
                 </div>
               ) : (
                 chatHistory.map((chat, index) => (
