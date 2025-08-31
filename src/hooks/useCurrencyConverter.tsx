@@ -25,7 +25,7 @@ export const useCurrencyConverter = () => {
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
     BRL: 1,
     USD: 0.19, // Fallback: 1 BRL -> 0.19 USD
-    EUR: 0.17 // Fallback: 1 BRL -> 0.17 EUR
+    EUR: 0.17  // Fallback: 1 BRL -> 0.17 EUR
   });
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);

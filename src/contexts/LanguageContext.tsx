@@ -327,6 +327,9 @@ const translations = {
     'common.close': 'Fechar',
     'back': 'Voltar',
     
+    // Currency Display
+    'currency.updatesInfo': 'Cotações atualizadas 3x ao dia',
+    
     // Monthly Expenses
     'monthlyExpenses.currentExpenses': 'Gastos Atuais',
     'monthlyExpenses.futureExpenses': 'Gastos Futuros',
@@ -1750,6 +1753,9 @@ const translations = {
     'common.locale': 'en-US',
     'back': 'Back',
     
+    // Currency Display
+    'currency.updatesInfo': 'Exchange rates updated 3x daily',
+    
     // Monthly Expenses
     'monthlyExpenses.currentExpenses': 'Current Expenses',
     'monthlyExpenses.futureExpenses': 'Future Expenses',
@@ -3163,6 +3169,9 @@ const translations = {
     'common.select': 'Seleccionar',
     'common.refresh': 'Actualizar',
     'back': 'Atrás',
+    
+    // Currency Display
+    'currency.updatesInfo': 'Cotizaciones actualizadas 3x al día',
     
     // Export functionality
     'export.selectFormat': 'Formato',

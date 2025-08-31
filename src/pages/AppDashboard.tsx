@@ -127,7 +127,9 @@ const AppDashboard = () => {
           <div>
             <div className="container mx-auto px-4 py-4 space-y-4">
               <PremiumExpirationWarning />
-              <CurrencyRatesDisplay />
+              <div className="flex justify-center">
+                <CurrencyRatesDisplay />
+              </div>
             </div>
             <FinancialDashboard />
           </div>
