@@ -84,7 +84,20 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      // Buscar parcelas futuras
+      // Buscar parcelas futuras da tabela future_expense_payments
+      const { data: futurePayments, error: futurePaymentsError } = await supabase
+        .from("future_expense_payments")
+        .select("*")
+        .in("user_id", userIds)
+        .gte("payment_date", format(now, 'yyyy-MM-dd'))
+        .lte("payment_date", format(futureDate, 'yyyy-MM-dd'))
+        .order("payment_date", { ascending: true });
+
+      if (futurePaymentsError) {
+        console.error("Error fetching future payments:", futurePaymentsError);
+      }
+
+      // Buscar parcelas futuras da tabela transactions (parcelas já criadas)
       const { data: installments, error: installmentsError } = await supabase
         .from("transactions")
         .select(`
@@ -124,6 +137,42 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       if (cardsError) throw cardsError;
 
       const expenses: FutureExpense[] = [];
+
+      // Processar pagamentos futuros da nova tabela
+      if (futurePayments) {
+        for (const payment of futurePayments) {
+          const isPaid = await isExpensePaid(payment.recurring_expense_id, payment.installment_transaction_id, payment.original_due_date);
+          
+          // Buscar nome da categoria se tiver category_id
+          let categoryName = 'Sem categoria';
+          if (payment.category_id) {
+            const { data: categoryData } = await supabase
+              .from('categories')
+              .select('name')
+              .eq('id', payment.category_id)
+              .single();
+            if (categoryData) {
+              categoryName = categoryData.name;
+            }
+          }
+          
+          expenses.push({
+            id: payment.id,
+            description: payment.description,
+            amount: payment.amount,
+            due_date: payment.payment_date,
+            type: payment.expense_source_type === 'card_payment' ? 'card_payment' : 
+                  payment.expense_source_type === 'installment' ? 'installment' : 
+                  payment.expense_source_type === 'recurring' ? 'recurring' : 'installment',
+            category: categoryName,
+            owner_user: payment.owner_user,
+            recurringExpenseId: payment.recurring_expense_id,
+            installmentTransactionId: payment.installment_transaction_id,
+            cardPaymentInfo: payment.card_payment_info,
+            isPaid
+          });
+        }
+      }
 
       // Adicionar parcelas
       for (const installment of installments || []) {
@@ -500,6 +549,11 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Pago
                         </Badge>
+                      ) : expense.type === 'card_payment' ? (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <CreditCard className="h-3 w-3 mr-1" />
+                          Pagamento do Cartão
+                        </Badge>
                       ) : (
                         <Button
                           size="sm"
@@ -507,7 +561,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                           className="flex items-center gap-2"
                         >
                           <Receipt className="h-4 w-4" />
-                          Quitar
+                          Pagar
                         </Button>
                       )}
                     </div>

@@ -373,6 +373,11 @@ const translations = {
     'monthlyExpenses.cardOwner': 'Proprietário do Cartão',
     'monthlyExpenses.bankAccount': 'Conta Bancária',
     'monthlyExpenses.date': 'Data',
+    'monthlyExpenses.pay': 'Pagar',
+    'monthlyExpenses.paid': 'Pago',
+    'monthlyExpenses.cardPayment': 'Pagamento do Cartão',
+    'monthlyExpenses.payModal.title': 'Pagar Gasto Futuro',
+    'monthlyExpenses.payModal.button': 'Pagar Gasto',
     
     // Export functionality
     'export.selectFormat': 'Formato',
@@ -1816,6 +1821,11 @@ const translations = {
     'monthlyExpenses.cardOwner': 'Card Owner',
     'monthlyExpenses.bankAccount': 'Bank Account',
     'monthlyExpenses.date': 'Date',
+    'monthlyExpenses.pay': 'Pay',
+    'monthlyExpenses.paid': 'Paid',
+    'monthlyExpenses.cardPayment': 'Card Payment',
+    'monthlyExpenses.payModal.title': 'Pay Future Expense',
+    'monthlyExpenses.payModal.button': 'Pay Expense',
     
     // Future Expenses PDF/CSV Export
     'futureExpenses.description': 'Description',
@@ -3279,6 +3289,11 @@ const translations = {
     'monthlyExpenses.cardOwner': 'Propietario de la Tarjeta',
     'monthlyExpenses.bankAccount': 'Cuenta Bancaria',
     'monthlyExpenses.date': 'Fecha',
+    'monthlyExpenses.pay': 'Pagar',
+    'monthlyExpenses.paid': 'Pagado',
+    'monthlyExpenses.cardPayment': 'Pago de Tarjeta',
+    'monthlyExpenses.payModal.title': 'Pagar Gasto Futuro',
+    'monthlyExpenses.payModal.button': 'Pagar Gasto',
     
     // Future Expenses PDF/CSV Export
     'futureExpenses.description': 'Descripción',

@@ -161,7 +161,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Quitar Gasto Futuro
+            Pagar Gasto Futuro
           </DialogTitle>
         </DialogHeader>
 
@@ -294,7 +294,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 className="flex-1"
                 disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount) || (paymentMethod === 'card' && !selectedCard)}
               >
-                {isProcessing ? 'Processando...' : 'Quitar Gasto'}
+                {isProcessing ? 'Processando...' : 'Pagar Gasto'}
               </Button>
             </div>
           </form>
