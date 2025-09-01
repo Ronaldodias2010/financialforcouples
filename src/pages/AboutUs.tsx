@@ -114,11 +114,12 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
         description: "Somos um time que nasceu pequeno, impulsionado por grandes ideias e um propósito claro. Ao longo do caminho, crescemos com dedicação, aprendizados e muita paixão — e hoje estamos prontos para atender com excelência, sensibilidade e inovação.\n\nO que nos move é o amor pela tecnologia e pelos relacionamentos humanos. Cada membro da nossa equipe compartilha o compromisso de criar experiências únicas e transformadoras para casais que desejam construir juntos um futuro financeiro sólido, equilibrado e cheio de significado.\n\nMais do que especialistas, somos apaixonados pelo que fazemos. E é essa paixão que nos conecta, nos fortalece e nos inspira a entregar sempre o melhor."
       },
       cta: "Comece sua jornada financeira conosco",
+      ctaButton: "Cadastre-se Grátis",
       backToHome: "Voltar ao Início"
     },
     en: {
       title: "About Us",
-      subtitle: "The first Brazilian platform created especially for couples",
+      subtitle: "The first platform created especially for couples, but singles can and should use it too!",
       story: {
         title: "Our Story",
         description: "We were born from a real need. We have been married for 21 years and, as a couple, we were looking for a complete solution to organize our finances. Every beginning of the month was marked by confusion, arguments and fights. We didn't understand how two executives, with high salaries, couldn't finish the month with money left over.\n\nImagine: if it was difficult for us, how would it be for those who earn less? We always argued. Each one analyzed the other's expense spreadsheet, but no one could identify where the problem was.\n\nUntil we realized: if we worked together, collaboratively, we could solve this issue that deeply affected our relationship. However, we couldn't find any practical tool that really helped us.\n\nWe observed that the market only offered individual solutions. Some platforms even allowed family expense control, but they were cold, disconnected from the reality of couples.\n\nThat's when we decided to create our own platform — tailor-made for our finances. It helps us identify when we're in the red and, with the support of artificial intelligence, guides us out of this situation and prevents it from happening again.\n\nWhen implementing this solution, we realized that many other couples faced the same challenge. Thus Couples Financials was born — the best platform to take care of your money and build plans for the future, whether as a couple or single."
@@ -157,11 +158,12 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
         description: "We are a team that started small, driven by big ideas and a clear purpose. Along the way, we grew with dedication, learning and great passion — and today we are ready to serve with excellence, sensitivity and innovation.\n\nWhat moves us is the love for technology and human relationships. Each member of our team shares the commitment to create unique and transformative experiences for couples who want to build together a solid, balanced and meaningful financial future.\n\nMore than specialists, we are passionate about what we do. And it's this passion that connects us, strengthens us and inspires us to always deliver the best."
       },
       cta: "Start your financial journey with us",
+      ctaButton: "Sign Up Free",
       backToHome: "Back to Home"
     },
     es: {
       title: "Sobre Nosotros",
-      subtitle: "La primera plataforma brasileña creada especialmente para parejas",
+      subtitle: "La primera plataforma creada especialmente para parejas, ¡pero los solteros pueden y deben usarla también!",
       story: {
         title: "Nuestra Historia",
         description: "Nacimos de una necesidad real. Estamos casados desde hace 21 años y, como pareja, buscábamos una solución completa para organizar nuestras finanzas. Cada inicio de mes estaba marcado por confusión, discusiones y peleas. No entendíamos cómo dos ejecutivos, con salarios altos, no podían terminar el mes con dinero sobrante.\n\nImaginen: si era difícil para nosotros, ¿cómo sería para quienes ganan menos? Siempre discutíamos. Cada uno analizaba la hoja de gastos del otro, pero nadie podía identificar dónde estaba el problema.\n\nHasta que nos dimos cuenta: si trabajáramos juntos, de forma colaborativa, podríamos resolver esta cuestión que afectaba profundamente nuestra relación. Sin embargo, no encontramos ninguna herramienta práctica que realmente nos ayudara.\n\nObservamos que el mercado ofrecía solo soluciones individuales. Algunas plataformas incluso permitían el control de gastos familiares, pero eran frías, desconectadas de la realidad de las parejas.\n\nFue entonces cuando decidimos crear nuestra propia plataforma — hecha a medida para nuestras finanzas. Nos ayuda a identificar cuando estamos en números rojos y, con el apoyo de una inteligencia artificial, nos orienta para salir de esta situación y evitar que se repita.\n\nAl implementar esta solución, nos dimos cuenta de que muchas otras parejas enfrentaban el mismo desafío. Así nació Couples Financials — la mejor plataforma para cuidar tu dinero y construir planes para el futuro, ya sea en pareja o soltero."
@@ -200,6 +202,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
         description: "Somos un equipo que comenzó pequeño, impulsado por grandes ideas y un propósito claro. A lo largo del camino, crecimos con dedicación, aprendizaje y mucha pasión — y hoy estamos listos para atender con excelencia, sensibilidad e innovación.\n\n¿Qué nos mueve es el amor por la tecnología y las relaciones humanas. Cada miembro de nuestro equipo comparte el compromiso de crear experiencias únicas y transformadoras para parejas que desean construir juntos un futuro financiero sólido, equilibrado y lleno de significado.\n\nMás que especialistas, somos apasionados por lo que hacemos. Y es esta pasión la que nos conecta, nos fortalece y nos inspira a entregar siempre lo mejor."
       },
       cta: "Comienza tu jornada financiera con nosotros",
+      ctaButton: "Regístrate Gratis",
       backToHome: "Volver al Inicio"
     }
   };
@@ -418,7 +421,7 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
                   className="bg-primary hover:bg-primary/90"
                   onClick={() => window.location.href = '/auth'}
                 >
-                  Cadastre-se Grátis
+                  {currentContent.ctaButton}
                 </Button>
               </CardContent>
             </Card>
