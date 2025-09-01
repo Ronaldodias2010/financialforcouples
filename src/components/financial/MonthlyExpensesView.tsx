@@ -127,6 +127,14 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
     fetchCategories();
   }, [selectedMonth, selectedCategory, viewMode]);
 
+  // Auto-refresh when selectedMonth changes to current month
+  useEffect(() => {
+    const currentMonth = format(new Date(), "yyyy-MM");
+    if (selectedMonth === currentMonth) {
+      fetchTransactions();
+    }
+  }, [selectedMonth]);
+
 const fetchCategories = async () => {
     try {
       // Scope categories to the current user and partner (if any)
@@ -237,11 +245,15 @@ if (selectedCategory !== "all") {
       
       setTransactions(filteredData);
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar as transações",
-        variant: "destructive",
-      });
+      console.error("Error loading transactions:", error);
+      // Only show error toast for actual errors, not empty results
+      if (error.message && !error.message.includes('PGRST116')) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as transações",
+          variant: "destructive",
+        });
+      }
     }
   };
 

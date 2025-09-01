@@ -81,6 +81,14 @@ const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: stri
     fetchCategories();
   }, [selectedMonth, selectedCategory, viewMode, language]);
 
+  // Auto-refresh when selectedMonth changes to current month
+  useEffect(() => {
+    const currentMonth = format(new Date(), "yyyy-MM");
+    if (selectedMonth === currentMonth) {
+      fetchTransactions();
+    }
+  }, [selectedMonth]);
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -202,11 +210,15 @@ if (selectedCategory !== "all") {
       
       setTransactions(filteredData);
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar as receitas",
-        variant: "destructive",
-      });
+      console.error("Error loading income transactions:", error);
+      // Only show error toast for actual errors, not empty results
+      if (error.message && !error.message.includes('PGRST116')) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as receitas",
+          variant: "destructive",
+        });
+      }
     }
   };
 

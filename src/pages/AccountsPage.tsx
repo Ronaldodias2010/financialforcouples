@@ -250,39 +250,37 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Right Column - Cash Account */}
-        <div className="lg:col-span-1">
-          <div className="space-y-6">
-            {/* Cash Account Card - Always visible */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                {t('cashAccount')}
-              </h2>
-              <CashAccountCard
-                cashAccounts={filteredCashAccounts.map(account => ({
-                  id: account.id,
-                  balance: account.balance || 0,
-                  currency: account.currency || 'BRL'
-                }))}
-                className="w-full"
-              />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left Column - Cash Account and Account Management */}
+        <div className="space-y-6">
+          {/* Cash Account Card */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Wallet className="h-5 w-5" />
+              {t('cashAccount')}
+            </h2>
+            <CashAccountCard
+              cashAccounts={filteredCashAccounts.map(account => ({
+                id: account.id,
+                balance: account.balance || 0,
+                currency: account.currency || 'BRL'
+              }))}
+              className="w-full"
+            />
+          </div>
 
-            {/* Suas Contas Section */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                {t('accounts.manage')}
-              </h2>
-              <AccountForm onAccountAdded={handleAccountAdded} />
-            </div>
+          {/* Account Management Section */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Wallet className="h-5 w-5" />
+              {t('accounts.manage')}
+            </h2>
+            <AccountForm onAccountAdded={handleAccountAdded} />
           </div>
         </div>
 
-        {/* Left Column - Account List */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Right Column - Account List */}
+        <div className="space-y-6">
           <AccountList refreshTrigger={refreshTrigger} />
         </div>
       </div>
