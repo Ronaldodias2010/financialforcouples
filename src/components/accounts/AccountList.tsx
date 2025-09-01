@@ -45,6 +45,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
         .from("accounts")
         .select("*")
         .eq("user_id", user?.id)
+        .neq("is_cash_account", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
