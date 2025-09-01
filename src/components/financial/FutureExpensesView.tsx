@@ -454,12 +454,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     fetchFutureExpenses();
   };
 
-  const categories = Array.from(new Set(futureExpenses.map(expense => expense.category)));
+  const categories = Array.from(new Set((futureExpenses || []).map(expense => expense.category)));
   const filteredExpenses = selectedCategory === "all" 
-    ? futureExpenses 
-    : futureExpenses.filter(expense => expense.category === selectedCategory);
+    ? (futureExpenses || [])
+    : (futureExpenses || []).filter(expense => expense.category === selectedCategory);
 
-  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalAmount = (filteredExpenses || []).reduce((sum, expense) => sum + (expense?.amount || 0), 0);
 
   const getExportTitle = () => {
     const categoryLabel = selectedCategory === "all" ? "todas-categorias" : selectedCategory.toLowerCase().replace(/\s+/g, '-');
