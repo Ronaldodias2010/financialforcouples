@@ -25,6 +25,8 @@ interface Account {
   currency: CurrencyCode;
   account_model?: string;
   owner_user?: string;
+  is_cash_account?: boolean;
+  is_active?: boolean;
 }
 
 interface FinancialSummary {
@@ -247,7 +249,7 @@ export const useFinancialData = () => {
 
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, user_id, balance, currency, account_model, owner_user, is_active')
+        .select('id, user_id, balance, currency, account_model, owner_user, is_active, is_cash_account')
         .in('user_id', userIds)
         .eq('is_active', true);
 
@@ -473,7 +475,7 @@ export const useFinancialData = () => {
     }
   };
 
-  // Returns the sum of balances from personal accounts (SALDO REAL - não é receita)
+  // Returns the sum of balances from personal accounts + cash accounts (SALDO REAL - não é receita)
   const getAccountsBalance = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredAccounts = getAccountsByUser(viewMode).filter(
       (acc) => (acc.account_model || 'personal') === 'personal'
@@ -485,7 +487,22 @@ export const useFinancialData = () => {
         userPreferredCurrency
       );
     }, 0);
-    return accountsBalance;
+    
+    // Incluir saldo da conta de dinheiro no valor disponível/real
+    const cashAccounts = accounts.filter(acc => acc.is_cash_account && acc.is_active);
+    const cashBalance = cashAccounts.reduce((sum, acc) => {
+      const userOwnsAccount = viewMode === 'both' || (acc.owner_user || 'user1') === viewMode;
+      if (userOwnsAccount) {
+        return sum + convertCurrency(
+          acc.balance || 0,
+          acc.currency as CurrencyCode,
+          userPreferredCurrency
+        );
+      }
+      return sum;
+    }, 0);
+    
+    return accountsBalance + cashBalance;
   };
 
   // Returns the sum of transaction-based incomes only (no accounts)

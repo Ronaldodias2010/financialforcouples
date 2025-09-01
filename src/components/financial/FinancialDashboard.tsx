@@ -244,7 +244,7 @@ export const FinancialDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FinancialCard
                 title={t('dashboard.balance')}
-                amount={getTransactionsIncome(viewMode) - getTransactionsExpenses(viewMode)}
+                amount={getTransactionsIncome(viewMode) - getTransactionsExpenses(viewMode) + accountsBalance}
                 currency={financialSummary.currency}
                 icon={Wallet}
                 type="balance"
