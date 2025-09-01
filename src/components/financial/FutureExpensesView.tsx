@@ -151,6 +151,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .in("user_id", userIds)
         .eq("type", "expense")
         .not("card_id", "is", null)
+        .eq('cards.card_type', 'credit')
         .gte("transaction_date", format(now, 'yyyy-MM-dd'))
         .lte("transaction_date", format(futureDate, 'yyyy-MM-dd'))
         .order("transaction_date", { ascending: true });
