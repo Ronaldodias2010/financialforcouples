@@ -312,10 +312,10 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
 
           {/* Couple Photos Section */}
           <section>
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
               <Card className="border-0 shadow-lg overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="aspect-square">
+                  <div className="aspect-[4/3]">
                     <img 
                       src="/lovable-uploads/6df94207-a3c6-4ddc-a6db-38566a8247d3.png" 
                       alt="Casal Couples Financials - Momentos especiais juntos"
@@ -327,9 +327,9 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
               
               <Card className="border-0 shadow-lg overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="aspect-square">
+                  <div className="aspect-[4/3]">
                     <img 
-                      src="/lovable-uploads/ba0734ec-c81a-4476-8d2b-cdc7f71ccefc.png" 
+                      src="/lovable-uploads/c787905a-5f40-41ed-b2d0-4338e1cc8d4f.png" 
                       alt="Casal Couples Financials - Fundadores da plataforma"
                       className="w-full h-full object-cover"
                     />
