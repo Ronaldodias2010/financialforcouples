@@ -654,12 +654,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       )}
 
       {/* Card Payment Modal */}
-      <PayCardModal
-        isOpen={cardPaymentModal.isOpen}
-        onClose={() => setCardPaymentModal({ isOpen: false, cardInfo: null })}
-        cardInfo={cardPaymentModal.cardInfo}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+      {cardPaymentModal.cardInfo && (
+        <PayCardModal
+          isOpen={cardPaymentModal.isOpen}
+          onClose={() => setCardPaymentModal({ isOpen: false, cardInfo: null })}
+          cardInfo={cardPaymentModal.cardInfo}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
     </Card>
   );
 };
