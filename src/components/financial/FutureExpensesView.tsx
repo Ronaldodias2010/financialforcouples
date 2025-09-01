@@ -283,7 +283,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         const isInstallment = cardTransaction.is_installment;
         const installmentNumber = cardTransaction.installment_number || 1;
         
-        // Ignorar completamente cartões de DÉBITO em Gastos Futuros
+        // Ignorar completamente cartões de DÉBITO em Gastos Futuros (pela forma de pagamento)
+        if (cardTransaction.payment_method === 'debit_card') {
+          continue;
+        }
+        
+        // Ignorar completamente cartões de DÉBITO em Gastos Futuros (pelo tipo do cartão)
         if (!isCreditCard) {
           continue;
         }
