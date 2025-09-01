@@ -206,6 +206,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         const transactionMonth = format(new Date(installment.transaction_date), 'yyyy-MM');
         const isCurrentMonth = transactionMonth === currentMonth;
         const installmentNumber = installment.installment_number || 1;
+        const totalInstallments = installment.total_installments || 1;
+
+        // Excluir compras com parcela única (1/1) de Gastos Futuros
+        if (totalInstallments === 1) {
+          continue;
+        }
 
         // Se for a primeira parcela e for no mês atual, não aparece em Gastos Futuros
         if (installmentNumber === 1 && isCurrentMonth) {
@@ -282,6 +288,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         const isCreditCard = cardTransaction.cards?.card_type === 'credit';
         const isInstallment = cardTransaction.is_installment;
         const installmentNumber = cardTransaction.installment_number || 1;
+        const totalInstallments = cardTransaction.total_installments || 1;
         
         // Ignorar completamente cartões de DÉBITO em Gastos Futuros (pela forma de pagamento)
         if (cardTransaction.payment_method === 'debit_card') {
@@ -290,6 +297,11 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         
         // Ignorar completamente cartões de DÉBITO em Gastos Futuros (pelo tipo do cartão)
         if (!isCreditCard) {
+          continue;
+        }
+        
+        // Excluir compras com parcela única (1/1) de Gastos Futuros
+        if (isInstallment && totalInstallments === 1) {
           continue;
         }
         
