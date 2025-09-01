@@ -52,7 +52,9 @@ const translations = {
     
     // Benefits Section
     'benefits.title': 'Por que escolher o',
-    'benefits.subtitle': 'Recursos inovadores para controle financeiro completo',
+    'benefits.title.full': 'Por que escolher',
+    'benefits.brand': 'Couples Financials?',
+    'benefits.subtitle': 'O melhor app para controle financeiro casal e gestão de orçamento familiar',
     'benefits.shared.title': 'Gestão financeira compartilhada ou individual',
     'benefits.shared.description': 'Controle suas finanças sozinho ou compartilhe com seu parceiro',
     'benefits.multicurrency.title': 'Controle em múltiplas moedas',
@@ -1495,7 +1497,9 @@ const translations = {
     
     // Benefits Section
     'benefits.title': 'Why choose',
-    'benefits.subtitle': 'Innovative features for complete financial control',
+    'benefits.title.full': 'Why choose',
+    'benefits.brand': 'Couples Financials?',
+    'benefits.subtitle': 'The best app for couple financial control and family budget management',
     'benefits.shared.title': 'Shared or individual financial management',
     'benefits.shared.description': 'Control your finances alone or share with your partner',
     'benefits.multicurrency.title': 'Multi-currency control',
@@ -2936,7 +2940,9 @@ const translations = {
     
     // Benefits Section
     'benefits.title': 'Por qué elegir',
-    'benefits.subtitle': 'Características innovadoras para control financiero completo',
+    'benefits.title.full': '¿Por qué elegir',
+    'benefits.brand': 'Couples Financials?',
+    'benefits.subtitle': 'La mejor app para control financiero de pareja y gestión de presupuesto familiar',
     'benefits.shared.title': 'Gestión financiera compartida o individual',
     'benefits.shared.description': 'Controla tus finanzas solo o comparte con tu pareja',
     'benefits.multicurrency.title': 'Control en múltiples monedas',

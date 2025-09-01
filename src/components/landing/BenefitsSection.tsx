@@ -46,13 +46,13 @@ const BenefitsSection = () => {
         {/* Header with SEO-optimized structure */}
         <header className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-            Por que escolher{" "}
+            {t('benefits.title.full')}{" "}
             <span className="bg-hero-gradient bg-clip-text text-transparent">
-              Couples Financials?
+              {t('benefits.brand')}
             </span>
           </h2>
           <h3 className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            O melhor app para controle financeiro casal e gestão de orçamento familiar
+            {t('benefits.subtitle')}
           </h3>
         </header>
         
