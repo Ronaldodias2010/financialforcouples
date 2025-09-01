@@ -200,221 +200,490 @@
         }
 
         .print-button:hover {
-            background: #764ba2;
+            background: #5a6fd8;
             transform: translateY(-2px);
         }
 
         @media print {
-            body {
-                background: white;
-            }
-            .section {
-                box-shadow: none;
-                border: 1px solid #ddd;
-                page-break-inside: avoid;
-            }
-            .header {
-                background: #667eea !important;
-                -webkit-print-color-adjust: exact;
-            }
             .print-button {
                 display: none;
             }
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            .header h1 {
-                font-size: 2rem;
-            }
-            .section {
-                padding: 20px;
-            }
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
+        .screenshot {
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <h1>📊 Tutorial Couples Financials</h1>
-            <p>Guia Completo de Uso da Aplicação de Gestão Financeira para Casais</p>
+            <h1>💰 Tutorial Completo</h1>
+            <p>Guia definitivo para dominar o Couples Financials</p>
         </div>
 
-        <!-- Table of Contents -->
         <div class="toc">
-            <h2>📋 Índice</h2>
+            <h2>📑 Índice</h2>
             <ul>
-                <li><a href="#introducao">1. Introdução Geral</a></li>
+                <li><a href="#introducao">1. Introdução</a></li>
                 <li><a href="#primeiros-passos">2. Primeiros Passos</a></li>
-                <li><a href="#dashboard">3. Dashboard Financeiro</a></li>
-                <li><a href="#transacoes">4. Gestão de Transações</a></li>
-                <li><a href="#contas">5. Gestão de Contas Bancárias</a></li>
-                <li><a href="#cartoes">6. Gestão de Cartões</a></li>
-                <li><a href="#investimentos">7. Sistema de Investimentos</a></li>
-                <li><a href="#milhas">8. Sistema de Milhas (Premium)</a></li>
-                <li><a href="#ia">9. Funcionalidades de IA</a></li>
-                <li><a href="#casal">10. Gestão de Casais</a></li>
-                <li><a href="#relatorios">11. Relatórios e Exportações</a></li>
-                <li><a href="#configuracoes">12. Configurações e Perfil</a></li>
-                <li><a href="#parcerias">13. Programa de Parcerias</a></li>
-                <li><a href="#troubleshooting">14. Soluções de Problemas</a></li>
+                <li><a href="#contas-cartoes">3. Configurando Contas e Cartões</a></li>
+                <li><a href="#transacoes">4. Gerenciando Transações</a></li>
+                <li><a href="#conta-dinheiro">5. Gestão da Conta de Dinheiro</a></li>
+                <li><a href="#categorias">6. Organizando por Categorias</a></li>
+                <li><a href="#investimentos">7. Controle de Investimentos</a></li>
+                <li><a href="#milhas">8. Sistema de Milhas</a></li>
+                <li><a href="#relatorios">9. Relatórios e Análises</a></li>
+                <li><a href="#casais">10. Funcionalidades para Casais</a></li>
+                <li><a href="#dicas-avancadas">11. Dicas Avançadas</a></li>
             </ul>
         </div>
 
-        <!-- Section 1: Introdução -->
-        <div class="section" id="introducao">
-            <h2>🏠 1. Introdução Geral</h2>
+        <section id="introducao" class="section">
+            <h2>🎯 1. Introdução</h2>
+            <p>O <strong>Couples Financials</strong> é uma plataforma completa de gestão financeira projetada especialmente para casais que desejam organizar suas finanças de forma colaborativa e inteligente.</p>
             
-            <h3>O que é o Couples Financials?</h3>
-            <p>O Couples Financials é uma aplicação web completa de gestão financeira desenvolvida especialmente para casais que desejam organizar e acompanhar suas finanças de forma colaborativa. A plataforma oferece ferramentas avançadas para controle de receitas, despesas, investimentos, milhas aéreas e muito mais.</p>
-
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>💼 Gestão Financeira Completa</h4>
-                    <p>Controle total de receitas, despesas, contas e cartões em uma única plataforma.</p>
+                    <h4>💡 Gestão Inteligente</h4>
+                    <p>Controle completo de receitas, despesas, investimentos e metas financeiras com ferramentas intuitivas.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>👥 Colaboração em Casal</h4>
-                    <p>Visão compartilhada das finanças com controle individual e conjunto.</p>
+                    <h4>👫 Colaboração em Casal</h4>
+                    <p>Funcionalidades específicas para casais compartilharem e organizarem suas finanças conjuntamente.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🤖 Inteligência Artificial</h4>
-                    <p>Recomendações personalizadas e insights automáticos sobre seus gastos.</p>
+                    <h4>📊 Análises Detalhadas</h4>
+                    <p>Relatórios visuais e insights para tomar decisões financeiras mais informadas.</p>
                 </div>
                 <div class="feature-card">
                     <h4>✈️ Sistema de Milhas</h4>
-                    <p>Acompanhamento inteligente de milhas aéreas e oportunidades de resgate.</p>
+                    <p>Controle completo de programas de milhas e pontos com metas personalizadas.</p>
                 </div>
             </div>
 
-            <h3>Principais Benefícios</h3>
-            <ul>
-                <li><strong>Transparência Financeira:</strong> Visão clara das finanças do casal</li>
-                <li><strong>Economia de Tempo:</strong> Automação de cálculos e relatórios</li>
-                <li><strong>Tomada de Decisão:</strong> Dados precisos para decisões financeiras</li>
-                <li><strong>Otimização de Milhas:</strong> Maximização do valor das milhas aéreas</li>
-                <li><strong>Segurança:</strong> Dados protegidos com criptografia avançada</li>
-            </ul>
-        </div>
-
-        <!-- Section 2: Primeiros Passos -->
-        <div class="section" id="primeiros-passos">
-            <h2>🚀 2. Primeiros Passos</h2>
-
-            <h3>Como Acessar a Aplicação</h3>
-            <div class="step-by-step">
-                <h4><span class="step-number">1</span>Acesso ao Sistema</h4>
-                <p>Acesse a aplicação através do seu navegador web no endereço fornecido.</p>
-            </div>
-
-            <div class="step-by-step">
-                <h4><span class="step-number">2</span>Criar Conta ou Fazer Login</h4>
-                <p>Se é seu primeiro acesso, clique em "Criar Conta" e preencha seus dados. Se já possui conta, utilize "Entrar".</p>
-            </div>
-
-            <div class="step-by-step">
-                <h4><span class="step-number">3</span>Configuração Inicial</h4>
-                <p>Defina suas preferências de moeda, idioma e configure seu perfil básico.</p>
-            </div>
-
-            <h3>Interface Principal</h3>
-            <p>A interface é dividida em seções principais:</p>
-            <ul>
-                <li><strong>Header:</strong> Navegação principal, configurações de usuário</li>
-                <li><strong>Dashboard:</strong> Visão geral das finanças</li>
-                <li><strong>Menu Lateral:</strong> Acesso rápido às funcionalidades</li>
-                <li><strong>Área de Conteúdo:</strong> Exibição das informações e formulários</li>
-            </ul>
-
             <div class="tip-box">
-                <h4>💡 Dica</h4>
-                <p>Recomendamos começar configurando seu perfil e adicionando suas principais contas bancárias antes de registrar transações.</p>
+                <h4>💡 Dica Importante</h4>
+                <p>Este tutorial foi desenvolvido para ser usado tanto como referência rápida quanto como guia passo a passo. Recomendamos ler completamente antes de começar a usar a plataforma.</p>
             </div>
-        </div>
+        </section>
 
-        <!-- Section 3: Dashboard -->
-        <div class="section" id="dashboard">
-            <h2>📊 3. Dashboard Financeiro</h2>
+        <section id="primeiros-passos" class="section">
+            <h2>🚀 2. Primeiros Passos</h2>
+            
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Criando sua Conta</h4>
+                <p>Acesse a plataforma e crie sua conta utilizando email e senha. O sistema automaticamente criará seu perfil e categorias padrão.</p>
+            </div>
 
-            <h3>Visão Geral</h3>
-            <p>O Dashboard é o centro de controle da aplicação, fornecendo uma visão consolidada de suas finanças através de cards informativos e gráficos interativos.</p>
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Configuração Inicial</h4>
+                <p>Defina sua moeda preferida, fuso horário e informações básicas do perfil. Estas configurações podem ser alteradas posteriormente.</p>
+            </div>
 
-            <h4>Cards Principais</h4>
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Explorando o Dashboard</h4>
+                <p>Familiarize-se com a interface principal, onde você encontrará resumos financeiros, gráficos e acesso rápido às funcionalidades.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Importante</h4>
+                <p>Mantenha suas informações de login seguras e use uma senha forte. O sistema conta com criptografia de ponta para proteger seus dados financeiros.</p>
+            </div>
+        </section>
+
+        <section id="contas-cartoes" class="section">
+            <h2>🏦 3. Configurando Contas e Cartões</h2>
+            
+            <h3>💳 Adicionando Contas Bancárias</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acesso ao Menu de Contas</h4>
+                <p>Navigate até "Contas" no menu principal e clique em "Adicionar Nova Conta".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Informações da Conta</h4>
+                <p>Preencha os dados: nome do banco, tipo de conta (corrente/poupança), saldo inicial e limite de cheque especial (se aplicável).</p>
+            </div>
+
+            <h3>💳 Configurando Cartões</h3>
+            <p>O sistema suporta tanto cartões de crédito quanto débito:</p>
+            
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>💰 Saldo Total</h4>
-                    <p>Soma de todas as contas bancárias ativas, convertida para sua moeda preferencial.</p>
+                    <h4>Cartões de Crédito</h4>
+                    <p>Configure limite, data de fechamento, vencimento e fatura inicial para controle completo dos gastos.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>📈 Receitas do Mês</h4>
-                    <p>Total de entradas financeiras no período atual.</p>
-                </div>
-                <div class="feature-card">
-                    <h4>📉 Despesas do Mês</h4>
-                    <p>Total de gastos realizados no período atual.</p>
-                </div>
-                <div class="feature-card">
-                    <h4>💎 Saldo Líquido</h4>
-                    <p>Diferença entre receitas e despesas (Receitas - Despesas).</p>
+                    <h4>Cartões de Débito</h4>
+                    <p>Vincule-os às suas contas bancárias para desconto automático do saldo disponível.</p>
                 </div>
             </div>
 
-            <h3>Modos de Visualização (Para Casais)</h3>
+            <div class="tip-box">
+                <h4>💡 Dica de Organização</h4>
+                <p>Use nomes descritivos para suas contas e cartões (ex: "Itaú Corrente Principal", "Nubank Crédito"). Isso facilitará a identificação nas transações.</p>
+            </div>
+        </section>
+
+        <section id="transacoes" class="section">
+            <h2>💸 4. Gerenciando Transações</h2>
+            
+            <h3>➕ Adicionando Receitas</h3>
             <div class="step-by-step">
-                <h4><span class="step-number">1</span>Visão "Ambos"</h4>
-                <p>Exibe dados financeiros consolidados do casal.</p>
+                <h4><span class="step-number">1</span>Nova Receita</h4>
+                <p>Clique em "Adicionar Transação" e selecione "Receita". Informe valor, data, categoria e método de recebimento.</p>
             </div>
 
+            <h3>➖ Registrando Despesas</h3>
             <div class="step-by-step">
-                <h4><span class="step-number">2</span>Visão Individual</h4>
-                <p>Permite filtrar dados por usuário específico (Usuário 1 ou Usuário 2).</p>
+                <h4><span class="step-number">1</span>Nova Despesa</h4>
+                <p>Selecione "Despesa", informe o valor, escolha a categoria, método de pagamento (dinheiro, cartão, conta) e adicione uma descrição.</p>
             </div>
 
-            <h3>Gráficos e Análises</h3>
+            <h3>🔄 Transações Recorrentes</h3>
+            <p>Para despesas fixas mensais como aluguel, financiamentos:</p>
             <ul>
-                <li><strong>Gráfico de Pizza:</strong> Distribuição de gastos por categoria</li>
-                <li><strong>Gráfico de Barras:</strong> Evolução mensal de receitas vs despesas</li>
-                <li><strong>Comparativo Mensal:</strong> Variação percentual em relação ao mês anterior</li>
+                <li>Configure a recorrência (mensal, semanal, etc.)</li>
+                <li>Defina data de início e fim (se aplicável)</li>
+                <li>O sistema criará automaticamente as próximas parcelas</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Atenção ao Método de Pagamento</h4>
+                <p>Sempre selecione corretamente se a transação foi feita em dinheiro, cartão ou conta bancária. Isso afeta diretamente os saldos disponíveis.</p>
+            </div>
+        </section>
+
+        <section id="conta-dinheiro" class="section">
+            <h2>💵 5. Gestão da Conta de Dinheiro</h2>
+            
+            <h3>🎯 Como Funciona</h3>
+            <p>A conta de dinheiro funciona de forma <strong>independente</strong> das demais contas e cartões:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Receitas em Dinheiro</h4>
+                    <p>Registre apenas quando você realmente receber dinheiro físico. Ex: "Recebido R$ 20 de um amigo".</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💸 Despesas em Dinheiro</h4>
+                    <p>Só é possível gastar se houver saldo suficiente na conta de dinheiro. O sistema impedirá gastos sem saldo.</p>
+                </div>
+            </div>
+
+            <h3>🏧 Saques - Única Conexão Entre Contas</h3>
+            <p>O único momento em que as contas se conectam é durante os <strong>saques</strong>:</p>
+            
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Saque de Conta Bancária</h4>
+                <p>Registre um saque: o valor sai da conta bancária e automaticamente entra na conta de dinheiro.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Adiantamento no Cartão</h4>
+                <p>Para adiantamentos em cartão de crédito: o valor é debitado do limite e creditado na conta de dinheiro.</p>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Exemplo Prático</h4>
+                <p><strong>Cenário:</strong> Você tem R$ 1000 no banco e precisa de R$ 100 em dinheiro.</p>
+                <p><strong>Processo:</strong> Registre um saque de R$ 100. Resultado: R$ 900 no banco + R$ 100 em dinheiro.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Importante</h4>
+                <p>Nunca registre transações em dinheiro diretamente em contas bancárias ou cartões. Use apenas a conta de dinheiro para transações físicas em espécie.</p>
+            </div>
+        </section>
+
+        <section id="categorias" class="section">
+            <h2>🏷️ 6. Organizando por Categorias</h2>
+            
+            <h3>📋 Categorias Padrão</h3>
+            <p>O sistema vem com categorias pré-definidas, mas você pode personalizá-las completamente:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🍽️ Alimentação</h4>
+                    <p>Restaurantes, supermercado, delivery</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🚗 Transporte</h4>
+                    <p>Combustível, transporte público, manutenção</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏠 Moradia</h4>
+                    <p>Aluguel, condomínio, manutenção doméstica</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Lazer</h4>
+                    <p>Cinema, viagens, hobbies</p>
+                </div>
+            </div>
+
+            <h3>➕ Criando Categorias Personalizadas</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Nova Categoria</h4>
+                <p>Acesse "Categorias" e clique em "Adicionar". Defina nome, cor e ícone para fácil identificação.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Organização Visual</h4>
+                <p>Use cores diferentes para tipos de gastos: vermelho para essenciais, azul para lazer, verde para investimentos.</p>
+            </div>
+        </section>
+
+        <section id="investimentos" class="section">
+            <h2>📈 7. Controle de Investimentos</h2>
+            
+            <h3>💼 Cadastrando Investimentos</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Novo Investimento</h4>
+                <p>Informe nome, tipo (CDB, ações, etc.), valor investido, data e corretora.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Acompanhamento</h4>
+                <p>Atualize periodicamente o valor atual para acompanhar rendimentos e perdas.</p>
+            </div>
+
+            <h3>🎯 Metas de Investimento</h3>
+            <p>Defina objetivos claros:</p>
+            <ul>
+                <li>Meta de valor total</li>
+                <li>Prazo para atingir</li>
+                <li>Propósito (aposentadoria, viagem, etc.)</li>
             </ul>
 
             <div class="tip-box">
-                <h4>💡 Dica de Uso</h4>
-                <p>Use o botão "Atualizar" no canto superior direito para sincronizar dados em tempo real.</p>
+                <h4>💡 Diversificação</h4>
+                <p>Use diferentes tipos de investimento no sistema para ter uma visão completa do seu portfólio e nível de diversificação.</p>
             </div>
-        </div>
+        </section>
 
-        <!-- Continue with more sections in Portuguese -->
-        <div class="section" id="transacoes">
-            <h2>💳 4. Gestão de Transações</h2>
-            <p>Sistema completo para registro e controle de receitas e despesas...</p>
-        </div>
+        <section id="milhas" class="section">
+            <h2>✈️ 8. Sistema de Milhas</h2>
+            
+            <h3>🎯 Configurando Cartões de Milhas</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Regras de Acúmulo</h4>
+                <p>Configure quantas milhas você ganha por real gasto em cada cartão (ex: 1 milha por R$ 1 gasto).</p>
+            </div>
 
-        <div class="section" id="contas">
-            <h2>🏦 5. Gestão de Contas Bancárias</h2>
-            <p>Gerencie todas as suas contas bancárias em um só lugar...</p>
-        </div>
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Saldo Inicial</h4>
+                <p>Informe quantas milhas você já possui para ter o controle total do saldo.</p>
+            </div>
 
-        <!-- Add all other sections -->
-        
+            <h3>🏆 Metas de Milhas</h3>
+            <p>Crie metas específicas:</p>
+            <ul>
+                <li>Viagem para destino específico</li>
+                <li>Quantidade de milhas para acumular</li>
+                <li>Prazo para atingir a meta</li>
+            </ul>
+
+            <h3>📊 Acompanhamento Automático</h3>
+            <p>O sistema calcula automaticamente:</p>
+            <ul>
+                <li>Milhas ganhas por transação</li>
+                <li>Progresso das metas</li>
+                <li>Projeções baseadas nos gastos atuais</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Validade das Milhas</h4>
+                <p>Lembre-se de verificar periodicamente a validade das suas milhas nos programas oficiais das companhias aéreas.</p>
+            </div>
+        </section>
+
+        <section id="relatorios" class="section">
+            <h2>📊 9. Relatórios e Análises</h2>
+            
+            <h3>📈 Dashboard Principal</h3>
+            <p>Visão geral com:</p>
+            <ul>
+                <li>Resumo mensal de receitas vs despesas</li>
+                <li>Gráficos de categorias</li>
+                <li>Evolução patrimonial</li>
+                <li>Próximas contas a vencer</li>
+            </ul>
+
+            <h3>📋 Relatórios Detalhados</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 Por Período</h4>
+                    <p>Analise qualquer período específico com filtros personalizados</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏷️ Por Categoria</h4>
+                    <p>Veja onde você mais gasta e identifique oportunidades de economia</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💳 Por Método de Pagamento</h4>
+                    <p>Compare uso de dinheiro, cartões e contas bancárias</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Tendências</h4>
+                    <p>Identifique padrões de gastos e comportamentos financeiros</p>
+                </div>
+            </div>
+
+            <h3>📤 Exportação de Dados</h3>
+            <p>Exporte seus dados em diferentes formatos:</p>
+            <ul>
+                <li>Excel (.xlsx) para análises avançadas</li>
+                <li>PDF para impressão e arquivamento</li>
+                <li>CSV para importação em outras ferramentas</li>
+            </ul>
+        </section>
+
+        <section id="casais" class="section">
+            <h2>👫 10. Funcionalidades para Casais</h2>
+            
+            <h3>🤝 Conectando Perfis</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Enviando Convite</h4>
+                <p>Um dos parceiros envia convite através do email do outro.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Aceitando a Conexão</h4>
+                <p>O parceiro recebe o convite por email e aceita a conexão.</p>
+            </div>
+
+            <h3>👁️ Modos de Visualização</h3>
+            <p>Após conectar os perfis, vocês podem alternar entre:</p>
+            <ul>
+                <li><strong>Visão Individual:</strong> Apenas suas transações</li>
+                <li><strong>Visão do Parceiro:</strong> Apenas as transações do parceiro</li>
+                <li><strong>Visão Combinada:</strong> Todas as transações do casal</li>
+            </ul>
+
+            <h3>🔐 Privacidade e Controle</h3>
+            <div class="tip-box">
+                <h4>🔒 Suas Transações Permanecem Suas</h4>
+                <p>Cada pessoa mantém controle total sobre suas próprias transações. O parceiro pode visualizar, mas não editar ou excluir.</p>
+            </div>
+
+            <h3>🎯 Metas Compartilhadas</h3>
+            <p>Criem metas financeiras conjuntas:</p>
+            <ul>
+                <li>Reserva de emergência familiar</li>
+                <li>Viagem dos sonhos</li>
+                <li>Entrada da casa própria</li>
+                <li>Aposentadoria conjunta</li>
+            </ul>
+        </section>
+
+        <section id="dicas-avancadas" class="section">
+            <h2>🎯 11. Dicas Avançadas</h2>
+            
+            <h3>⚡ Produtividade</h3>
+            <div class="tip-box">
+                <h4>📱 Registre na Hora</h4>
+                <p>Registre transações imediatamente após realizá-las. Isso evita esquecimentos e mantém dados sempre atualizados.</p>
+            </div>
+
+            <div class="tip-box">
+                <h4>🗓️ Revisão Semanal</h4>
+                <p>Reserve 15 minutos semanais para revisar e categorizar transações pendentes.</p>
+            </div>
+
+            <h3>💡 Organização Inteligente</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🏷️ Use Descrições Detalhadas</h4>
+                    <p>Em vez de "Mercado", use "Mercado - Compras da semana". Facilita buscas futuras.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📅 Padronize Datas</h4>
+                    <p>Para contas recorrentes, use sempre o mesmo dia (ex: todo dia 5 para aluguel).</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎨 Cores Consistentes</h4>
+                    <p>Use um padrão de cores para categorias similares em todo o sistema.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔍 Use Filtros</h4>
+                    <p>Aproveite os filtros avançados para análises específicas por período, valor ou categoria.</p>
+                </div>
+            </div>
+
+            <h3>📈 Análise Estratégica</h3>
+            <div class="warning-box">
+                <h4>🎯 Regra 50-30-20</h4>
+                <p><strong>50%</strong> para necessidades básicas, <strong>30%</strong> para desejos pessoais, <strong>20%</strong> para poupança e investimentos. Use os relatórios para verificar se está seguindo essa proporção.</p>
+            </div>
+
+            <h3>🔐 Segurança</h3>
+            <ul>
+                <li>Mantenha sempre o aplicativo atualizado</li>
+                <li>Use senhas fortes e únicas</li>
+                <li>Faça logout em dispositivos compartilhados</li>
+                <li>Revise periodicamente os acessos da sua conta</li>
+            </ul>
+
+            <h3>🆘 Suporte</h3>
+            <p>Em caso de dúvidas ou problemas:</p>
+            <ul>
+                <li>Consulte primeiro este tutorial completo</li>
+                <li>Use a função de busca dentro da plataforma</li>
+                <li>Entre em contato através do suporte integrado</li>
+                <li>Participe da comunidade de usuários para dicas e truques</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>🎉 Parabéns!</h4>
+                <p>Você concluiu o tutorial completo do Couples Financials. Com essas informações, você está pronto para ter controle total sobre suas finanças pessoais e familiares!</p>
+            </div>
+        </section>
     </div>
 
-    <button class="print-button" onclick="window.print()">🖨️ Imprimir Tutorial</button>
+    <button class="print-button" onclick="window.print()">
+        🖨️ Imprimir Tutorial
+    </button>
 
     <script>
-        // Smooth scrolling for anchor links
+        // Smooth scrolling for internal links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
+        });
+
+        // Add animation classes when sections come into view
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(section);
         });
     </script>
 </body>

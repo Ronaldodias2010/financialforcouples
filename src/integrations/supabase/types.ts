@@ -1789,6 +1789,73 @@ export type Database = {
           },
         ]
       }
+      withdrawals: {
+        Row: {
+          amount: number
+          cash_account_id: string
+          created_at: string | null
+          currency: Database["public"]["Enums"]["currency_type"]
+          description: string | null
+          id: string
+          source_account_id: string | null
+          source_card_id: string | null
+          updated_at: string | null
+          user_id: string
+          withdrawal_date: string
+          withdrawal_type: Database["public"]["Enums"]["withdrawal_type"]
+        }
+        Insert: {
+          amount: number
+          cash_account_id: string
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"]
+          description?: string | null
+          id?: string
+          source_account_id?: string | null
+          source_card_id?: string | null
+          updated_at?: string | null
+          user_id: string
+          withdrawal_date?: string
+          withdrawal_type: Database["public"]["Enums"]["withdrawal_type"]
+        }
+        Update: {
+          amount?: number
+          cash_account_id?: string
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"]
+          description?: string | null
+          id?: string
+          source_account_id?: string | null
+          source_card_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+          withdrawal_date?: string
+          withdrawal_type?: Database["public"]["Enums"]["withdrawal_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_cash_account_id_fkey"
+            columns: ["cash_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_source_account_id_fkey"
+            columns: ["source_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_source_card_id_fkey"
+            columns: ["source_card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       monthly_financial_summary: {
@@ -1902,6 +1969,17 @@ export type Database = {
         Args: { input: string }
         Returns: string
       }
+      process_withdrawal: {
+        Args: {
+          p_amount: number
+          p_currency?: Database["public"]["Enums"]["currency_type"]
+          p_description?: string
+          p_source_account_id?: string
+          p_source_card_id?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       recalculate_mileage_goals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1936,6 +2014,7 @@ export type Database = {
       card_type: "credit" | "debit"
       currency_type: "BRL" | "USD" | "EUR"
       transaction_type: "income" | "expense"
+      withdrawal_type: "bank_withdrawal" | "credit_advance"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2067,6 +2146,7 @@ export const Constants = {
       card_type: ["credit", "debit"],
       currency_type: ["BRL", "USD", "EUR"],
       transaction_type: ["income", "expense"],
+      withdrawal_type: ["bank_withdrawal", "credit_advance"],
     },
   },
 } as const
