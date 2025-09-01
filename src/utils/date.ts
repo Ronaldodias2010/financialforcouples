@@ -45,3 +45,20 @@ export const getTodayLocalDateString = (): string => {
   const day = String(now.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+/**
+ * Gets the start and end dates for a given month (YYYY-MM format)
+ * Returns proper date range to avoid invalid dates like 2025-02-31
+ */
+export const getMonthDateRange = (monthStr: string): { startDate: string; endDate: string } => {
+  const [year, month] = monthStr.split('-').map(Number);
+  
+  // Create start date (first day of month)
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+  
+  // Create end date (last day of month) 
+  const lastDay = new Date(year, month, 0).getDate(); // month is 0-indexed here, so this gets last day of the month
+  const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  
+  return { startDate, endDate };
+};

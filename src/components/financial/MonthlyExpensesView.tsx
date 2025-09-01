@@ -15,7 +15,7 @@ import { translateCategoryName as translateCategoryUtil } from "@/utils/category
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
-import { formatLocalDate, getLocaleForLanguage } from "@/utils/date";
+import { formatLocalDate, getLocaleForLanguage, getMonthDateRange } from "@/utils/date";
 import { ExportUtils } from "./ExportUtils";
 
 interface Transaction {
@@ -189,9 +189,11 @@ const fetchCategories = async () => {
   };
 
   const fetchTransactions = async () => {
+    // Clear current transactions to prevent stale data
+    setTransactions([]);
+    
     try {
-      const startDate = `${selectedMonth}-01`;
-      const endDate = `${selectedMonth}-31`;
+      const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
       // Check if user is part of a couple to include partner's transactions
       const { data: coupleData } = await supabase
@@ -246,8 +248,8 @@ if (selectedCategory !== "all") {
       setTransactions(filteredData);
     } catch (error) {
       console.error("Error loading transactions:", error);
-      // Only show error toast for actual errors, not empty results
-      if (error.message && !error.message.includes('PGRST116')) {
+      // Only show error toast for actual database/network errors
+      if (error?.code && error.code !== 'PGRST116') {
         toast({
           title: "Erro",
           description: "Não foi possível carregar as transações",
