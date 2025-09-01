@@ -139,13 +139,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .eq("card_type", "credit")
         .not("due_date", "is", null);
 
-      // Buscar transações individuais do cartão (gastos futuros SEM botão de pagar)
+      // Buscar transações de cartão de crédito para futuro (apenas parcelas futuras ou compras à vista de meses futuros)
+      const currentMonth = format(now, 'yyyy-MM');
       const { data: cardTransactions, error: cardTransactionsError } = await supabase
         .from("transactions")
         .select(`
           *,
           categories(name),
-          cards(name, owner_user)
+          cards(name, owner_user, card_type)
         `)
         .in("user_id", userIds)
         .eq("type", "expense")
@@ -262,19 +263,43 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Adicionar transações individuais do cartão (SEM botão de pagar)
+      // Filtrar transações de cartão conforme as regras:
+      // - Compras à vista no mês atual: NÃO aparecem em gastos futuros
+      // - Parcelas futuras (installment_number > 1): aparecem em gastos futuros
+      // - Compras de meses futuros: aparecem em gastos futuros
       for (const cardTransaction of cardTransactions || []) {
-        expenses.push({
-          id: `transaction-${cardTransaction.id}`,
-          description: cardTransaction.description,
-          amount: cardTransaction.amount,
-          due_date: cardTransaction.transaction_date,
-          type: 'card_transaction',
-          category: cardTransaction.categories?.name || 'Sem categoria',
-          card_name: cardTransaction.cards?.name,
-          owner_user: cardTransaction.cards?.owner_user || cardTransaction.owner_user,
-          allowsPayment: false, // Transações do cartão NÃO podem ser pagas individualmente
-        });
+        const transactionMonth = format(new Date(cardTransaction.transaction_date), 'yyyy-MM');
+        const isCurrentMonth = transactionMonth === currentMonth;
+        const isCreditCard = cardTransaction.cards?.card_type === 'credit';
+        const isInstallment = cardTransaction.is_installment;
+        const installmentNumber = cardTransaction.installment_number || 1;
+        
+        // Regra: Excluir compras à vista de cartão de crédito do mês atual
+        if (isCreditCard && isCurrentMonth && (!isInstallment || installmentNumber === 1)) {
+          continue; // Pular esta transação - não deve aparecer em gastos futuros
+        }
+        
+        // Incluir apenas:
+        // 1. Parcelas futuras (installment_number > 1)
+        // 2. Compras de meses futuros
+        // 3. Cartões de débito (que já foram filtrados na query anterior)
+        const shouldInclude = !isCreditCard || // Débito sempre inclui
+                             !isCurrentMonth || // Mês futuro sempre inclui
+                             (isInstallment && installmentNumber > 1); // Parcela futura inclui
+        
+        if (shouldInclude) {
+          expenses.push({
+            id: `transaction-${cardTransaction.id}`,
+            description: cardTransaction.description,
+            amount: cardTransaction.amount,
+            due_date: cardTransaction.transaction_date,
+            type: 'card_transaction',
+            category: cardTransaction.categories?.name || 'Sem categoria',
+            card_name: cardTransaction.cards?.name,
+            owner_user: cardTransaction.cards?.owner_user || cardTransaction.owner_user,
+            allowsPayment: false, // Transações do cartão NÃO podem ser pagas individualmente
+          });
+        }
       }
 
       // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento (COM botão de pagar)
