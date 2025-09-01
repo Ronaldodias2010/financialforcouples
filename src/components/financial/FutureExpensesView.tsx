@@ -201,6 +201,10 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       // Adicionar parcelas
       for (const installment of installments || []) {
         const isPaid = await isExpensePaid(undefined, installment.id, installment.transaction_date);
+        
+        // Parcelas de cartão de crédito NÃO devem ter botão de pagamento
+        const allowsPayment = installment.payment_method !== 'credit_card';
+        
         expenses.push({
           id: installment.id,
           description: installment.description,
@@ -213,7 +217,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           owner_user: installment.cards?.owner_user || installment.owner_user,
           installmentTransactionId: installment.id,
           isPaid,
-          allowsPayment: true, // Parcelas PODEM ser pagas
+          allowsPayment, // Parcelas de cartão de crédito não podem ser pagas individualmente
         });
       }
 
