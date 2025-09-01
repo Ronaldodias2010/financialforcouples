@@ -144,21 +144,23 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
 };
 
 export const openTutorialHTML = (language: Language = 'pt') => {
-  // Tentar arquivo específico do idioma primeiro, com fallback para o principal
+  // Construct the tutorial URL based on language
   const tutorialUrl = `/tutorial-couples-financials-${language}.html`;
   
-  // Verificar se o arquivo existe antes de abrir
-  fetch(tutorialUrl, { method: 'HEAD' })
-    .then(response => {
-      if (response.ok) {
-        window.open(tutorialUrl, '_blank');
-      } else {
-        // Fallback para o arquivo principal
-        window.open('/tutorial-couples-financials.html', '_blank');
-      }
-    })
-    .catch(() => {
-      // Se der erro, usar o arquivo principal
+  console.log('[Tutorial] Attempting to open:', tutorialUrl);
+  
+  // Try to open the language-specific tutorial file directly
+  // The file exists in public folder, so it should be accessible
+  try {
+    const newTab = window.open(tutorialUrl, '_blank');
+    if (!newTab) {
+      console.warn('[Tutorial] Popup blocked, trying fallback');
+      // If popup is blocked, try the main tutorial file
       window.open('/tutorial-couples-financials.html', '_blank');
-    });
+    }
+  } catch (error) {
+    console.error('[Tutorial] Error opening tutorial:', error);
+    // Fallback to main tutorial file
+    window.open('/tutorial-couples-financials.html', '_blank');
+  }
 };

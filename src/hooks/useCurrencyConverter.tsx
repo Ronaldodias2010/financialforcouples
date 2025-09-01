@@ -69,6 +69,35 @@ data.forEach((row) => {
     }
   };
 
+  const refreshRates = async () => {
+    try {
+      setLoading(true);
+      console.log('[FX] Triggering exchange rate update...');
+      
+      // First, trigger the edge function to update rates
+      const { data: updateData, error: updateError } = await supabase.functions.invoke('update-exchange-rates', {
+        body: { manual: true }
+      });
+      
+      if (updateError) {
+        console.error('[FX] Error updating exchange rates:', updateError);
+      } else {
+        console.log('[FX] Exchange rates update triggered:', updateData);
+      }
+      
+      // Wait a moment for the update to complete
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Then fetch the updated rates from database
+      await fetchExchangeRates();
+      
+    } catch (error) {
+      console.error('[FX] Error in refreshRates:', error);
+      // Fallback to just fetching existing rates
+      await fetchExchangeRates();
+    }
+  };
+
   useEffect(() => {
     fetchExchangeRates();
     
@@ -127,7 +156,7 @@ data.forEach((row) => {
     convertCurrency,
     formatCurrency,
     getCurrencySymbol,
-    refreshRates: fetchExchangeRates,
+    refreshRates,
     CURRENCY_INFO
   };
 };
