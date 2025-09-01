@@ -25,6 +25,7 @@ export default function Auth() {
   const [defaultTab, setDefaultTab] = useState<'signin' | 'signup'>('signin');
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
 
@@ -496,17 +497,31 @@ export default function Auth() {
                      </button>
                    </div>
                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">{t('auth.confirmPassword')}</Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      placeholder={"••••••••"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="confirm-password">{t('auth.confirmPassword')}</Label>
+                     <div className="relative">
+                       <Input
+                         id="confirm-password"
+                         type={showConfirmPassword ? "text" : "password"}
+                         placeholder={"••••••••"}
+                         value={confirmPassword}
+                         onChange={(e) => setConfirmPassword(e.target.value)}
+                         required
+                         className="pr-10"
+                       />
+                       <button
+                         type="button"
+                         className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                       >
+                         {showConfirmPassword ? (
+                           <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                         ) : (
+                           <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                         )}
+                       </button>
+                     </div>
+                   </div>
                   
                   {/* Validação visual da senha em tempo real */}
                   <PasswordValidation password={password} />

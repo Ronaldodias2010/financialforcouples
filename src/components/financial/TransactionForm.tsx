@@ -456,7 +456,7 @@ const getAccountOwnerName = (account: Account) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const transactionAmount = parseFloat(amount);
+      const transactionAmount = parseFloat(parseFloat(amount).toFixed(2));
 
       // Determine owner_user based on couple relationship
       let ownerUser = "user1"; // default
