@@ -14,6 +14,7 @@ import { FutureExpensesCalendar } from "./FutureExpensesCalendar";
 import { translateCategoryName } from '@/utils/categoryTranslation';
 import { ExportUtils } from "@/components/financial/ExportUtils";
 import { PayFutureExpenseModal } from "./PayFutureExpenseModal";
+import { PayCardModal } from "./PayCardModal";
 import { useFutureExpensePayments } from "@/hooks/useFutureExpensePayments";
 
 interface FutureExpense {
@@ -21,7 +22,7 @@ interface FutureExpense {
   description: string;
   amount: number;
   due_date: string;
-  type: 'installment' | 'recurring' | 'card_payment';
+  type: 'installment' | 'recurring' | 'card_payment' | 'card_transaction';
   category: string;
   card_name?: string;
   installment_info?: string;
@@ -30,6 +31,7 @@ interface FutureExpense {
   installmentTransactionId?: string;
   cardPaymentInfo?: any;
   isPaid?: boolean;
+  allowsPayment?: boolean; // Define se mostra o botão de pagar
 }
 
 interface FutureExpensesViewProps {
@@ -50,6 +52,11 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     isOpen: boolean;
     expense: FutureExpense | null;
   }>({ isOpen: false, expense: null });
+
+  const [cardPaymentModal, setCardPaymentModal] = useState<{
+    isOpen: boolean;
+    cardInfo: any;
+  }>({ isOpen: false, cardInfo: null });
 
   useEffect(() => {
     if (user) {
@@ -132,9 +139,25 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .eq("card_type", "credit")
         .not("due_date", "is", null);
 
+      // Buscar transações individuais do cartão (gastos futuros SEM botão de pagar)
+      const { data: cardTransactions, error: cardTransactionsError } = await supabase
+        .from("transactions")
+        .select(`
+          *,
+          categories(name),
+          cards(name, owner_user)
+        `)
+        .in("user_id", userIds)
+        .eq("type", "expense")
+        .not("card_id", "is", null)
+        .gte("transaction_date", format(now, 'yyyy-MM-dd'))
+        .lte("transaction_date", format(futureDate, 'yyyy-MM-dd'))
+        .order("transaction_date", { ascending: true });
+
       if (installmentsError) throw installmentsError;
       if (recurringError) throw recurringError;
       if (cardsError) throw cardsError;
+      if (cardTransactionsError) throw cardTransactionsError;
 
       const expenses: FutureExpense[] = [];
 
@@ -156,21 +179,22 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             }
           }
           
-          expenses.push({
-            id: payment.id,
-            description: payment.description,
-            amount: payment.amount,
-            due_date: payment.payment_date,
-            type: payment.expense_source_type === 'card_payment' ? 'card_payment' : 
-                  payment.expense_source_type === 'installment' ? 'installment' : 
-                  payment.expense_source_type === 'recurring' ? 'recurring' : 'installment',
-            category: categoryName,
-            owner_user: payment.owner_user,
-            recurringExpenseId: payment.recurring_expense_id,
-            installmentTransactionId: payment.installment_transaction_id,
-            cardPaymentInfo: payment.card_payment_info,
-            isPaid
-          });
+           expenses.push({
+             id: payment.id,
+             description: payment.description,
+             amount: payment.amount,
+             due_date: payment.payment_date,
+             type: payment.expense_source_type === 'card_payment' ? 'card_payment' : 
+                   payment.expense_source_type === 'installment' ? 'installment' : 
+                   payment.expense_source_type === 'recurring' ? 'recurring' : 'installment',
+             category: categoryName,
+             owner_user: payment.owner_user,
+             recurringExpenseId: payment.recurring_expense_id,
+             installmentTransactionId: payment.installment_transaction_id,
+             cardPaymentInfo: payment.card_payment_info,
+             isPaid,
+             allowsPayment: true, // Pagamentos futuros PODEM ser pagos
+           });
         }
       }
 
@@ -188,7 +212,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           installment_info: `${installment.installment_number}/${installment.total_installments}`,
           owner_user: installment.cards?.owner_user || installment.owner_user,
           installmentTransactionId: installment.id,
-          isPaid
+          isPaid,
+          allowsPayment: true, // Parcelas PODEM ser pagas
         });
       }
 
@@ -221,7 +246,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               card_name: recur.cards?.name || recur.accounts?.name,
               owner_user: recur.cards?.owner_user || recur.owner_user,
               recurringExpenseId: recur.id,
-              isPaid
+              isPaid,
+              allowsPayment: true, // Gastos recorrentes PODEM ser pagos
             });
           }
           
@@ -232,7 +258,22 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento
+      // Adicionar transações individuais do cartão (SEM botão de pagar)
+      for (const cardTransaction of cardTransactions || []) {
+        expenses.push({
+          id: `transaction-${cardTransaction.id}`,
+          description: cardTransaction.description,
+          amount: cardTransaction.amount,
+          due_date: cardTransaction.transaction_date,
+          type: 'card_transaction',
+          category: cardTransaction.categories?.name || 'Sem categoria',
+          card_name: cardTransaction.cards?.name,
+          owner_user: cardTransaction.cards?.owner_user || cardTransaction.owner_user,
+          allowsPayment: false, // Transações do cartão NÃO podem ser pagas individualmente
+        });
+      }
+
+      // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento (COM botão de pagar)
       for (const card of cards || []) {
         if (card.due_date) {
           const paymentAmount = await calculateCardPaymentAmount(card, user.id);
@@ -248,8 +289,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               category: t('transactionForm.creditCard'),
               card_name: card.name,
               owner_user: card.owner_user,
-              cardPaymentInfo: { cardId: card.id, cardName: card.name },
-              isPaid
+              cardPaymentInfo: { 
+                cardId: card.id, 
+                cardName: card.name,
+                minimumPayment: card.minimum_payment_amount || paymentAmount * 0.15,
+                allowsPartialPayment: card.allows_partial_payment
+              },
+              isPaid,
+              allowsPayment: true, // Cartões de crédito PODEM ser pagos
             });
           }
         }
@@ -333,6 +380,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         return <Calendar className="h-4 w-4" />;
       case 'card_payment':
         return <AlertCircle className="h-4 w-4" />;
+      case 'card_transaction':
+        return <Receipt className="h-4 w-4" />;
       default:
         return <DollarSign className="h-4 w-4" />;
     }
@@ -346,6 +395,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         return t('recurring');
       case 'card_payment':
         return t('cardPayment');
+      case 'card_transaction':
+        return 'Gasto do Cartão';
       default:
         return t('other');
     }
@@ -359,6 +410,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         return 'bg-green-100 text-green-800';
       case 'card_payment':
         return 'bg-red-100 text-red-800';
+      case 'card_transaction':
+        return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -378,7 +431,22 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   };
 
   const handlePayExpense = (expense: FutureExpense) => {
-    setPaymentModal({ isOpen: true, expense });
+    if (expense.type === 'card_payment' && expense.cardPaymentInfo) {
+      // Abrir modal específico para pagamento de cartão
+      setCardPaymentModal({
+        isOpen: true,
+        cardInfo: {
+          id: expense.cardPaymentInfo.cardId,
+          name: expense.cardPaymentInfo.cardName,
+          totalAmount: expense.amount,
+          minimumPayment: expense.cardPaymentInfo.minimumPayment,
+          allowsPartialPayment: expense.cardPaymentInfo.allowsPartialPayment,
+        }
+      });
+    } else {
+      // Abrir modal padrão para outros tipos
+      setPaymentModal({ isOpen: true, expense });
+    }
   };
 
   const handlePaymentSuccess = () => {
@@ -543,28 +611,30 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                         {formatCurrency(expense.amount)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {expense.isPaid ? (
-                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Pago
-                        </Badge>
-                      ) : expense.type === 'card_payment' ? (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          <CreditCard className="h-3 w-3 mr-1" />
-                          Pagamento do Cartão
-                        </Badge>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => handlePayExpense(expense)}
-                          className="flex items-center gap-2"
-                        >
-                          <Receipt className="h-4 w-4" />
-                          Pagar
-                        </Button>
-                      )}
-                    </div>
+                     <div className="flex items-center gap-2">
+                       {expense.isPaid ? (
+                         <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                           <CheckCircle className="h-3 w-3 mr-1" />
+                           Pago
+                         </Badge>
+                       ) : expense.allowsPayment === false ? (
+                         // Transações do cartão - apenas informativo, SEM botão
+                         <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                           <Receipt className="h-3 w-3 mr-1" />
+                           Gasto do Cartão
+                         </Badge>
+                       ) : (
+                         // Cartões de crédito, gastos recorrentes e parcelas - COM botão
+                         <Button
+                           size="sm"
+                           onClick={() => handlePayExpense(expense)}
+                           className="flex items-center gap-2"
+                         >
+                           <Receipt className="h-4 w-4" />
+                           Pagar
+                         </Button>
+                       )}
+                     </div>
                   </div>
                 </div>
               </Card>
@@ -573,7 +643,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         )}
       </div>
 
-      {/* Payment Modal */}
+      {/* Payment Modals */}
       {paymentModal.expense && (
         <PayFutureExpenseModal
           isOpen={paymentModal.isOpen}
@@ -582,6 +652,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
+
+      {/* Card Payment Modal */}
+      <PayCardModal
+        isOpen={cardPaymentModal.isOpen}
+        onClose={() => setCardPaymentModal({ isOpen: false, cardInfo: null })}
+        cardInfo={cardPaymentModal.cardInfo}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </Card>
   );
 };

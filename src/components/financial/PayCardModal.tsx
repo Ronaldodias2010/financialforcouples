@@ -5,24 +5,20 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, CreditCard, Wallet, Building2 } from 'lucide-react';
+import { Calendar, CreditCard, Wallet, Building2, Calculator } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useFutureExpensePayments } from '@/hooks/useFutureExpensePayments';
+import { useCardPayments } from '@/hooks/useCardPayments';
 
-interface PayFutureExpenseModalProps {
+interface PayCardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  expense: {
+  cardInfo: {
     id: string;
-    description: string;
-    amount: number;
-    due_date: string;
-    type: 'recurring' | 'installment' | 'card_payment' | 'card_transaction';
-    category?: string;
-    recurringExpenseId?: string;
-    installmentTransactionId?: string;
-    cardPaymentInfo?: any;
+    name: string;
+    totalAmount: number;
+    minimumPayment?: number;
+    allowsPartialPayment?: boolean;
   };
   onPaymentSuccess: () => void;
 }
@@ -33,41 +29,56 @@ interface Account {
   balance: number;
 }
 
-interface Card {
-  id: string;
-  name: string;
-  card_type: string;
-  initial_balance: number;
-}
-
-export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
+export const PayCardModal: React.FC<PayCardModalProps> = ({
   isOpen,
   onClose,
-  expense,
+  cardInfo,
   onPaymentSuccess,
 }) => {
   const { user } = useAuth();
-  const { processPayment, isProcessing } = useFutureExpensePayments();
+  const { processCardPayment, isProcessing } = useCardPayments();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentAmount, setPaymentAmount] = useState(cardInfo.totalAmount.toString());
   const [selectedAccount, setSelectedAccount] = useState('');
-  const [selectedCard, setSelectedCard] = useState('');
   const [notes, setNotes] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [cards, setCards] = useState<Card[]>([]);
+  const [paymentType, setPaymentType] = useState<'full' | 'minimum' | 'custom'>('full');
 
   useEffect(() => {
     if (isOpen && user) {
-      fetchAccountsAndCards();
+      fetchAccounts();
+      // Reset form when modal opens
+      setPaymentAmount(cardInfo.totalAmount.toString());
+      setPaymentType('full');
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, cardInfo.totalAmount]);
 
-  const fetchAccountsAndCards = async () => {
+  useEffect(() => {
+    // Update payment amount based on selected type
+    switch (paymentType) {
+      case 'full':
+        setPaymentAmount(cardInfo.totalAmount.toString());
+        break;
+      case 'minimum':
+        const minPayment = cardInfo.minimumPayment || cardInfo.totalAmount * 0.15; // 15% default minimum
+        setPaymentAmount(minPayment.toString());
+        break;
+      case 'custom':
+        // Keep current value or set minimum if empty
+        if (!paymentAmount || parseFloat(paymentAmount) < (cardInfo.minimumPayment || 0)) {
+          const minPayment = cardInfo.minimumPayment || cardInfo.totalAmount * 0.15;
+          setPaymentAmount(minPayment.toString());
+        }
+        break;
+    }
+  }, [paymentType, cardInfo.totalAmount, cardInfo.minimumPayment]);
+
+  const fetchAccounts = async () => {
     if (!user) return;
 
     try {
-      // Fetch accounts
       const { data: accountsData, error: accountsError } = await supabase
         .from('accounts')
         .select('id, name, balance')
@@ -79,20 +90,8 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
       } else {
         setAccounts(accountsData || []);
       }
-
-      // Fetch cards
-      const { data: cardsData, error: cardsError } = await supabase
-        .from('cards')
-        .select('id, name, card_type, initial_balance')
-        .eq('user_id', user.id);
-
-      if (cardsError) {
-        console.error('Error fetching cards:', cardsError);
-      } else {
-        setCards(cardsData || []);
-      }
     } catch (error) {
-      console.error('Error fetching accounts and cards:', error);
+      console.error('Error fetching accounts:', error);
     }
   };
 
@@ -101,20 +100,26 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     
     if (!user) return;
 
-    const paymentParams = {
-      recurringExpenseId: expense.recurringExpenseId,
-      installmentTransactionId: expense.installmentTransactionId,
-      cardPaymentInfo: expense.cardPaymentInfo,
-      originalDueDate: expense.due_date,
+    const amount = parseFloat(paymentAmount);
+    if (amount <= 0 || amount > cardInfo.totalAmount) {
+      alert('Valor inválido para pagamento');
+      return;
+    }
+
+    const minPayment = cardInfo.minimumPayment || cardInfo.totalAmount * 0.15;
+    if (amount < minPayment && paymentType !== 'full') {
+      alert(`Valor mínimo de pagamento: ${formatCurrency(minPayment)}`);
+      return;
+    }
+
+    const result = await processCardPayment({
+      cardId: cardInfo.id,
+      paymentAmount: amount,
       paymentDate,
-      amount: expense.amount,
-      description: `${expense.description}${notes ? ` - ${notes}` : ''}`,
       paymentMethod,
       accountId: paymentMethod === 'account' ? selectedAccount : undefined,
-      cardId: paymentMethod === 'card' ? selectedCard : undefined,
-    };
-
-    const result = await processPayment(paymentParams);
+      notes,
+    });
     
     if (result) {
       onPaymentSuccess();
@@ -126,8 +131,9 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const resetForm = () => {
     setPaymentDate(new Date().toISOString().split('T')[0]);
     setPaymentMethod('cash');
+    setPaymentAmount(cardInfo.totalAmount.toString());
+    setPaymentType('full');
     setSelectedAccount('');
-    setSelectedCard('');
     setNotes('');
   };
 
@@ -148,41 +154,103 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         return <Wallet className="w-4 h-4" />;
       case 'account':
         return <Building2 className="w-4 h-4" />;
-      case 'card':
-        return <CreditCard className="w-4 h-4" />;
       default:
         return <Wallet className="w-4 h-4" />;
     }
   };
+
+  const minPayment = cardInfo.minimumPayment || cardInfo.totalAmount * 0.15;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Pagar Gasto Futuro
+            <CreditCard className="w-5 h-5" />
+            Pagar Cartão de Crédito
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Expense Info */}
+          {/* Card Info */}
           <div className="bg-muted/50 p-4 rounded-lg space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Descrição:</span>
-              <span className="font-medium">{expense.description}</span>
+              <span className="text-sm text-muted-foreground">Cartão:</span>
+              <span className="font-medium">{cardInfo.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Valor:</span>
-              <span className="font-bold text-destructive">{formatCurrency(expense.amount)}</span>
+              <span className="text-sm text-muted-foreground">Total da Fatura:</span>
+              <span className="font-bold text-destructive">{formatCurrency(cardInfo.totalAmount)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Vencimento:</span>
-              <span>{formatDate(expense.due_date)}</span>
+              <span className="text-sm text-muted-foreground">Pagamento Mínimo:</span>
+              <span className="font-medium">{formatCurrency(minPayment)}</span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Payment Type */}
+            {cardInfo.allowsPartialPayment !== false && (
+              <div className="space-y-2">
+                <Label>Tipo de Pagamento</Label>
+                <Select value={paymentType} onValueChange={(value: 'full' | 'minimum' | 'custom') => setPaymentType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4" />
+                        Pagamento Total - {formatCurrency(cardInfo.totalAmount)}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="minimum">
+                      <div className="flex items-center gap-2">
+                        <Calculator className="w-4 h-4" />
+                        Pagamento Mínimo - {formatCurrency(minPayment)}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="custom">
+                      <div className="flex items-center gap-2">
+                        <Wallet className="w-4 h-4" />
+                        Valor Personalizado
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Payment Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="paymentAmount">Valor do Pagamento</Label>
+              <Input
+                id="paymentAmount"
+                type="number"
+                step="0.01"
+                min={minPayment}
+                max={cardInfo.totalAmount}
+                value={paymentAmount}
+                onChange={(e) => {
+                  setPaymentAmount(e.target.value);
+                  if (parseFloat(e.target.value) === cardInfo.totalAmount) {
+                    setPaymentType('full');
+                  } else if (parseFloat(e.target.value) === minPayment) {
+                    setPaymentType('minimum');
+                  } else {
+                    setPaymentType('custom');
+                  }
+                }}
+                disabled={paymentType !== 'custom'}
+                required
+              />
+              {paymentType === 'custom' && (
+                <p className="text-sm text-muted-foreground">
+                  Valor entre {formatCurrency(minPayment)} e {formatCurrency(cardInfo.totalAmount)}
+                </p>
+              )}
+            </div>
+
             {/* Payment Date */}
             <div className="space-y-2">
               <Label htmlFor="paymentDate">Data do Pagamento</Label>
@@ -218,12 +286,6 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                       Conta Bancária
                     </div>
                   </SelectItem>
-                  <SelectItem value="card">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" />
-                      Cartão
-                    </div>
-                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -240,25 +302,6 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                     {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         {account.name} - {formatCurrency(account.balance)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Card Selection */}
-            {paymentMethod === 'card' && (
-              <div className="space-y-2">
-                <Label htmlFor="card">Cartão</Label>
-                <Select value={selectedCard} onValueChange={setSelectedCard}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o cartão" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cards.map((card) => (
-                      <SelectItem key={card.id} value={card.id}>
-                        {card.name} ({card.card_type})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -292,9 +335,9 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
               <Button
                 type="submit"
                 className="flex-1"
-                disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount) || (paymentMethod === 'card' && !selectedCard)}
+                disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount)}
               >
-                {isProcessing ? 'Processando...' : 'Pagar Gasto'}
+                {isProcessing ? 'Processando...' : 'Pagar Cartão'}
               </Button>
             </div>
           </form>

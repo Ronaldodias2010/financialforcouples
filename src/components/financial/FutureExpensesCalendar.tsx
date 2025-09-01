@@ -14,11 +14,12 @@ interface FutureExpense {
   description: string;
   amount: number;
   due_date: string;
-  type: 'installment' | 'recurring' | 'card_payment';
+  type: 'installment' | 'recurring' | 'card_payment' | 'card_transaction';
   category: string;
   card_name?: string;
   installment_info?: string;
   owner_user?: string;
+  allowsPayment?: boolean;
 }
 
 interface FutureExpensesCalendarProps {
@@ -49,6 +50,8 @@ export const FutureExpensesCalendar = ({
         return <CalendarIcon className="h-3 w-3" />;
       case 'card_payment':
         return <AlertCircle className="h-3 w-3" />;
+      case 'card_transaction':
+        return <DollarSign className="h-3 w-3" />;
       default:
         return <DollarSign className="h-3 w-3" />;
     }
@@ -70,6 +73,8 @@ export const FutureExpensesCalendar = ({
         return t('recurring');
       case 'card_payment':
         return t('cardPayment');
+      case 'card_transaction':
+        return 'Gasto do Cartão';
       default:
         return t('other');
     }
@@ -83,6 +88,8 @@ export const FutureExpensesCalendar = ({
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'card_payment':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'card_transaction':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }

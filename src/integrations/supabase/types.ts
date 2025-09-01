@@ -295,9 +295,64 @@ export type Database = {
           },
         ]
       }
+      card_payment_history: {
+        Row: {
+          account_id: string | null
+          card_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          payment_amount: number
+          payment_date: string
+          payment_method: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          card_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_amount?: number
+          payment_date?: string
+          payment_method?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          card_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_amount?: number
+          payment_date?: string
+          payment_method?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_payment_history_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_payment_history_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cards: {
         Row: {
           account_id: string | null
+          allows_partial_payment: boolean | null
           card_type: Database["public"]["Enums"]["card_type"]
           closing_date: number | null
           created_at: string
@@ -309,6 +364,7 @@ export type Database = {
           initial_balance: number | null
           initial_balance_original: number | null
           last_four_digits: string | null
+          minimum_payment_amount: number | null
           name: string
           owner_user: string | null
           updated_at: string
@@ -316,6 +372,7 @@ export type Database = {
         }
         Insert: {
           account_id?: string | null
+          allows_partial_payment?: boolean | null
           card_type: Database["public"]["Enums"]["card_type"]
           closing_date?: number | null
           created_at?: string
@@ -327,6 +384,7 @@ export type Database = {
           initial_balance?: number | null
           initial_balance_original?: number | null
           last_four_digits?: string | null
+          minimum_payment_amount?: number | null
           name: string
           owner_user?: string | null
           updated_at?: string
@@ -334,6 +392,7 @@ export type Database = {
         }
         Update: {
           account_id?: string | null
+          allows_partial_payment?: boolean | null
           card_type?: Database["public"]["Enums"]["card_type"]
           closing_date?: number | null
           created_at?: string
@@ -345,6 +404,7 @@ export type Database = {
           initial_balance?: number | null
           initial_balance_original?: number | null
           last_four_digits?: string | null
+          minimum_payment_amount?: number | null
           name?: string
           owner_user?: string | null
           updated_at?: string
@@ -1641,6 +1701,7 @@ export type Database = {
           account_id: string | null
           amount: number
           card_id: string | null
+          card_transaction_type: string | null
           category_id: string | null
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
@@ -1663,6 +1724,7 @@ export type Database = {
           account_id?: string | null
           amount: number
           card_id?: string | null
+          card_transaction_type?: string | null
           category_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
@@ -1685,6 +1747,7 @@ export type Database = {
           account_id?: string | null
           amount?: number
           card_id?: string | null
+          card_transaction_type?: string | null
           category_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
@@ -2033,6 +2096,18 @@ export type Database = {
       }
       normalize_text_simple: {
         Args: { input: string }
+        Returns: string
+      }
+      process_card_payment: {
+        Args: {
+          p_account_id?: string
+          p_card_id: string
+          p_notes?: string
+          p_payment_amount: number
+          p_payment_date?: string
+          p_payment_method?: string
+          p_user_id: string
+        }
         Returns: string
       }
       process_future_expense_payment: {
