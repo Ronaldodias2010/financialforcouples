@@ -199,9 +199,17 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Adicionar parcelas
+      // Adicionar parcelas, mas excluir a 1ª parcela do mês atual (ela é Gasto Atual)
       for (const installment of installments || []) {
         const isPaid = await isExpensePaid(undefined, installment.id, installment.transaction_date);
+        const transactionMonth = format(new Date(installment.transaction_date), 'yyyy-MM');
+        const isCurrentMonth = transactionMonth === currentMonth;
+        const installmentNumber = installment.installment_number || 1;
+
+        // Se for a primeira parcela e for no mês atual, não aparece em Gastos Futuros
+        if (installmentNumber === 1 && isCurrentMonth) {
+          continue;
+        }
         
         // Parcelas de cartão de crédito NÃO devem ter botão de pagamento
         const allowsPayment = installment.payment_method !== 'credit_card';
@@ -274,18 +282,20 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         const isInstallment = cardTransaction.is_installment;
         const installmentNumber = cardTransaction.installment_number || 1;
         
+        // Ignorar completamente cartões de DÉBITO em Gastos Futuros
+        if (!isCreditCard) {
+          continue;
+        }
+        
         // Regra: Excluir compras à vista de cartão de crédito do mês atual
-        if (isCreditCard && isCurrentMonth && (!isInstallment || installmentNumber === 1)) {
-          continue; // Pular esta transação - não deve aparecer em gastos futuros
+        if (isCurrentMonth && (!isInstallment || installmentNumber === 1)) {
+          continue; // Não deve aparecer em gastos futuros
         }
         
         // Incluir apenas:
         // 1. Parcelas futuras (installment_number > 1)
         // 2. Compras de meses futuros
-        // 3. Cartões de débito (que já foram filtrados na query anterior)
-        const shouldInclude = !isCreditCard || // Débito sempre inclui
-                             !isCurrentMonth || // Mês futuro sempre inclui
-                             (isInstallment && installmentNumber > 1); // Parcela futura inclui
+        const shouldInclude = !isCurrentMonth || (isInstallment && installmentNumber > 1);
         
         if (shouldInclude) {
           expenses.push({
