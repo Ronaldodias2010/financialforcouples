@@ -606,6 +606,66 @@ export type Database = {
         }
         Relationships: []
       }
+      future_expense_payments: {
+        Row: {
+          account_id: string | null
+          amount: number
+          card_id: string | null
+          card_payment_info: Json | null
+          category_id: string | null
+          created_at: string
+          description: string
+          id: string
+          installment_transaction_id: string | null
+          original_due_date: string
+          owner_user: string
+          payment_date: string
+          payment_method: string
+          recurring_expense_id: string | null
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          card_id?: string | null
+          card_payment_info?: Json | null
+          category_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          installment_transaction_id?: string | null
+          original_due_date: string
+          owner_user?: string
+          payment_date?: string
+          payment_method?: string
+          recurring_expense_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          card_id?: string | null
+          card_payment_info?: Json | null
+          category_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          installment_transaction_id?: string | null
+          original_due_date?: string
+          owner_user?: string
+          payment_date?: string
+          payment_method?: string
+          recurring_expense_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       investment_goals: {
         Row: {
           created_at: string
@@ -1967,6 +2027,23 @@ export type Database = {
       }
       normalize_text_simple: {
         Args: { input: string }
+        Returns: string
+      }
+      process_future_expense_payment: {
+        Args: {
+          p_account_id?: string
+          p_amount: number
+          p_card_id?: string
+          p_card_payment_info?: Json
+          p_category_id?: string
+          p_description: string
+          p_installment_transaction_id?: string
+          p_original_due_date: string
+          p_payment_date?: string
+          p_payment_method?: string
+          p_recurring_expense_id?: string
+          p_user_id: string
+        }
         Returns: string
       }
       process_withdrawal: {

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, CreditCard, AlertCircle, DollarSign } from "lucide-react";
+import { Calendar, CreditCard, AlertCircle, DollarSign, CheckCircle, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
@@ -13,6 +13,8 @@ import { format } from 'date-fns';
 import { FutureExpensesCalendar } from "./FutureExpensesCalendar";
 import { translateCategoryName } from '@/utils/categoryTranslation';
 import { ExportUtils } from "@/components/financial/ExportUtils";
+import { PayFutureExpenseModal } from "./PayFutureExpenseModal";
+import { useFutureExpensePayments } from "@/hooks/useFutureExpensePayments";
 
 interface FutureExpense {
   id: string;
@@ -24,6 +26,10 @@ interface FutureExpense {
   card_name?: string;
   installment_info?: string;
   owner_user?: string;
+  recurringExpenseId?: string;
+  installmentTransactionId?: string;
+  cardPaymentInfo?: any;
+  isPaid?: boolean;
 }
 
 interface FutureExpensesViewProps {
@@ -35,10 +41,15 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { names } = usePartnerNames();
   const { isPartOfCouple } = useCouple();
   const { t, language } = useLanguage();
+  const { isExpensePaid } = useFutureExpensePayments();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [paymentModal, setPaymentModal] = useState<{
+    isOpen: boolean;
+    expense: FutureExpense | null;
+  }>({ isOpen: false, expense: null });
 
   useEffect(() => {
     if (user) {
@@ -115,7 +126,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       const expenses: FutureExpense[] = [];
 
       // Adicionar parcelas
-      installments?.forEach(installment => {
+      for (const installment of installments || []) {
+        const isPaid = await isExpensePaid(undefined, installment.id, installment.transaction_date);
         expenses.push({
           id: installment.id,
           description: installment.description,
@@ -125,18 +137,20 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           category: installment.categories?.name || 'Sem categoria',
           card_name: installment.cards?.name,
           installment_info: `${installment.installment_number}/${installment.total_installments}`,
-          owner_user: installment.cards?.owner_user || installment.owner_user
+          owner_user: installment.cards?.owner_user || installment.owner_user,
+          installmentTransactionId: installment.id,
+          isPaid
         });
-      });
+      }
 
       // Adicionar gastos recorrentes - CALCULAR TODAS AS PARCELAS FUTURAS
-      recurring?.forEach(recur => {
+      for (const recur of recurring || []) {
         // Filtrar por viewMode se necessário
         const shouldInclude = viewMode === "both" || 
           (viewMode === "user1" && recur.owner_user === 'user1') ||
           (viewMode === "user2" && recur.owner_user === 'user2');
           
-        if (!shouldInclude) return;
+        if (!shouldInclude) continue;
 
         // Calcular todas as ocorrências futuras para os próximos 12 meses
         let currentDueDate = new Date(recur.next_due_date);
@@ -146,15 +160,19 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         while (currentDueDate <= futureDate && installmentCount < maxInstallments) {
           // Só adicionar se a data é no futuro ou hoje
           if (currentDueDate >= now) {
+            const dueDate = format(currentDueDate, 'yyyy-MM-dd');
+            const isPaid = await isExpensePaid(recur.id, undefined, dueDate);
             expenses.push({
               id: `${recur.id}-installment-${installmentCount}`,
               description: recur.name,
               amount: recur.amount,
-              due_date: format(currentDueDate, 'yyyy-MM-dd'),
+              due_date: dueDate,
               type: 'recurring',
               category: recur.categories?.name || 'Sem categoria',
               card_name: recur.cards?.name || recur.accounts?.name,
-              owner_user: recur.cards?.owner_user || recur.owner_user
+              owner_user: recur.cards?.owner_user || recur.owner_user,
+              recurringExpenseId: recur.id,
+              isPaid
             });
           }
           
@@ -163,7 +181,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           currentDueDate.setDate(currentDueDate.getDate() + recur.frequency_days);
           installmentCount++;
         }
-      });
+      }
 
       // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento
       for (const card of cards || []) {
@@ -171,6 +189,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           const paymentAmount = await calculateCardPaymentAmount(card, user.id);
           if (paymentAmount > 0) {
             const nextDueDate = getNextDueDate(card.due_date);
+            const isPaid = await isExpensePaid(undefined, undefined, nextDueDate);
             expenses.push({
               id: `card-${card.id}`,
               description: `${t('transactionForm.creditCardPayment')} ${card.name}`,
@@ -179,7 +198,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               type: 'card_payment',
               category: t('transactionForm.creditCard'),
               card_name: card.name,
-              owner_user: card.owner_user
+              owner_user: card.owner_user,
+              cardPaymentInfo: { cardId: card.id, cardName: card.name },
+              isPaid
             });
           }
         }
@@ -305,6 +326,15 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
 
   const translateCategory = (category: string) => {
     return translateCategoryName(category, language as 'pt' | 'en' | 'es');
+  };
+
+  const handlePayExpense = (expense: FutureExpense) => {
+    setPaymentModal({ isOpen: true, expense });
+  };
+
+  const handlePaymentSuccess = () => {
+    // Recarregar a lista de gastos futuros
+    fetchFutureExpenses();
   };
 
   const categories = Array.from(new Set(futureExpenses.map(expense => expense.category)));
@@ -458,10 +488,29 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-lg">
-                      {formatCurrency(expense.amount)}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="font-semibold text-lg text-destructive">
+                        {formatCurrency(expense.amount)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {expense.isPaid ? (
+                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Pago
+                        </Badge>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => handlePayExpense(expense)}
+                          className="flex items-center gap-2"
+                        >
+                          <Receipt className="h-4 w-4" />
+                          Quitar
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -469,6 +518,16 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      {paymentModal.expense && (
+        <PayFutureExpenseModal
+          isOpen={paymentModal.isOpen}
+          onClose={() => setPaymentModal({ isOpen: false, expense: null })}
+          expense={paymentModal.expense}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
     </Card>
   );
 };
