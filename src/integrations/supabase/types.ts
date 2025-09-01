@@ -1791,7 +1791,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      monthly_financial_summary: {
+        Row: {
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          month_number: number | null
+          month_year: string | null
+          net_balance: number | null
+          total_expenses: number | null
+          total_income: number | null
+          user_id: string | null
+          year_number: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       auto_translate_category_name: {
