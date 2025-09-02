@@ -110,7 +110,8 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [subcategory, setSubcategory] = useState("");
   const [transactionDate, setTransactionDate] = useState<Date>(() => {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    now.setHours(0, 0, 0, 0); // Ensure we're using midnight local time
+    return now;
   });
 const [paymentMethod, setPaymentMethod] = useState<
   | "cash"
@@ -540,7 +541,8 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         // Reset
         setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(() => {
           const now = new Date();
-          return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          now.setHours(0, 0, 0, 0);
+          return now;
         });
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setSaqueSourceAccountId(""); setSaqueSourceType("account"); setCardId(""); setCurrency(userPreferredCurrency);
         return;
@@ -580,7 +582,8 @@ const invTxn: TablesInsert<'transactions'> = {
         // Reset
         setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(() => {
           const now = new Date();
-          return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          now.setHours(0, 0, 0, 0);
+          return now;
         });
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setSaqueSourceAccountId(""); setSaqueSourceType("account"); setCardId(""); setCurrency(userPreferredCurrency);
         return;
@@ -615,7 +618,8 @@ const invTxn: TablesInsert<'transactions'> = {
           setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); 
           setTransactionDate(() => {
             const now = new Date();
-            return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            now.setHours(0, 0, 0, 0);
+            return now;
           });
           setPaymentMethod("cash"); setAccountId(""); setSaqueSourceAccountId(""); setSaqueSourceType("account"); setCardId(""); setCurrency(userPreferredCurrency);
           return;
@@ -809,8 +813,8 @@ const invTxn: TablesInsert<'transactions'> = {
             transaction_date: format(transactionDate, 'yyyy-MM-dd'),
             purchase_date: format(transactionDate, 'yyyy-MM-dd'),
             payment_method: paymentMethod,
-            card_id: cardId || null,
-            account_id: accountId || null,
+            card_id: paymentMethod === "credit_card" ? cardId : null,
+            account_id: paymentMethod === "credit_card" ? null : (accountId || null),
             is_installment: false,
             total_installments: null,
             installment_number: null
@@ -941,7 +945,8 @@ const invTxn: TablesInsert<'transactions'> = {
       setSubcategory("");
       setTransactionDate(() => {
         const now = new Date();
-        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        now.setHours(0, 0, 0, 0);
+        return now;
       });
       setPaymentMethod("cash");
       setAccountId("");

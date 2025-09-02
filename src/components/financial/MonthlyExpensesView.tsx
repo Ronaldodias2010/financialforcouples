@@ -477,12 +477,12 @@ if (selectedCategory !== "all") {
                           <p>{t('monthlyExpenses.subcategory')}: {transaction.subcategory}</p>
                         )}
                         <p>{t('monthlyExpenses.payment')}: {getPaymentMethodText(transaction.payment_method)}</p>
-                        {transaction.payment_method !== 'dinheiro' && transaction.account_id && transaction.accounts?.name && (
-                          <p>{t('monthlyExpenses.bankAccount')}: {transaction.accounts.name}</p>
-                        )}
-                        {transaction.cards?.name && (
-                          <p>{t('monthlyExpenses.card')}: {transaction.cards.name}</p>
-                        )}
+                         {transaction.payment_method !== 'dinheiro' && transaction.payment_method !== 'credit_card' && transaction.account_id && transaction.accounts?.name && (
+                           <p>{t('monthlyExpenses.bankAccount')}: {transaction.accounts.name}</p>
+                         )}
+                         {transaction.cards?.name && (
+                           <p>{t('monthlyExpenses.card')}: {transaction.cards.name}</p>
+                         )}
                         {transaction.cards?.owner_user && (
                           <p>{t('monthlyExpenses.cardOwner')}: {getCardOwnerName(transaction.cards.owner_user)}</p>
                         )}
