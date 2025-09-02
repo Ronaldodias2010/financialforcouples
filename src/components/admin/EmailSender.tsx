@@ -9,7 +9,7 @@ import { Loader2, Send } from 'lucide-react';
 
 export default function EmailSender() {
   const [email, setEmail] = useState('');
-  const [template, setTemplate] = useState<'invite' | 'premium' | 'confirmation' | 'password-reset' | 'expiration-warning' | 'final-warning' | 'grace-period'>('invite');
+  const [template, setTemplate] = useState<'invite' | 'premium' | 'confirmation' | 'password-reset' | 'expiration-warning' | 'final-warning' | 'grace-period' | 'premium-welcome' | 'premium-access-granted'>('invite');
   const [language, setLanguage] = useState<'pt' | 'en' | 'es'>('pt');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -75,6 +75,8 @@ export default function EmailSender() {
             <SelectItem value="expiration-warning">⏰ Aviso de Vencimento Premium</SelectItem>
             <SelectItem value="final-warning">🚨 Aviso Final Premium</SelectItem>
             <SelectItem value="grace-period">🛡️ Período de Graça Premium</SelectItem>
+            <SelectItem value="premium-welcome">🎊 Boas-vindas Premium (Assinatura)</SelectItem>
+            <SelectItem value="premium-access-granted">🎁 Acesso Premium Concedido (Admin)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -108,7 +110,7 @@ export default function EmailSender() {
       </Button>
 
       <div className="text-sm text-muted-foreground">
-        Templates: Convite, Premium, Confirmação, Reset de Senha, Avisos de Vencimento (PT/EN/ES)
+        Templates: Convite, Premium, Confirmação, Reset de Senha, Avisos de Vencimento, Boas-vindas Premium, Acesso Premium Concedido (PT/EN/ES)
       </div>
     </div>
   );

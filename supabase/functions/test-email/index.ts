@@ -10,6 +10,12 @@ import { EmailConfirmationPT } from './_templates/email-confirmation-pt.tsx';
 import { EmailConfirmationEN } from './_templates/email-confirmation-en.tsx';
 import { PasswordResetPT } from './_templates/password-reset-pt.tsx';
 import { PasswordResetEN } from './_templates/password-reset-en.tsx';
+import { PremiumWelcomeEmailPT } from '../send-premium-welcome/_templates/premium-welcome-pt.tsx';
+import { PremiumWelcomeEmailEN } from '../send-premium-welcome/_templates/premium-welcome-en.tsx';
+import { PremiumWelcomeEmailES } from '../send-premium-welcome/_templates/premium-welcome-es.tsx';
+import { PremiumAccessGrantedEmailPT } from '../send-premium-welcome/_templates/premium-access-granted-pt.tsx';
+import { PremiumAccessGrantedEmailEN } from '../send-premium-welcome/_templates/premium-access-granted-en.tsx';
+import { PremiumAccessGrantedEmailES } from '../send-premium-welcome/_templates/premium-access-granted-es.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -34,12 +40,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     const testData = {
       email,
-      name: language === 'pt' ? "Usuário Teste" : "Test User",
+      name: language === 'pt' ? "Usuário Teste" : language === 'es' ? "Usuario de Prueba" : "Test User",
+      user_name: language === 'pt' ? "João Silva" : language === 'es' ? "Juan Pérez" : "John Smith",
       inviter_name: language === 'pt' ? "Admin Couples Financials" : "Couples Financials Admin",
       temp_password: "TEST2024",
       login_url: "https://www.couplesfinancials.com/auth",
-      start_date: language === 'pt' ? new Date().toLocaleDateString('pt-BR') : new Date().toLocaleDateString('en-US'),
-      end_date: language === 'pt' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR') : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US'),
+      start_date: new Date().toISOString(),
+      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      subscription_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       days_duration: 30,
       userEmail: email,
       loginUrl: "https://www.couplesfinancials.com/auth",
@@ -110,6 +118,76 @@ const handler = async (req: Request): Promise<Response> => {
           })
         );
         subject = "🔐 Redefinir Senha - Couples Financials";
+      }
+    } else if (template === 'premium-welcome') {
+      if (language === 'en') {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumWelcomeEmailEN, {
+            user_email: testData.email,
+            user_name: testData.user_name,
+            subscription_end: testData.subscription_end,
+            login_url: testData.login_url,
+          })
+        );
+        subject = "🎉 Welcome to Couples Financials Premium!";
+      } else if (language === 'es') {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumWelcomeEmailES, {
+            user_email: testData.email,
+            user_name: testData.user_name,
+            subscription_end: testData.subscription_end,
+            login_url: testData.login_url,
+          })
+        );
+        subject = "🎉 ¡Bienvenido a Couples Financials Premium!";
+      } else {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumWelcomeEmailPT, {
+            user_email: testData.email,
+            user_name: testData.user_name,
+            subscription_end: testData.subscription_end,
+            login_url: testData.login_url,
+          })
+        );
+        subject = "🎉 Bem-vindo ao Couples Financials Premium!";
+      }
+    } else if (template === 'premium-access-granted') {
+      if (language === 'en') {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumAccessGrantedEmailEN, {
+            user_email: testData.email,
+            start_date: testData.start_date,
+            end_date: testData.end_date,
+            temp_password: testData.temp_password,
+            login_url: testData.login_url,
+            days_duration: testData.days_duration,
+          })
+        );
+        subject = "🎁 Premium Access Granted by Admin - Couples Financials";
+      } else if (language === 'es') {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumAccessGrantedEmailES, {
+            user_email: testData.email,
+            start_date: testData.start_date,
+            end_date: testData.end_date,
+            temp_password: testData.temp_password,
+            login_url: testData.login_url,
+            days_duration: testData.days_duration,
+          })
+        );
+        subject = "🎁 Acceso Premium Concedido por Admin - Couples Financials";
+      } else {
+        emailHtml = await renderAsync(
+          React.createElement(PremiumAccessGrantedEmailPT, {
+            user_email: testData.email,
+            start_date: testData.start_date,
+            end_date: testData.end_date,
+            temp_password: testData.temp_password,
+            login_url: testData.login_url,
+            days_duration: testData.days_duration,
+          })
+        );
+        subject = "🎁 Acesso Premium Concedido pelo Admin - Couples Financials";
       }
     } else {
       if (language === 'en') {
