@@ -8,9 +8,6 @@ resource "aws_s3_bucket" "app_static" {
   }
 }
 
-# Data source para obter informações da conta AWS atual
-data "aws_caller_identity" "current" {}
-
 # String aleatória para sufixo do bucket
 resource "random_string" "bucket_suffix" {
   length  = 8
