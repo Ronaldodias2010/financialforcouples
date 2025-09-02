@@ -12,7 +12,8 @@ const supabase = createClient(
 );
 
 async function fetchRates() {
-  const url = 'https://api.exchangerate.host/latest?base=BRL&symbols=USD,EUR,GBP';
+  // Frankfurter API is free and reliable, no API key required
+  const url = 'https://api.frankfurter.app/latest?from=BRL&to=USD,EUR,GBP';
   console.log('[update-exchange-rates] Fetching from:', url);
   
   const res = await fetch(url);
@@ -26,12 +27,13 @@ async function fetchRates() {
     throw new Error('Invalid API response: missing rates object');
   }
   
-  const rates = json.rates;
-  if (!rates.USD || !rates.EUR || !rates.GBP) {
+  const rates = json.rates as { USD?: number; EUR?: number; GBP?: number };
+  if (typeof rates.USD !== 'number' || typeof rates.EUR !== 'number' || typeof rates.GBP !== 'number') {
     throw new Error(`Invalid rates data: USD=${rates.USD}, EUR=${rates.EUR}, GBP=${rates.GBP}`);
   }
   
-  return rates as { USD: number; EUR: number; GBP: number };
+  // Frankfurter returns BRL -> target directly (target per 1 BRL)
+  return { USD: rates.USD, EUR: rates.EUR, GBP: rates.GBP };
 }
 
 async function upsertRate(target: 'USD' | 'EUR' | 'GBP', rate: number) {
