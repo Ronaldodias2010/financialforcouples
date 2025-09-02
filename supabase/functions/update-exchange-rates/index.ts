@@ -13,10 +13,25 @@ const supabase = createClient(
 
 async function fetchRates() {
   const url = 'https://api.exchangerate.host/latest?base=BRL&symbols=USD,EUR,GBP';
+  console.log('[update-exchange-rates] Fetching from:', url);
+  
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch rates: ${res.status}`);
+  
   const json = await res.json();
-  return json?.rates as { USD: number; EUR: number; GBP: number };
+  console.log('[update-exchange-rates] API Response:', JSON.stringify(json));
+  
+  // Validate response structure
+  if (!json || !json.rates) {
+    throw new Error('Invalid API response: missing rates object');
+  }
+  
+  const rates = json.rates;
+  if (!rates.USD || !rates.EUR || !rates.GBP) {
+    throw new Error(`Invalid rates data: USD=${rates.USD}, EUR=${rates.EUR}, GBP=${rates.GBP}`);
+  }
+  
+  return rates as { USD: number; EUR: number; GBP: number };
 }
 
 async function upsertRate(target: 'USD' | 'EUR' | 'GBP', rate: number) {
