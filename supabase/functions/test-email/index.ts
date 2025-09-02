@@ -10,12 +10,12 @@ import { EmailConfirmationPT } from './_templates/email-confirmation-pt.tsx';
 import { EmailConfirmationEN } from './_templates/email-confirmation-en.tsx';
 import { PasswordResetPT } from './_templates/password-reset-pt.tsx';
 import { PasswordResetEN } from './_templates/password-reset-en.tsx';
-import { PremiumWelcomeEmailPT } from '../send-premium-welcome/_templates/premium-welcome-pt.tsx';
-import { PremiumWelcomeEmailEN } from '../send-premium-welcome/_templates/premium-welcome-en.tsx';
-import { PremiumWelcomeEmailES } from '../send-premium-welcome/_templates/premium-welcome-es.tsx';
-import { PremiumAccessGrantedEmailPT } from '../send-premium-welcome/_templates/premium-access-granted-pt.tsx';
-import { PremiumAccessGrantedEmailEN } from '../send-premium-welcome/_templates/premium-access-granted-en.tsx';
-import { PremiumAccessGrantedEmailES } from '../send-premium-welcome/_templates/premium-access-granted-es.tsx';
+import { PremiumWelcomeEmailPT } from './_templates/premium-welcome-pt.tsx';
+import { PremiumWelcomeEmailEN } from './_templates/premium-welcome-en.tsx';
+import { PremiumWelcomeEmailES } from './_templates/premium-welcome-es.tsx';
+import { PremiumAccessGrantedEmailPT } from './_templates/premium-access-granted-pt.tsx';
+import { PremiumAccessGrantedEmailEN } from './_templates/premium-access-granted-en.tsx';
+import { PremiumAccessGrantedEmailES } from './_templates/premium-access-granted-es.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
