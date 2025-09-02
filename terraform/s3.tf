@@ -8,6 +8,9 @@ resource "aws_s3_bucket" "app_static" {
   }
 }
 
+# Data source para obter informações da conta AWS atual
+data "aws_caller_identity" "current" {}
+
 # String aleatória para sufixo do bucket
 resource "random_string" "bucket_suffix" {
   length  = 8
@@ -42,6 +45,12 @@ resource "aws_s3_bucket_public_access_block" "app_static" {
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
+}
+
+# Wait for public access block to be properly configured
+resource "time_sleep" "wait_for_bucket_settings" {
+  depends_on = [aws_s3_bucket_public_access_block.app_static]
+  create_duration = "30s"
 }
 
 # Política do bucket para acesso público de leitura (apenas para assets estáticos)
@@ -82,7 +91,10 @@ resource "aws_s3_bucket_policy" "app_static" {
     ]
   })
 
-  depends_on = [aws_s3_bucket_public_access_block.app_static]
+  depends_on = [
+    aws_s3_bucket_public_access_block.app_static,
+    time_sleep.wait_for_bucket_settings
+  ]
 }
 
 # Configuração de website estático
