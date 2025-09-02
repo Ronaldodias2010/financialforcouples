@@ -19,7 +19,6 @@ interface PremiumAccessGrantedEmailProps {
   user_email: string;
   start_date: string;
   end_date: string;
-  temp_password: string;
   login_url: string;
   days_duration: number;
 }
@@ -28,7 +27,6 @@ export const PremiumAccessGrantedEmailPT = ({
   user_email,
   start_date,
   end_date,
-  temp_password,
   login_url,
   days_duration,
 }: PremiumAccessGrantedEmailProps) => (
@@ -86,10 +84,6 @@ export const PremiumAccessGrantedEmailPT = ({
             <Text style={detailText}>
               <strong>Término:</strong> {new Date(end_date).toLocaleDateString('pt-BR')}
             </Text>
-            <Text style={detailText}>
-              <strong>Senha Temporária:</strong> 
-              <span style={passwordCode}>{temp_password}</span>
-            </Text>
           </Section>
 
           {/* CTA Button */}
@@ -123,16 +117,13 @@ export const PremiumAccessGrantedEmailPT = ({
               1. Clique no botão "Acessar Premium Agora"
             </Text>
             <Text style={instructionText}>
-              2. Faça login com seu email e a senha temporária fornecida
+              2. Faça login com seu email e sua senha normal
             </Text>
             <Text style={instructionText}>
               3. Todas as funcionalidades Premium estarão disponíveis
             </Text>
             <Text style={instructionText}>
-              4. Recomendamos alterar sua senha nas configurações
-            </Text>
-            <Text style={instructionText}>
-              5. Explore todos os recursos Premium disponíveis
+              4. Explore todos os recursos Premium disponíveis
             </Text>
           </Section>
 

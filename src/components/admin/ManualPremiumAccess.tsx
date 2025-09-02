@@ -178,14 +178,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
 
       const targetUserId = targetSub.user_id as string;
 
-      // Insert manual access for the target user
-      const tempPasswordMain = generateTempPassword();
-      
-      // Hash the password using the database function
-      const { data: hashedPasswordMain, error: hashError1 } = await supabase
-        .rpc('hash_temp_password', { password: tempPasswordMain });
-      if (hashError1) throw hashError1;
-      
+      // Insert manual access for the target user (without temporary password)
       const { error: insertMainErr } = await supabase
         .from('manual_premium_access')
         .insert({
@@ -193,7 +186,6 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
           email: targetSub.email,
           start_date: data.startDate,
           end_date: data.endDate,
-          temp_password_hash: hashedPasswordMain,
           created_by_admin_id: session.user.id,
         });
       if (insertMainErr) throw insertMainErr;
@@ -218,13 +210,6 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
             .maybeSingle();
 
           if (partnerSub?.email) {
-            const tempPasswordPartner = generateTempPassword();
-            
-            // Hash the password using the database function
-            const { data: hashedPasswordPartner, error: hashError2 } = await supabase
-              .rpc('hash_temp_password', { password: tempPasswordPartner });
-            if (hashError2) throw hashError2;
-            
             const { error: insertPartnerErr } = await supabase
               .from('manual_premium_access')
               .insert({
@@ -232,7 +217,6 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                 email: partnerSub.email,
                 start_date: data.startDate,
                 end_date: data.endDate,
-                temp_password_hash: hashedPasswordPartner,
                 created_by_admin_id: session.user.id,
               });
             if (insertPartnerErr) throw insertPartnerErr;
@@ -240,7 +224,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
         }
       }
 
-      // Send premium access granted email
+      // Send premium access granted email without temporary password
       try {
         await supabase.functions.invoke('send-premium-welcome', {
           body: {
@@ -249,7 +233,6 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
             language: 'pt', // Default to Portuguese, could be enhanced to detect user language
             start_date: data.startDate,
             end_date: data.endDate,
-            temp_password: tempPasswordMain,
             days_duration: Math.ceil((new Date(data.endDate).getTime() - new Date(data.startDate).getTime()) / (1000 * 60 * 60 * 24))
           }
         });
@@ -397,7 +380,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                   <TableHead>{t.email}</TableHead>
                   <TableHead>{t.period}</TableHead>
                   <TableHead>{t.status}</TableHead>
-                  <TableHead>{t.password}</TableHead>
+                  
                   <TableHead>{t.actions}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -416,20 +399,6 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                       <Badge variant={grant.status === 'active' ? 'default' : 'secondary'}>
                         {t[grant.status as keyof typeof t] || grant.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono">
-                          {showPassword[grant.id] ? (tempPasswords[grant.id] || 'Loading...') : '••••••••'}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => togglePasswordVisibility(grant.id)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
                     </TableCell>
                     <TableCell>
                       <Button
