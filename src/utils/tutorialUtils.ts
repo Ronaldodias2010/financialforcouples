@@ -144,8 +144,10 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
 };
 
 export const openTutorialHTML = (language: Language = 'pt') => {
-  // Use current domain to construct the correct tutorial URL
-  const baseUrl = window.location.origin;
+  // Always use production domain on previews to avoid 404s
+  const hostname = window.location.hostname;
+  const isProd = hostname === 'couplesfinancials.com' || hostname === 'www.couplesfinancials.com';
+  const baseUrl = isProd ? window.location.origin : 'https://couplesfinancials.com';
   const tutorialUrl = `${baseUrl}/tutorial-couples-financials-${language}.html`;
   
   console.log('[Tutorial] Attempting to open:', tutorialUrl);
@@ -161,7 +163,7 @@ export const openTutorialHTML = (language: Language = 'pt') => {
     }
   } catch (error) {
     console.error('[Tutorial] Error opening tutorial:', error);
-    // Fallback to main tutorial file with current domain
+    // Fallback to main tutorial file with proper domain
     const fallbackUrl = `${baseUrl}/tutorial-couples-financials.html`;
     window.open(fallbackUrl, '_blank');
   }
