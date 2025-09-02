@@ -322,6 +322,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
                 currency={getDisplayCurrency()}
                 icon={Wallet}
                 type="income"
+                className={bothTotal < 0 ? "text-destructive" : ""}
               />
             </>
           ) : (
@@ -346,6 +347,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
                 currency={getDisplayCurrency()}
                 icon={Wallet}
                 type="income"
+                className={(viewMode === 'user1' ? user1Total : user2Total) < 0 ? "text-destructive" : ""}
               />
             </>
           )}

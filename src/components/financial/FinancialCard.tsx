@@ -67,7 +67,8 @@ export const FinancialCard = ({
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <p className={cn(
             "text-2xl font-bold",
-            className?.includes("text-destructive") && displayAmount < 0
+            // Show red for negative amounts, especially for "Limite Disponível" (available limit)
+            displayAmount < 0 
               ? "text-destructive"
               : "text-foreground"
           )}>

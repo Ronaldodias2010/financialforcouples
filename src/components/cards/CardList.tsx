@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { CardEditForm } from "./CardEditForm";
+import { cn } from "@/lib/utils";
 
 interface CardData {
   id: string;
@@ -258,7 +259,10 @@ const getOwnerNameForCard = (card: CardData) => {
                         )}
                       </p>
                     )}
-                    <p className="text-sm">
+                    <p className={cn(
+                      "text-sm",
+                      Number(card.initial_balance ?? 0) < 0 ? "text-destructive font-semibold" : ""
+                    )}>
                       Limite Disponível: {formatCurrency(getConvertedValue(Number(card.initial_balance ?? 0), card.currency), getDisplayCurrency(card.currency))}
                       {card.currency !== getDisplayCurrency(card.currency) && (
                         <span className="text-xs text-muted-foreground ml-1">
