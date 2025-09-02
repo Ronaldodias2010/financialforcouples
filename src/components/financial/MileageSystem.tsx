@@ -546,7 +546,7 @@ export const MileageSystem = () => {
             />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalMiles.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{Math.floor(totalMiles).toString()}</div>
             <p className="text-xs text-muted-foreground">{t('mileage.milesAccumulated')}</p>
           </CardContent>
         </Card>
@@ -844,9 +844,9 @@ export const MileageSystem = () => {
                                const totalAvailableMiles = (rule.existing_miles || 0) + cardHistoryMiles;
                                
                                return (
-                                 <SelectItem key={rule.card_id} value={rule.card_id}>
-                                   {rule.card?.name} - {totalAvailableMiles.toLocaleString()} milhas
-                                 </SelectItem>
+                                  <SelectItem key={rule.card_id} value={rule.card_id}>
+                                    {rule.card?.name} - {Math.floor(totalAvailableMiles).toString()} milhas
+                                  </SelectItem>
                                );
                              })}
                         </SelectContent>
@@ -884,9 +884,9 @@ export const MileageSystem = () => {
                     {goalForm.initial_miles > 0 && (
                       <div className="md:col-span-2">
                         <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-                          <p className="text-sm font-medium text-primary">
-                            Milhas iniciais: {goalForm.initial_miles.toLocaleString()}
-                          </p>
+                           <p className="text-sm font-medium text-primary">
+                             Milhas iniciais: {Math.floor(goalForm.initial_miles).toString()}
+                           </p>
                           <p className="text-xs text-muted-foreground">
                             Estas milhas serão adicionadas como progresso inicial da meta
                           </p>
@@ -958,20 +958,20 @@ export const MileageSystem = () => {
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>{totalCurrentMiles.toLocaleString()} {t('mileage.milesEarned')}</span>
-                          <span>{goal.target_miles.toLocaleString()} {t('mileage.milesTarget')}</span>
+                          <span>{Math.floor(totalCurrentMiles).toString()} {t('mileage.milesEarned')}</span>
+                          <span>{Math.floor(goal.target_miles).toString()} {t('mileage.milesTarget')}</span>
                         </div>
                         <Progress value={progress} className="h-2" />
                         <div className="text-sm text-muted-foreground space-y-1">
                           <div>{progress.toFixed(1)}% {t('mileage.progressText')}</div>
                           {existingMilesFromCards > 0 && (
                             <div className="text-xs text-muted-foreground">
-                              {t('mileage.includesExisting')}: {existingMilesFromCards.toLocaleString()} {t('mileage.milesEarned')}
+                              {t('mileage.includesExisting')}: {Math.floor(existingMilesFromCards).toString()} {t('mileage.milesEarned')}
                             </div>
                           )}
                           {remainingMiles > 0 && (
                             <div className="text-xs font-medium text-primary">
-                              {t('mileage.remaining')}: {remainingMiles.toLocaleString()} {t('mileage.milesEarned')}
+                              {t('mileage.remaining')}: {Math.floor(remainingMiles).toString()} {t('mileage.milesEarned')}
                             </div>
                           )}
                           {goal.target_date && (
@@ -1024,21 +1024,21 @@ export const MileageSystem = () => {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>{totalCurrentMiles.toLocaleString()} {t('mileage.milesEarned')}</span>
-                          <span>{goal.target_miles.toLocaleString()} {t('mileage.milesTarget')}</span>
-                        </div>
+                         <div className="flex justify-between text-sm">
+                           <span>{Math.floor(totalCurrentMiles).toString()} {t('mileage.milesEarned')}</span>
+                           <span>{Math.floor(goal.target_miles).toString()} {t('mileage.milesTarget')}</span>
+                         </div>
                         <Progress value={progress} className="h-2" />
                         <div className="text-sm text-muted-foreground space-y-1">
                           <div>{progress.toFixed(1)}% {t('mileage.progressText')}</div>
                           {existingMilesFromCards > 0 && (
                             <div className="text-xs text-muted-foreground">
-                              {t('mileage.includesExisting')}: {existingMilesFromCards.toLocaleString()} {t('mileage.milesEarned')}
+                              {t('mileage.includesExisting')}: {Math.floor(existingMilesFromCards).toString()} {t('mileage.milesEarned')}
                             </div>
                           )}
                           {remainingMiles > 0 && (
                             <div className="text-xs font-medium text-primary">
-                              {t('mileage.remaining')}: {remainingMiles.toLocaleString()} {t('mileage.milesEarned')}
+                              {t('mileage.remaining')}: {Math.floor(remainingMiles).toString()} {t('mileage.milesEarned')}
                             </div>
                           )}
                           {goal.target_date && (
@@ -1086,22 +1086,22 @@ export const MileageSystem = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>{totalCurrentMiles.toLocaleString()} {t('mileage.milesEarned')}</span>
-                  <span>{goal.target_miles.toLocaleString()} {t('mileage.milesTarget')}</span>
-                </div>
+                 <div className="flex justify-between text-sm">
+                   <span>{Math.floor(totalCurrentMiles).toString()} {t('mileage.milesEarned')}</span>
+                   <span>{Math.floor(goal.target_miles).toString()} {t('mileage.milesTarget')}</span>
+                 </div>
                 <Progress value={progress} className="h-2" />
                 <div className="text-sm text-muted-foreground space-y-1">
                   <div>{progress.toFixed(1)}% {t('mileage.progressText')}</div>
                   {existingMilesFromCards > 0 && (
-                    <div className="text-xs text-muted-foreground">
-                      {t('mileage.includesExisting')}: {existingMilesFromCards.toLocaleString()} {t('mileage.milesEarned')}
-                    </div>
+                     <div className="text-xs text-muted-foreground">
+                       {t('mileage.includesExisting')}: {Math.floor(existingMilesFromCards).toString()} {t('mileage.milesEarned')}
+                     </div>
                   )}
                   {remainingMiles > 0 && (
-                    <div className="text-xs font-medium text-primary">
-                      {t('mileage.remaining')}: {remainingMiles.toLocaleString()} {t('mileage.milesEarned')}
-                    </div>
+                     <div className="text-xs font-medium text-primary">
+                       {t('mileage.remaining')}: {Math.floor(remainingMiles).toString()} {t('mileage.milesEarned')}
+                     </div>
                   )}
                   {goal.target_date && (
                     <span className="block">• {t('mileage.target')}: {format(new Date(goal.target_date), 'dd/MM/yyyy')}</span>
@@ -1142,21 +1142,21 @@ export const MileageSystem = () => {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold">{record.card?.name}</h4>
-                          <Badge variant="outline">
-                            +{record.miles_earned.toLocaleString()} {t('mileage.milesEarned')}
-                          </Badge>
+                           <Badge variant="outline">
+                             +{Math.floor(record.miles_earned).toString()} {t('mileage.milesEarned')}
+                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {recordUserName} ganhou {record.miles_earned.toLocaleString()} milhas
-                        </p>
+                         <p className="text-sm text-muted-foreground">
+                           {recordUserName} ganhou {Math.floor(record.miles_earned).toString()} milhas
+                         </p>
                         <p className="text-sm text-muted-foreground">
                           {t('mileage.spent')}: R$ {record.amount_spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          ≈ {currencySymbol}{convertedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          {' → '}{Math.round(milesCalc).toLocaleString()} milhas
-                          {' ('}regra: {milesPerAmount} milha(s) por {currencySymbol}{threshold}{')'}
-                        </p>
+                         <p className="text-xs text-muted-foreground">
+                           ≈ {currencySymbol}{convertedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           {' → '}{Math.floor(milesCalc).toString()} milhas
+                           {' ('}regra: {milesPerAmount} milha(s) por {currencySymbol}{threshold}{')'}
+                         </p>
                         {record.transaction_id && (
                           <p className="text-xs text-muted-foreground">
                             Transação: {record.transaction_id.substring(0, 8)}...
