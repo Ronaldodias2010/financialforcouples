@@ -240,6 +240,25 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
         }
       }
 
+      // Send premium access granted email
+      try {
+        await supabase.functions.invoke('send-premium-welcome', {
+          body: {
+            type: 'access_granted',
+            user_email: targetSub.email,
+            language: 'pt', // Default to Portuguese, could be enhanced to detect user language
+            start_date: data.startDate,
+            end_date: data.endDate,
+            temp_password: tempPasswordMain,
+            days_duration: Math.ceil((new Date(data.endDate).getTime() - new Date(data.startDate).getTime()) / (1000 * 60 * 60 * 24))
+          }
+        });
+        console.log('Premium access granted email sent successfully');
+      } catch (emailError) {
+        console.error('Error sending premium access granted email:', emailError);
+        // Don't fail the operation if email fails
+      }
+
       toast({
         title: t.accessGranted,
       });
