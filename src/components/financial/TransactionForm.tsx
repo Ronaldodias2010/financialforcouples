@@ -491,9 +491,7 @@ const getAccountOwnerName = (account: Account) => {
         const amtFrom = convertCurrency(transactionAmount, currency, (fromAcc.currency || "BRL") as CurrencyCode);
         const amtTo = convertCurrency(transactionAmount, currency, (toAcc.currency || "BRL") as CurrencyCode);
 
-        // Atualiza saldos
-        await supabase.from('accounts').update({ balance: Number(fromAcc.balance) - amtFrom }).eq('id', fromAcc.id);
-        await supabase.from('accounts').update({ balance: Number(toAcc.balance) + amtTo }).eq('id', toAcc.id);
+        // Saldos serão atualizados automaticamente pelo trigger do banco
 
         // Registra duas transações (saída e entrada)
         const transferDescOut = description || 'Transferência entre contas - saída';
@@ -553,8 +551,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         if (!fromAcc) throw new Error("Conta de saída inválida");
         const amtFrom = convertCurrency(transactionAmount, currency, (fromAcc.currency || "BRL") as CurrencyCode);
 
-        // Atualiza saldo da conta de saída
-        await supabase.from('accounts').update({ balance: Number(fromAcc.balance) - amtFrom }).eq('id', fromAcc.id);
+        // Saldo será atualizado automaticamente pelo trigger do banco
 
         // Registra transação de saída da conta para investimento
         const transferDesc = description || 'Transferência para investimento';

@@ -11,6 +11,7 @@ interface Transaction {
   currency: CurrencyCode;
   description: string;
   transaction_date: string;
+  payment_method: string;
   owner_user: string;
   user_id: string;
   category_id: string;
@@ -267,6 +268,11 @@ export const useFinancialData = () => {
     let totalExpenses = 0;
 
     filteredTransactions.forEach((transaction) => {
+      // Skip account transfers to prevent double counting
+      if (transaction.payment_method === 'account_transfer') {
+        return;
+      }
+
       const amountInUserCurrency = convertCurrency(
         transaction.amount,
         transaction.currency,
@@ -361,6 +367,11 @@ export const useFinancialData = () => {
       let prevTotalExpenses = 0;
 
       (prevTransactions || []).forEach((transaction) => {
+        // Skip account transfers to prevent double counting
+        if (transaction.payment_method === 'account_transfer') {
+          return;
+        }
+
         const amountInUserCurrency = convertCurrency(
           transaction.amount,
           transaction.currency,
@@ -379,6 +390,11 @@ export const useFinancialData = () => {
       let currentTotalExpenses = 0;
 
       (currentTransactions || []).forEach((transaction) => {
+        // Skip account transfers to prevent double counting
+        if (transaction.payment_method === 'account_transfer') {
+          return;
+        }
+
         const amountInUserCurrency = convertCurrency(
           transaction.amount,
           transaction.currency,
@@ -505,23 +521,25 @@ export const useFinancialData = () => {
     return accountsBalance + cashBalance;
   };
 
-  // Returns the sum of transaction-based incomes only (no accounts)
+  // Returns the sum of transaction-based incomes only (no accounts, no transfers)
   const getTransactionsIncome = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
-    const incomeOnly = filteredTransactions.filter(t => t.type === 'income');
+    const incomeOnly = filteredTransactions.filter(t => t.type === 'income' && t.payment_method !== 'account_transfer');
     const total = incomeOnly.reduce((sum, t) => {
       return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
     }, 0);
+    console.log('💰 Income calculation excluding transfers:', { total, incomeTransactions: incomeOnly.length, viewMode });
     return total;
   };
 
-  // Returns the sum of transaction-based expenses only (no accounts)
+  // Returns the sum of transaction-based expenses only (no accounts, no transfers)
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
-    const expenseOnly = filteredTransactions.filter(t => t.type === 'expense');
+    const expenseOnly = filteredTransactions.filter(t => t.type === 'expense' && t.payment_method !== 'account_transfer');
     const total = expenseOnly.reduce((sum, t) => {
       return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
     }, 0);
+    console.log('💸 Expense calculation excluding transfers:', { total, expenseTransactions: expenseOnly.length, viewMode });
     return total;
   };
 

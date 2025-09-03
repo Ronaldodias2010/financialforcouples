@@ -312,7 +312,7 @@ if (selectedCategory !== "all") {
   };
 
   const totalExpenses = transactions
-    .filter(t => t.type === 'expense')
+    .filter(t => t.type === 'expense' && t.payment_method !== 'account_transfer')
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (

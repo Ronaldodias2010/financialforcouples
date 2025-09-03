@@ -265,7 +265,7 @@ if (selectedCategory !== "all") {
     }
   };
 
-  const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome = transactions.filter(t => t.payment_method !== 'account_transfer').reduce((sum, t) => sum + t.amount, 0);
 
   const getExportTitle = () => {
     const [year, month] = selectedMonth.split('-').map(Number);
