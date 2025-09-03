@@ -57,6 +57,7 @@ export const CategoryManager = () => {
       'extra income': 'Renda Extra',
       'credit card payment': 'Pagamento de Cartão de Crédito',
       'transfer': 'Transferência',
+      'account transfer': 'Transferência entre Contas',
       'retirement': 'Aposentadoria',
       'pension': 'Pensão',
       'investment': 'Investimento',
@@ -101,6 +102,7 @@ export const CategoryManager = () => {
       'renda extra': 'Extra Income',
       'pagamento de cartao de credito': 'Credit Card Payment',
       'transferencia': 'Transfer',
+      'transferencia entre contas': 'Account Transfer',
       'aposentadoria': 'Retirement',
       'pensao': 'Pension',
       'investimento': 'Investment',
@@ -157,6 +159,8 @@ export const CategoryManager = () => {
       'credit card payment': 'Pago de Tarjeta de Crédito',
       'transferencia': 'Transferencia',
       'transfer': 'Transferencia',
+      'transferencia entre contas': 'Transferencia entre Cuentas',
+      'account transfer': 'Transferencia entre Cuentas',
       'aposentadoria': 'Jubilación',
       'retirement': 'Jubilación',
       'pensao': 'Pensión',
@@ -460,6 +464,17 @@ export const CategoryManager = () => {
     }
   };
 
+  // Check if a category is a fixed system category that shouldn't be deleted
+  const isFixedCategory = (categoryName: string) => {
+    const normalizedName = normalize(categoryName);
+    const fixedCategories = [
+      'transferencia entre contas',
+      'account transfer',
+      'transferencia entre cuentas'
+    ];
+    return fixedCategories.includes(normalizedName);
+  };
+
   const resetForm = () => {
     setNewCategoryName("");
     setNewCategoryDescription("");
@@ -628,14 +643,16 @@ export const CategoryManager = () => {
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(category.id)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {!isFixedCategory(category.name) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(category.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))
