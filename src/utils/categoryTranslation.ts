@@ -30,6 +30,7 @@ const categoryTranslations: CategoryTranslations = {
   'aposentadoria': { pt: 'Aposentadoria', en: 'Retirement', es: 'Jubilación' },
   'pensao': { pt: 'Pensão', en: 'Pension', es: 'Pensión' },
   'renda_extra': { pt: 'Renda Extra', en: 'Extra Income', es: 'Ingresos Extra' },
+  'transferencia_entre_contas': { pt: 'Transferência entre Contas', en: 'Account Transfer', es: 'Transferencia entre Cuentas' },
 
   // Expense categories
   'alimentacao': { pt: 'Alimentação', en: 'Food', es: 'Alimentación' },

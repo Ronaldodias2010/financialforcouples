@@ -88,6 +88,7 @@ const CATEGORY_TRANSLATIONS: Record<string, string> = {
   'renda extra': 'Extra Income',
   'pagamento de cartao de credito': 'Credit Card Payment',
   'transferencia': 'Transfer',
+  'transferencia entre contas': 'Account Transfer',
   'aposentadoria': 'Retirement',
   'contas basicas': 'Basic Bills',
   'entretenimento': 'Entertainment',
