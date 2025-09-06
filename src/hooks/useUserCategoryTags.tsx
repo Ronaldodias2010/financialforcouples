@@ -12,6 +12,7 @@ interface UserCategoryTag {
 
 export const useUserCategoryTags = () => {
   const [userTags, setUserTags] = useState<Record<string, UserCategoryTag[]>>({});
+  const [excludedSystemTags, setExcludedSystemTags] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -21,22 +22,40 @@ export const useUserCategoryTags = () => {
     
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch user custom tags
+      const { data: userTagsData, error: userTagsError } = await supabase
         .from('user_category_tags')
         .select('*')
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (userTagsError) throw userTagsError;
+
+      // Fetch excluded system tags
+      const { data: exclusionsData, error: exclusionsError } = await supabase
+        .from('user_category_tag_exclusions')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (exclusionsError) throw exclusionsError;
 
       const tagsByCategory: Record<string, UserCategoryTag[]> = {};
-      data?.forEach(tag => {
+      userTagsData?.forEach(tag => {
         if (!tagsByCategory[tag.category_id]) {
           tagsByCategory[tag.category_id] = [];
         }
         tagsByCategory[tag.category_id].push(tag);
       });
 
+      const exclusionsByCategory: Record<string, string[]> = {};
+      exclusionsData?.forEach(exclusion => {
+        if (!exclusionsByCategory[exclusion.category_id]) {
+          exclusionsByCategory[exclusion.category_id] = [];
+        }
+        exclusionsByCategory[exclusion.category_id].push(exclusion.system_tag_id);
+      });
+
       setUserTags(tagsByCategory);
+      setExcludedSystemTags(exclusionsByCategory);
     } catch (error) {
       console.error('Error fetching user tags:', error);
       toast({
@@ -122,6 +141,71 @@ export const useUserCategoryTags = () => {
     }
   };
 
+  const excludeSystemTag = async (systemTagId: string, categoryId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_category_tag_exclusions')
+        .insert({
+          user_id: user.id,
+          category_id: categoryId,
+          system_tag_id: systemTagId
+        });
+
+      if (error) throw error;
+
+      setExcludedSystemTags(prev => ({
+        ...prev,
+        [categoryId]: [...(prev[categoryId] || []), systemTagId]
+      }));
+
+      toast({
+        title: "Tag removida",
+        description: "Tag removida da categoria.",
+      });
+    } catch (error) {
+      console.error('Error excluding system tag:', error);
+      toast({
+        title: "Erro ao remover tag",
+        description: "Não foi possível remover a tag.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const restoreSystemTag = async (systemTagId: string, categoryId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_category_tag_exclusions')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('category_id', categoryId)
+        .eq('system_tag_id', systemTagId);
+
+      if (error) throw error;
+
+      setExcludedSystemTags(prev => ({
+        ...prev,
+        [categoryId]: prev[categoryId]?.filter(id => id !== systemTagId) || []
+      }));
+
+      toast({
+        title: "Tag restaurada",
+        description: "Tag restaurada na categoria.",
+      });
+    } catch (error) {
+      console.error('Error restoring system tag:', error);
+      toast({
+        title: "Erro ao restaurar tag",
+        description: "Não foi possível restaurar a tag.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getUserTagsForCategory = (categoryId: string): UserCategoryTag[] => {
     return userTags[categoryId] || [];
   };
@@ -134,9 +218,12 @@ export const useUserCategoryTags = () => {
 
   return {
     userTags,
+    excludedSystemTags,
     isLoading,
     addUserTag,
     removeUserTag,
+    excludeSystemTag,
+    restoreSystemTag,
     getUserTagsForCategory,
     refetch: fetchUserTags
   };

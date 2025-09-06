@@ -10,6 +10,8 @@ interface Tag {
   name: string;
   color?: string;
   removable?: boolean;
+  isSystemTag?: boolean;
+  systemTagId?: string;
 }
 
 interface TagInputProps {

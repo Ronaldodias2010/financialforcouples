@@ -1936,6 +1936,45 @@ export type Database = {
           },
         ]
       }
+      user_category_tag_exclusions: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          system_tag_id: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          system_tag_id: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          system_tag_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_category_tag_exclusions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_category_tag_exclusions_system_tag"
+            columns: ["system_tag_id"]
+            isOneToOne: false
+            referencedRelation: "category_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_category_tags: {
         Row: {
           category_id: string

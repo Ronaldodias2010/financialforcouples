@@ -25,6 +25,7 @@ interface Category {
 }
 
 interface CategoryTag {
+  id: string;
   name_pt: string;
   name_en: string;
   name_es: string;
@@ -44,7 +45,15 @@ export const CategoryManager = () => {
   const [consolidationSuggestions, setConsolidationSuggestions] = useState<{parent: Category, children: Category[]}[]>([]);
   const { toast } = useToast();
   const { language, t } = useLanguage();
-  const { userTags, addUserTag, removeUserTag, getUserTagsForCategory } = useUserCategoryTags();
+  const { 
+    userTags, 
+    excludedSystemTags, 
+    addUserTag, 
+    removeUserTag, 
+    excludeSystemTag, 
+    restoreSystemTag, 
+    getUserTagsForCategory 
+  } = useUserCategoryTags();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
   const normalize = (s: string) =>
@@ -637,7 +646,7 @@ export const CategoryManager = () => {
           const { data: tagRelations, error: tagsError } = await supabase
             .from('category_tag_relations')
             .select(`
-              category_tags!category_tag_relations_tag_id_fkey(name_pt, name_en, name_es, color)
+              category_tags!category_tag_relations_tag_id_fkey(id, name_pt, name_en, name_es, color)
             `)
             .eq('category_id', userCategory.default_category_id)
             .eq('is_active', true);
@@ -647,6 +656,7 @@ export const CategoryManager = () => {
               .map(relation => relation.category_tags)
               .filter(tag => tag)
               .map(tag => ({
+                id: tag.id,
                 name_pt: tag.name_pt,
                 name_en: tag.name_en,
                 name_es: tag.name_es,
@@ -1121,34 +1131,71 @@ export const CategoryManager = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <TagInput
-                      tags={[
-                        // Sistema tags - buscar por ID da categoria, não por nome
-                        ...(categoryTags[editingCategory.id] || []).map(tag => ({
-                          id: `system-${tag.name_pt}`,
-                          name: getTagName(tag),
-                          color: tag.color,
-                          removable: false
-                        })),
-                        // User tags
-                        ...getUserTagsForCategory(editingCategory.id).map(tag => ({
-                          id: tag.id,
-                          name: tag.tag_name,
-                          color: tag.color,
-                          removable: true
-                        }))
-                      ]}
-                      onAddTag={async (tagName) => {
-                        if (editingCategory) {
-                          return await addUserTag(editingCategory.id, tagName);
-                        }
-                        return false;
-                      }}
-                      onRemoveTag={(tagId) => {
-                        if (editingCategory && !tagId.startsWith('system-')) {
-                          removeUserTag(tagId, editingCategory.id);
-                        }
-                      }}
+                     <TagInput
+                       tags={(() => {
+                         const currentSystemTags = categoryTags[editingCategory.id] || [];
+                         const currentUserTags = getUserTagsForCategory(editingCategory.id);
+                         const currentExcludedSystemTags = excludedSystemTags[editingCategory.id] || [];
+                         
+                         // Filter system tags to exclude those the user has removed
+                         const visibleSystemTags = currentSystemTags.filter(tag => 
+                           !currentExcludedSystemTags.includes(tag.id)
+                         );
+                         
+                         return [
+                           // System tags (now removable)
+                           ...visibleSystemTags.map(tag => ({
+                             id: `system-${tag.id}`,
+                             name: getTagName(tag),
+                             color: tag.color,
+                             removable: true,
+                             isSystemTag: true,
+                             systemTagId: tag.id
+                           })),
+                           // User tags
+                           ...currentUserTags.map(tag => ({
+                             id: tag.id,
+                             name: tag.tag_name,
+                             color: tag.color,
+                             removable: true,
+                             isSystemTag: false
+                           }))
+                         ];
+                       })()}
+                       onAddTag={async (tagName) => {
+                         if (editingCategory) {
+                           return await addUserTag(editingCategory.id, tagName);
+                         }
+                         return false;
+                       }}
+                       onRemoveTag={(tagId) => {
+                         if (!editingCategory) return;
+                         
+                         // Find the tag to determine if it's system or user
+                         const allTags = [
+                           ...(categoryTags[editingCategory.id] || []).map(tag => ({
+                             id: `system-${tag.id}`,
+                             isSystemTag: true,
+                             systemTagId: tag.id
+                           })),
+                           ...getUserTagsForCategory(editingCategory.id).map(tag => ({
+                             id: tag.id,
+                             isSystemTag: false,
+                             systemTagId: undefined
+                           }))
+                         ];
+                         
+                         const tag = allTags.find(t => t.id === tagId);
+                         if (!tag) return;
+                         
+                         if (tag.isSystemTag && tag.systemTagId) {
+                           // Exclude system tag from this category
+                           excludeSystemTag(tag.systemTagId, editingCategory.id);
+                         } else {
+                           // Remove user custom tag
+                           removeUserTag(tagId, editingCategory.id);
+                         }
+                       }}
                       placeholder="Digite uma tag e pressione Enter..."
                       suggestions={[
                         "Emergência", "Imprevistos", "Não Categorizado",
