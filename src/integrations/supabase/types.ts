@@ -425,6 +425,7 @@ export type Database = {
           category_type: string
           color: string | null
           created_at: string
+          default_category_id: string | null
           description: string | null
           icon: string | null
           id: string
@@ -437,6 +438,7 @@ export type Database = {
           category_type?: string
           color?: string | null
           created_at?: string
+          default_category_id?: string | null
           description?: string | null
           icon?: string | null
           id?: string
@@ -449,6 +451,7 @@ export type Database = {
           category_type?: string
           color?: string | null
           created_at?: string
+          default_category_id?: string | null
           description?: string | null
           icon?: string | null
           id?: string
@@ -457,7 +460,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_categories_default_category"
+            columns: ["default_category_id"]
+            isOneToOne: false
+            referencedRelation: "default_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       category_tag_relations: {
         Row: {

@@ -264,7 +264,10 @@ export const CategoryManager = () => {
 
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, color, icon, category_type, description, user_id')
+        .select(`
+          id, name, color, icon, category_type, description, user_id, default_category_id,
+          default_categories(name_pt)
+        `)
         .eq('user_id', user.id)
         .order('name');
 
@@ -829,16 +832,18 @@ export const CategoryManager = () => {
       </div>
       
       <div className="space-y-3">
-        {categories.map((category) => {
-          // Map custom category to default category to get correct tags
-          const defaultCategoryName = isExpense ? mapCategoryToDefault(category.name) : '';
+        {categories.map((category: any) => {
+          // Use the default_category_id directly from the database, fallback to mapping function
+          const defaultCategoryName = isExpense 
+            ? (category.default_categories?.name_pt || mapCategoryToDefault(category.name))
+            : '';
           const tags = isExpense ? categoryTags[defaultCategoryName] || [] : [];
           
           // Debug log for categories with tags
           if (isExpense && tags.length > 0) {
             console.log(`✅ ${category.name} -> ${defaultCategoryName} (${tags.length} tags)`);
-          } else if (isExpense) {
-            console.log(`❌ ${category.name} -> ${defaultCategoryName} (sem tags)`);
+          } else if (isExpense && defaultCategoryName) {
+            console.log(`❌ ${category.name} -> ${defaultCategoryName} (sem tags disponíveis)`);
           }
           
           return (
