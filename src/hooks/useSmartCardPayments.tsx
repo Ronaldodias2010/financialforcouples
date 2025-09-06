@@ -137,7 +137,7 @@ export const useSmartCardPayments = () => {
         p_card_id: params.cardId,
         p_payment_amount: params.paymentAmount,
         p_payment_date: params.paymentDate || new Date().toISOString().split('T')[0],
-        p_payment_method: 'account',
+        p_payment_method: 'deposit',
         p_account_id: params.sourceAccountId,
         p_notes: params.notes || null,
       });
