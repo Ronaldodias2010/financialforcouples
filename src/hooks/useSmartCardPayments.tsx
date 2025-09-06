@@ -56,47 +56,26 @@ export const useSmartCardPayments = () => {
     }
   };
 
-  const findFutureExpenseForCard = async (cardId: string): Promise<FutureExpenseInfo | null> => {
+  const findFutureExpenseForCard = async (cardName: string): Promise<FutureExpenseInfo | null> => {
     if (!user) return null;
 
     try {
-      // Verificar em manual_future_expenses se existe gasto futuro para este cartão
+      // Procurar em manual_future_expenses por gastos que mencionam o nome do cartão
       const { data: manualExpenses, error: manualError } = await supabase
         .from('manual_future_expenses')
         .select('id, amount, due_date, description')
         .eq('user_id', user.id)
         .eq('is_paid', false)
-        .ilike('description', `%${cardId}%`); // Procura por gastos que mencionam o ID do cartão
+        .ilike('description', `%${cardName}%`); // Procura pelo nome do cartão
 
       if (manualError) {
         console.error('Error searching manual future expenses:', manualError);
+        return null;
       }
 
       // Se encontrou, retorna o primeiro
       if (manualExpenses && manualExpenses.length > 0) {
         return manualExpenses[0];
-      }
-
-      // Verificar em future_expense_payments se existe pagamento futuro relacionado ao cartão
-      const { data: futurePayments, error: futureError } = await supabase
-        .from('future_expense_payments')
-        .select('id, amount, original_due_date, description')
-        .eq('user_id', user.id)
-        .eq('expense_source_type', 'card_payment')
-        .contains('card_payment_info', { cardId });
-
-      if (futureError) {
-        console.error('Error searching future payments:', futureError);
-      }
-
-      if (futurePayments && futurePayments.length > 0) {
-        const payment = futurePayments[0];
-        return {
-          id: payment.id,
-          amount: payment.amount,
-          due_date: payment.original_due_date,
-          description: payment.description
-        };
       }
 
       return null;
@@ -146,8 +125,8 @@ export const useSmartCardPayments = () => {
         throw new Error(paymentError.message);
       }
 
-      // 3. Verificar se existe gasto futuro relacionado e abater o valor
-      const futureExpense = await findFutureExpenseForCard(params.cardId);
+      // 3. Verificar se existe gasto futuro relacionado ao nome do cartão e abater o valor
+      const futureExpense = await findFutureExpenseForCard(cardData.name);
       if (futureExpense) {
         const newAmount = Math.max(0, futureExpense.amount - params.paymentAmount);
         
