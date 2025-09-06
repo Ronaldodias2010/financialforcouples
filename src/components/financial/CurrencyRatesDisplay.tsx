@@ -3,10 +3,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Euro, PoundSterling, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useEffect } from "react";
 
 export const CurrencyRatesDisplay = () => {
   const { exchangeRates, loading, lastUpdated, refreshRates } = useCurrencyConverter();
   const { t, language } = useLanguage();
+
+  useEffect(() => {
+    if (!lastUpdated || (Date.now() - lastUpdated.getTime()) > 6 * 60 * 60 * 1000) {
+      refreshRates();
+    }
+  }, [lastUpdated, refreshRates]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', { 
@@ -70,13 +77,13 @@ export const CurrencyRatesDisplay = () => {
                 <currency.icon className={`h-3 w-3 ${currency.color}`} />
                 <div className="text-xs">
                   <span className={`font-medium ${currency.color}`}>{currency.label}</span>
-                  <span className="text-muted-foreground ml-1">{currency.value}</span>
+                  <span className="text-muted-foreground ml-2">{currency.value}</span>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground pl-3 sm:pl-4">
             {lastUpdated && (
               <span className="hidden sm:inline">
                 {formatTime(lastUpdated)}
