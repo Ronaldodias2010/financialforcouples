@@ -14,7 +14,7 @@ interface FutureExpense {
   description: string;
   amount: number;
   due_date: string;
-  type: 'installment' | 'recurring' | 'card_payment' | 'card_transaction';
+  type: 'installment' | 'recurring' | 'card_payment' | 'card_transaction' | 'manual_future';
   category: string;
   card_name?: string;
   installment_info?: string;

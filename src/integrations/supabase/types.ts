@@ -904,6 +904,57 @@ export type Database = {
           },
         ]
       }
+      manual_future_expenses: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          description: string
+          due_date: string
+          id: string
+          is_paid: boolean
+          notes: string | null
+          owner_user: string
+          paid_at: string | null
+          payment_method: string | null
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          description: string
+          due_date: string
+          id?: string
+          is_paid?: boolean
+          notes?: string | null
+          owner_user?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          description?: string
+          due_date?: string
+          id?: string
+          is_paid?: boolean
+          notes?: string | null
+          owner_user?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       manual_premium_access: {
         Row: {
           approval_date: string | null

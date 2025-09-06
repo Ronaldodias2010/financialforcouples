@@ -9,6 +9,7 @@ import { Calendar, CreditCard, Wallet, Building2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useFutureExpensePayments } from '@/hooks/useFutureExpensePayments';
+import { useManualFutureExpenses } from '@/hooks/useManualFutureExpenses';
 
 interface PayFutureExpenseModalProps {
   isOpen: boolean;
@@ -18,11 +19,12 @@ interface PayFutureExpenseModalProps {
     description: string;
     amount: number;
     due_date: string;
-    type: 'recurring' | 'installment' | 'card_payment' | 'card_transaction';
+    type: 'recurring' | 'installment' | 'card_payment' | 'card_transaction' | 'manual_future';
     category?: string;
     recurringExpenseId?: string;
     installmentTransactionId?: string;
     cardPaymentInfo?: any;
+    manualFutureExpenseId?: string;
   };
   onPaymentSuccess: () => void;
 }
@@ -48,6 +50,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { processPayment, isProcessing } = useFutureExpensePayments();
+  const { payManualExpense } = useManualFutureExpenses();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -101,20 +104,34 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     
     if (!user) return;
 
-    const paymentParams = {
-      recurringExpenseId: expense.recurringExpenseId,
-      installmentTransactionId: expense.installmentTransactionId,
-      cardPaymentInfo: expense.cardPaymentInfo,
-      originalDueDate: expense.due_date,
-      paymentDate,
-      amount: expense.amount,
-      description: `${expense.description}${notes ? ` - ${notes}` : ''}`,
-      paymentMethod,
-      accountId: paymentMethod === 'account' ? selectedAccount : undefined,
-      cardId: paymentMethod === 'card' ? selectedCard : undefined,
-    };
+    let result;
 
-    const result = await processPayment(paymentParams);
+    if (expense.type === 'manual_future' && expense.manualFutureExpenseId) {
+      // Handle manual future expense payment
+      result = await payManualExpense({
+        expenseId: expense.manualFutureExpenseId,
+        paymentDate,
+        accountId: paymentMethod === 'account' ? selectedAccount : undefined,
+        cardId: paymentMethod === 'card' ? selectedCard : undefined,
+        paymentMethod,
+      });
+    } else {
+      // Handle other types of expenses
+      const paymentParams = {
+        recurringExpenseId: expense.recurringExpenseId,
+        installmentTransactionId: expense.installmentTransactionId,
+        cardPaymentInfo: expense.cardPaymentInfo,
+        originalDueDate: expense.due_date,
+        paymentDate,
+        amount: expense.amount,
+        description: `${expense.description}${notes ? ` - ${notes}` : ''}`,
+        paymentMethod,
+        accountId: paymentMethod === 'account' ? selectedAccount : undefined,
+        cardId: paymentMethod === 'card' ? selectedCard : undefined,
+      };
+
+      result = await processPayment(paymentParams);
+    }
     
     if (result) {
       onPaymentSuccess();

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, CreditCard, AlertCircle, DollarSign, CheckCircle, Receipt } from "lucide-react";
+import { Calendar, CreditCard, AlertCircle, DollarSign, CheckCircle, Receipt, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
@@ -15,14 +15,16 @@ import { translateCategoryName } from '@/utils/categoryTranslation';
 import { ExportUtils } from "@/components/financial/ExportUtils";
 import { PayFutureExpenseModal } from "./PayFutureExpenseModal";
 import { PayCardModal } from "./PayCardModal";
+import { AddFutureExpenseModal } from "./AddFutureExpenseModal";
 import { useFutureExpensePayments } from "@/hooks/useFutureExpensePayments";
+import { useManualFutureExpenses, type ManualFutureExpense } from "@/hooks/useManualFutureExpenses";
 
 interface FutureExpense {
   id: string;
   description: string;
   amount: number;
   due_date: string;
-  type: 'installment' | 'recurring' | 'card_payment' | 'card_transaction';
+  type: 'installment' | 'recurring' | 'card_payment' | 'card_transaction' | 'manual_future';
   category: string;
   card_name?: string;
   installment_info?: string;
@@ -30,6 +32,7 @@ interface FutureExpense {
   recurringExpenseId?: string;
   installmentTransactionId?: string;
   cardPaymentInfo?: any;
+  manualFutureExpenseId?: string;
   isPaid?: boolean;
   allowsPayment?: boolean; // Define se mostra o botão de pagar
 }
@@ -44,6 +47,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { isPartOfCouple } = useCouple();
   const { t, language } = useLanguage();
   const { isExpensePaid } = useFutureExpensePayments();
+  const { fetchManualFutureExpenses, payManualExpense } = useManualFutureExpenses();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +61,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     isOpen: boolean;
     cardInfo: any;
   }>({ isOpen: false, cardInfo: null });
+
+  const [addExpenseModal, setAddExpenseModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -162,6 +168,30 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       if (cardTransactionsError) throw cardTransactionsError;
 
       const expenses: FutureExpense[] = [];
+
+      // Buscar gastos futuros manuais
+      const manualExpenses = await fetchManualFutureExpenses();
+      for (const manualExpense of manualExpenses) {
+        // Filtrar por viewMode se necessário
+        const shouldInclude = viewMode === "both" || 
+          (viewMode === "user1" && manualExpense.owner_user === 'user1') ||
+          (viewMode === "user2" && manualExpense.owner_user === 'user2');
+          
+        if (shouldInclude) {
+          expenses.push({
+            id: manualExpense.id,
+            description: manualExpense.description,
+            amount: manualExpense.amount,
+            due_date: manualExpense.due_date,
+            type: 'manual_future',
+            category: manualExpense.category?.name || 'Sem categoria',
+            owner_user: manualExpense.owner_user,
+            manualFutureExpenseId: manualExpense.id,
+            isPaid: manualExpense.is_paid,
+            allowsPayment: !manualExpense.is_paid, // Só pode pagar se não foi pago
+          });
+        }
+      }
 
       // Processar pagamentos futuros da nova tabela
       if (futurePayments) {
@@ -536,6 +566,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             <h3 className="text-lg font-semibold">{t('monthlyExpenses.futureExpenses')}</h3>
           </div>
           
+          <Button 
+            onClick={() => setAddExpenseModal(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar Gasto Futuro
+          </Button>
+          
           {/* Actions - Responsive layout */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {/* Export Utils */}
@@ -719,6 +757,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
+
+      {/* Add Expense Modal */}
+      <AddFutureExpenseModal
+        isOpen={addExpenseModal}
+        onClose={() => setAddExpenseModal(false)}
+        onSuccess={handlePaymentSuccess}
+      />
     </Card>
   );
 };
