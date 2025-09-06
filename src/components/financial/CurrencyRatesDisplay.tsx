@@ -76,7 +76,7 @@ export const CurrencyRatesDisplay = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
             {lastUpdated && (
               <span className="hidden sm:inline">
                 {formatTime(lastUpdated)}
