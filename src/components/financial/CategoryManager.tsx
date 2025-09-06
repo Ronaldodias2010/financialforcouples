@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle, Merge, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Category {
@@ -39,6 +40,8 @@ export const CategoryManager = () => {
   const [newCategoryType, setNewCategoryType] = useState<"income" | "expense">("expense");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isConsolidating, setIsConsolidating] = useState(false);
+  const [consolidationSuggestions, setConsolidationSuggestions] = useState<{parent: Category, children: Category[]}[]>([]);
   const { toast } = useToast();
   const { language, t } = useLanguage();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
@@ -286,11 +289,11 @@ export const CategoryManager = () => {
     }
   };
 
-  // Create mapping function for custom categories to default categories
+  // Enhanced mapping function for custom categories to default categories
   const mapCategoryToDefault = (categoryName: string): string => {
     const normalizedName = normalize(categoryName.toLowerCase());
     
-    // Mapping based on keywords and semantic context
+    // Enhanced mapping with more comprehensive coverage
     const mappings: { [key: string]: string } = {
       // Health & Fitness
       'academia': 'Saúde',
@@ -300,8 +303,14 @@ export const CategoryManager = () => {
       'clinica': 'Saúde',
       'dentista': 'Saúde',
       'saude': 'Saúde',
+      'consulta': 'Saúde',
+      'exame': 'Saúde',
+      'medicamento': 'Saúde',
+      'plano de saude': 'Saúde',
+      'fisioterapia': 'Saúde',
+      'psicologo': 'Saúde',
       
-      // Transportation
+      // Transportation  
       'combustivel': 'Transporte',
       'gasolina': 'Transporte',
       'uber': 'Transporte',
@@ -311,6 +320,12 @@ export const CategoryManager = () => {
       'estacionamento': 'Transporte',
       'pedagio': 'Transporte',
       'transporte': 'Transporte',
+      'carro': 'Transporte',
+      'moto': 'Transporte',
+      'bicicleta': 'Transporte',
+      'manutencao do carro': 'Transporte',
+      'seguro do carro': 'Transporte',
+      'ipva': 'Transporte',
       
       // Food & Drinks
       'supermercado': 'Alimentação',
@@ -322,6 +337,13 @@ export const CategoryManager = () => {
       'ifood': 'Alimentação',
       'alimentacao': 'Alimentação',
       'comida': 'Alimentação',
+      'mercado': 'Alimentação',
+      'acougue': 'Alimentação',
+      'hortifruti': 'Alimentação',
+      'cafe': 'Alimentação',
+      'lanche': 'Alimentação',
+      'jantar': 'Alimentação',
+      'almoco': 'Alimentação',
       
       // Entertainment
       'cinema': 'Entretenimento',
@@ -331,15 +353,26 @@ export const CategoryManager = () => {
       'spotify': 'Entretenimento',
       'jogos': 'Entretenimento',
       'balada': 'Entretenimento',
-      'festa': 'Entretenimento',
+      'festa entretenimento': 'Entretenimento',
+      'parque': 'Entretenimento',
+      'museu': 'Entretenimento',
+      'bar': 'Entretenimento',
+      'pub': 'Entretenimento',
+      'diversao': 'Entretenimento',
+      'lazer': 'Entretenimento',
       
-      // Shopping
-      'roupas': 'Compras',
-      'sapatos': 'Compras',
-      'shopping': 'Compras',
-      'loja': 'Compras',
-      'presente': 'Compras',
-      'cosmeticos': 'Compras',
+      // Shopping -> Compras Pessoais
+      'roupas': 'Compras Pessoais',
+      'sapatos': 'Compras Pessoais',
+      'shopping': 'Compras Pessoais',
+      'loja': 'Compras Pessoais',
+      'presente': 'Doações & Presentes',
+      'cosmeticos': 'Compras Pessoais',
+      'perfume': 'Compras Pessoais',
+      'maquiagem': 'Compras Pessoais',
+      'acessorios': 'Compras Pessoais',
+      'calcados': 'Compras Pessoais',
+      'eletronicos': 'Compras Pessoais',
       
       // Education
       'curso': 'Educação',
@@ -347,22 +380,39 @@ export const CategoryManager = () => {
       'escola': 'Educação',
       'livros': 'Educação',
       'educacao': 'Educação',
+      'universidade': 'Educação',
+      'pos graduacao': 'Educação',
+      'mestrado': 'Educação',
+      'doutorado': 'Educação',
+      'material escolar': 'Educação',
       
-      // Housing
-      'aluguel': 'Moradia',
-      'condominio': 'Moradia',
-      'agua': 'Moradia',
-      'luz': 'Moradia',
-      'gas': 'Moradia',
-      'internet': 'Moradia',
-      'limpeza': 'Moradia',
-      'manutencao': 'Moradia',
+      // Housing -> Moradia & Serviços
+      'aluguel': 'Moradia & Serviços',
+      'condominio': 'Moradia & Serviços', 
+      'agua': 'Moradia & Serviços',
+      'luz': 'Moradia & Serviços',
+      'gas': 'Moradia & Serviços',
+      'internet': 'Moradia & Serviços',
+      'limpeza': 'Moradia & Serviços',
+      'manutencao': 'Moradia & Serviços',
+      'energia': 'Moradia & Serviços',
+      'telefone': 'Moradia & Serviços',
+      'celular': 'Moradia & Serviços',
+      'tv': 'Moradia & Serviços',
+      'streaming': 'Moradia & Serviços',
+      'iptu': 'Moradia & Serviços',
+      'seguro residencial': 'Moradia & Serviços',
       
-      // Personal Care
+      // Personal Care -> Cuidados Pessoais  
       'cabelo': 'Cuidados Pessoais',
       'estetica': 'Cuidados Pessoais',
       'massagem': 'Cuidados Pessoais',
       'spa': 'Cuidados Pessoais',
+      'salao': 'Cuidados Pessoais',
+      'barbearia': 'Cuidados Pessoais',
+      'manicure': 'Cuidados Pessoais',
+      'pedicure': 'Cuidados Pessoais',
+      'depilacao': 'Cuidados Pessoais',
       
       // Pets
       'veterinario': 'Pets',
@@ -370,18 +420,35 @@ export const CategoryManager = () => {
       'pet': 'Pets',
       'cachorro': 'Pets',
       'gato': 'Pets',
+      'animal': 'Pets',
+      'pet shop': 'Pets',
+      'vacina pet': 'Pets',
+      'remedio pet': 'Pets',
       
-      // Technology
-      'celular': 'Tecnologia',
-      'computador': 'Tecnologia',
-      'software': 'Tecnologia',
-      'aplicativo': 'Tecnologia',
+      // Technology -> Outros or specific mapping
+      'computador': 'Compras Pessoais',
+      'software': 'Moradia & Serviços',
+      'aplicativo': 'Moradia & Serviços',
+      'notebook': 'Compras Pessoais',
+      'smartphone': 'Compras Pessoais',
       
-      // Travel
-      'viagem': 'Viagem',
-      'hotel': 'Viagem',
-      'passagem': 'Viagem',
-      'turismo': 'Viagem'
+      // Travel -> Viagem & Turismo
+      'viagem': 'Viagem & Turismo',
+      'hotel': 'Viagem & Turismo',
+      'passagem': 'Viagem & Turismo',
+      'turismo': 'Viagem & Turismo',
+      'hospedagem': 'Viagem & Turismo',
+      'aviao': 'Viagem & Turismo',
+      'onibus viagem': 'Viagem & Turismo',
+      'excursao': 'Viagem & Turismo',
+      
+      // Gifts & Donations
+      'doacao': 'Doações & Presentes',
+      'caridade': 'Doações & Presentes',
+      'casamento': 'Doações & Presentes',
+      'aniversario': 'Doações & Presentes',
+      'natal': 'Doações & Presentes',
+      'festa presente': 'Doações & Presentes'
     };
 
     // Try direct mapping first
@@ -398,6 +465,90 @@ export const CategoryManager = () => {
 
     // Default fallback
     return 'Outros';
+  };
+
+  // Analyze categories for consolidation opportunities
+  const analyzeConsolidationOpportunities = () => {
+    const suggestions: {parent: Category, children: Category[]}[] = [];
+    const processedCategories = new Set<string>();
+    
+    // Group categories by their mapped default category
+    const groupedCategories = new Map<string, Category[]>();
+    
+    expenseCategories.forEach(category => {
+      const defaultCategory = mapCategoryToDefault(category.name);
+      if (!groupedCategories.has(defaultCategory)) {
+        groupedCategories.set(defaultCategory, []);
+      }
+      groupedCategories.get(defaultCategory)!.push(category);
+    });
+    
+    // Find groups with multiple categories that can be consolidated
+    groupedCategories.forEach((categories, defaultCategory) => {
+      if (categories.length > 1) {
+        // Find the most general category as parent (shortest name or most common)
+        const sortedByGenerality = [...categories].sort((a, b) => a.name.length - b.name.length);
+        const parent = sortedByGenerality[0];
+        const children = sortedByGenerality.slice(1);
+        
+        if (children.length > 0) {
+          suggestions.push({ parent, children });
+        }
+      }
+    });
+    
+    setConsolidationSuggestions(suggestions);
+  };
+
+  // Consolidate categories by moving transactions and merging
+  const consolidateCategories = async (parent: Category, children: Category[]) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      // Move all transactions from children to parent category
+      for (const child of children) {
+        const { error: updateError } = await supabase
+          .from('transactions')
+          .update({ category_id: parent.id })
+          .eq('category_id', child.id)
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+
+        // Also update future expenses if they reference the child category
+        await supabase
+          .from('manual_future_expenses')
+          .update({ category_id: parent.id })
+          .eq('category_id', child.id)
+          .eq('user_id', user.id);
+
+        // Delete the child category
+        const { error: deleteError } = await supabase
+          .from('categories')
+          .delete()
+          .eq('id', child.id)
+          .eq('user_id', user.id);
+
+        if (deleteError) throw deleteError;
+      }
+
+      toast({
+        title: "Consolidação realizada",
+        description: `${children.length} categorias foram consolidadas em "${parent.name}"`,
+      });
+
+      // Refresh data
+      fetchCategories();
+      analyzeConsolidationOpportunities();
+      
+    } catch (error: any) {
+      toast({
+        title: "Erro na consolidação",
+        description: error.message || "Erro ao consolidar categorias",
+        variant: "destructive",
+      });
+    }
   };
 
   const fetchCategoryTags = async () => {
@@ -430,6 +581,7 @@ export const CategoryManager = () => {
         });
       });
 
+      console.log('Tags carregadas:', tagsMap); // Debug log
       setCategoryTags(tagsMap);
     } catch (error) {
       console.error('Erro ao carregar tags:', error);
@@ -665,6 +817,12 @@ export const CategoryManager = () => {
           // Map custom category to default category to get correct tags
           const defaultCategoryName = isExpense ? mapCategoryToDefault(category.name) : '';
           const tags = isExpense ? categoryTags[defaultCategoryName] || [] : [];
+          
+          // Debug log for first few categories
+          if (isExpense && Object.keys(categoryTags).length > 0) {
+            console.log(`Categoria: ${category.name} -> Default: ${defaultCategoryName} -> Tags:`, tags.length);
+          }
+          
           return (
             <Card key={category.id} className="p-4 hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: category.color || "#6366f1" }}>
               <div className="flex items-start justify-between mb-3">
@@ -755,17 +913,89 @@ export const CategoryManager = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold">{t('categories.heading')}</h3>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('categories.add')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                analyzeConsolidationOpportunities();
+                setIsConsolidating(true);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Merge className="h-4 w-4" />
+              Consolidar Categorias
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) resetForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('categories.add')}
+               </Button>
+               </DialogTrigger>
+             </Dialog>
+           </div>
+         </div>
+
+         {/* Consolidation Modal */}
+         <AlertDialog open={isConsolidating} onOpenChange={setIsConsolidating}>
+           <AlertDialogContent className="max-w-2xl">
+             <AlertDialogHeader>
+               <AlertDialogTitle>Consolidar Categorias Redundantes</AlertDialogTitle>
+               <AlertDialogDescription>
+                 Encontramos categorias que podem ser consolidadas para simplificar sua organização:
+               </AlertDialogDescription>
+             </AlertDialogHeader>
+             <div className="max-h-96 overflow-y-auto space-y-4">
+               {consolidationSuggestions.length > 0 ? (
+                 consolidationSuggestions.map((suggestion, index) => (
+                   <Card key={index} className="p-4">
+                     <div className="space-y-3">
+                       <div className="flex items-center gap-2">
+                         <span className="font-medium">Manter:</span>
+                         <Badge variant="outline" style={{ borderColor: suggestion.parent.color }}>
+                           {suggestion.parent.name}
+                         </Badge>
+                       </div>
+                       <div className="flex items-center gap-2">
+                         <span className="font-medium">Consolidar:</span>
+                         <div className="flex flex-wrap gap-2">
+                           {suggestion.children.map((child) => (
+                             <Badge key={child.id} variant="secondary" style={{ borderColor: child.color }}>
+                               {child.name}
+                             </Badge>
+                           ))}
+                         </div>
+                       </div>
+                       <Button
+                         size="sm"
+                         onClick={() => consolidateCategories(suggestion.parent, suggestion.children)}
+                         className="w-full"
+                       >
+                         Consolidar este grupo
+                       </Button>
+                     </div>
+                   </Card>
+                 ))
+               ) : (
+                 <p className="text-center text-muted-foreground py-8">
+                   Nenhuma oportunidade de consolidação encontrada.
+                 </p>
+               )}
+             </div>
+             <AlertDialogFooter>
+               <AlertDialogCancel>Fechar</AlertDialogCancel>
+             </AlertDialogFooter>
+           </AlertDialogContent>
+         </AlertDialog>
+
+         <Dialog open={isDialogOpen} onOpenChange={(open) => {
+           setIsDialogOpen(open);
+           if (!open) resetForm();
+         }}>
+           <DialogContent>
               <DialogHeader>
                 <DialogTitle>
                   {editingCategory ? t('categories.edit') : t('categories.add')}
@@ -854,7 +1084,6 @@ export const CategoryManager = () => {
               </form>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Seção de Saídas (Expenses) */}
         {renderCategorySection(
