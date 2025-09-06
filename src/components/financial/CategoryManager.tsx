@@ -5,12 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Plus, Trash2, Edit, HelpCircle } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Category {
   id: string;
@@ -21,13 +22,21 @@ interface Category {
   description?: string;
 }
 
+interface CategoryTag {
+  name_pt: string;
+  name_en: string;
+  name_es: string;
+  color: string;
+}
+
 export const CategoryManager = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [incomeCategories, setIncomeCategories] = useState<Category[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<Category[]>([]);
+  const [categoryTags, setCategoryTags] = useState<Record<string, CategoryTag[]>>({});
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryDescription, setNewCategoryDescription] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState("#6366f1");
   const [newCategoryType, setNewCategoryType] = useState<"income" | "expense">("expense");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -237,43 +246,79 @@ export const CategoryManager = () => {
   useEffect(() => {
     if (hasEnsuredDefaults) {
       fetchCategories();
+      fetchCategoryTags();
     }
-  }, [filterType, hasEnsuredDefaults]);
+  }, [hasEnsuredDefaults]);
 
   const fetchCategories = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setCategories([]);
+        setIncomeCategories([]);
+        setExpenseCategories([]);
         return;
       }
 
-      let query = supabase
+      const { data, error } = await supabase
         .from('categories')
         .select('id, name, color, icon, category_type, description, user_id')
         .eq('user_id', user.id)
         .order('name');
-      
-      if (filterType !== 'all') {
-        query = query.eq('category_type', filterType);
-      }
-      
-      const { data, error } = await query;
 
       if (error) throw error;
+      
       const items = (data || []) as Category[];
       const map = new Map<string, Category>();
       for (const it of items) {
         const key = `${normalize(it.name)}|${it.category_type}`;
         if (!map.has(key)) map.set(key, it);
       }
-      setCategories(Array.from(map.values()));
+      
+      const uniqueCategories = Array.from(map.values());
+      setIncomeCategories(uniqueCategories.filter(cat => cat.category_type === 'income'));
+      setExpenseCategories(uniqueCategories.filter(cat => cat.category_type === 'expense'));
     } catch (error) {
       toast({
         title: "Erro",
         description: "Não foi possível carregar as categorias",
         variant: "destructive",
       });
+    }
+  };
+
+  const fetchCategoryTags = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('category_tags')
+        .select(`
+          name_pt, name_en, name_es, color,
+          category_tag_relations!inner(
+            category_id,
+            default_categories!inner(name_pt, category_type)
+          )
+        `)
+        .eq('category_tag_relations.is_active', true);
+
+      if (error) throw error;
+
+      const tagsMap: Record<string, CategoryTag[]> = {};
+      
+      data?.forEach((item: any) => {
+        const categoryName = item.category_tag_relations.default_categories.name_pt;
+        if (!tagsMap[categoryName]) {
+          tagsMap[categoryName] = [];
+        }
+        tagsMap[categoryName].push({
+          name_pt: item.name_pt,
+          name_en: item.name_en,
+          name_es: item.name_es,
+          color: item.color,
+        });
+      });
+
+      setCategoryTags(tagsMap);
+    } catch (error) {
+      console.error('Erro ao carregar tags:', error);
     }
   };
 
@@ -422,6 +467,7 @@ export const CategoryManager = () => {
       setEditingCategory(null);
       setIsDialogOpen(false);
       fetchCategories();
+      fetchCategoryTags();
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -455,6 +501,7 @@ export const CategoryManager = () => {
       });
 
       fetchCategories();
+      fetchCategoryTags();
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -483,20 +530,98 @@ export const CategoryManager = () => {
     setEditingCategory(null);
   };
 
+  const getTagName = (tag: CategoryTag) => {
+    switch (language) {
+      case 'en': return tag.name_en;
+      case 'es': return tag.name_es;
+      default: return tag.name_pt;
+    }
+  };
+
+  const renderCategorySection = (categories: Category[], title: string, icon: React.ReactNode, isExpense: boolean = false) => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        {icon}
+        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+        <span className="text-sm text-muted-foreground">({categories.length})</span>
+      </div>
+      
+      <div className="grid gap-4">
+        {categories.map((category) => {
+          const tags = isExpense ? categoryTags[category.name] || [] : [];
+          return (
+            <Card key={category.id} className="p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div
+                      className="w-4 h-4 rounded-full border"
+                      style={{ backgroundColor: category.color || "#6366f1" }}
+                    />
+                    <h4 className="font-medium text-foreground">
+                      {translateCategoryName(category.name, language)}
+                    </h4>
+                  </div>
+                  
+                  {category.description && (
+                    <p className="text-sm text-muted-foreground mb-2">{category.description}</p>
+                  )}
+                  
+                  {isExpense && tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {tags.map((tag, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="secondary" 
+                          className="text-xs px-2 py-1 bg-muted/50 text-muted-foreground border border-border/50"
+                        >
+                          {getTagName(tag)}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2 ml-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(category)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  {!isFixedCategory(category.name) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(category.id)}
+                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+        
+        {categories.length === 0 && (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground">
+              {isExpense ? 'Nenhuma categoria de gasto encontrada' : 'Nenhuma categoria de entrada encontrada'}
+            </p>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
-        <Select value={filterType} onValueChange={(value) => setFilterType(value as "all" | "income" | "expense")}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('categories.filter.all')}</SelectItem>
-            <SelectItem value="income">{t('categories.filter.income')}</SelectItem>
-            <SelectItem value="expense">{t('categories.filter.expense')}</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <Card className="p-6">
@@ -603,61 +728,21 @@ export const CategoryManager = () => {
           </Dialog>
         </div>
 
-        <div className="space-y-3">
-          {categories.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              {t('categories.none')}
-            </p>
-          ) : (
-            categories.map((category) => (
-              <div
-                key={category.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-4 h-4 rounded-full border"
-                    style={{ backgroundColor: category.color || "#6366f1" }}
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{translateCategoryName(category.name, language as 'pt' | 'en' | 'es')}</span>
-                    {category.description && (
-                      <span className="text-xs text-muted-foreground">
-                        {category.description.length > 60 
-                          ? category.description.slice(0, 60) + '...' 
-                          : category.description
-                        }
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-muted">
-                    {category.category_type === 'income' ? t('categories.type.income') : t('categories.type.expense')}
-                  </span>
-                  {category.icon && <span className="text-lg">{category.icon}</span>}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(category)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  {!isFixedCategory(category.name) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(category.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        {/* Seção de Saídas (Expenses) */}
+        {renderCategorySection(
+          expenseCategories,
+          "📤 Saídas (Gastos)",
+          <ArrowUpCircle className="h-5 w-5 text-destructive" />,
+          true
+        )}
+
+        {/* Seção de Entradas (Income) */}
+        {renderCategorySection(
+          incomeCategories,
+          "📥 Entradas (Receitas)",
+          <ArrowDownCircle className="h-5 w-5 text-primary" />,
+          false
+        )}
       </Card>
     </div>
   );
