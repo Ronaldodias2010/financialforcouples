@@ -286,6 +286,120 @@ export const CategoryManager = () => {
     }
   };
 
+  // Create mapping function for custom categories to default categories
+  const mapCategoryToDefault = (categoryName: string): string => {
+    const normalizedName = normalize(categoryName.toLowerCase());
+    
+    // Mapping based on keywords and semantic context
+    const mappings: { [key: string]: string } = {
+      // Health & Fitness
+      'academia': 'Saúde',
+      'farmacia': 'Saúde', 
+      'medico': 'Saúde',
+      'hospital': 'Saúde',
+      'clinica': 'Saúde',
+      'dentista': 'Saúde',
+      'saude': 'Saúde',
+      
+      // Transportation
+      'combustivel': 'Transporte',
+      'gasolina': 'Transporte',
+      'uber': 'Transporte',
+      'taxi': 'Transporte',
+      'onibus': 'Transporte',
+      'metro': 'Transporte',
+      'estacionamento': 'Transporte',
+      'pedagio': 'Transporte',
+      'transporte': 'Transporte',
+      
+      // Food & Drinks
+      'supermercado': 'Alimentação',
+      'restaurante': 'Alimentação',
+      'lanchonete': 'Alimentação',
+      'padaria': 'Alimentação',
+      'feira': 'Alimentação',
+      'delivery': 'Alimentação',
+      'ifood': 'Alimentação',
+      'alimentacao': 'Alimentação',
+      'comida': 'Alimentação',
+      
+      // Entertainment
+      'cinema': 'Entretenimento',
+      'teatro': 'Entretenimento',
+      'show': 'Entretenimento',
+      'netflix': 'Entretenimento',
+      'spotify': 'Entretenimento',
+      'jogos': 'Entretenimento',
+      'balada': 'Entretenimento',
+      'festa': 'Entretenimento',
+      
+      // Shopping
+      'roupas': 'Compras',
+      'sapatos': 'Compras',
+      'shopping': 'Compras',
+      'loja': 'Compras',
+      'presente': 'Compras',
+      'cosmeticos': 'Compras',
+      
+      // Education
+      'curso': 'Educação',
+      'faculdade': 'Educação',
+      'escola': 'Educação',
+      'livros': 'Educação',
+      'educacao': 'Educação',
+      
+      // Housing
+      'aluguel': 'Moradia',
+      'condominio': 'Moradia',
+      'agua': 'Moradia',
+      'luz': 'Moradia',
+      'gas': 'Moradia',
+      'internet': 'Moradia',
+      'limpeza': 'Moradia',
+      'manutencao': 'Moradia',
+      
+      // Personal Care
+      'cabelo': 'Cuidados Pessoais',
+      'estetica': 'Cuidados Pessoais',
+      'massagem': 'Cuidados Pessoais',
+      'spa': 'Cuidados Pessoais',
+      
+      // Pets
+      'veterinario': 'Pets',
+      'racao': 'Pets',
+      'pet': 'Pets',
+      'cachorro': 'Pets',
+      'gato': 'Pets',
+      
+      // Technology
+      'celular': 'Tecnologia',
+      'computador': 'Tecnologia',
+      'software': 'Tecnologia',
+      'aplicativo': 'Tecnologia',
+      
+      // Travel
+      'viagem': 'Viagem',
+      'hotel': 'Viagem',
+      'passagem': 'Viagem',
+      'turismo': 'Viagem'
+    };
+
+    // Try direct mapping first
+    if (mappings[normalizedName]) {
+      return mappings[normalizedName];
+    }
+
+    // Try partial matching for compound names
+    for (const [key, value] of Object.entries(mappings)) {
+      if (normalizedName.includes(key) || key.includes(normalizedName)) {
+        return value;
+      }
+    }
+
+    // Default fallback
+    return 'Outros';
+  };
+
   const fetchCategoryTags = async () => {
     try {
       const { data, error } = await supabase
@@ -548,7 +662,9 @@ export const CategoryManager = () => {
       
       <div className="space-y-3">
         {categories.map((category) => {
-          const tags = isExpense ? categoryTags[category.name] || [] : [];
+          // Map custom category to default category to get correct tags
+          const defaultCategoryName = isExpense ? mapCategoryToDefault(category.name) : '';
+          const tags = isExpense ? categoryTags[defaultCategoryName] || [] : [];
           return (
             <Card key={category.id} className="p-4 hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: category.color || "#6366f1" }}>
               <div className="flex items-start justify-between mb-3">
