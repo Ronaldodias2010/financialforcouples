@@ -180,6 +180,17 @@ const getAccountOwnerName = (account: Account) => {
     }
   }, [type, paymentMethod]); // Adicionamos paymentMethod como dependência
 
+  // Auto-selecionar categoria "Pagamento de Cartão de Crédito" quando método "card_payment" for selecionado
+  useEffect(() => {
+    if (paymentMethod === "card_payment" && categories.length > 0) {
+      const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
+      const paymentCategory = categories.find(cat => paymentNames.includes(cat.name));
+      if (paymentCategory && !categoryId) {
+        setCategoryId(paymentCategory.id);
+      }
+    }
+  }, [paymentMethod, categories, categoryId]);
+
   const fetchUserPreferredCurrency = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -406,7 +417,8 @@ const getAccountOwnerName = (account: Account) => {
   }
 
   // Validar seleção de cartão quando a categoria for Pagamento de Cartão de Crédito
-  if (type === "expense" && isCreditCardPaymentCategory && !cardId) {
+  // Para método "card_payment", o cartão já é validado na seção específica abaixo
+  if (type === "expense" && isCreditCardPaymentCategory && paymentMethod !== "card_payment" && !cardId) {
     toast({
       title: "Erro",
       description: "Selecione o cartão cuja fatura está sendo paga",
@@ -1638,8 +1650,8 @@ const invTxn: TablesInsert<'transactions'> = {
             </Select>
           </div>
 
-          {/* Seleção de Cartão para categoria: Pagamento de Cartão de Crédito */}
-          {type === "expense" && isCreditCardPaymentCategory && (
+          {/* Seleção de Cartão para categoria: Pagamento de Cartão de Crédito - apenas para métodos que não sejam card_payment */}
+          {type === "expense" && isCreditCardPaymentCategory && paymentMethod !== "card_payment" && (
             <div>
               <Label htmlFor="card">{language === 'pt' ? 'Selecione o cartão para pagamento da fatura' : 'Select the credit card to pay the invoice'}</Label>
               <Select value={cardId} onValueChange={setCardId} required>
