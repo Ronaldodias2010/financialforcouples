@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -307,39 +307,52 @@ export const CategoryManager = () => {
     
     // Enhanced mapping with more comprehensive coverage
     const mappings: { [key: string]: string } = {
-      // Health & Fitness
+      // Saúde
       'academia': 'Saúde',
       'farmacia': 'Saúde', 
+      'médico': 'Saúde',
       'medico': 'Saúde',
       'hospital': 'Saúde',
       'clinica': 'Saúde',
+      'clínica': 'Saúde',
       'dentista': 'Saúde',
       'saude': 'Saúde',
+      'saúde': 'Saúde',
       'consulta': 'Saúde',
       'exame': 'Saúde',
       'medicamento': 'Saúde',
       'plano de saude': 'Saúde',
+      'plano de saúde': 'Saúde',
       'fisioterapia': 'Saúde',
       'psicologo': 'Saúde',
-      
-      // Transportation  
+      'psicólogo': 'Saúde',
+      'terapia': 'Saúde',
+
+      // Transporte  
       'combustivel': 'Transporte',
+      'combustível': 'Transporte',
       'gasolina': 'Transporte',
       'uber': 'Transporte',
+      'uber/99': 'Transporte',
       'taxi': 'Transporte',
+      'táxi': 'Transporte',
       'onibus': 'Transporte',
+      'ônibus': 'Transporte',
       'metro': 'Transporte',
+      'metrô': 'Transporte',
       'estacionamento': 'Transporte',
       'pedagio': 'Transporte',
+      'pedágio': 'Transporte',
       'transporte': 'Transporte',
       'carro': 'Transporte',
       'moto': 'Transporte',
       'bicicleta': 'Transporte',
       'manutencao do carro': 'Transporte',
-      'seguro do carro': 'Transporte',
-      'ipva': 'Transporte',
-      
-      // Food & Drinks
+      'manutenção veículo': 'Transporte',
+      'veiculos': 'Transporte',
+      'veículos': 'Transporte',
+
+      // Alimentação
       'supermercado': 'Alimentação',
       'restaurante': 'Alimentação',
       'lanchonete': 'Alimentação',
@@ -348,119 +361,158 @@ export const CategoryManager = () => {
       'delivery': 'Alimentação',
       'ifood': 'Alimentação',
       'alimentacao': 'Alimentação',
+      'alimentação': 'Alimentação',
       'comida': 'Alimentação',
       'mercado': 'Alimentação',
       'acougue': 'Alimentação',
+      'açougue': 'Alimentação',
       'hortifruti': 'Alimentação',
       'cafe': 'Alimentação',
+      'café': 'Alimentação',
       'lanche': 'Alimentação',
       'jantar': 'Alimentação',
       'almoco': 'Alimentação',
-      
-      // Entertainment
-      'cinema': 'Entretenimento',
-      'teatro': 'Entretenimento',
-      'show': 'Entretenimento',
-      'netflix': 'Entretenimento',
-      'spotify': 'Entretenimento',
-      'jogos': 'Entretenimento',
-      'balada': 'Entretenimento',
-      'festa entretenimento': 'Entretenimento',
-      'parque': 'Entretenimento',
-      'museu': 'Entretenimento',
-      'bar': 'Entretenimento',
-      'pub': 'Entretenimento',
-      'diversao': 'Entretenimento',
-      'lazer': 'Entretenimento',
-      
-      // Shopping -> Compras Pessoais
+      'almoço': 'Alimentação',
+      'fast food': 'Alimentação',
+
+      // Lazer & Entretenimento
+      'cinema': 'Lazer & Entretenimento',
+      'teatro': 'Lazer & Entretenimento',
+      'show': 'Lazer & Entretenimento',
+      'shows': 'Lazer & Entretenimento',
+      'netflix': 'Lazer & Entretenimento',
+      'spotify': 'Lazer & Entretenimento',
+      'jogos': 'Lazer & Entretenimento',
+      'balada': 'Lazer & Entretenimento',
+      'festa entretenimento': 'Lazer & Entretenimento',
+      'parque': 'Lazer & Entretenimento',
+      'museu': 'Lazer & Entretenimento',
+      'bar': 'Lazer & Entretenimento',
+      'pub': 'Lazer & Entretenimento',
+      'diversao': 'Lazer & Entretenimento',
+      'diversão': 'Lazer & Entretenimento',
+      'lazer': 'Lazer & Entretenimento',
+      'streaming': 'Lazer & Entretenimento',
+      'viagem': 'Lazer & Entretenimento',
+      'hotel': 'Lazer & Entretenimento',
+      'passagem': 'Lazer & Entretenimento',
+      'turismo': 'Lazer & Entretenimento',
+      'hospedagem': 'Lazer & Entretenimento',
+      'aviao': 'Lazer & Entretenimento',
+      'avião': 'Lazer & Entretenimento',
+      'onibus viagem': 'Lazer & Entretenimento',
+      'ônibus viagem': 'Lazer & Entretenimento',
+      'excursao': 'Lazer & Entretenimento',
+      'excursão': 'Lazer & Entretenimento',
+
+      // Compras Pessoais
       'roupas': 'Compras Pessoais',
       'sapatos': 'Compras Pessoais',
+      'calcados': 'Compras Pessoais',
+      'calçados': 'Compras Pessoais',
       'shopping': 'Compras Pessoais',
       'loja': 'Compras Pessoais',
-      'presente': 'Doações & Presentes',
       'cosmeticos': 'Compras Pessoais',
+      'cosméticos': 'Compras Pessoais',
       'perfume': 'Compras Pessoais',
       'maquiagem': 'Compras Pessoais',
       'acessorios': 'Compras Pessoais',
-      'calcados': 'Compras Pessoais',
+      'acessórios': 'Compras Pessoais',
       'eletronicos': 'Compras Pessoais',
-      
-      // Education
+      'eletrônicos': 'Compras Pessoais',
+      'vestuario': 'Compras Pessoais',
+      'vestuário': 'Compras Pessoais',
+
+      // Educação
       'curso': 'Educação',
       'faculdade': 'Educação',
       'escola': 'Educação',
       'livros': 'Educação',
       'educacao': 'Educação',
+      'educação': 'Educação',
       'universidade': 'Educação',
       'pos graduacao': 'Educação',
+      'pós graduação': 'Educação',
       'mestrado': 'Educação',
       'doutorado': 'Educação',
       'material escolar': 'Educação',
-      
-      // Housing -> Moradia & Serviços
-      'aluguel': 'Moradia & Serviços',
-      'condominio': 'Moradia & Serviços', 
-      'agua': 'Moradia & Serviços',
-      'luz': 'Moradia & Serviços',
-      'gas': 'Moradia & Serviços',
-      'internet': 'Moradia & Serviços',
-      'limpeza': 'Moradia & Serviços',
-      'manutencao': 'Moradia & Serviços',
-      'energia': 'Moradia & Serviços',
-      'telefone': 'Moradia & Serviços',
-      'celular': 'Moradia & Serviços',
-      'tv': 'Moradia & Serviços',
-      'streaming': 'Moradia & Serviços',
-      'iptu': 'Moradia & Serviços',
-      'seguro residencial': 'Moradia & Serviços',
-      
-      // Personal Care -> Cuidados Pessoais  
-      'cabelo': 'Cuidados Pessoais',
-      'estetica': 'Cuidados Pessoais',
-      'massagem': 'Cuidados Pessoais',
-      'spa': 'Cuidados Pessoais',
-      'salao': 'Cuidados Pessoais',
-      'barbearia': 'Cuidados Pessoais',
-      'manicure': 'Cuidados Pessoais',
-      'pedicure': 'Cuidados Pessoais',
-      'depilacao': 'Cuidados Pessoais',
-      
-      // Pets
-      'veterinario': 'Pets',
-      'racao': 'Pets',
-      'pet': 'Pets',
-      'cachorro': 'Pets',
-      'gato': 'Pets',
-      'animal': 'Pets',
-      'pet shop': 'Pets',
-      'vacina pet': 'Pets',
-      'remedio pet': 'Pets',
-      
-      // Technology -> Outros or specific mapping
-      'computador': 'Compras Pessoais',
-      'software': 'Moradia & Serviços',
-      'aplicativo': 'Moradia & Serviços',
-      'notebook': 'Compras Pessoais',
-      'smartphone': 'Compras Pessoais',
-      
-      // Travel -> Viagem & Turismo
-      'viagem': 'Viagem & Turismo',
-      'hotel': 'Viagem & Turismo',
-      'passagem': 'Viagem & Turismo',
-      'turismo': 'Viagem & Turismo',
-      'hospedagem': 'Viagem & Turismo',
-      'aviao': 'Viagem & Turismo',
-      'onibus viagem': 'Viagem & Turismo',
-      'excursao': 'Viagem & Turismo',
-      
-      // Gifts & Donations
+      'treinamentos': 'Educação',
+      'palestras': 'Educação',
+      'curso online': 'Educação',
+
+      // Moradia
+      'aluguel': 'Moradia',
+      'condominio': 'Moradia', 
+      'condomínio': 'Moradia', 
+      'agua': 'Moradia',
+      'água': 'Moradia',
+      'luz': 'Moradia',
+      'gas': 'Moradia',
+      'gás': 'Moradia',
+      'internet': 'Moradia',
+      'limpeza': 'Moradia',
+      'manutencao': 'Moradia',
+      'manutenção': 'Moradia',
+      'energia': 'Moradia',
+      'telefone': 'Moradia',
+      'telefone fixo': 'Moradia',
+      'tv': 'Moradia',
+      'móveis': 'Moradia',
+      'moveis': 'Moradia',
+      'eletrodomesticos': 'Moradia',
+      'eletrodomésticos': 'Moradia',
+
+      // Família & Filhos  
+      'creche': 'Família & Filhos',
+      'brinquedos': 'Família & Filhos',
+      'roupas infantis': 'Família & Filhos',
+      'mesada': 'Família & Filhos',
+      'cuidados': 'Família & Filhos',
+      'família': 'Família & Filhos',
+      'filhos': 'Família & Filhos',
+
+      // Finanças & Serviços
+      'taxas bancarias': 'Finanças & Serviços',
+      'taxas bancárias': 'Finanças & Serviços',
+      'seguros': 'Finanças & Serviços',
+      'seguro': 'Finanças & Serviços',
+      'investimentos': 'Finanças & Serviços',
+      'investimento': 'Finanças & Serviços',
+      'impostos': 'Finanças & Serviços',
+      'mensalidades': 'Finanças & Serviços',
+      'assinatura': 'Finanças & Serviços',
+      'assinatura de serviços': 'Finanças & Serviços',
+      'banco': 'Finanças & Serviços',
+      'taxa': 'Finanças & Serviços',
+
+      // Trabalho & Negócios
+      'coworking': 'Trabalho & Negócios',
+      'software': 'Trabalho & Negócios',
+      'equipamentos': 'Trabalho & Negócios',
+      'viagens de trabalho': 'Trabalho & Negócios',
+      'marketing': 'Trabalho & Negócios',
+      'impostos pj': 'Trabalho & Negócios',
+      'negocios': 'Trabalho & Negócios',
+      'negócios': 'Trabalho & Negócios',
+      'trabalho': 'Trabalho & Negócios',
+      'pj': 'Trabalho & Negócios',
+      'empresa': 'Trabalho & Negócios',
+
+      // Doações & Presentes
       'doacao': 'Doações & Presentes',
+      'doações': 'Doações & Presentes',
+      'presente': 'Doações & Presentes',
+      'presentes': 'Doações & Presentes',
       'caridade': 'Doações & Presentes',
       'casamento': 'Doações & Presentes',
+      'casamentos': 'Doações & Presentes',
       'aniversario': 'Doações & Presentes',
-      'natal': 'Doações & Presentes',
-      'festa presente': 'Doações & Presentes'
+      'aniversário': 'Doações & Presentes',
+
+      // Outros (fallback explícitos)
+      'pet': 'Outros',
+      'pets': 'Outros',
+      'utilidades': 'Moradia',
     };
 
     // Try direct mapping first
@@ -1028,11 +1080,14 @@ export const CategoryManager = () => {
            setIsDialogOpen(open);
            if (!open) resetForm();
          }}>
-           <DialogContent>
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>
                   {editingCategory ? t('categories.edit') : t('categories.add')}
                 </DialogTitle>
+                <DialogDescription>
+                  {editingCategory ? 'Edite o nome, cor, tipo e tags desta categoria.' : 'Crie uma nova categoria de entrada ou saída.'}
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
