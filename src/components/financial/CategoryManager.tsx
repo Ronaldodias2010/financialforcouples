@@ -564,15 +564,15 @@ export const CategoryManager = () => {
 
   const fetchCategoryTags = async () => {
     try {
-      // Fetch category tags with their relations to default categories
+      // Fetch category tags with their relations to default categories using explicit FK names
       const { data: tagRelations, error } = await supabase
         .from('category_tag_relations')
         .select(`
           category_id,
           tag_id,
           is_active,
-          category_tags(name_pt, name_en, name_es, color),
-          default_categories(name_pt, category_type)
+          category_tags!category_tag_relations_tag_id_fkey(name_pt, name_en, name_es, color),
+          default_categories!category_tag_relations_category_id_fkey(name_pt, category_type)
         `)
         .eq('is_active', true);
 

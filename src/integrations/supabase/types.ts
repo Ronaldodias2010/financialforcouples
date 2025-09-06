@@ -492,7 +492,22 @@ export type Database = {
           is_active?: boolean
           tag_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "category_tag_relations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "default_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_tag_relations_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "category_tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       category_tags: {
         Row: {
