@@ -2277,6 +2277,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_active_tags_for_category: {
+        Args: { p_category_id: string; p_user_id?: string }
+        Returns: {
+          color: string
+          icon: string
+          tag_id: string
+          tag_name_en: string
+          tag_name_es: string
+          tag_name_pt: string
+        }[]
+      }
       get_temp_password_for_invite: {
         Args: { p_record_id: string }
         Returns: string
@@ -2366,7 +2377,9 @@ export type Database = {
         Returns: undefined
       }
       suggest_category_and_tag: {
-        Args: { description: string; language?: string }
+        Args:
+          | { description: string; language?: string }
+          | { description: string; language?: string; p_user_id?: string }
         Returns: {
           category_id: string
           category_name: string
@@ -2374,6 +2387,10 @@ export type Database = {
           tag_id: string
           tag_name: string
         }[]
+      }
+      sync_user_tag_preferences: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       update_ai_usage: {
         Args: {
