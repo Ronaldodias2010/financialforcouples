@@ -271,8 +271,16 @@ export const CategoryManager = () => {
       if (error) throw error;
       
       const items = (data || []) as Category[];
+      
+      // Filter out consolidated child categories (those that should now be tags)
+      const consolidatedNames = ['restaurante', 'supermercado', 'academia'];
+      const filteredItems = items.filter(item => {
+        const normalizedName = normalize(item.name);
+        return !consolidatedNames.includes(normalizedName);
+      });
+      
       const map = new Map<string, Category>();
-      for (const it of items) {
+      for (const it of filteredItems) {
         const key = `${normalize(it.name)}|${it.category_type}`;
         if (!map.has(key)) map.set(key, it);
       }
