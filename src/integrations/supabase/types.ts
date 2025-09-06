@@ -459,6 +459,72 @@ export type Database = {
         }
         Relationships: []
       }
+      category_tag_relations: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          tag_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tag_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tag_id?: string
+        }
+        Relationships: []
+      }
+      category_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          keywords_en: string[] | null
+          keywords_es: string[] | null
+          keywords_pt: string[] | null
+          name_en: string
+          name_es: string
+          name_pt: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          keywords_en?: string[] | null
+          keywords_es?: string[] | null
+          keywords_pt?: string[] | null
+          name_en: string
+          name_es: string
+          name_pt: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          keywords_en?: string[] | null
+          keywords_es?: string[] | null
+          keywords_pt?: string[] | null
+          name_en?: string
+          name_es?: string
+          name_pt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       checkout_sessions: {
         Row: {
           applied_promo_discount: number | null
@@ -1765,6 +1831,7 @@ export type Database = {
           payment_method: string | null
           purchase_date: string
           subcategory: string | null
+          tag_id: string | null
           total_installments: number | null
           transaction_date: string
           type: Database["public"]["Enums"]["transaction_type"]
@@ -1788,6 +1855,7 @@ export type Database = {
           payment_method?: string | null
           purchase_date?: string
           subcategory?: string | null
+          tag_id?: string | null
           total_installments?: number | null
           transaction_date?: string
           type: Database["public"]["Enums"]["transaction_type"]
@@ -1811,6 +1879,7 @@ export type Database = {
           payment_method?: string | null
           purchase_date?: string
           subcategory?: string | null
+          tag_id?: string | null
           total_installments?: number | null
           transaction_date?: string
           type?: Database["public"]["Enums"]["transaction_type"]
@@ -2192,6 +2261,16 @@ export type Database = {
       recalculate_mileage_goals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      suggest_category_and_tag: {
+        Args: { description: string; language?: string }
+        Returns: {
+          category_id: string
+          category_name: string
+          confidence: number
+          tag_id: string
+          tag_name: string
+        }[]
       }
       update_ai_usage: {
         Args: {
