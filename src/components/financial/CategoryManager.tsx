@@ -617,11 +617,15 @@ export const CategoryManager = () => {
 
   const fetchCategoryTags = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       // Buscar tags do sistema através das categorias de usuário com default_category_id
       const { data: userCategories, error: categoriesError } = await supabase
         .from('categories')
         .select('id, name, default_category_id')
-        .eq('category_type', 'expense');
+        .eq('category_type', 'expense')
+        .eq('user_id', user.id);
 
       if (categoriesError) throw categoriesError;
 
