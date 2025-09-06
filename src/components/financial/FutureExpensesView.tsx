@@ -199,6 +199,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       // Processar pagamentos futuros da nova tabela
       if (futurePayments) {
         for (const payment of futurePayments) {
+          // Ignorar completamente pagamentos de cartão de crédito da tabela future_expense_payments
+          // pois eles são gerenciados separadamente na seção de vencimentos de cartões
+          if (payment.expense_source_type === 'card_payment') {
+            continue;
+          }
+          
           const isPaid = await isExpensePaid(payment.recurring_expense_id, payment.installment_transaction_id, payment.original_due_date);
           
           // Buscar nome da categoria se tiver category_id
@@ -219,8 +225,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
              description: payment.description,
              amount: payment.amount,
              due_date: payment.original_due_date,
-             type: payment.expense_source_type === 'card_payment' ? 'card_payment' : 
-                   payment.expense_source_type === 'installment' ? 'installment' : 
+             type: payment.expense_source_type === 'installment' ? 'installment' : 
                    payment.expense_source_type === 'recurring' ? 'recurring' : 'installment',
              category: categoryName,
              owner_user: payment.owner_user,

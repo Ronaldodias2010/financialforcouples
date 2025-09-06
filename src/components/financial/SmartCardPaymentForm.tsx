@@ -105,6 +105,11 @@ export const SmartCardPaymentForm = ({ onPaymentSuccess }: SmartCardPaymentFormP
       setSelectedCardId("");
       setPaymentAmount("");
       setNotes("");
+      setCardStatus(null);
+      
+      // Refresh cards list to update balances
+      await fetchCardsWithBalance();
+      
       onPaymentSuccess();
     }
   };
