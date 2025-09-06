@@ -255,10 +255,34 @@ export const useManualFutureExpenses = () => {
     }
   };
 
+  // Função para calcular o status de vencimento de um gasto
+  const getDueStatus = (dueDate: string): 'future' | 'today' | 'overdue' => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const todayStr = today.toISOString().split('T')[0];
+    const dueDateStr = due.toISOString().split('T')[0];
+    
+    if (dueDateStr < todayStr) {
+      return 'overdue';
+    } else if (dueDateStr === todayStr) {
+      return 'today';
+    } else {
+      return 'future';
+    }
+  };
+
+  // Função para obter gastos vencidos
+  const getOverdueExpenses = async (): Promise<ManualFutureExpense[]> => {
+    const allExpenses = await fetchManualFutureExpenses();
+    return allExpenses.filter(expense => getDueStatus(expense.due_date) === 'overdue');
+  };
+
   return {
     fetchManualFutureExpenses,
     payManualExpense,
     deleteManualExpense,
+    getDueStatus,
+    getOverdueExpenses,
     isLoading,
   };
 };

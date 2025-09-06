@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, CreditCard, AlertCircle, DollarSign, CheckCircle, Receipt, Plus } from "lucide-react";
+import { Calendar, CreditCard, AlertCircle, DollarSign, CheckCircle, Receipt, Plus, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
@@ -35,6 +35,7 @@ interface FutureExpense {
   manualFutureExpenseId?: string;
   isPaid?: boolean;
   allowsPayment?: boolean; // Define se mostra o botão de pagar
+  dueStatus?: 'future' | 'today' | 'overdue'; // Status de vencimento
 }
 
 interface FutureExpensesViewProps {
@@ -47,7 +48,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { isPartOfCouple } = useCouple();
   const { t, language } = useLanguage();
   const { isExpensePaid } = useFutureExpensePayments();
-  const { fetchManualFutureExpenses, payManualExpense } = useManualFutureExpenses();
+  const { fetchManualFutureExpenses, payManualExpense, getDueStatus } = useManualFutureExpenses();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,6 +179,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           (viewMode === "user2" && manualExpense.owner_user === 'user2');
           
         if (shouldInclude) {
+          const dueStatus = getDueStatus(manualExpense.due_date);
           expenses.push({
             id: manualExpense.id,
             description: manualExpense.description,
@@ -189,6 +191,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             manualFutureExpenseId: manualExpense.id,
             isPaid: manualExpense.is_paid,
             allowsPayment: !manualExpense.is_paid, // Só pode pagar se não foi pago
+            dueStatus, // Adicionar status de vencimento
           });
         }
       }
@@ -397,8 +400,19 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       
       const expensesForCalendar = expenses; // Todos os gastos para o calendário
 
-      // Ordenar por data
-      expensesForList.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+      // Ordenar por prioridade: vencidos primeiro, depois por data
+      expensesForList.sort((a, b) => {
+        // Primeiro, gastos vencidos
+        if (a.dueStatus === 'overdue' && b.dueStatus !== 'overdue') return -1;
+        if (b.dueStatus === 'overdue' && a.dueStatus !== 'overdue') return 1;
+        
+        // Depois, gastos de hoje
+        if (a.dueStatus === 'today' && b.dueStatus === 'future') return -1;
+        if (b.dueStatus === 'today' && a.dueStatus === 'future') return 1;
+        
+        // Por último, ordenar por data
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      });
 
       // Armazenar ambos os conjuntos
       setFutureExpenses(expensesForList);
@@ -677,63 +691,109 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredExpenses.map((expense) => (
-              <Card key={expense.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {getTypeIcon(expense.type)}
-                    <div>
+            {filteredExpenses.map((expense) => {
+              // Função para determinar classe do card baseado no status de vencimento
+              const getCardClassName = (expense: FutureExpense) => {
+                if (expense.dueStatus === 'overdue') {
+                  return 'p-4 border-danger bg-danger/5 shadow-lg border-2 animate-pulse';
+                } else if (expense.dueStatus === 'today') {
+                  return 'p-4 border-warning bg-warning/5 border-2';
+                } else {
+                  return 'p-4';
+                }
+              };
+
+              // Função para ícone de status
+              const getStatusIcon = (expense: FutureExpense) => {
+                if (expense.dueStatus === 'overdue') {
+                  return <AlertCircle className="h-4 w-4 text-danger" />;
+                } else if (expense.dueStatus === 'today') {
+                  return <Clock className="h-4 w-4 text-warning" />;
+                }
+                return null;
+              };
+
+              // Função para badge de status
+              const getStatusBadge = (expense: FutureExpense) => {
+                if (expense.dueStatus === 'overdue') {
+                  return (
+                    <Badge className="bg-danger text-danger-foreground">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Vencido
+                    </Badge>
+                  );
+                } else if (expense.dueStatus === 'today') {
+                  return (
+                    <Badge className="bg-warning text-warning-foreground">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Vence Hoje
+                    </Badge>
+                  );
+                }
+                return null;
+              };
+
+              return (
+                <Card key={expense.id} className={getCardClassName(expense)}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {getTypeIcon(expense.type)}
+                      {getStatusIcon(expense)}
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-medium">{expense.description}</h4>
+                          {getStatusBadge(expense)}
+                          <Badge className={getTypeColor(expense.type)}>
+                            {getTypeLabel(expense.type)}
+                          </Badge>
+                          {expense.installment_info && (
+                            <Badge variant="outline">{expense.installment_info}</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="font-semibold text-lg text-destructive">
+                          {formatCurrency(expense.amount)}
+                        </p>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{expense.description}</h4>
-                        <Badge className={getTypeColor(expense.type)}>
-                          {getTypeLabel(expense.type)}
-                        </Badge>
-                        {expense.installment_info && (
-                          <Badge variant="outline">{expense.installment_info}</Badge>
+                        {expense.isPaid ? (
+                          <Badge variant="default" className="bg-success text-success-foreground">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Pago
+                          </Badge>
+                        ) : expense.allowsPayment === false ? (
+                          // Transações do cartão - apenas informativo, SEM botão
+                          <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300">
+                            <Receipt className="h-3 w-3 mr-1" />
+                            Gasto do Cartão
+                          </Badge>
+                        ) : (
+                          // Cartões de crédito, gastos recorrentes e parcelas - COM botão
+                          <Button
+                            size="sm"
+                            onClick={() => handlePayExpense(expense)}
+                            className="flex items-center gap-2"
+                            variant={expense.dueStatus === 'overdue' ? 'default' : 'default'}
+                          >
+                            <Receipt className="h-4 w-4" />
+                            {expense.dueStatus === 'overdue' ? 'Pagar Urgente' : 'Pagar'}
+                          </Button>
                         )}
                       </div>
-                       <p className="text-sm text-muted-foreground">
-                         {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
-                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
-                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className="font-semibold text-lg text-destructive">
-                        {formatCurrency(expense.amount)}
-                      </p>
-                    </div>
-                     <div className="flex items-center gap-2">
-                       {expense.isPaid ? (
-                         <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
-                           <CheckCircle className="h-3 w-3 mr-1" />
-                           Pago
-                         </Badge>
-                       ) : expense.allowsPayment === false ? (
-                         // Transações do cartão - apenas informativo, SEM botão
-                         <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-                           <Receipt className="h-3 w-3 mr-1" />
-                           Gasto do Cartão
-                         </Badge>
-                       ) : (
-                         // Cartões de crédito, gastos recorrentes e parcelas - COM botão
-                         <Button
-                           size="sm"
-                           onClick={() => handlePayExpense(expense)}
-                           className="flex items-center gap-2"
-                         >
-                           <Receipt className="h-4 w-4" />
-                           Pagar
-                         </Button>
-                       )}
-                     </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

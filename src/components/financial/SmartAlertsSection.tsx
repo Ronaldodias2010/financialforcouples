@@ -10,7 +10,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface SmartAlert {
   id: string;
-  type: 'expiring_miles' | 'goal_progress' | 'promotion_eligible' | 'card_inactive';
+  type: 'expiring_miles' | 'goal_progress' | 'promotion_eligible' | 'card_inactive' | 'overdue_expenses' | 'today_expenses';
   message: string;
   urgent: boolean;
   action?: string;
@@ -107,6 +107,46 @@ export const SmartAlertsSection = ({ userTotalMiles }: SmartAlertsSectionProps) 
             data: { count: notNotifiedPromotions.length }
           });
         }
+      }
+
+      // Check for overdue future expenses
+      const { data: manualExpenses } = await supabase
+        .from('manual_future_expenses')
+        .select('id, description, due_date, amount')
+        .eq('user_id', user.id)
+        .eq('is_paid', false)
+        .lt('due_date', new Date().toISOString().split('T')[0]);
+
+      if (manualExpenses && manualExpenses.length > 0) {
+        const totalOverdue = manualExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+        generatedAlerts.push({
+          id: 'overdue-expenses',
+          type: 'card_inactive',
+          message: `${manualExpenses.length} gasto(s) vencido(s) no valor de R$ ${totalOverdue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+          urgent: true,
+          action: 'Ver Gastos Vencidos',
+          data: { count: manualExpenses.length, total: totalOverdue }
+        });
+      }
+
+      // Check for expenses due today
+      const { data: todayExpenses } = await supabase
+        .from('manual_future_expenses')
+        .select('id, description, due_date, amount')
+        .eq('user_id', user.id)
+        .eq('is_paid', false)
+        .eq('due_date', new Date().toISOString().split('T')[0]);
+
+      if (todayExpenses && todayExpenses.length > 0) {
+        const totalToday = todayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+        generatedAlerts.push({
+          id: 'today-expenses',
+          type: 'expiring_miles',
+          message: `${todayExpenses.length} gasto(s) vencem hoje no valor de R$ ${totalToday.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+          urgent: false,
+          action: 'Ver Gastos de Hoje',
+          data: { count: todayExpenses.length, total: totalToday }
+        });
       }
 
       // Miles expiring soon (simulated - would need actual expiration tracking)
