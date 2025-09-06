@@ -583,7 +583,6 @@ export const FinancialDashboard = () => {
                 { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp },
                 { id: "categories", label: t('nav.categories'), icon: Settings },
                 { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
-                { id: "cardPayment", label: "Pagar Cartão", icon: CreditCard },
                 { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -637,7 +636,6 @@ export const FinancialDashboard = () => {
                 {[
                   { id: "categories", label: t('nav.categories'), icon: Settings },
                   { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
-                  { id: "cardPayment", label: "Pagar Cartão", icon: CreditCard },
                   { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
                 ].map((tab) => {
                   const Icon = tab.icon;
