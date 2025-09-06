@@ -38,15 +38,28 @@ export const useManualFutureExpenses = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchManualFutureExpenses = async (): Promise<ManualFutureExpense[]> => {
+  const fetchManualFutureExpenses = async (viewMode: "both" | "user1" | "user2" = "both"): Promise<ManualFutureExpense[]> => {
     if (!user) return [];
 
     try {
-      // Fetch expenses first
+      // Check if user is part of a couple to include partner's expenses
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
+      // Fetch expenses for the user and partner if applicable
       const { data: expensesData, error: expensesError } = await supabase
         .from('manual_future_expenses')
         .select('*')
-        .eq('user_id', user.id)
+        .in('user_id', userIds)
         .eq('is_paid', false)
         .order('due_date', { ascending: true });
 
@@ -55,11 +68,11 @@ export const useManualFutureExpenses = () => {
         return [];
       }
 
-      // Fetch categories separately
+      // Fetch categories for both users
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('id, name, color')
-        .eq('user_id', user.id);
+        .in('user_id', userIds);
 
       if (categoriesError) {
         console.error('Error fetching categories:', categoriesError);
@@ -70,10 +83,21 @@ export const useManualFutureExpenses = () => {
         (categoriesData || []).map(cat => [cat.id, cat])
       );
 
-      return (expensesData || []).map(expense => ({
+      let expenses = (expensesData || []).map(expense => ({
         ...expense,
         category: expense.category_id ? categoryMap.get(expense.category_id) : undefined
       }));
+
+      // Apply viewMode filter
+      if (viewMode !== "both" && coupleData) {
+        expenses = expenses.filter(expense => {
+          // Determine owner_user based on couple relationship
+          const ownerUser = expense.user_id === coupleData.user1_id ? 'user1' : 'user2';
+          return ownerUser === viewMode;
+        });
+      }
+
+      return expenses;
     } catch (error) {
       console.error('Error fetching manual future expenses:', error);
       return [];

@@ -170,30 +170,23 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
 
       const expenses: FutureExpense[] = [];
 
-      // Buscar gastos futuros manuais
-      const manualExpenses = await fetchManualFutureExpenses();
+      // Buscar gastos futuros manuais (já filtrados por viewMode no hook)
+      const manualExpenses = await fetchManualFutureExpenses(viewMode);
       for (const manualExpense of manualExpenses) {
-        // Filtrar por viewMode se necessário
-        const shouldInclude = viewMode === "both" || 
-          (viewMode === "user1" && manualExpense.owner_user === 'user1') ||
-          (viewMode === "user2" && manualExpense.owner_user === 'user2');
-          
-        if (shouldInclude) {
-          const dueStatus = getDueStatus(manualExpense.due_date);
-          expenses.push({
-            id: manualExpense.id,
-            description: manualExpense.description,
-            amount: manualExpense.amount,
-            due_date: manualExpense.due_date,
-            type: 'manual_future',
-            category: manualExpense.category?.name || 'Sem categoria',
-            owner_user: manualExpense.owner_user,
-            manualFutureExpenseId: manualExpense.id,
-            isPaid: manualExpense.is_paid,
-            allowsPayment: !manualExpense.is_paid, // Só pode pagar se não foi pago
-            dueStatus, // Adicionar status de vencimento
-          });
-        }
+        const dueStatus = getDueStatus(manualExpense.due_date);
+        expenses.push({
+          id: manualExpense.id,
+          description: manualExpense.description,
+          amount: manualExpense.amount,
+          due_date: manualExpense.due_date,
+          type: 'manual_future',
+          category: manualExpense.category?.name || 'Sem categoria',
+          owner_user: manualExpense.owner_user,
+          manualFutureExpenseId: manualExpense.id,
+          isPaid: manualExpense.is_paid,
+          allowsPayment: !manualExpense.is_paid,
+          dueStatus,
+        });
       }
 
       // Processar pagamentos futuros da nova tabela
@@ -204,6 +197,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           if (payment.expense_source_type === 'card_payment') {
             continue;
           }
+          
+          // Filtrar por viewMode se necessário
+          const shouldInclude = viewMode === "both" || 
+            (viewMode === "user1" && payment.owner_user === 'user1') ||
+            (viewMode === "user2" && payment.owner_user === 'user2');
+            
+          if (!shouldInclude) continue;
           
           const isPaid = await isExpensePaid(payment.recurring_expense_id, payment.installment_transaction_id, payment.original_due_date);
           
@@ -240,6 +240,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
 
       // Adicionar parcelas, mas excluir a 1ª parcela do mês atual (ela é Gasto Atual)
       for (const installment of installments || []) {
+        // Filtrar por viewMode se necessário
+        const ownerUser = installment.cards?.owner_user || installment.owner_user;
+        const shouldInclude = viewMode === "both" || 
+          (viewMode === "user1" && ownerUser === 'user1') ||
+          (viewMode === "user2" && ownerUser === 'user2');
+          
+        if (!shouldInclude) continue;
+
         const isPaid = await isExpensePaid(undefined, installment.id, installment.transaction_date);
         const transactionMonth = format(new Date(installment.transaction_date), 'yyyy-MM');
         const isCurrentMonth = transactionMonth === currentMonth;
@@ -268,7 +276,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           category: installment.categories?.name || 'Sem categoria',
           card_name: installment.cards?.name,
           installment_info: `${installment.installment_number}/${installment.total_installments}`,
-          owner_user: installment.cards?.owner_user || installment.owner_user,
+          owner_user: ownerUser,
           installmentTransactionId: installment.id,
           isPaid,
           allowsPayment, // Parcelas de cartão de crédito não podem ser pagas individualmente
@@ -354,23 +362,36 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         const shouldInclude = !isCurrentMonth || (isInstallment && installmentNumber > 1);
         
         if (shouldInclude) {
-          expenses.push({
-            id: `transaction-${cardTransaction.id}`,
-            description: cardTransaction.description,
-            amount: cardTransaction.amount,
-            due_date: cardTransaction.transaction_date,
-            type: 'card_transaction',
-            category: cardTransaction.categories?.name || 'Sem categoria',
-            card_name: cardTransaction.cards?.name,
-            owner_user: cardTransaction.cards?.owner_user || cardTransaction.owner_user,
-            allowsPayment: false, // Transações do cartão NÃO podem ser pagas individualmente
-          });
+          // Filtrar por viewMode se necessário
+          const ownerUser = cardTransaction.cards?.owner_user || cardTransaction.owner_user;
+          const shouldIncludeViewMode = viewMode === "both" || 
+            (viewMode === "user1" && ownerUser === 'user1') ||
+            (viewMode === "user2" && ownerUser === 'user2');
+            
+          if (shouldIncludeViewMode) {
+            expenses.push({
+              id: `transaction-${cardTransaction.id}`,
+              description: cardTransaction.description,
+              amount: cardTransaction.amount,
+              due_date: cardTransaction.transaction_date,
+              type: 'card_transaction',
+              category: cardTransaction.categories?.name || 'Sem categoria',
+              card_name: cardTransaction.cards?.name,
+              owner_user: ownerUser,
+              allowsPayment: false, // Transações do cartão NÃO podem ser pagas individualmente
+            });
+          }
         }
       }
 
       // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento (COM botão de pagar)
       for (const card of cards || []) {
-        if (card.due_date) {
+        // Filtrar por viewMode se necessário
+        const shouldInclude = viewMode === "both" || 
+          (viewMode === "user1" && card.owner_user === 'user1') ||
+          (viewMode === "user2" && card.owner_user === 'user2');
+          
+        if (shouldInclude && card.due_date) {
           const paymentAmount = await calculateCardPaymentAmount(card, user.id);
           if (paymentAmount > 0) {
             const nextDueDate = getNextDueDate(card.due_date);
