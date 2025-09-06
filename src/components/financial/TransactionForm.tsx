@@ -1214,7 +1214,7 @@ const invTxn: TablesInsert<'transactions'> = {
                        </span>
                      </SelectItem>
                      <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
-                     <SelectItem value="card_payment">Pagamento de Cartão</SelectItem>
+                     <SelectItem value="card_payment">{t('transactionForm.cardPayment')}</SelectItem>
                      <SelectItem value="saque">{t('saque')}</SelectItem>
                   </>
                 )}
@@ -1568,15 +1568,15 @@ const invTxn: TablesInsert<'transactions'> = {
             <div className="space-y-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
-                <h4 className="font-semibold text-primary">Pagamento Inteligente de Cartão</h4>
+                <h4 className="font-semibold text-primary">{t('transactionForm.smartCardPayment')}</h4>
               </div>
               
               {/* Conta origem */}
               <div>
-                <Label htmlFor="sourceAccount">Conta de Origem</Label>
+                <Label htmlFor="sourceAccount">{t('transactionForm.sourceAccount')}</Label>
                 <Select value={accountId} onValueChange={setAccountId} required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione a conta que pagará" />
+                    <SelectValue placeholder={t('transactionForm.selectAccountToPay')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accounts.filter(account => !account.is_cash_account).map((account) => (
@@ -1595,10 +1595,10 @@ const invTxn: TablesInsert<'transactions'> = {
 
               {/* Cartão destino */}
               <div>
-                <Label htmlFor="targetCard">Cartão a Pagar</Label>
+                <Label htmlFor="targetCard">{t('transactionForm.cardToPay')}</Label>
                 <Select value={cardId} onValueChange={setCardId} required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o cartão para pagamento" />
+                    <SelectValue placeholder={t('transactionForm.selectCardForPayment')} />
                   </SelectTrigger>
                   <SelectContent>
                     {cards.filter(card => card.card_type === 'credit').map((card) => (
@@ -1618,15 +1618,15 @@ const invTxn: TablesInsert<'transactions'> = {
               {/* Preview do pagamento */}
               {accountId && cardId && amount && (
                 <div className="p-3 bg-white/50 border border-primary/10 rounded-md">
-                  <div className="text-sm text-muted-foreground mb-2">Preview do Pagamento:</div>
+                  <div className="text-sm text-muted-foreground mb-2">{t('transactionForm.paymentPreview')}:</div>
                   <div className="flex items-center justify-between">
-                    <span>Valor a pagar:</span>
+                    <span>{t('transactionForm.amountToPay')}:</span>
                     <span className="font-semibold text-primary">{formatCurrency(parseFloat(amount), currency)}</span>
                   </div>
                   <div className="text-xs text-muted-foreground mt-2">
-                    ✓ Sistema detectará automaticamente gastos futuros relacionados
+                    ✓ {t('transactionForm.autoDetectFutureExpenses')}
                     <br />
-                    ✓ Status do cartão será atualizado baseado no pagamento mínimo
+                    ✓ {t('transactionForm.cardStatusUpdate')}
                   </div>
                 </div>
               )}
