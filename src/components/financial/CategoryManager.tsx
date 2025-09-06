@@ -6,13 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
 import { TagInput } from "@/components/ui/TagInput";
-import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle, Merge, Loader2 } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Category {
@@ -41,8 +40,6 @@ export const CategoryManager = () => {
   const [newCategoryType, setNewCategoryType] = useState<"income" | "expense">("expense");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isConsolidating, setIsConsolidating] = useState(false);
-  const [consolidationSuggestions, setConsolidationSuggestions] = useState<{parent: Category, children: Category[]}[]>([]);
   const { toast } = useToast();
   const { language, t } = useLanguage();
   const { 
@@ -310,320 +307,6 @@ export const CategoryManager = () => {
     }
   };
 
-  // Enhanced mapping function for custom categories to default categories
-  const mapCategoryToDefault = (categoryName: string): string => {
-    const normalizedName = normalize(categoryName.toLowerCase());
-    
-    // Enhanced mapping with more comprehensive coverage
-    const mappings: { [key: string]: string } = {
-      // Saúde
-      'academia': 'Saúde',
-      'farmacia': 'Saúde', 
-      'médico': 'Saúde',
-      'medico': 'Saúde',
-      'hospital': 'Saúde',
-      'clinica': 'Saúde',
-      'clínica': 'Saúde',
-      'dentista': 'Saúde',
-      'saude': 'Saúde',
-      'saúde': 'Saúde',
-      'consulta': 'Saúde',
-      'exame': 'Saúde',
-      'medicamento': 'Saúde',
-      'plano de saude': 'Saúde',
-      'plano de saúde': 'Saúde',
-      'fisioterapia': 'Saúde',
-      'psicologo': 'Saúde',
-      'psicólogo': 'Saúde',
-      'terapia': 'Saúde',
-
-      // Transporte  
-      'combustivel': 'Transporte',
-      'combustível': 'Transporte',
-      'gasolina': 'Transporte',
-      'uber': 'Transporte',
-      'uber/99': 'Transporte',
-      'taxi': 'Transporte',
-      'táxi': 'Transporte',
-      'onibus': 'Transporte',
-      'ônibus': 'Transporte',
-      'metro': 'Transporte',
-      'metrô': 'Transporte',
-      'estacionamento': 'Transporte',
-      'pedagio': 'Transporte',
-      'pedágio': 'Transporte',
-      'transporte': 'Transporte',
-      'carro': 'Transporte',
-      'moto': 'Transporte',
-      'bicicleta': 'Transporte',
-      'manutencao do carro': 'Transporte',
-      'manutenção veículo': 'Transporte',
-      'veiculos': 'Transporte',
-      'veículos': 'Transporte',
-
-      // Alimentação
-      'supermercado': 'Alimentação',
-      'restaurante': 'Alimentação',
-      'lanchonete': 'Alimentação',
-      'padaria': 'Alimentação',
-      'feira': 'Alimentação',
-      'delivery': 'Alimentação',
-      'ifood': 'Alimentação',
-      'alimentacao': 'Alimentação',
-      'alimentação': 'Alimentação',
-      'comida': 'Alimentação',
-      'mercado': 'Alimentação',
-      'acougue': 'Alimentação',
-      'açougue': 'Alimentação',
-      'hortifruti': 'Alimentação',
-      'cafe': 'Alimentação',
-      'café': 'Alimentação',
-      'lanche': 'Alimentação',
-      'jantar': 'Alimentação',
-      'almoco': 'Alimentação',
-      'almoço': 'Alimentação',
-      'fast food': 'Alimentação',
-
-      // Lazer & Entretenimento
-      'cinema': 'Lazer & Entretenimento',
-      'teatro': 'Lazer & Entretenimento',
-      'show': 'Lazer & Entretenimento',
-      'shows': 'Lazer & Entretenimento',
-      'netflix': 'Lazer & Entretenimento',
-      'spotify': 'Lazer & Entretenimento',
-      'jogos': 'Lazer & Entretenimento',
-      'balada': 'Lazer & Entretenimento',
-      'festa entretenimento': 'Lazer & Entretenimento',
-      'parque': 'Lazer & Entretenimento',
-      'museu': 'Lazer & Entretenimento',
-      'bar': 'Lazer & Entretenimento',
-      'pub': 'Lazer & Entretenimento',
-      'diversao': 'Lazer & Entretenimento',
-      'diversão': 'Lazer & Entretenimento',
-      'lazer': 'Lazer & Entretenimento',
-      'streaming': 'Lazer & Entretenimento',
-      'viagem': 'Lazer & Entretenimento',
-      'hotel': 'Lazer & Entretenimento',
-      'passagem': 'Lazer & Entretenimento',
-      'turismo': 'Lazer & Entretenimento',
-      'hospedagem': 'Lazer & Entretenimento',
-      'aviao': 'Lazer & Entretenimento',
-      'avião': 'Lazer & Entretenimento',
-      'onibus viagem': 'Lazer & Entretenimento',
-      'ônibus viagem': 'Lazer & Entretenimento',
-      'excursao': 'Lazer & Entretenimento',
-      'excursão': 'Lazer & Entretenimento',
-
-      // Compras Pessoais
-      'roupas': 'Compras Pessoais',
-      'sapatos': 'Compras Pessoais',
-      'calcados': 'Compras Pessoais',
-      'calçados': 'Compras Pessoais',
-      'shopping': 'Compras Pessoais',
-      'loja': 'Compras Pessoais',
-      'cosmeticos': 'Compras Pessoais',
-      'cosméticos': 'Compras Pessoais',
-      'perfume': 'Compras Pessoais',
-      'maquiagem': 'Compras Pessoais',
-      'acessorios': 'Compras Pessoais',
-      'acessórios': 'Compras Pessoais',
-      'eletronicos': 'Compras Pessoais',
-      'eletrônicos': 'Compras Pessoais',
-      'vestuario': 'Compras Pessoais',
-      'vestuário': 'Compras Pessoais',
-
-      // Educação
-      'curso': 'Educação',
-      'faculdade': 'Educação',
-      'escola': 'Educação',
-      'livros': 'Educação',
-      'educacao': 'Educação',
-      'educação': 'Educação',
-      'universidade': 'Educação',
-      'pos graduacao': 'Educação',
-      'pós graduação': 'Educação',
-      'mestrado': 'Educação',
-      'doutorado': 'Educação',
-      'material escolar': 'Educação',
-      'treinamentos': 'Educação',
-      'palestras': 'Educação',
-      'curso online': 'Educação',
-
-      // Moradia
-      'aluguel': 'Moradia',
-      'condominio': 'Moradia', 
-      'condomínio': 'Moradia', 
-      'agua': 'Moradia',
-      'água': 'Moradia',
-      'luz': 'Moradia',
-      'gas': 'Moradia',
-      'gás': 'Moradia',
-      'internet': 'Moradia',
-      'limpeza': 'Moradia',
-      'manutencao': 'Moradia',
-      'manutenção': 'Moradia',
-      'energia': 'Moradia',
-      'telefone': 'Moradia',
-      'telefone fixo': 'Moradia',
-      'tv': 'Moradia',
-      'móveis': 'Moradia',
-      'moveis': 'Moradia',
-      'eletrodomesticos': 'Moradia',
-      'eletrodomésticos': 'Moradia',
-
-      // Família & Filhos  
-      'creche': 'Família & Filhos',
-      'brinquedos': 'Família & Filhos',
-      'roupas infantis': 'Família & Filhos',
-      'mesada': 'Família & Filhos',
-      'cuidados': 'Família & Filhos',
-      'família': 'Família & Filhos',
-      'filhos': 'Família & Filhos',
-
-      // Finanças & Serviços
-      'taxas bancarias': 'Finanças & Serviços',
-      'taxas bancárias': 'Finanças & Serviços',
-      'seguros': 'Finanças & Serviços',
-      'seguro': 'Finanças & Serviços',
-      'investimentos': 'Finanças & Serviços',
-      'investimento': 'Finanças & Serviços',
-      'impostos': 'Finanças & Serviços',
-      'mensalidades': 'Finanças & Serviços',
-      'assinatura': 'Finanças & Serviços',
-      'assinatura de serviços': 'Finanças & Serviços',
-      'banco': 'Finanças & Serviços',
-      'taxa': 'Finanças & Serviços',
-
-      // Trabalho & Negócios
-      'coworking': 'Trabalho & Negócios',
-      'software': 'Trabalho & Negócios',
-      'equipamentos': 'Trabalho & Negócios',
-      'viagens de trabalho': 'Trabalho & Negócios',
-      'marketing': 'Trabalho & Negócios',
-      'impostos pj': 'Trabalho & Negócios',
-      'negocios': 'Trabalho & Negócios',
-      'negócios': 'Trabalho & Negócios',
-      'trabalho': 'Trabalho & Negócios',
-      'pj': 'Trabalho & Negócios',
-      'empresa': 'Trabalho & Negócios',
-
-      // Doações & Presentes
-      'doacao': 'Doações & Presentes',
-      'doações': 'Doações & Presentes',
-      'presente': 'Doações & Presentes',
-      'presentes': 'Doações & Presentes',
-      'caridade': 'Doações & Presentes',
-      'casamento': 'Doações & Presentes',
-      'casamentos': 'Doações & Presentes',
-      'aniversario': 'Doações & Presentes',
-      'aniversário': 'Doações & Presentes',
-
-      // Outros (fallback explícitos)
-      'pet': 'Outros',
-      'pets': 'Outros',
-      'utilidades': 'Moradia',
-    };
-
-    // Try direct mapping first
-    if (mappings[normalizedName]) {
-      return mappings[normalizedName];
-    }
-
-    // Try partial matching for compound names
-    for (const [key, value] of Object.entries(mappings)) {
-      if (normalizedName.includes(key) || key.includes(normalizedName)) {
-        return value;
-      }
-    }
-
-    // Default fallback
-    return 'Outros';
-  };
-
-  // Analyze categories for consolidation opportunities
-  const analyzeConsolidationOpportunities = () => {
-    const suggestions: {parent: Category, children: Category[]}[] = [];
-    const processedCategories = new Set<string>();
-    
-    // Group categories by their mapped default category
-    const groupedCategories = new Map<string, Category[]>();
-    
-    expenseCategories.forEach(category => {
-      const defaultCategory = mapCategoryToDefault(category.name);
-      if (!groupedCategories.has(defaultCategory)) {
-        groupedCategories.set(defaultCategory, []);
-      }
-      groupedCategories.get(defaultCategory)!.push(category);
-    });
-    
-    // Find groups with multiple categories that can be consolidated
-    groupedCategories.forEach((categories, defaultCategory) => {
-      if (categories.length > 1) {
-        // Find the most general category as parent (shortest name or most common)
-        const sortedByGenerality = [...categories].sort((a, b) => a.name.length - b.name.length);
-        const parent = sortedByGenerality[0];
-        const children = sortedByGenerality.slice(1);
-        
-        if (children.length > 0) {
-          suggestions.push({ parent, children });
-        }
-      }
-    });
-    
-    setConsolidationSuggestions(suggestions);
-  };
-
-  // Consolidate categories by moving transactions and merging
-  const consolidateCategories = async (parent: Category, children: Category[]) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      // Move all transactions from children to parent category
-      for (const child of children) {
-        const { error: updateError } = await supabase
-          .from('transactions')
-          .update({ category_id: parent.id })
-          .eq('category_id', child.id)
-          .eq('user_id', user.id);
-
-        if (updateError) throw updateError;
-
-        // Also update future expenses if they reference the child category
-        await supabase
-          .from('manual_future_expenses')
-          .update({ category_id: parent.id })
-          .eq('category_id', child.id)
-          .eq('user_id', user.id);
-
-        // Delete the child category
-        const { error: deleteError } = await supabase
-          .from('categories')
-          .delete()
-          .eq('id', child.id)
-          .eq('user_id', user.id);
-
-        if (deleteError) throw deleteError;
-      }
-
-      toast({
-        title: "Consolidação realizada",
-        description: `${children.length} categorias foram consolidadas em "${parent.name}"`,
-      });
-
-      // Refresh data
-      fetchCategories();
-      analyzeConsolidationOpportunities();
-      
-    } catch (error: any) {
-      toast({
-        title: "Erro na consolidação",
-        description: error.message || "Erro ao consolidar categorias",
-        variant: "destructive",
-      });
-    }
-  };
-
   const fetchCategoryTags = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -813,11 +496,7 @@ export const CategoryManager = () => {
         });
       }
 
-      // Reset form and refresh list
-      setNewCategoryName("");
-      setNewCategoryColor("#6366f1");
-      setNewCategoryType("expense");
-      setEditingCategory(null);
+      resetForm();
       setIsDialogOpen(false);
       fetchCategories();
       fetchCategoryTags();
@@ -838,12 +517,16 @@ export const CategoryManager = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (categoryId: string) => {
+  const handleDelete = async (id: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
       const { error } = await supabase
         .from('categories')
         .delete()
-        .eq('id', categoryId);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -950,26 +633,28 @@ export const CategoryManager = () => {
                 </div>
               </div>
               
-              {/* Tags Section - Sistema tags + User tags */}
+              {/* Tags Section - Sistema tags + User tags (agora com filtro de exclusões) */}
               {(tags.length > 0 || getUserTagsForCategory(category.id).length > 0) && (
                 <div className="ml-8 mt-2 pt-3 border-t border-border/30">
                   <div className="flex flex-wrap gap-2">
-                    {/* Sistema tags */}
-                    {tags.map((tag, index) => (
-                      <Badge 
-                        key={`system-${index}`} 
-                        variant="outline"
-                        className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
-                        style={{ 
-                          backgroundColor: tag.color + '10',
-                          borderColor: tag.color + '40',
-                          color: tag.color,
-                          borderWidth: '1.5px'
-                        }}
-                      >
-                        {getTagName(tag)}
-                      </Badge>
-                    ))}
+                    {/* Sistema tags - filtrar exclusões do usuário */}
+                    {tags
+                      .filter(tag => !(excludedSystemTags[category.id] || []).includes(tag.id))
+                      .map((tag, index) => (
+                        <Badge 
+                          key={`system-${index}`} 
+                          variant="outline"
+                          className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
+                          style={{ 
+                            backgroundColor: tag.color + '10',
+                            borderColor: tag.color + '40',
+                            color: tag.color,
+                            borderWidth: '1.5px'
+                          }}
+                        >
+                          {getTagName(tag)}
+                        </Badge>
+                      ))}
                     {/* User tags */}
                     {getUserTagsForCategory(category.id).map((userTag) => (
                       <Badge 
@@ -1013,88 +698,16 @@ export const CategoryManager = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold">{t('categories.heading')}</h3>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                analyzeConsolidationOpportunities();
-                setIsConsolidating(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <Merge className="h-4 w-4" />
-              Consolidar Categorias
-            </Button>
-            <Dialog open={isDialogOpen} onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) resetForm();
-            }}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('categories.add')}
-               </Button>
-               </DialogTrigger>
-             </Dialog>
-           </div>
-         </div>
-
-         {/* Consolidation Modal */}
-         <AlertDialog open={isConsolidating} onOpenChange={setIsConsolidating}>
-           <AlertDialogContent className="max-w-2xl">
-             <AlertDialogHeader>
-               <AlertDialogTitle>Consolidar Categorias Redundantes</AlertDialogTitle>
-               <AlertDialogDescription>
-                 Encontramos categorias que podem ser consolidadas para simplificar sua organização:
-               </AlertDialogDescription>
-             </AlertDialogHeader>
-             <div className="max-h-96 overflow-y-auto space-y-4">
-               {consolidationSuggestions.length > 0 ? (
-                 consolidationSuggestions.map((suggestion, index) => (
-                   <Card key={index} className="p-4">
-                     <div className="space-y-3">
-                       <div className="flex items-center gap-2">
-                         <span className="font-medium">Manter:</span>
-                         <Badge variant="outline" style={{ borderColor: suggestion.parent.color }}>
-                           {suggestion.parent.name}
-                         </Badge>
-                       </div>
-                       <div className="flex items-center gap-2">
-                         <span className="font-medium">Consolidar:</span>
-                         <div className="flex flex-wrap gap-2">
-                           {suggestion.children.map((child) => (
-                             <Badge key={child.id} variant="secondary" style={{ borderColor: child.color }}>
-                               {child.name}
-                             </Badge>
-                           ))}
-                         </div>
-                       </div>
-                       <Button
-                         size="sm"
-                         onClick={() => consolidateCategories(suggestion.parent, suggestion.children)}
-                         className="w-full"
-                       >
-                         Consolidar este grupo
-                       </Button>
-                     </div>
-                   </Card>
-                 ))
-               ) : (
-                 <p className="text-center text-muted-foreground py-8">
-                   Nenhuma oportunidade de consolidação encontrada.
-                 </p>
-               )}
-             </div>
-             <AlertDialogFooter>
-               <AlertDialogCancel>Fechar</AlertDialogCancel>
-             </AlertDialogFooter>
-           </AlertDialogContent>
-         </AlertDialog>
-
-         <Dialog open={isDialogOpen} onOpenChange={(open) => {
-           setIsDialogOpen(open);
-           if (!open) resetForm();
-         }}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('categories.add')}
+              </Button>
+            </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
@@ -1255,6 +868,7 @@ export const CategoryManager = () => {
               </form>
             </DialogContent>
           </Dialog>
+        </div>
 
         {/* Seção de Saídas (Expenses) */}
         {renderCategorySection(
