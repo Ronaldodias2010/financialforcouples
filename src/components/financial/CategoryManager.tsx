@@ -561,38 +561,46 @@ export const CategoryManager = () => {
 
   const fetchCategoryTags = async () => {
     try {
-      const { data, error } = await supabase
-        .from('category_tags')
+      // Fetch category tags with their relations to default categories
+      const { data: tagRelations, error } = await supabase
+        .from('category_tag_relations')
         .select(`
-          name_pt, name_en, name_es, color,
-          category_tag_relations!inner(
-            category_id,
-            default_categories!inner(name_pt, category_type)
-          )
+          category_id,
+          tag_id,
+          is_active,
+          category_tags(name_pt, name_en, name_es, color),
+          default_categories(name_pt, category_type)
         `)
-        .eq('category_tag_relations.is_active', true);
+        .eq('is_active', true);
 
       if (error) throw error;
 
       const tagsMap: Record<string, CategoryTag[]> = {};
       
-      data?.forEach((item: any) => {
-        const categoryName = item.category_tag_relations.default_categories.name_pt;
-        if (!tagsMap[categoryName]) {
-          tagsMap[categoryName] = [];
+      tagRelations?.forEach((relation: any) => {
+        if (relation.category_tags && relation.default_categories) {
+          const categoryName = relation.default_categories.name_pt;
+          if (!tagsMap[categoryName]) {
+            tagsMap[categoryName] = [];
+          }
+          tagsMap[categoryName].push({
+            name_pt: relation.category_tags.name_pt,
+            name_en: relation.category_tags.name_en,
+            name_es: relation.category_tags.name_es,
+            color: relation.category_tags.color,
+          });
         }
-        tagsMap[categoryName].push({
-          name_pt: item.name_pt,
-          name_en: item.name_en,
-          name_es: item.name_es,
-          color: item.color,
-        });
       });
 
-      console.log('Tags carregadas:', tagsMap); // Debug log
+      console.log('Tags mapeadas por categoria:', tagsMap);
       setCategoryTags(tagsMap);
     } catch (error) {
       console.error('Erro ao carregar tags:', error);
+      toast({
+        title: "Aviso",
+        description: "Não foi possível carregar as tags das categorias",
+        variant: "default",
+      });
     }
   };
 
@@ -826,9 +834,11 @@ export const CategoryManager = () => {
           const defaultCategoryName = isExpense ? mapCategoryToDefault(category.name) : '';
           const tags = isExpense ? categoryTags[defaultCategoryName] || [] : [];
           
-          // Debug log for first few categories
-          if (isExpense && Object.keys(categoryTags).length > 0) {
-            console.log(`Categoria: ${category.name} -> Default: ${defaultCategoryName} -> Tags:`, tags.length);
+          // Debug log for categories with tags
+          if (isExpense && tags.length > 0) {
+            console.log(`✅ ${category.name} -> ${defaultCategoryName} (${tags.length} tags)`);
+          } else if (isExpense) {
+            console.log(`❌ ${category.name} -> ${defaultCategoryName} (sem tags)`);
           }
           
           return (
