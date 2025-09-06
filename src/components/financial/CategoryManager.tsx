@@ -889,17 +889,14 @@ export const CategoryManager = () => {
       
       <div className="space-y-3">
         {categories.map((category: any) => {
-          // Use the default_category_id directly from the database, fallback to mapping function
-          const defaultCategoryName = isExpense 
-            ? (category.default_categories?.name_pt || mapCategoryToDefault(category.name))
-            : '';
-          const tags = isExpense ? categoryTags[defaultCategoryName] || [] : [];
+          // Use the user category id to fetch system tags mapped earlier
+          const tags = isExpense ? (categoryTags[category.id] || []) : [];
           
           // Debug log for categories with tags
           if (isExpense && tags.length > 0) {
-            console.log(`✅ ${category.name} -> ${defaultCategoryName} (${tags.length} tags)`);
-          } else if (isExpense && defaultCategoryName) {
-            console.log(`❌ ${category.name} -> ${defaultCategoryName} (sem tags disponíveis)`);
+            console.log(`✅ ${category.name} (${category.id}) -> (${tags.length} tags)`);
+          } else if (isExpense) {
+            console.log(`❌ ${category.name} (${category.id}) (sem tags disponíveis)`);
           }
           
           return (
