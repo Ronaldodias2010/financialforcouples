@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -11,6 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
+import { TagInput } from "@/components/ui/TagInput";
 import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle, Merge, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -35,7 +36,6 @@ export const CategoryManager = () => {
   const [expenseCategories, setExpenseCategories] = useState<Category[]>([]);
   const [categoryTags, setCategoryTags] = useState<Record<string, CategoryTag[]>>({});
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryDescription, setNewCategoryDescription] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState("#6366f1");
   const [newCategoryType, setNewCategoryType] = useState<"income" | "expense">("expense");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -44,6 +44,7 @@ export const CategoryManager = () => {
   const [consolidationSuggestions, setConsolidationSuggestions] = useState<{parent: Category, children: Category[]}[]>([]);
   const { toast } = useToast();
   const { language, t } = useLanguage();
+  const { userTags, addUserTag, removeUserTag, getUserTagsForCategory } = useUserCategoryTags();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
   const normalize = (s: string) =>
@@ -693,7 +694,6 @@ export const CategoryManager = () => {
             name: trimmedName,
             color: newCategoryColor,
             category_type: newCategoryType,
-            description: newCategoryDescription.trim() || null,
           })
           .eq('id', editingCategory.id);
 
@@ -732,7 +732,6 @@ export const CategoryManager = () => {
             name: finalName,
             color: newCategoryColor,
             category_type: newCategoryType,
-            description: newCategoryDescription.trim() || null,
             user_id: user.id,
           });
 
@@ -746,7 +745,6 @@ export const CategoryManager = () => {
 
       // Reset form and refresh list
       setNewCategoryName("");
-      setNewCategoryDescription("");
       setNewCategoryColor("#6366f1");
       setNewCategoryType("expense");
       setEditingCategory(null);
@@ -765,7 +763,6 @@ export const CategoryManager = () => {
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setNewCategoryName(category.name);
-    setNewCategoryDescription(category.description || "");
     setNewCategoryColor(category.color || "#6366f1");
     setNewCategoryType(category.category_type);
     setIsDialogOpen(true);
@@ -809,7 +806,6 @@ export const CategoryManager = () => {
 
   const resetForm = () => {
     setNewCategoryName("");
-    setNewCategoryDescription("");
     setNewCategoryColor("#6366f1");
     setNewCategoryType("expense");
     setEditingCategory(null);
@@ -863,9 +859,6 @@ export const CategoryManager = () => {
                     </h4>
                   </div>
                   
-                  {category.description && (
-                    <p className="text-sm text-muted-foreground mb-3 ml-8">{category.description}</p>
-                  )}
                 </div>
                 
                 <div className="flex items-center gap-2 ml-4">
@@ -890,13 +883,14 @@ export const CategoryManager = () => {
                 </div>
               </div>
               
-              {/* Tags Section - Prominent horizontal display for expense categories */}
-              {isExpense && tags.length > 0 && (
+              {/* Tags Section - Sistema tags + User tags */}
+              {(tags.length > 0 || getUserTagsForCategory(category.id).length > 0) && (
                 <div className="ml-8 mt-2 pt-3 border-t border-border/30">
                   <div className="flex flex-wrap gap-2">
+                    {/* Sistema tags */}
                     {tags.map((tag, index) => (
                       <Badge 
-                        key={index} 
+                        key={`system-${index}`} 
                         variant="outline"
                         className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
                         style={{ 
@@ -907,6 +901,22 @@ export const CategoryManager = () => {
                         }}
                       >
                         {getTagName(tag)}
+                      </Badge>
+                    ))}
+                    {/* User tags */}
+                    {getUserTagsForCategory(category.id).map((userTag) => (
+                      <Badge 
+                        key={`user-${userTag.id}`} 
+                        variant="secondary"
+                        className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
+                        style={{ 
+                          backgroundColor: userTag.color + '20',
+                          borderColor: userTag.color + '60',
+                          color: userTag.color,
+                          borderWidth: '1.5px'
+                        }}
+                      >
+                        {userTag.tag_name}
                       </Badge>
                     ))}
                   </div>
@@ -1036,28 +1046,59 @@ export const CategoryManager = () => {
                   />
                 </div>
                 
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="categoryDescription">{t('categories.description')}</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t('categories.descriptionTooltip')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                {editingCategory && (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="categoryTags">Tags</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Adicione tags para categorizar melhor suas transações</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <TagInput
+                      tags={[
+                        // Sistema tags
+                        ...(categoryTags[editingCategory.id] || []).map(tag => ({
+                          id: `system-${tag.name_pt}`,
+                          name: getTagName(tag),
+                          color: tag.color,
+                          removable: false
+                        })),
+                        // User tags
+                        ...getUserTagsForCategory(editingCategory.id).map(tag => ({
+                          id: tag.id,
+                          name: tag.tag_name,
+                          color: tag.color,
+                          removable: true
+                        }))
+                      ]}
+                      onAddTag={async (tagName) => {
+                        if (editingCategory) {
+                          return await addUserTag(editingCategory.id, tagName);
+                        }
+                        return false;
+                      }}
+                      onRemoveTag={(tagId) => {
+                        if (editingCategory && !tagId.startsWith('system-')) {
+                          removeUserTag(tagId, editingCategory.id);
+                        }
+                      }}
+                      placeholder="Digite uma tag e pressione Enter..."
+                      suggestions={[
+                        "Emergência", "Imprevistos", "Não Categorizado",
+                        "Veículos", "Uber", "Combustível", "Manutenção",
+                        "Medicamentos", "Consultas", "Exames",
+                        "Supermercado", "Restaurante", "Delivery"
+                      ]}
+                    />
                   </div>
-                  <Textarea
-                    id="categoryDescription"
-                    value={newCategoryDescription}
-                    onChange={(e) => setNewCategoryDescription(e.target.value)}
-                    placeholder={t('categories.descriptionPlaceholder')}
-                    rows={3}
-                  />
-                </div>
+                )}
                 
                 <div>
                   <Label htmlFor="categoryColor">{t('categories.color')}</Label>
