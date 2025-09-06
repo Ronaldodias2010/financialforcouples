@@ -2108,7 +2108,7 @@ export type Database = {
           p_payment_method?: string
           p_user_id: string
         }
-        Returns: string
+        Returns: Json
       }
       process_future_expense_payment: {
         Args: {

@@ -96,9 +96,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .from("future_expense_payments")
         .select("*")
         .in("user_id", userIds)
-        .gte("payment_date", format(now, 'yyyy-MM-dd'))
-        .lte("payment_date", format(futureDate, 'yyyy-MM-dd'))
-        .order("payment_date", { ascending: true });
+        .gte("original_due_date", format(now, 'yyyy-MM-dd'))
+        .lte("original_due_date", format(futureDate, 'yyyy-MM-dd'))
+        .order("original_due_date", { ascending: true });
 
       if (futurePaymentsError) {
         console.error("Error fetching future payments:", futurePaymentsError);
@@ -185,7 +185,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
              id: payment.id,
              description: payment.description,
              amount: payment.amount,
-             due_date: payment.payment_date,
+             due_date: payment.original_due_date,
              type: payment.expense_source_type === 'card_payment' ? 'card_payment' : 
                    payment.expense_source_type === 'installment' ? 'installment' : 
                    payment.expense_source_type === 'recurring' ? 'recurring' : 'installment',

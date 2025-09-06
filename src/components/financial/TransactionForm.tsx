@@ -797,38 +797,94 @@ const invTxn: TablesInsert<'transactions'> = {
             }
           }
         }
-        const { error } = await supabase
-          .from('transactions')
-          .insert({
-            user_id: user.id,
-            owner_user: ownerUser,
-            type,
-            amount: transactionAmount,
-            currency: currency,
-            description,
-            category_id: categoryId,
-            subcategory: subcategory || null,
-            transaction_date: format(transactionDate, 'yyyy-MM-dd'),
-            purchase_date: format(transactionDate, 'yyyy-MM-dd'),
-            payment_method: paymentMethod,
-            card_id: paymentMethod === "credit_card" ? cardId : null,
-            account_id: paymentMethod === "credit_card" ? null : (accountId || null),
-            is_installment: false,
-            total_installments: null,
-            installment_number: null
+        // Para categoria de Pagamento de Cartão de Crédito, usar função unificada
+        if (type === "expense" && isCreditCardPaymentCategory && cardId) {
+          const { data, error } = await supabase.rpc('process_card_payment', {
+            p_user_id: user.id,
+            p_card_id: cardId,
+            p_payment_amount: transactionAmount,
+            p_payment_date: format(transactionDate, 'yyyy-MM-dd'),
+            p_payment_method: paymentMethod === 'deposit' || paymentMethod === 'transfer' ? 'account' : 'cash',
+            p_account_id: accountId || null,
+            p_notes: description,
           });
 
-        if (error) {
-          // Handle specific cash balance error
-          if (error.message?.includes('Saldo insuficiente em dinheiro')) {
-            toast({
-              title: t('insufficientCashBalance'),
-              description: t('cashBalanceError'),
-              variant: "destructive",
-            });
-            return;
+          if (error) {
+            throw error;
           }
-          throw error;
+
+          if (data && typeof data === 'object' && 'success' in data && data.success) {
+            toast({
+              title: "Sucesso",
+              description: "Pagamento de cartão processado com sucesso",
+              variant: "default",
+            });
+            
+            // Return transaction data for onSubmit callback
+            const transactionData = {
+              id: (data as any).transaction_id,
+              type,
+              amount: transactionAmount,
+              description,
+              category_id: categoryId,
+              subcategory,
+              transaction_date: transactionDate,
+              payment_method: paymentMethod,
+              card_id: cardId,
+              user_id: user.id,
+              currency,
+            };
+            
+            onSubmit(transactionData as any);
+            // Reset form
+            setType("expense");
+            setAmount("");
+            setDescription("");
+            setCategoryId("");
+            setSubcategory("");
+            setTransactionDate(new Date());
+            setPaymentMethod("cash");
+            setCardId("");
+            setAccountId("");
+            return;
+          } else {
+            throw new Error('Falha no processamento do pagamento');
+          }
+        } else {
+          // Para outras transações, manter lógica existente
+          const { error } = await supabase
+            .from('transactions')
+            .insert({
+              user_id: user.id,
+              owner_user: ownerUser,
+              type,
+              amount: transactionAmount,
+              currency: currency,
+              description,
+              category_id: categoryId,
+              subcategory: subcategory || null,
+              transaction_date: format(transactionDate, 'yyyy-MM-dd'),
+              purchase_date: format(transactionDate, 'yyyy-MM-dd'),
+              payment_method: paymentMethod,
+              card_id: paymentMethod === "credit_card" ? cardId : null,
+              account_id: paymentMethod === "credit_card" ? null : (accountId || null),
+              is_installment: false,
+              total_installments: null,
+              installment_number: null
+            });
+
+          if (error) {
+            // Handle specific cash balance error
+            if (error.message?.includes('Saldo insuficiente em dinheiro')) {
+              toast({
+                title: t('insufficientCashBalance'),
+                description: t('cashBalanceError'),
+                variant: "destructive",
+              });
+              return;
+            }
+            throw error;
+          }
         }
 
         // Show limit exceeded warning if applicable

@@ -50,13 +50,22 @@ export const useCardPayments = () => {
         return null;
       }
 
-      toast({
-        title: "Pagamento processado",
-        description: "Pagamento do cartão realizado com sucesso",
-        variant: "default",
-      });
-
-      return data;
+      // The new function returns JSONB with success status
+      if (data && typeof data === 'object' && 'success' in data && data.success) {
+        toast({
+          title: "Pagamento processado",
+          description: (data as any).message || "Pagamento do cartão realizado com sucesso",
+          variant: "default",
+        });
+        return data;
+      } else {
+        toast({
+          title: "Erro",
+          description: "Falha no processamento do pagamento",
+          variant: "destructive",
+        });
+        return null;
+      }
     } catch (error) {
       console.error('Error processing card payment:', error);
       toast({
