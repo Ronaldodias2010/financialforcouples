@@ -546,39 +546,28 @@ export const CategoryManager = () => {
         <span className="text-sm text-muted-foreground">({categories.length})</span>
       </div>
       
-      <div className="grid gap-4">
+      <div className="space-y-3">
         {categories.map((category) => {
           const tags = isExpense ? categoryTags[category.name] || [] : [];
           return (
-            <Card key={category.id} className="p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
+            <Card key={category.id} className="p-4 hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: category.color || "#6366f1" }}>
+              <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-3 mb-1">
                     <div
-                      className="w-4 h-4 rounded-full border"
-                      style={{ backgroundColor: category.color || "#6366f1" }}
+                      className="w-5 h-5 rounded-full border-2 shadow-sm"
+                      style={{ 
+                        backgroundColor: category.color + '20' || "#6366f120",
+                        borderColor: category.color || "#6366f1"
+                      }}
                     />
-                    <h4 className="font-medium text-foreground">
+                    <h4 className="font-semibold text-foreground text-lg">
                       {translateCategoryName(category.name, language)}
                     </h4>
                   </div>
                   
                   {category.description && (
-                    <p className="text-sm text-muted-foreground mb-2">{category.description}</p>
-                  )}
-                  
-                  {isExpense && tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {tags.map((tag, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="secondary" 
-                          className="text-xs px-2 py-1 bg-muted/50 text-muted-foreground border border-border/50"
-                        >
-                          {getTagName(tag)}
-                        </Badge>
-                      ))}
-                    </div>
+                    <p className="text-sm text-muted-foreground mb-3 ml-8">{category.description}</p>
                   )}
                 </div>
                 
@@ -603,6 +592,29 @@ export const CategoryManager = () => {
                   )}
                 </div>
               </div>
+              
+              {/* Tags Section - Prominent horizontal display for expense categories */}
+              {isExpense && tags.length > 0 && (
+                <div className="ml-8 mt-2 pt-3 border-t border-border/30">
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="outline"
+                        className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
+                        style={{ 
+                          backgroundColor: tag.color + '10',
+                          borderColor: tag.color + '40',
+                          color: tag.color,
+                          borderWidth: '1.5px'
+                        }}
+                      >
+                        {getTagName(tag)}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </Card>
           );
         })}
