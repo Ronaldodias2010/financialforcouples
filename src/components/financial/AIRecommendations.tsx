@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, Loader2, Lock, AlertCircle, Users } from "lucide-react";
+import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, Loader2, Lock, AlertCircle, Users, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useAuth } from "@/hooks/useAuth";
 import { exportCashFlow, exportConsolidatedExpenses, exportConsolidatedRevenues, exportTaxReport } from "@/utils/exportUtils";
+import { useSpeech } from "@/hooks/useSpeech";
 
 const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
@@ -34,6 +35,27 @@ const AIRecommendationsContent = () => {
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'ai', message: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Voice functionality
+  const {
+    isListening,
+    isSpeaking,
+    currentTranscript,
+    capabilities,
+    startListening,
+    stopListening,
+    speak,
+    stopSpeaking,
+    toggleListening,
+    toggleSpeaking
+  } = useSpeech({
+    onTranscription: (text, isFinal) => {
+      if (isFinal && text.trim()) {
+        setChatMessage(text.trim());
+      }
+    },
+    autoSpeak: true
+  });
 
   const getDateLocale = () => {
     switch (language) {
@@ -95,10 +117,16 @@ const AIRecommendationsContent = () => {
         return;
       }
 
+      const aiResponse = data.response || 'Desculpe, não consegui processar sua solicitação.';
       setChatHistory(prev => [...prev, { 
         role: 'ai', 
-        message: data.response || 'Desculpe, não consegui processar sua solicitação.'
+        message: aiResponse
       }]);
+
+      // Auto-speak the AI response if capabilities allow
+      if (capabilities.speechSynthesis) {
+        speak(aiResponse);
+      }
 
       toast({
         title: "Análise concluída",
@@ -228,21 +256,81 @@ const AIRecommendationsContent = () => {
             </div>
 
             {/* Chat Input */}
-            <div className="flex gap-2">
-              <Textarea
-                placeholder={t('aiRecommendations.typePlaceholder')}
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
-                className="flex-1 min-h-[40px] max-h-[120px]"
-              />
-              <Button onClick={handleSendMessage} disabled={!chatMessage.trim() || isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <MessageSquare className="h-4 w-4" />
+            <div className="space-y-2">
+              {/* Voice Status */}
+              {(isListening || currentTranscript) && (
+                <div className="flex items-center gap-2 p-2 bg-primary/10 rounded-lg text-sm">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-primary font-medium">
+                      {isListening ? t('voice.listening') : t('voice.processing')}
+                    </span>
+                  </div>
+                  {currentTranscript && (
+                    <span className="text-muted-foreground">"{currentTranscript}"</span>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Textarea
+                  placeholder={t('aiRecommendations.typePlaceholder')}
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
+                  className="flex-1 min-h-[40px] max-h-[120px]"
+                />
+                
+                {/* Voice Input Button */}
+                {capabilities.speechRecognition && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleListening}
+                    disabled={isLoading}
+                    className={cn(
+                      "transition-colors",
+                      isListening && "bg-red-500 hover:bg-red-600 text-white"
+                    )}
+                    title={isListening ? t('voice.stopMic') : t('voice.micButton')}
+                  >
+                    {isListening ? (
+                      <MicOff className="h-4 w-4" />
+                    ) : (
+                      <Mic className="h-4 w-4" />
+                    )}
+                  </Button>
                 )}
-              </Button>
+                
+                {/* Voice Output Button */}
+                {capabilities.speechSynthesis && chatHistory.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleSpeaking}
+                    disabled={isLoading}
+                    className={cn(
+                      "transition-colors",
+                      isSpeaking && "bg-blue-500 hover:bg-blue-600 text-white"
+                    )}
+                    title={isSpeaking ? t('voice.stopSpeech') : t('voice.speakResponse')}
+                  >
+                    {isSpeaking ? (
+                      <VolumeX className="h-4 w-4" />
+                    ) : (
+                      <Volume2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+                
+                <Button onClick={handleSendMessage} disabled={!chatMessage.trim() || isLoading}>
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <MessageSquare className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
