@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-// Removed global TooltipProvider to prevent crashes; using SafeTooltipProvider instead
 
 import { AuthProvider } from "@/hooks/useAuth";
 import { SafeTooltipProvider } from "./components/system/SafeTooltipProvider";
@@ -45,7 +44,14 @@ const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 // PWAPrompt temporarily disabled to stabilize app
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const AppRoutes = () => {
   const navigate = useNavigate();

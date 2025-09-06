@@ -617,38 +617,42 @@ export const CategoryManager = () => {
 
   const fetchCategoryTags = async () => {
     try {
-      // Fetch category tags with their relations to default categories using explicit FK names
-      const { data: tagRelations, error } = await supabase
-        .from('category_tag_relations')
-        .select(`
-          category_id,
-          tag_id,
-          is_active,
-          category_tags!category_tag_relations_tag_id_fkey(name_pt, name_en, name_es, color),
-          default_categories!category_tag_relations_category_id_fkey(name_pt, category_type)
-        `)
-        .eq('is_active', true);
+      // Buscar tags do sistema através das categorias de usuário com default_category_id
+      const { data: userCategories, error: categoriesError } = await supabase
+        .from('categories')
+        .select('id, name, default_category_id')
+        .eq('category_type', 'expense');
 
-      if (error) throw error;
+      if (categoriesError) throw categoriesError;
 
       const tagsMap: Record<string, CategoryTag[]> = {};
-      
-      tagRelations?.forEach((relation: any) => {
-        if (relation.category_tags && relation.default_categories) {
-          const categoryName = relation.default_categories.name_pt;
-          if (!tagsMap[categoryName]) {
-            tagsMap[categoryName] = [];
-          }
-          tagsMap[categoryName].push({
-            name_pt: relation.category_tags.name_pt,
-            name_en: relation.category_tags.name_en,
-            name_es: relation.category_tags.name_es,
-            color: relation.category_tags.color,
-          });
-        }
-      });
 
-      console.log('Tags mapeadas por categoria:', tagsMap);
+      // Para cada categoria de usuário que tem default_category_id, buscar suas tags
+      for (const userCategory of userCategories || []) {
+        if (userCategory.default_category_id) {
+          const { data: tagRelations, error: tagsError } = await supabase
+            .from('category_tag_relations')
+            .select(`
+              category_tags!category_tag_relations_tag_id_fkey(name_pt, name_en, name_es, color)
+            `)
+            .eq('category_id', userCategory.default_category_id)
+            .eq('is_active', true);
+
+          if (!tagsError && tagRelations) {
+            tagsMap[userCategory.id] = tagRelations
+              .map(relation => relation.category_tags)
+              .filter(tag => tag)
+              .map(tag => ({
+                name_pt: tag.name_pt,
+                name_en: tag.name_en,
+                name_es: tag.name_es,
+                color: tag.color,
+              }));
+          }
+        }
+      }
+
+      console.log('Tags mapeadas por ID de categoria de usuário:', tagsMap);
       setCategoryTags(tagsMap);
     } catch (error) {
       console.error('Erro ao carregar tags:', error);
@@ -1118,7 +1122,7 @@ export const CategoryManager = () => {
                     </div>
                     <TagInput
                       tags={[
-                        // Sistema tags
+                        // Sistema tags - buscar por ID da categoria, não por nome
                         ...(categoryTags[editingCategory.id] || []).map(tag => ({
                           id: `system-${tag.name_pt}`,
                           name: getTagName(tag),
