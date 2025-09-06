@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw } from "lucide-react";
+import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { enUS, ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -124,6 +124,7 @@ const [paymentMethod, setPaymentMethod] = useState<
   | "account_transfer"
   | "account_investment"
   | "saque"
+  | "card_payment"
 >("cash");
 const [accountId, setAccountId] = useState("");
 const [fromAccountId, setFromAccountId] = useState("");
@@ -412,6 +413,26 @@ const getAccountOwnerName = (account: Account) => {
       variant: "destructive",
     });
     return;
+  }
+
+  // Validar método de pagamento de cartão
+  if (type === "expense" && paymentMethod === "card_payment") {
+    if (!accountId) {
+      toast({
+        title: "Erro",
+        description: "Selecione a conta de origem para o pagamento",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!cardId) {
+      toast({
+        title: "Erro",
+        description: "Selecione o cartão que será pago",
+        variant: "destructive",
+      });
+      return;
+    }
   }
 
   // Validar transferência entre contas
@@ -797,14 +818,14 @@ const invTxn: TablesInsert<'transactions'> = {
             }
           }
         }
-        // Para categoria de Pagamento de Cartão de Crédito, usar função unificada
-        if (type === "expense" && isCreditCardPaymentCategory && cardId) {
+        // Para método de pagamento de cartão ou categoria de Pagamento de Cartão de Crédito, usar função unificada
+        if (type === "expense" && (paymentMethod === "card_payment" || isCreditCardPaymentCategory) && cardId) {
           const { data, error } = await supabase.rpc('process_card_payment', {
             p_user_id: user.id,
             p_card_id: cardId,
             p_payment_amount: transactionAmount,
             p_payment_date: format(transactionDate, 'yyyy-MM-dd'),
-            p_payment_method: paymentMethod === 'deposit' || paymentMethod === 'transfer' ? 'account' : 'cash',
+            p_payment_method: (paymentMethod === 'deposit' || paymentMethod === 'transfer' || paymentMethod === 'card_payment') ? 'account' : 'cash',
             p_account_id: accountId || null,
             p_notes: description,
           });
@@ -1180,8 +1201,9 @@ const invTxn: TablesInsert<'transactions'> = {
                          ({language === 'pt' ? 'PIX' : 'ZELLE'})
                        </span>
                      </SelectItem>
-                    <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
-                    <SelectItem value="saque">{t('saque')}</SelectItem>
+                     <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
+                     <SelectItem value="card_payment">Pagamento de Cartão</SelectItem>
+                     <SelectItem value="saque">{t('saque')}</SelectItem>
                   </>
                 )}
               </SelectContent>
@@ -1524,6 +1546,76 @@ const invTxn: TablesInsert<'transactions'> = {
                       ℹ️ Adiantamento em cartão de crédito. O valor será debitado do limite disponível.
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Smart Card Payment Section */}
+          {type === "expense" && paymentMethod === "card_payment" && (
+            <div className="space-y-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-primary" />
+                <h4 className="font-semibold text-primary">Pagamento Inteligente de Cartão</h4>
+              </div>
+              
+              {/* Conta origem */}
+              <div>
+                <Label htmlFor="sourceAccount">Conta de Origem</Label>
+                <Select value={accountId} onValueChange={setAccountId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a conta que pagará" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.filter(account => !account.is_cash_account).map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{account.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Cartão destino */}
+              <div>
+                <Label htmlFor="targetCard">Cartão a Pagar</Label>
+                <Select value={cardId} onValueChange={setCardId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o cartão para pagamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cards.filter(card => card.card_type === 'credit').map((card) => (
+                      <SelectItem key={card.id} value={card.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{card.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            {card.card_type} • {getCardOwnerName(card)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Preview do pagamento */}
+              {accountId && cardId && amount && (
+                <div className="p-3 bg-white/50 border border-primary/10 rounded-md">
+                  <div className="text-sm text-muted-foreground mb-2">Preview do Pagamento:</div>
+                  <div className="flex items-center justify-between">
+                    <span>Valor a pagar:</span>
+                    <span className="font-semibold text-primary">{formatCurrency(parseFloat(amount), currency)}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    ✓ Sistema detectará automaticamente gastos futuros relacionados
+                    <br />
+                    ✓ Status do cartão será atualizado baseado no pagamento mínimo
+                  </div>
                 </div>
               )}
             </div>

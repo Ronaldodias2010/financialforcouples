@@ -10,6 +10,7 @@ import { ExpensesPieChart } from "./ExpensesPieChart";
 import { AIRecommendations } from "./AIRecommendations";
 import { InvestmentDashboard } from "./InvestmentDashboard";
 import { MileageSystem } from "./MileageSystem";
+import { SmartCardPaymentForm } from "./SmartCardPaymentForm";
 import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
@@ -361,6 +362,8 @@ export const FinancialDashboard = () => {
         return <RecurringExpensesManager viewMode={viewMode} />;
       case "aiRecommendations":
         return <AIRecommendations />;
+      case "cardPayment":
+        return <SmartCardPaymentForm onPaymentSuccess={() => window.location.reload()} />;
       case "investments":
         return (
           <div className="text-center py-8">
@@ -580,6 +583,7 @@ export const FinancialDashboard = () => {
                 { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp },
                 { id: "categories", label: t('nav.categories'), icon: Settings },
                 { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                { id: "cardPayment", label: "Pagar Cartão", icon: CreditCard },
                 { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -633,6 +637,7 @@ export const FinancialDashboard = () => {
                 {[
                   { id: "categories", label: t('nav.categories'), icon: Settings },
                   { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                  { id: "cardPayment", label: "Pagar Cartão", icon: CreditCard },
                   { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
                 ].map((tab) => {
                   const Icon = tab.icon;
