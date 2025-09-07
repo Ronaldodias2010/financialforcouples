@@ -135,30 +135,7 @@ const AppRoutes = () => {
 };
 
 const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <AuthProvider>
-          <LanguageProvider>
-            <ClientOnly>
-              <SafeTooltipProvider>
-                <SubscriptionProvider>
-                  <GlobalErrorBoundary>
-                    <AppRoutes />
-                  </GlobalErrorBoundary>
-                 </SubscriptionProvider>
-               </SafeTooltipProvider>
-             </ClientOnly>
-           </LanguageProvider>
-          </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+  return <AppRoutes />;
 };
 
 export default App;
