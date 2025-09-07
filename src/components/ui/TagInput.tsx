@@ -36,9 +36,12 @@ export const TagInput = ({
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // Normalize for consistent comparison
+  const normalize = (s: string) => s?.toLowerCase()?.trim()?.replace(/\s+/g, ' ') || '';
+
   const filteredSuggestions = suggestions.filter(suggestion => 
-    suggestion.toLowerCase().includes(inputValue.toLowerCase()) &&
-    !tags.some(tag => tag.name.toLowerCase() === suggestion.toLowerCase())
+    normalize(suggestion).includes(normalize(inputValue)) &&
+    !tags.some(tag => normalize(tag.name) === normalize(suggestion))
   );
 
   const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
@@ -55,8 +58,8 @@ export const TagInput = ({
       return;
     }
 
-    // Check if tag already exists
-    if (tags.some(tag => tag.name.toLowerCase() === tagName.toLowerCase())) {
+    // Check if tag already exists (using normalize for consistency)
+    if (tags.some(tag => normalize(tag.name) === normalize(tagName))) {
       return;
     }
 

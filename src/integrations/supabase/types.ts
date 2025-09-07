@@ -2334,6 +2334,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      normalize_category_name: {
+        Args: { input_name: string }
+        Returns: string
+      }
       normalize_text_simple: {
         Args: { input: string }
         Returns: string

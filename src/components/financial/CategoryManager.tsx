@@ -55,13 +55,8 @@ export const CategoryManager = () => {
   } = useUserCategoryTags();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
-  const normalize = (s: string) =>
-    s
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .trim();
+  // Use database normalization function for consistency
+  const normalize = (s: string) => s?.toLowerCase()?.trim()?.replace(/\s+/g, ' ') || '';
 
   const categoryTranslations: Record<string, Record<string, string>> = {
     pt: {
@@ -312,22 +307,11 @@ export const CategoryManager = () => {
       
       const items = (data || []) as Category[];
       
-      // Filter out consolidated child categories (those that should now be tags)
-      const consolidatedNames = ['restaurante', 'supermercado', 'academia'];
-      const filteredItems = items.filter(item => {
-        const normalizedName = normalize(item.name);
-        return !consolidatedNames.includes(normalizedName);
-      });
+      // No need to filter anymore - duplicates are prevented at database level
       
-      const map = new Map<string, Category>();
-      for (const it of filteredItems) {
-        const key = `${normalize(it.name)}|${it.category_type}`;
-        if (!map.has(key)) map.set(key, it);
-      }
-      
-      const uniqueCategories = Array.from(map.values());
-      setIncomeCategories(uniqueCategories.filter(cat => cat.category_type === 'income'));
-      setExpenseCategories(uniqueCategories.filter(cat => cat.category_type === 'expense'));
+      // Database now ensures uniqueness, so we can use items directly
+      setIncomeCategories(items.filter(cat => cat.category_type === 'income'));
+      setExpenseCategories(items.filter(cat => cat.category_type === 'expense'));
     } catch (error) {
       toast({
         title: "Erro",
@@ -413,7 +397,7 @@ export const CategoryManager = () => {
 
       // Usar a função do banco para criar categorias padrão
       const { error: createError } = await supabase.rpc('create_default_categories_for_user', {
-        user_id: user.id,
+        p_user_id: user.id,
         user_language: language
       });
 
@@ -446,15 +430,10 @@ export const CategoryManager = () => {
       const isOnlyColorOrTypeChange = editingCategory && 
         normalize(trimmedName) === normalize(editingCategory.name);
 
+      // Database trigger now handles duplicate prevention, but keep client-side check for better UX
       if (!isOnlyColorOrTypeChange) {
-        // Load existing categories for duplicate check (same user and type)
-        const { data: existingList } = await supabase
-          .from('categories')
-          .select('id, name, category_type')
-          .eq('user_id', user.id)
-          .eq('category_type', newCategoryType);
-
-        const exists = (existingList || []).some((c) => 
+        const existingCategoriesList = newCategoryType === 'income' ? incomeCategories : expenseCategories;
+        const exists = existingCategoriesList.some((c) => 
           normalize(c.name) === normalize(trimmedName) && 
           (!editingCategory || c.id !== editingCategory.id)
         );
