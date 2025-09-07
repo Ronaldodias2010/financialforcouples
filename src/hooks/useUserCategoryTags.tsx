@@ -6,6 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 interface UserCategoryTag {
   id: string;
   tag_name: string;
+  tag_name_en?: string;
+  tag_name_es?: string;
   color: string;
   category_id: string;
 }
@@ -22,10 +24,10 @@ export const useUserCategoryTags = () => {
     
     setIsLoading(true);
     try {
-      // Fetch user custom tags
+      // Fetch user custom tags with translations
       const { data: userTagsData, error: userTagsError } = await supabase
         .from('user_category_tags')
-        .select('*')
+        .select('id, tag_name, tag_name_en, tag_name_es, color, category_id')
         .eq('user_id', user.id);
 
       if (userTagsError) throw userTagsError;

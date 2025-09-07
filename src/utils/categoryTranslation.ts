@@ -65,7 +65,7 @@ const categoryTranslations: CategoryTranslations = {
   'impostos': { pt: 'Impostos', en: 'Taxes', es: 'Impuestos' },
   'outros_gastos': { pt: 'Outros Gastos', en: 'Other Expenses', es: 'Otros Gastos' },
   
-  // Missing categories that need translation
+  // Additional categories that need translation
   'contas_basicas': { pt: 'Contas Básicas', en: 'Basic Bills', es: 'Cuentas Básicas' },
   'assinatura': { pt: 'Assinatura', en: 'Subscription', es: 'Suscripción' },
   'beleza': { pt: 'Beleza', en: 'Beauty', es: 'Belleza' },
@@ -81,7 +81,28 @@ const categoryTranslations: CategoryTranslations = {
   'vestuario': { pt: 'Vestuário', en: 'Clothing', es: 'Ropa' },
   'viagem': { pt: 'Viagem', en: 'Travel', es: 'Viaje' },
   'veiculos': { pt: 'Veículos', en: 'Vehicles', es: 'Vehículos' },
-  'consorcio': { pt: 'Consórcio', en: 'Consortium', es: 'Consorcio' }
+  'consorcio': { pt: 'Consórcio', en: 'Consortium', es: 'Consorcio' },
+  
+  // New categories often missing translations (avoiding duplicates)
+  'lazer': { pt: 'Lazer', en: 'Leisure', es: 'Ocio' },
+  'financas': { pt: 'Finanças', en: 'Finance', es: 'Finanzas' },
+  'outros': { pt: 'Outros', en: 'Others', es: 'Otros' },
+  'delivery_new': { pt: 'Delivery', en: 'Delivery', es: 'Delivery' },
+  'lanchonete_new': { pt: 'Lanchonete', en: 'Snack Bar', es: 'Snack Bar' },
+  'escola_new': { pt: 'Escola', en: 'School', es: 'Escuela' },
+  'posto_new': { pt: 'Posto', en: 'Gas Station', es: 'Gasolinera' },
+  'shopping_new': { pt: 'Shopping', en: 'Mall', es: 'Centro Comercial' },
+  'padaria_new': { pt: 'Padaria', en: 'Bakery', es: 'Panadería' },
+  'mercado_new': { pt: 'Mercado', en: 'Market', es: 'Mercado' },
+  'agua_new': { pt: 'Água', en: 'Water', es: 'Agua' },
+  'luz_new': { pt: 'Luz', en: 'Electricity', es: 'Electricidad' },
+  'gas_new': { pt: 'Gás', en: 'Gas', es: 'Gas' },
+  'condominio_new': { pt: 'Condomínio', en: 'Condominium', es: 'Condominio' },
+  'iptu_new': { pt: 'IPTU', en: 'Property Tax', es: 'Impuesto Inmobiliario' },
+  'ipva_new': { pt: 'IPVA', en: 'Vehicle Tax', es: 'Impuesto Vehicular' },
+  'financiamento_new': { pt: 'Financiamento', en: 'Financing', es: 'Financiamiento' },
+  'emprestimo_new': { pt: 'Empréstimo', en: 'Loan', es: 'Préstamo' },
+  'cartao_new': { pt: 'Cartão', en: 'Credit Card', es: 'Tarjeta de Crédito' }
 };
 
 // Function to normalize category names (same as used in CategoryManager)

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
+import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
 import { TagInput } from "@/components/ui/TagInput";
 import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -655,22 +656,22 @@ export const CategoryManager = () => {
                           {getTagName(tag)}
                         </Badge>
                       ))}
-                    {/* User tags */}
-                    {getUserTagsForCategory(category.id).map((userTag) => (
-                      <Badge 
-                        key={`user-${userTag.id}`} 
-                        variant="secondary"
-                        className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
-                        style={{ 
-                          backgroundColor: userTag.color + '20',
-                          borderColor: userTag.color + '60',
-                          color: userTag.color,
-                          borderWidth: '1.5px'
-                        }}
-                      >
-                        {userTag.tag_name}
-                      </Badge>
-                    ))}
+                     {/* User tags */}
+                     {getUserTagsForCategory(category.id).map((userTag) => (
+                       <Badge 
+                         key={`user-${userTag.id}`} 
+                         variant="secondary"
+                         className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
+                         style={{ 
+                           backgroundColor: userTag.color + '20',
+                           borderColor: userTag.color + '60',
+                           color: userTag.color,
+                           borderWidth: '1.5px'
+                         }}
+                       >
+                         {getTranslatedTagName(userTag, language)}
+                       </Badge>
+                     ))}
                   </div>
                 </div>
               )}
