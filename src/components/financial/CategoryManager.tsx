@@ -614,7 +614,7 @@ export const CategoryManager = () => {
     }
   };
 
-  const renderCategorySection = (categories: Category[], title: string, icon: React.ReactNode, isExpense: boolean = false) => (
+  const renderCategorySection = (categories: Category[], title: string, icon: React.ReactNode) => (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         {icon}
@@ -624,13 +624,22 @@ export const CategoryManager = () => {
       
       <div className="space-y-3">
         {categories.map((category: any) => {
-          // Use the user category id to fetch system tags mapped earlier
-          const tags = isExpense ? (categoryTags[category.id] || []) : [];
+          // Get tags for all categories (both income and expense)
+          const systemTags = categoryTags[category.id] || [];
+          const currentUserTags = getUserTagsForCategory(category.id);
+          const currentExcludedSystemTags = excludedSystemTags[category.id] || [];
+          
+          // Filter system tags to exclude those the user has removed
+          const visibleSystemTags = systemTags.filter(tag => 
+            !currentExcludedSystemTags.includes(tag.id)
+          );
+          
+          const allTags = [...visibleSystemTags, ...currentUserTags];
           
           // Debug log for categories with tags
-          if (isExpense && tags.length > 0) {
-            console.log(`✅ ${category.name} (${category.id}) -> (${tags.length} tags)`);
-          } else if (isExpense) {
+          if (allTags.length > 0) {
+            console.log(`✅ ${category.name} (${category.id}) -> (${allTags.length} tags: ${systemTags.length} system + ${currentUserTags.length} user)`);
+          } else {
             console.log(`❌ ${category.name} (${category.id}) (sem tags disponíveis)`);
           }
           
@@ -675,30 +684,28 @@ export const CategoryManager = () => {
                 </div>
               </div>
               
-              {/* Tags Section - Sistema tags + User tags (agora com filtro de exclusões) */}
-              {(tags.length > 0 || getUserTagsForCategory(category.id).length > 0) && (
+              {/* Tags Section - System tags + User tags */}
+              {allTags.length > 0 && (
                 <div className="ml-8 mt-2 pt-3 border-t border-border/30">
                   <div className="flex flex-wrap gap-2">
-                    {/* Sistema tags - filtrar exclusões do usuário */}
-                    {tags
-                      .filter(tag => !(excludedSystemTags[category.id] || []).includes(tag.id))
-                      .map((tag, index) => (
-                        <Badge 
-                          key={`system-${index}`} 
-                          variant="outline"
-                          className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
-                          style={{ 
-                            backgroundColor: tag.color + '10',
-                            borderColor: tag.color + '40',
-                            color: tag.color,
-                            borderWidth: '1.5px'
-                          }}
-                        >
-                          {getTagName(tag)}
-                        </Badge>
-                      ))}
+                    {/* System tags */}
+                    {visibleSystemTags.map((tag, index) => (
+                      <Badge 
+                        key={`system-${index}`} 
+                        variant="outline"
+                        className="text-xs px-3 py-1.5 font-medium rounded-full transition-all hover:scale-105"
+                        style={{ 
+                          backgroundColor: tag.color + '10',
+                          borderColor: tag.color + '40',
+                          color: tag.color,
+                          borderWidth: '1.5px'
+                        }}
+                      >
+                        {getTagName(tag)}
+                      </Badge>
+                    ))}
                      {/* User tags */}
-                     {getUserTagsForCategory(category.id).map((userTag) => (
+                     {currentUserTags.map((userTag) => (
                        <Badge 
                          key={`user-${userTag.id}`} 
                          variant="secondary"
@@ -723,7 +730,7 @@ export const CategoryManager = () => {
         {categories.length === 0 && (
           <Card className="p-8 text-center">
             <p className="text-muted-foreground">
-              {isExpense ? 'Nenhuma categoria de gasto encontrada' : 'Nenhuma categoria de entrada encontrada'}
+              {title.includes('Entrada') || title.includes('Income') ? 'Nenhuma categoria de entrada encontrada' : 'Nenhuma categoria de gasto encontrada'}
             </p>
           </Card>
         )}
@@ -916,16 +923,14 @@ export const CategoryManager = () => {
         {renderCategorySection(
           expenseCategories,
           `📤 ${translateCategoryUtil('Saídas (Gastos)', language)}`,
-          <ArrowUpCircle className="h-5 w-5 text-destructive" />,
-          true
+          <ArrowUpCircle className="h-5 w-5 text-destructive" />
         )}
 
         {/* Seção de Entradas (Income) */}
         {renderCategorySection(
           incomeCategories,
           `📥 ${translateCategoryUtil('Entradas (Receitas)', language)}`,
-          <ArrowDownCircle className="h-5 w-5 text-primary" />,
-          false
+          <ArrowDownCircle className="h-5 w-5 text-primary" />
         )}
       </Card>
     </div>
