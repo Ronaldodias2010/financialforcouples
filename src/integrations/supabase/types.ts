@@ -2255,7 +2255,7 @@ export type Database = {
         Returns: undefined
       }
       create_default_categories_for_user: {
-        Args: { user_id: string; user_language?: string }
+        Args: { p_user_id: string; user_language?: string }
         Returns: undefined
       }
       create_manual_premium_access: {
