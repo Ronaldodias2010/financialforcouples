@@ -115,7 +115,17 @@ const categoryTranslations: CategoryTranslations = {
   // More variations based on actual database content
   'financas_servicos': { pt: 'Finanças & Serviços', en: 'Finance & Services', es: 'Finanzas y Servicios' },
   'financas_e_servicos': { pt: 'Finanças & Serviços', en: 'Finance & Services', es: 'Finanzas y Servicios' },
-  'receitas_nao_programadas': { pt: 'Receitas não Programadas', en: 'Unscheduled Income', es: 'Ingresos No Programados' }
+  'receitas_nao_programadas': { pt: 'Receitas não Programadas', en: 'Unscheduled Income', es: 'Ingresos No Programados' },
+  
+  // Missing translations reported by user
+  'animais_de_estimacao': { pt: 'Animais de Estimação', en: 'Pets', es: 'Mascotas' },
+  'beleza_cuidados_pessoais': { pt: 'Beleza & Cuidados Pessoais', en: 'Beauty & Personal Care', es: 'Belleza y Cuidado Personal' },
+  'beleza_e_cuidados_pessoais': { pt: 'Beleza & Cuidados Pessoais', en: 'Beauty & Personal Care', es: 'Belleza y Cuidado Personal' },
+  'reforma_construcao': { pt: 'Reforma & Construção', en: 'Renovation & Construction', es: 'Renovación y Construcción' },
+  'reforma_e_construcao': { pt: 'Reforma & Construção', en: 'Renovation & Construction', es: 'Renovación y Construcción' },
+  'tecnologia_assinaturas_digitais': { pt: 'Tecnologia & Assinaturas Digitais', en: 'Technology & Digital Subscriptions', es: 'Tecnología y Suscripciones Digitales' },
+  'tecnologia_e_assinaturas_digitais': { pt: 'Tecnologia & Assinaturas Digitais', en: 'Technology & Digital Subscriptions', es: 'Tecnología y Suscripciones Digitales' },
+  'receita_extraordinaria': { pt: 'Receita Extraordinária', en: 'Extraordinary Income', es: 'Ingresos Extraordinarios' }
 };
 
 // Function to normalize category names (same as used in CategoryManager)

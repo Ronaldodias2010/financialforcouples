@@ -326,11 +326,10 @@ export const CategoryManager = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Buscar tags do sistema através das categorias de usuário com default_category_id
+      // Buscar tags do sistema através das categorias de usuário com default_category_id (TANTO income quanto expense)
       const { data: userCategories, error: categoriesError } = await supabase
         .from('categories')
-        .select('id, name, default_category_id')
-        .eq('category_type', 'expense')
+        .select('id, name, default_category_id, category_type')
         .eq('user_id', user.id);
 
       if (categoriesError) throw categoriesError;
@@ -361,6 +360,26 @@ export const CategoryManager = () => {
               }));
           }
         }
+      }
+
+      // Buscar tags personalizadas do usuário usando o hook
+      const userCategoryTags = useUserCategoryTags();
+      if (userCategoryTags.userTags) {
+        Object.values(userCategoryTags.userTags).flat().forEach(userTag => {
+          const categoryId = userTag.category_id;
+          const tag: CategoryTag = {
+            id: userTag.id,
+            name_pt: userTag.tag_name,
+            name_en: userTag.tag_name_en || userTag.tag_name,
+            name_es: userTag.tag_name_es || userTag.tag_name,
+            color: userTag.color
+          };
+          
+          if (!tagsMap[categoryId]) {
+            tagsMap[categoryId] = [];
+          }
+          tagsMap[categoryId].push(tag);
+        });
       }
 
       console.log('Tags mapeadas por ID de categoria de usuário:', tagsMap);
