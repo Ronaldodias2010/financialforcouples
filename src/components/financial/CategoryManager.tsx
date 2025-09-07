@@ -462,11 +462,7 @@ const CategoryManagerContent = () => {
                               {getTranslatedTagName(tag, language)}
                             </Badge>
                           ))
-                       ) : (
-                         <span className="text-xs text-muted-foreground italic">
-                           {t('tags.loading')}
-                         </span>
-                       )}
+                        )}
                        
                        {/* User tags with distinctive styling */}
                        {userTagsForCategory.map(tag => (
