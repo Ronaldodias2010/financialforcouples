@@ -249,6 +249,12 @@ const translations = {
     'tags.placeholder': 'Nome da tag...',
     'tags.suggested': 'Tags Sugeridas',
     'tags.yourTags': 'Suas Tags',
+    'tags.loading': 'Carregando tags para esta categoria...',
+    
+    // Categories
+    'categories.manage': 'Gerenciar Categorias',
+    'categories.suggested': 'Tags Sugeridas',
+    'categories.loading': 'Carregando...',
     
     // Common
     'common.close': 'Fechar',
@@ -1735,6 +1741,12 @@ const translations = {
     'tags.placeholder': 'Tag name...',
     'tags.suggested': 'Suggested Tags',
     'tags.yourTags': 'Your Tags',
+    'tags.loading': 'Loading tags for this category...',
+    
+    // Categories
+    'categories.manage': 'Manage Categories',
+    'categories.suggested': 'Suggested Tags',
+    'categories.loading': 'Loading...',
     
     // Common
     'common.close': 'Close',
@@ -3221,6 +3233,12 @@ const translations = {
     'tags.placeholder': 'Nombre de la tag...',
     'tags.suggested': 'Tags Sugeridas',
     'tags.yourTags': 'Tus Tags',
+    'tags.loading': 'Cargando tags para esta categoría...',
+    
+    // Categories
+    'categories.manage': 'Gestionar Categorías',
+    'categories.suggested': 'Tags Sugeridas',
+    'categories.loading': 'Cargando...',
     
     // Common
     'common.close': 'Cerrar',
