@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,10 +63,17 @@ export const TagEditModal = ({
   onRestoreSystemTag,
 }: TagEditModalProps) => {
   const [newTagName, setNewTagName] = useState("");
-  const { addUserTag, removeUserTag, getUserTagsForCategory } = useUserCategoryTags();
+  const { addUserTag, removeUserTag, getUserTagsForCategory, refetch } = useUserCategoryTags();
   const { language, t } = useLanguage();
 
   const userTags = getUserTagsForCategory(categoryId);
+
+  // Re-fetch tags when modal opens
+  useEffect(() => {
+    if (isOpen && categoryId) {
+      refetch();
+    }
+  }, [isOpen, categoryId, refetch]);
 
   const handleAddUserTag = async () => {
     if (!newTagName.trim()) return;
@@ -74,6 +81,8 @@ export const TagEditModal = ({
     const success = await addUserTag(categoryId, newTagName.trim());
     if (success) {
       setNewTagName("");
+      // Trigger re-fetch to update UI
+      await refetch();
     }
   };
 
