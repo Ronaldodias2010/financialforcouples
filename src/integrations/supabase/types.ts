@@ -2271,6 +2271,22 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
+      find_tag_case_insensitive: {
+        Args: { search_lang?: string; search_name: string }
+        Returns: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          keywords_en: string[] | null
+          keywords_es: string[] | null
+          keywords_pt: string[] | null
+          name_en: string
+          name_es: string
+          name_pt: string
+          updated_at: string
+        }[]
+      }
       fix_security_definer_views: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -2318,6 +2334,15 @@ export type Database = {
       }
       hash_temp_password: {
         Args: { password: string }
+        Returns: string
+      }
+      insert_normalized_user_tag: {
+        Args: {
+          p_category_id: string
+          p_color?: string
+          p_tag_name: string
+          p_user_id: string
+        }
         Returns: string
       }
       is_admin_user: {

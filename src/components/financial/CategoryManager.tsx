@@ -13,6 +13,7 @@ import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
 import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
 import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { TagInput } from "@/components/ui/TagInput";
+import { TagEditModal } from "./TagEditModal";
 import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle, Tag, X, EyeOff } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -43,6 +44,11 @@ const CategoryManagerContent = () => {
   const [newCategoryType, setNewCategoryType] = useState<"income" | "expense">("expense");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [tagEditModal, setTagEditModal] = useState<{ isOpen: boolean; categoryId: string; categoryName: string }>({
+    isOpen: false,
+    categoryId: "",
+    categoryName: ""
+  });
   const { toast } = useToast();
   const { language, t } = useLanguage();
   const { 
@@ -564,24 +570,29 @@ const CategoryManagerContent = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(category)}
-                        className="h-8 w-8 p-0 hover:bg-muted"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(category.id)}
-                        className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                     <div className="flex items-center gap-1">
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => setTagEditModal({
+                           isOpen: true,
+                           categoryId: category.id,
+                           categoryName: translateCategoryName(category.name, language)
+                         })}
+                         className="h-8 w-8 p-0 hover:bg-muted"
+                         title="Editar tags"
+                       >
+                         <Edit className="h-4 w-4" />
+                       </Button>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => handleDelete(category.id)}
+                         className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                       >
+                         <Trash2 className="h-4 w-4" />
+                       </Button>
+                     </div>
                   </div>
 
                   {/* Tags Section - Aparentes e Simples */}
@@ -591,32 +602,31 @@ const CategoryManagerContent = () => {
                       <span className="text-sm font-medium">Tags Sugeridas</span>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2">
-                      {systemTags.length > 0 ? (
-                        systemTags.map(tag => (
-                          <Badge
-                            key={tag.id}
-                            variant="outline"
-                            className="text-xs bg-muted/30 hover:bg-primary/10 border-primary/20 text-primary transition-colors"
+                     <div className="flex flex-wrap gap-2">
+                       {systemTags.length > 0 ? (
+                         systemTags.filter(tag => !excludedTagIds.includes(tag.id)).map(tag => (
+                           <Badge
+                             key={tag.id}
+                             variant="outline"
+                             className="text-xs bg-muted/30 hover:bg-primary/10 border-primary/20 text-primary transition-colors"
                             style={{ borderColor: tag.color + '40', color: tag.color }}
                           >
-                            {getTranslatedTagName(tag)}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-xs text-muted-foreground italic">
-                          Carregando tags para esta categoria...
-                        </span>
-                      )}
-                      
-                      {/* User tags with distinctive styling */}
-                      {userTagsForCategory.map(tag => (
-                        <Badge
-                          key={tag.id}
-                          variant="default"
-                          className="text-xs bg-primary text-primary-foreground"
-                          onClick={() => removeUserTag(tag.id, category.id)}
-                        >
+                             {getTranslatedTagName(tag as any, language).toLowerCase()}
+                           </Badge>
+                         ))
+                       ) : (
+                         <span className="text-xs text-muted-foreground italic">
+                           Carregando tags para esta categoria...
+                         </span>
+                       )}
+                       
+                       {/* User tags with distinctive styling */}
+                       {userTagsForCategory.map(tag => (
+                         <Badge
+                           key={tag.id}
+                           variant="outline"
+                           className="text-xs bg-accent/30 hover:bg-primary/10 border-accent/40 text-accent-foreground transition-colors"
+                         >
                           {getTranslatedTagName({
                             id: tag.id,
                             name_pt: tag.tag_name,
@@ -737,12 +747,23 @@ const CategoryManagerContent = () => {
             incomeCategories,
             `📥 ${translateCategoryUtil('Entradas (Receitas)', language)}`,
             <ArrowDownCircle className="h-5 w-5 text-primary" />
-          )}
-        </Card>
-      </div>
-    </TooltipProvider>
-  );
-};
+           )}
+         </Card>
+
+         <TagEditModal
+           isOpen={tagEditModal.isOpen}
+           onClose={() => setTagEditModal({ isOpen: false, categoryId: "", categoryName: "" })}
+           categoryId={tagEditModal.categoryId}
+           categoryName={tagEditModal.categoryName}
+           systemTags={categoryTags[tagEditModal.categoryId] || []}
+           excludedTagIds={excludedSystemTags[tagEditModal.categoryId] || []}
+           onExcludeSystemTag={excludeSystemTag}
+           onRestoreSystemTag={restoreSystemTag}
+         />
+       </div>
+     </TooltipProvider>
+   );
+ };
 
 // Create a small QueryClient for CategoryManager if not in a QueryClientProvider context
 const categoryQueryClient = new QueryClient({

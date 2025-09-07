@@ -70,59 +70,43 @@ export const useUserCategoryTags = () => {
     }
   };
 
-  const addUserTag = async (categoryId: string, tagName: string, color: string = '#6366f1') => {
+  const addUserTag = async (categoryId: string, tagName: string, color: string = '#6366f1'): Promise<boolean> => {
     if (!user) return false;
 
     try {
-      // Normalize tag name to prevent duplicates  
-      const normalizedTagName = tagName.trim().replace(/\s+/g, ' ');
-      
-      // Check for existing tag with same normalized name in this category
-      const existingTags = userTags[categoryId] || [];
-      const exists = existingTags.some(tag => 
-        tag.tag_name.trim().toLowerCase().replace(/\s+/g, ' ') === normalizedTagName.toLowerCase()
-      );
-      
-      if (exists) {
-        toast({
-          title: "Tag já existe",
-          description: "Uma tag com este nome já existe nesta categoria.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const { data, error } = await supabase
-        .from('user_category_tags')
-        .insert({
-          user_id: user.id,
-          category_id: categoryId,
-          tag_name: normalizedTagName,
-          color
-        })
-        .select()
-        .single();
+      // Use the normalized insertion function
+      const { data, error } = await supabase.rpc('insert_normalized_user_tag', {
+        p_user_id: user.id,
+        p_category_id: categoryId,
+        p_tag_name: tagName,
+        p_color: color
+      });
 
       if (error) throw error;
 
-      setUserTags(prev => ({
-        ...prev,
-        [categoryId]: [...(prev[categoryId] || []), data]
-      }));
+      // Refetch to get the actual created tag
+      await fetchUserTags();
+
+      toast({
+        title: "Tag adicionada",
+        description: "Tag personalizada criada com sucesso.",
+      });
 
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding user tag:', error);
-      if (error.code === '23505') {
+      
+      // Check if it's a duplicate error
+      if (error?.message?.includes('already exists') || error?.code === '23505') {
         toast({
           title: "Tag já existe",
-          description: "Esta tag já foi adicionada para esta categoria.",
+          description: "Esta tag já foi adicionada a esta categoria.",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Erro ao adicionar tag",
-          description: "Não foi possível adicionar a tag.",
+          description: "Não foi possível criar a tag personalizada.",
           variant: "destructive",
         });
       }
