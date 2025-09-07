@@ -243,6 +243,16 @@ const translations = {
     'nav.tutorial': 'Tutorial',
     'nav.logout': 'Sair',
     
+    // Tags
+    'tags.title': 'Tags',
+    'tags.addNew': 'Adicionar Nova Tag',
+    'tags.placeholder': 'Nome da tag...',
+    'tags.suggested': 'Tags Sugeridas',
+    'tags.yourTags': 'Suas Tags',
+    
+    // Common
+    'common.close': 'Fechar',
+    
     // Cards
     'cards.title': 'Gerenciar Cartões',
     'cards.manage': 'Gerenciar Cartões',
@@ -359,7 +369,6 @@ const translations = {
     'common.success': 'Sucesso',
     'common.error': 'Erro',
     'common.locale': 'pt-BR',
-    'common.close': 'Fechar',
     'back': 'Voltar',
     
     // Currency Display
@@ -1719,6 +1728,16 @@ const translations = {
     'nav.testEmail': 'Test Email',
     'nav.tutorial': 'Tutorial',
     'nav.logout': 'Logout',
+    
+    // Tags
+    'tags.title': 'Tags',
+    'tags.addNew': 'Add New Tag',
+    'tags.placeholder': 'Tag name...',
+    'tags.suggested': 'Suggested Tags',
+    'tags.yourTags': 'Your Tags',
+    
+    // Common
+    'common.close': 'Close',
     
     // Cards
     'cards.title': 'Manage Cards',
@@ -3195,6 +3214,16 @@ const translations = {
     'nav.testEmail': 'Prueba Email',
     'nav.tutorial': 'Tutorial',
     'nav.logout': 'Cerrar sesión',
+    
+    // Tags
+    'tags.title': 'Tags',
+    'tags.addNew': 'Agregar Nueva Tag',
+    'tags.placeholder': 'Nombre de la tag...',
+    'tags.suggested': 'Tags Sugeridas',
+    'tags.yourTags': 'Tus Tags',
+    
+    // Common
+    'common.close': 'Cerrar',
     
     // Cards
     'cards.title': 'Gestionar Tarjetas',

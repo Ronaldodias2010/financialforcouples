@@ -241,16 +241,35 @@ const CategoryManagerContent = () => {
     return name;
   };
 
+  // Safe translation helper with deduplication
   const getTranslatedTagName = (tag: CategoryTag, lang?: string): string => {
+    if (!tag) return '';
+    
+    const safeName = (name?: string) => name?.toLowerCase()?.trim() || '';
     const targetLang = lang || language;
+    
     switch (targetLang) {
       case 'en':
-        return tag.name_en || tag.name_pt;
+        return safeName(tag.name_en) || safeName(tag.name_pt) || '';
       case 'es':
-        return tag.name_es || tag.name_pt;
+        return safeName(tag.name_es) || safeName(tag.name_pt) || '';
+      case 'pt':
       default:
-        return tag.name_pt;
+        return safeName(tag.name_pt) || '';
     }
+  };
+
+  // Deduplicate system tags by translated name
+  const deduplicateSystemTags = (tags: CategoryTag[]): CategoryTag[] => {
+    const seen = new Set<string>();
+    return tags.filter(tag => {
+      const translatedName = getTranslatedTagName(tag, language);
+      if (seen.has(translatedName)) {
+        return false;
+      }
+      seen.add(translatedName);
+      return true;
+    });
   };
 
   useEffect(() => {
@@ -603,17 +622,23 @@ const CategoryManagerContent = () => {
                     </div>
                     
                      <div className="flex flex-wrap gap-2">
-                       {systemTags.length > 0 ? (
-                         systemTags.filter(tag => !excludedTagIds.includes(tag.id)).map(tag => (
-                           <Badge
-                             key={tag.id}
-                             variant="outline"
-                             className="text-xs bg-muted/30 hover:bg-primary/10 border-primary/20 text-primary transition-colors"
-                            style={{ borderColor: tag.color + '40', color: tag.color }}
-                          >
-                             {getTranslatedTagName(tag as any, language).toLowerCase()}
-                           </Badge>
-                         ))
+                         {systemTags.length > 0 ? (
+                           systemTags
+                             .filter((tag, index, arr) => {
+                               const translatedName = getTranslatedTagName(tag, language);
+                               return arr.findIndex(t => getTranslatedTagName(t, language) === translatedName) === index;
+                             })
+                             .filter(tag => !excludedTagIds.includes(tag.id))
+                             .map(tag => (
+                            <Badge
+                              key={tag.id}
+                              variant="outline"
+                              className="text-xs bg-muted/30 hover:bg-primary/10 border-primary/20 text-primary transition-colors"
+                             style={{ borderColor: tag.color + '40', color: tag.color }}
+                           >
+                              {getTranslatedTagName(tag, language)}
+                            </Badge>
+                          ))
                        ) : (
                          <span className="text-xs text-muted-foreground italic">
                            Carregando tags para esta categoria...
@@ -627,13 +652,7 @@ const CategoryManagerContent = () => {
                            variant="outline"
                            className="text-xs bg-accent/30 hover:bg-primary/10 border-accent/40 text-accent-foreground transition-colors"
                          >
-                          {getTranslatedTagName({
-                            id: tag.id,
-                            name_pt: tag.tag_name,
-                            name_en: tag.tag_name_en || tag.tag_name,
-                            name_es: tag.tag_name_es || tag.tag_name,
-                            color: tag.color
-                          }, language)}
+                           {tag.tag_name}
                           <X className="h-3 w-3 ml-1 cursor-pointer" />
                         </Badge>
                       ))}
@@ -755,7 +774,10 @@ const CategoryManagerContent = () => {
            onClose={() => setTagEditModal({ isOpen: false, categoryId: "", categoryName: "" })}
            categoryId={tagEditModal.categoryId}
            categoryName={tagEditModal.categoryName}
-           systemTags={categoryTags[tagEditModal.categoryId] || []}
+            systemTags={(categoryTags[tagEditModal.categoryId] || []).filter((tag, index, arr) => {
+              const translatedName = getTranslatedTagName(tag, language);
+              return arr.findIndex(t => getTranslatedTagName(t, language) === translatedName) === index;
+            })}
            excludedTagIds={excludedSystemTags[tagEditModal.categoryId] || []}
            onExcludeSystemTag={excludeSystemTag}
            onRestoreSystemTag={restoreSystemTag}

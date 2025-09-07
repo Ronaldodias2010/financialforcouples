@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { X, Plus, Tag } from "lucide-react";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
 import { useLanguage } from "@/hooks/useLanguage";
-import { getTranslatedTagName } from "@/utils/userTagTranslation";
 
 interface CategoryTag {
   id: string;
@@ -15,6 +14,23 @@ interface CategoryTag {
   name_es: string;
   color: string;
 }
+
+// Safe translation helper for CategoryTag
+const getTranslatedTagName = (tag: CategoryTag, language: string): string => {
+  if (!tag) return '';
+  
+  const safeName = (name?: string) => name?.toLowerCase()?.trim() || '';
+  
+  switch (language) {
+    case 'en':
+      return safeName(tag.name_en) || safeName(tag.name_pt) || '';
+    case 'es':
+      return safeName(tag.name_es) || safeName(tag.name_pt) || '';
+    case 'pt':
+    default:
+      return safeName(tag.name_pt) || '';
+  }
+};
 
 interface UserCategoryTag {
   id: string;
@@ -48,7 +64,7 @@ export const TagEditModal = ({
 }: TagEditModalProps) => {
   const [newTagName, setNewTagName] = useState("");
   const { addUserTag, removeUserTag, getUserTagsForCategory } = useUserCategoryTags();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const userTags = getUserTagsForCategory(categoryId);
 
@@ -74,17 +90,17 @@ export const TagEditModal = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Tag className="h-5 w-5" />
-            Tags - {categoryName}
+            {t('tags.title')} - {categoryName}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Add new tag */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Adicionar Nova Tag</label>
+            <label className="text-sm font-medium">{t('tags.addNew')}</label>
             <div className="flex gap-2">
               <Input
-                placeholder="Nome da tag..."
+                placeholder={t('tags.placeholder')}
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -102,11 +118,11 @@ export const TagEditModal = ({
 
           {/* System Tags */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground">Tags Sugeridas</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">{t('tags.suggested')}</h4>
             <div className="flex flex-wrap gap-2">
               {systemTags.map(tag => {
                 const isExcluded = excludedTagIds.includes(tag.id);
-                const translatedName = getTranslatedTagName(tag as any, language);
+                const translatedName = getTranslatedTagName(tag, language);
                 
                 return (
                   <Badge
@@ -125,7 +141,7 @@ export const TagEditModal = ({
                       }
                     }}
                   >
-                    {translatedName.toLowerCase()}
+                    {translatedName}
                     {!isExcluded && (
                       <X className="h-3 w-3 ml-1 opacity-60" />
                     )}
@@ -138,7 +154,7 @@ export const TagEditModal = ({
           {/* User Tags */}
           {userTags.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-muted-foreground">Suas Tags</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t('tags.yourTags')}</h4>
               <div className="flex flex-wrap gap-2">
                 {userTags.map(tag => (
                   <Badge
@@ -147,7 +163,7 @@ export const TagEditModal = ({
                     className="text-xs bg-accent/30 hover:bg-destructive/10 cursor-pointer transition-colors"
                     onClick={() => removeUserTag(tag.id, categoryId)}
                   >
-                    {tag.tag_name.toLowerCase()}
+                    {tag.tag_name}
                     <X className="h-3 w-3 ml-1" />
                   </Badge>
                 ))}
@@ -157,7 +173,7 @@ export const TagEditModal = ({
 
           <div className="flex justify-end">
             <Button variant="outline" onClick={onClose}>
-              Fechar
+              {t('common.close')}
             </Button>
           </div>
         </div>
