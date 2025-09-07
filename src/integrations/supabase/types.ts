@@ -1982,6 +1982,8 @@ export type Database = {
           created_at: string | null
           id: string
           tag_name: string
+          tag_name_en: string | null
+          tag_name_es: string | null
           updated_at: string | null
           user_id: string
         }
@@ -1991,6 +1993,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           tag_name: string
+          tag_name_en?: string | null
+          tag_name_es?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -2000,6 +2004,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           tag_name?: string
+          tag_name_en?: string | null
+          tag_name_es?: string | null
           updated_at?: string | null
           user_id?: string
         }
