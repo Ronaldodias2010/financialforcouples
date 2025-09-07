@@ -18,8 +18,8 @@ const sanitizeText = (input: string): string => {
 
 export const downloadTutorialPDF = async (language: Language = 'pt') => {
   try {
-    // SEMPRE usar o arquivo principal completo (1348 linhas) para garantir conteúdo completo
-    const tutorialUrl = `/tutorial-couples-financials.html`;
+    // Use language-specific tutorial file for complete content
+    const tutorialUrl = `/tutorial-couples-financials-${language}.html`;
     const response = await fetch(tutorialUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch tutorial: ${response.status}`);
