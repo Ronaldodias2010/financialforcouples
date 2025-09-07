@@ -63,183 +63,6 @@ const CategoryManagerContent = () => {
   } = useUserCategoryTags();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
-  const translateCategoryName = (name: string, language: string): string => {
-    const normalizedName = name.toLowerCase().trim();
-    
-    const translations: Record<string, Record<string, string>> = {
-      en: {
-        'alimentacao': 'Food',
-        'food': 'Food',
-        'combustivel': 'Fuel',
-        'fuel': 'Fuel',
-        'saude': 'Health',
-        'health': 'Health',
-        'educacao': 'Education',
-        'education': 'Education',
-        'vestuario': 'Clothing',
-        'clothing': 'Clothing',
-        'viagem': 'Travel',
-        'travel': 'Travel',
-        'transporte': 'Transportation',
-        'transport': 'Transportation',
-        'moradia': 'Housing',
-        'housing': 'Housing',
-        'salario': 'Salary',
-        'salary': 'Salary',
-        'comissao': 'Commission',
-        'commission': 'Commission',
-        'renda extra': 'Extra Income',
-        'extra income': 'Extra Income',
-        'pagamento de cartao de credito': 'Credit Card Payment',
-        'credit card payment': 'Credit Card Payment',
-        'transferencia': 'Transfer',
-        'transfer': 'Transfer',
-        'transferencia entre contas': 'Account Transfer',
-        'account transfer': 'Account Transfer',
-        'aposentadoria': 'Retirement',
-        'retirement': 'Retirement',
-        'pensao': 'Pension',
-        'pension': 'Pension',
-        'investimento': 'Investment',
-        'investment': 'Investment',
-        'rendimento de investimento': 'Investment Return',
-        'investment return': 'Investment Return',
-        'bonus': 'Bonus',
-        'premios': 'Awards',
-        'awards': 'Awards',
-        'vendas': 'Sales',
-        'sales': 'Sales',
-        'aluguel recebido': 'Rent Received',
-        'rent received': 'Rent Received',
-        'dividendos': 'Dividends',
-        'dividends': 'Dividends',
-        'freelance': 'Freelance',
-        'servicos prestados': 'Services Provided',
-        'services provided': 'Services Provided',
-        'restituicao de imposto': 'Tax Refund',
-        'tax refund': 'Tax Refund',
-        'receita extraordinaria': 'Extraordinary Income',
-        'extraordinary income': 'Extraordinary Income',
-        'entretenimento': 'Entertainment',
-        'entertainment': 'Entertainment',
-        'lazer': 'Leisure',
-        'leisure': 'Leisure',
-        'supermercado': 'Groceries',
-        'farmacia': 'Pharmacy',
-        'beleza': 'Beauty',
-        'pet': 'Pet',
-        'presente': 'Gift',
-        'doacao': 'Donation',
-        'contas basicas': 'Basic Bills',
-        'presente ou doacao': 'Gift or Donation',
-        'reembolso': 'Refund',
-        'veiculos': 'Vehicles',
-        'consorcio': 'Consortium',
-        'saidas_gastos': 'Expenses (Outgoing)',
-        'saidas': 'Expenses',
-        'gastos': 'Expenses',
-        'compras_pessoais': 'Personal Shopping',
-        'doacoes_presentes': 'Donations & Gifts',
-        'familia_filhos': 'Family & Children',
-        'lazer_entretenimento': 'Leisure & Entertainment',
-        'outros': 'Others',
-        'trabalho_negocios': 'Work & Business',
-        'entradas_receitas': 'Income (Revenue)',
-        'entradas': 'Income',
-        'receitas': 'Revenue',
-        'financas_servicos': 'Finance & Services',
-      },
-      es: {
-        'alimentacao': 'Comida',
-        'food': 'Comida',
-        'combustivel': 'Combustible',
-        'fuel': 'Combustible',
-        'saude': 'Salud',
-        'health': 'Salud',
-        'educacao': 'Educación',
-        'education': 'Educación',
-        'vestuario': 'Ropa',
-        'clothing': 'Ropa',
-        'viagem': 'Viaje',
-        'travel': 'Viaje',
-        'transporte': 'Transporte',
-        'transport': 'Transporte',
-        'moradia': 'Vivienda',
-        'housing': 'Vivienda',
-        'salario': 'Salario',
-        'salary': 'Salario',
-        'comissao': 'Comisión',
-        'commission': 'Comisión',
-        'renda extra': 'Ingresos Extra',
-        'extra income': 'Ingresos Extra',
-        'pagamento de cartao de credito': 'Pago de Tarjeta de Crédito',
-        'credit card payment': 'Pago de Tarjeta de Crédito',
-        'transferencia': 'Transferencia',
-        'transfer': 'Transferencia',
-        'transferencia entre contas': 'Transferencia entre Cuentas',
-        'account transfer': 'Transferencia entre Cuentas',
-        'aposentadoria': 'Jubilación',
-        'retirement': 'Jubilación',
-        'pensao': 'Pensión',
-        'pension': 'Pensión',
-        'investimento': 'Inversión',
-        'investment': 'Inversión',
-        'rendimento de investimento': 'Retorno de Inversión',
-        'investment return': 'Retorno de Inversión',
-        'bonus': 'Bono',
-        'premios': 'Premios',
-        'awards': 'Premios',
-        'vendas': 'Ventas',
-        'sales': 'Ventas',
-        'aluguel recebido': 'Alquiler Recibido',
-        'rent received': 'Alquiler Recibido',
-        'dividendos': 'Dividendos',
-        'dividends': 'Dividendos',
-        'freelance': 'Freelance',
-        'servicos prestados': 'Servicios Prestados',
-        'services provided': 'Servicios Prestados',
-        'restituicao de imposto': 'Devolución de Impuestos',
-        'tax refund': 'Devolución de Impuestos',
-        'receita extraordinaria': 'Ingresos Extraordinarios',
-        'extraordinary income': 'Ingresos Extraordinarios',
-        'entretenimento': 'Entretenimiento',
-        'entertainment': 'Entretenimiento',
-        'lazer': 'Ocio',
-        'leisure': 'Ocio',
-        'supermercado': 'Supermercado',
-        'farmacia': 'Farmacia',
-        'beleza': 'Belleza',
-        'pet': 'Mascota',
-        'presente': 'Regalo',
-        'doacao': 'Donación',
-        'contas basicas': 'Cuentas Básicas',
-        'presente ou doacao': 'Regalo o Donación',
-        'reembolso': 'Reembolso',
-        'veiculos': 'Vehículos',
-        'consorcio': 'Consorcio',
-        'saidas_gastos': 'Gastos (Salidas)',
-        'saidas': 'Gastos',
-        'gastos': 'Gastos',
-        'compras_pessoais': 'Compras Personales',
-        'doacoes_presentes': 'Donaciones y Regalos',
-        'familia_filhos': 'Familia e Hijos',
-        'lazer_entretenimento': 'Ocio y Entretenimiento',
-        'outros': 'Otros',
-        'trabalho_negocios': 'Trabajo y Negocios',
-        'entradas_receitas': 'Ingresos (Recetas)',
-        'entradas': 'Ingresos',
-        'receitas': 'Recetas',
-        'financas_servicos': 'Finanzas y Servicios',
-      }
-    };
-
-    const languageTranslations = translations[language];
-    if (languageTranslations && languageTranslations[normalizedName]) {
-      return languageTranslations[normalizedName];
-    }
-
-    return name;
-  };
 
   // Safe translation helper with deduplication
   const getTranslatedTagName = (tag: CategoryTag, lang?: string): string => {
@@ -582,7 +405,7 @@ const CategoryManagerContent = () => {
                       />
                       <div>
                         <h3 className="font-semibold text-foreground">
-                          {translateCategoryName(category.name, language)}
+                          {translateCategoryUtil(category.name, language)}
                         </h3>
                         {category.description && (
                           <p className="text-sm text-muted-foreground">{category.description}</p>
@@ -596,7 +419,7 @@ const CategoryManagerContent = () => {
                          onClick={() => setTagEditModal({
                            isOpen: true,
                            categoryId: category.id,
-                           categoryName: translateCategoryName(category.name, language)
+                           categoryName: translateCategoryUtil(category.name, language)
                          })}
                          className="h-8 w-8 p-0 hover:bg-muted"
                          title="Editar tags"
@@ -618,7 +441,7 @@ const CategoryManagerContent = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">Tags Sugeridas</span>
+                      <span className="text-sm font-medium">{t('tags.suggested')}</span>
                     </div>
                     
                      <div className="flex flex-wrap gap-2">
@@ -641,7 +464,7 @@ const CategoryManagerContent = () => {
                           ))
                        ) : (
                          <span className="text-xs text-muted-foreground italic">
-                           Carregando tags para esta categoria...
+                           {t('tags.loading')}
                          </span>
                        )}
                        
@@ -672,7 +495,7 @@ const CategoryManagerContent = () => {
       <div className="space-y-6">
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Gerenciar Categorias</h2>
+            <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
           </div>
           
           {/* Dialog for adding/editing categories */}

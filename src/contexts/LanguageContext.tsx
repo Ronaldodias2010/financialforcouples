@@ -249,6 +249,7 @@ const translations = {
     'tags.placeholder': 'Nome da tag...',
     'tags.suggested': 'Tags Sugeridas',
     'tags.yourTags': 'Suas Tags',
+    'tags.loading': 'Carregando tags para esta categoria...',
     
     // Common
     'common.close': 'Fechar',
@@ -681,7 +682,7 @@ const translations = {
     'partnership.form.paymentInfoPlaceholder': 'PIX: exemplo@email.com ou Banco: Banco do Brasil, Agência: 1234-5, Conta: 67890-1',
     'partnership.form.paymentInfoHelper': 'Informe seus dados bancários ou chave PIX para recebimento das comissões. Campo obrigatório.',
     
-    // Categories
+    // Categories  
     'categories.title': 'Gerenciar Categorias',
     'categories.add': 'Adicionar Categoria',
     'categories.edit': 'Editar Categoria',
@@ -1735,6 +1736,7 @@ const translations = {
     'tags.placeholder': 'Tag name...',
     'tags.suggested': 'Suggested Tags',
     'tags.yourTags': 'Your Tags',
+    'tags.loading': 'Loading tags for this category...',
     
     // Common
     'common.close': 'Close',
@@ -3221,6 +3223,7 @@ const translations = {
     'tags.placeholder': 'Nombre de la tag...',
     'tags.suggested': 'Tags Sugeridas',
     'tags.yourTags': 'Tus Tags',
+    'tags.loading': 'Cargando tags para esta categoría...',
     
     // Common
     'common.close': 'Cerrar',
