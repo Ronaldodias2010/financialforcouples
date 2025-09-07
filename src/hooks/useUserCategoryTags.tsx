@@ -74,12 +74,30 @@ export const useUserCategoryTags = () => {
     if (!user) return false;
 
     try {
+      // Normalize tag name to prevent duplicates  
+      const normalizedTagName = tagName.trim().replace(/\s+/g, ' ');
+      
+      // Check for existing tag with same normalized name in this category
+      const existingTags = userTags[categoryId] || [];
+      const exists = existingTags.some(tag => 
+        tag.tag_name.trim().toLowerCase().replace(/\s+/g, ' ') === normalizedTagName.toLowerCase()
+      );
+      
+      if (exists) {
+        toast({
+          title: "Tag já existe",
+          description: "Uma tag com este nome já existe nesta categoria.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       const { data, error } = await supabase
         .from('user_category_tags')
         .insert({
           user_id: user.id,
           category_id: categoryId,
-          tag_name: tagName.trim(),
+          tag_name: normalizedTagName,
           color
         })
         .select()

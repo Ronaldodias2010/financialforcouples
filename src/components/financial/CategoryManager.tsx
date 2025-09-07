@@ -466,9 +466,9 @@ export const CategoryManager = () => {
           description: "Categoria atualizada com sucesso!",
         });
       } else {
-        // Create new category with automatic translation
-        // Primeiro, tentar obter traduções automáticas se disponíveis
+        // Create new category with automatic translation and default category linking
         let finalName = trimmedName;
+        let defaultCategoryId = null;
         
         try {
           const { data: translations } = await supabase.rpc('auto_translate_category_name', {
@@ -483,9 +483,22 @@ export const CategoryManager = () => {
                       language === 'es' ? translation.es_name :
                       translation.pt_name;
           }
+
+          // Buscar categoria padrão correspondente para linking automático
+          const { data: defaultCategory } = await supabase
+            .from('default_categories')
+            .select('id')
+            .eq('category_type', newCategoryType)
+            .or(`name_pt.ilike.%${finalName}%,name_en.ilike.%${finalName}%,name_es.ilike.%${finalName}%`)
+            .limit(1)
+            .single();
+
+          if (defaultCategory) {
+            defaultCategoryId = defaultCategory.id;
+          }
         } catch (translationError) {
           // Se falhou a tradução, usar o nome original
-          console.log('Translation failed, using original name');
+          console.log('Translation/linking failed, using original name');
         }
 
         const { error } = await supabase
@@ -495,6 +508,7 @@ export const CategoryManager = () => {
             color: newCategoryColor,
             category_type: newCategoryType,
             user_id: user.id,
+            default_category_id: defaultCategoryId,
           });
 
         if (error) throw error;
