@@ -87,33 +87,50 @@ const categoryTranslations: CategoryTranslations = {
   'lazer': { pt: 'Lazer', en: 'Leisure', es: 'Ocio' },
   'financas': { pt: 'Finanças', en: 'Finance', es: 'Finanzas' },
   'outros': { pt: 'Outros', en: 'Others', es: 'Otros' },
-  'delivery_new': { pt: 'Delivery', en: 'Delivery', es: 'Delivery' },
-  'lanchonete_new': { pt: 'Lanchonete', en: 'Snack Bar', es: 'Snack Bar' },
-  'escola_new': { pt: 'Escola', en: 'School', es: 'Escuela' },
-  'posto_new': { pt: 'Posto', en: 'Gas Station', es: 'Gasolinera' },
-  'shopping_new': { pt: 'Shopping', en: 'Mall', es: 'Centro Comercial' },
-  'padaria_new': { pt: 'Padaria', en: 'Bakery', es: 'Panadería' },
-  'mercado_new': { pt: 'Mercado', en: 'Market', es: 'Mercado' },
-  'agua_new': { pt: 'Água', en: 'Water', es: 'Agua' },
-  'luz_new': { pt: 'Luz', en: 'Electricity', es: 'Electricidad' },
-  'gas_new': { pt: 'Gás', en: 'Gas', es: 'Gas' },
-  'condominio_new': { pt: 'Condomínio', en: 'Condominium', es: 'Condominio' },
-  'iptu_new': { pt: 'IPTU', en: 'Property Tax', es: 'Impuesto Inmobiliario' },
-  'ipva_new': { pt: 'IPVA', en: 'Vehicle Tax', es: 'Impuesto Vehicular' },
-  'financiamento_new': { pt: 'Financiamento', en: 'Financing', es: 'Financiamiento' },
-  'emprestimo_new': { pt: 'Empréstimo', en: 'Loan', es: 'Préstamo' },
-  'cartao_new': { pt: 'Cartão', en: 'Credit Card', es: 'Tarjeta de Crédito' }
+  
+  // Specific missing category translations reported by user
+  'saidas_gastos': { pt: 'Saídas (Gastos)', en: 'Expenses (Outgoing)', es: 'Gastos (Salidas)' },
+  'saidas': { pt: 'Saídas', en: 'Expenses', es: 'Gastos' },
+  'gastos': { pt: 'Gastos', en: 'Expenses', es: 'Gastos' },
+  'compras_pessoais': { pt: 'Compras Pessoais', en: 'Personal Shopping', es: 'Compras Personales' },
+  'doacoes_presentes': { pt: 'Doações & Presentes', en: 'Donations & Gifts', es: 'Donaciones y Regalos' },
+  'doacoes_e_presentes': { pt: 'Doações & Presentes', en: 'Donations & Gifts', es: 'Donaciones y Regalos' },
+  'familia_filhos': { pt: 'Família & Filhos', en: 'Family & Children', es: 'Familia e Hijos' },
+  'familia_e_filhos': { pt: 'Família & Filhos', en: 'Family & Children', es: 'Familia e Hijos' },
+  'lazer_entretenimento': { pt: 'Lazer & Entretenimento', en: 'Leisure & Entertainment', es: 'Ocio y Entretenimiento' },
+  'lazer_e_entretenimento': { pt: 'Lazer & Entretenimento', en: 'Leisure & Entertainment', es: 'Ocio y Entretenimiento' },
+  'trabalho_negocios': { pt: 'Trabalho & Negócios', en: 'Work & Business', es: 'Trabajo y Negocios' },
+  'trabalho_e_negocios': { pt: 'Trabalho & Negócios', en: 'Work & Business', es: 'Trabajo y Negocios' },
+  'entradas_receitas': { pt: 'Entradas (Receitas)', en: 'Income (Revenue)', es: 'Ingresos (Entradas)' },
+  'entradas': { pt: 'Entradas', en: 'Income', es: 'Ingresos' },
+  'receitas': { pt: 'Receitas', en: 'Revenue', es: 'Ingresos' },
+  
+  // Additional variations that might exist
+  'compras_pessoal': { pt: 'Compras Pessoal', en: 'Personal Shopping', es: 'Compras Personales' },
+  'familia': { pt: 'Família', en: 'Family', es: 'Familia' },
+  'filhos': { pt: 'Filhos', en: 'Children', es: 'Hijos' },
+  'trabalho': { pt: 'Trabalho', en: 'Work', es: 'Trabajo' },
+  'negocios': { pt: 'Negócios', en: 'Business', es: 'Negocios' },
+  
+  // More variations based on actual database content
+  'financas_servicos': { pt: 'Finanças & Serviços', en: 'Finance & Services', es: 'Finanzas y Servicios' },
+  'financas_e_servicos': { pt: 'Finanças & Serviços', en: 'Finance & Services', es: 'Finanzas y Servicios' },
+  'receitas_nao_programadas': { pt: 'Receitas não Programadas', en: 'Unscheduled Income', es: 'Ingresos No Programados' }
 };
 
 // Function to normalize category names (same as used in CategoryManager)
 const normalize = (str: string): string => {
-  return str
+  const normalized = str
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '');
+  
+  // Debug logging to see normalization results
+  console.log(`📝 Normalized "${str}" → "${normalized}"`);
+  return normalized;
 };
 
 // Add debug logging to see what's being normalized
@@ -134,11 +151,18 @@ export const translateCategoryName = (categoryName: string, language: Language):
   const normalizedName = normalize(categoryName);
   const translation = categoryTranslations[normalizedName];
   
+  // Debug logging for missing translations
+  if (!translation) {
+    console.log(`🔍 Missing translation for: "${categoryName}" (normalized: "${normalizedName}") to ${language}`);
+  }
+  
   if (translation) {
+    console.log(`✅ Found translation for "${categoryName}": ${translation[language]}`);
     return translation[language];
   }
   
   // If no translation found, return original name
+  console.log(`❌ No translation found for "${categoryName}" (normalized: "${normalizedName}")`);
   return categoryName;
 };
 
