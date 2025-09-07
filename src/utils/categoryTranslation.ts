@@ -81,6 +81,7 @@ const categoryTranslations: CategoryTranslations = {
   'vestuario': { pt: 'Vestuário', en: 'Clothing', es: 'Ropa' },
   'viagem': { pt: 'Viagem', en: 'Travel', es: 'Viaje' },
   'veiculos': { pt: 'Veículos', en: 'Vehicles', es: 'Vehículos' },
+  'veiculos_financiamentos': { pt: 'Veículos & Financiamentos', en: 'Vehicles & Financing', es: 'Vehículos y Financiación' },
   'consorcio': { pt: 'Consórcio', en: 'Consortium', es: 'Consorcio' },
   
   // New categories often missing translations (avoiding duplicates)
