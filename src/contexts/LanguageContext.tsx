@@ -149,6 +149,8 @@ const translations = {
     'dashboard.both': 'Ambos',
     'dashboard.user1': 'Usuário 1',
     'dashboard.user2': 'Usuário 2',
+    'cards.yourCards': 'Seus Cartões',
+    'common.noCategory': 'Sem categoria',
     
     // Account model and form translations
     'accounts.accountModel': 'Modelo da Conta',
@@ -1625,6 +1627,8 @@ const translations = {
     'dashboard.both': 'Both',
     'dashboard.user1': 'User 1',
     'dashboard.user2': 'User 2',
+    'cards.yourCards': 'Manage Cards',
+    'common.noCategory': 'No Category',
     
     // Account model and form translations
     'accounts.accountModel': 'Account Type',
@@ -3099,6 +3103,8 @@ const translations = {
     'dashboard.both': 'Ambos',
     'dashboard.user1': 'Usuario 1',
     'dashboard.user2': 'Usuario 2',
+    'cards.yourCards': 'Gestionar Tarjetas',
+    'common.noCategory': 'Sin Categoría',
     
     // Account model and form translations
     'accounts.accountModel': 'Tipo de Cuenta',

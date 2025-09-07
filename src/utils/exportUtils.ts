@@ -8,6 +8,16 @@ import { ptBR } from 'date-fns/locale';
 export type ExportFormat = 'pdf' | 'csv' | 'xlsx';
 export type ViewMode = 'both' | 'user1' | 'user2';
 
+// Translation helper for export utilities
+const getTranslationForNoCategory = () => {
+  const language = localStorage.getItem('language') || 'pt';
+  switch (language) {
+    case 'en': return 'No Category';
+    case 'es': return 'Sin Categoría';
+    default: return 'Sem categoria';
+  }
+};
+
 interface ExportData {
   cashFlow: any[];
   expenses: any[];
@@ -94,7 +104,7 @@ export async function fetchExportData(
 
   // Group expenses by category
   const expensesByCategory = expenses.reduce((acc, expense) => {
-    const categoryName = expense.categories?.name || 'Sem categoria';
+    const categoryName = expense.categories?.name || getTranslationForNoCategory();
     if (!acc[categoryName]) {
       acc[categoryName] = { total: 0, items: [] };
     }
@@ -105,7 +115,7 @@ export async function fetchExportData(
 
   // Group revenues by category
   const revenuesByCategory = revenues.reduce((acc, revenue) => {
-    const categoryName = revenue.categories?.name || 'Sem categoria';
+    const categoryName = revenue.categories?.name || getTranslationForNoCategory();
     if (!acc[categoryName]) {
       acc[categoryName] = { total: 0, items: [] };
     }

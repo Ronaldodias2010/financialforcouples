@@ -11,6 +11,7 @@ import { CreditCard, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { CardEditForm } from "./CardEditForm";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface CardData {
   id: string;
@@ -38,6 +39,7 @@ export const CardList = ({ refreshTrigger }: CardListProps) => {
   const { couple, isPartOfCouple } = useCouple();
   const { names } = usePartnerNames();
   const { convertCurrency, formatCurrency: currencyFormat } = useCurrencyConverter();
+  const { t } = useLanguage();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -215,7 +217,7 @@ const getOwnerNameForCard = (card: CardData) => {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Seus Cartões</h3>
+      <h3 className="text-lg font-semibold">{t('cards.yourCards')}</h3>
       
       {cards.length === 0 ? (
         <Card className="p-6 text-center text-muted-foreground">

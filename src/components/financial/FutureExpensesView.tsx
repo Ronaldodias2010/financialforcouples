@@ -180,7 +180,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           amount: manualExpense.amount,
           due_date: manualExpense.due_date,
           type: 'manual_future',
-          category: manualExpense.category?.name || 'Sem categoria',
+          category: manualExpense.category?.name || t('common.noCategory'),
           owner_user: manualExpense.owner_user,
           manualFutureExpenseId: manualExpense.id,
           isPaid: manualExpense.is_paid,
@@ -208,7 +208,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           const isPaid = await isExpensePaid(payment.recurring_expense_id, payment.installment_transaction_id, payment.original_due_date);
           
           // Buscar nome da categoria se tiver category_id
-          let categoryName = 'Sem categoria';
+          let categoryName = t('common.noCategory');
           if (payment.category_id) {
             const { data: categoryData } = await supabase
               .from('categories')
@@ -273,7 +273,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           amount: installment.amount,
           due_date: installment.transaction_date,
           type: 'installment',
-          category: installment.categories?.name || 'Sem categoria',
+          category: installment.categories?.name || t('common.noCategory'),
           card_name: installment.cards?.name,
           installment_info: `${installment.installment_number}/${installment.total_installments}`,
           owner_user: ownerUser,
@@ -308,7 +308,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               amount: recur.amount,
               due_date: dueDate,
               type: 'recurring',
-              category: recur.categories?.name || 'Sem categoria',
+              category: recur.categories?.name || t('common.noCategory'),
               card_name: recur.cards?.name || recur.accounts?.name,
               owner_user: recur.cards?.owner_user || recur.owner_user,
               recurringExpenseId: recur.id,
@@ -375,7 +375,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               amount: cardTransaction.amount,
               due_date: cardTransaction.transaction_date,
               type: 'card_transaction',
-              category: cardTransaction.categories?.name || 'Sem categoria',
+              category: cardTransaction.categories?.name || t('common.noCategory'),
               card_name: cardTransaction.cards?.name,
               owner_user: ownerUser,
               allowsPayment: false, // Transações do cartão NÃO podem ser pagas individualmente
