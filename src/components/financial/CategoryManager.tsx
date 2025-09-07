@@ -13,7 +13,7 @@ import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
 import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
 import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { TagInput } from "@/components/ui/TagInput";
-import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle, Tag, X, EyeOff } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -235,8 +235,9 @@ const CategoryManagerContent = () => {
     return name;
   };
 
-  const getTranslatedTagName = (tag: CategoryTag): string => {
-    switch (language) {
+  const getTranslatedTagName = (tag: CategoryTag, lang?: string): string => {
+    const targetLang = lang || language;
+    switch (targetLang) {
       case 'en':
         return tag.name_en || tag.name_pt;
       case 'es':
@@ -497,107 +498,161 @@ const CategoryManagerContent = () => {
   const renderCategorySection = (categories: Category[], title: string, icon: React.ReactNode) => {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          {icon}
-          <h3 className="text-lg font-semibold">{title}</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {icon}
+            <h3 className="text-lg font-semibold">{title}</h3>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" onClick={() => {
+                setEditingCategory(null);
+                setNewCategoryName("");
+                setNewCategoryColor("#6366f1");
+                setNewCategoryType(title.includes('Entradas') ? 'income' : 'expense');
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar
+              </Button>
+            </DialogTrigger>
+          </Dialog>
         </div>
         
         <div className="grid gap-4">
           {categories.map((category) => {
             const systemTags = categoryTags[category.id] || [];
             const userTagsForCategory = getUserTagsForCategory(category.id);
-            const allTags = [...systemTags, ...userTagsForCategory.map(userTag => ({
-              id: userTag.id,
-              name_pt: userTag.tag_name,
-              name_en: userTag.tag_name_en || userTag.tag_name,
-              name_es: userTag.tag_name_es || userTag.tag_name,
-              color: userTag.color
-            }))];
+            const excludedTagIds = excludedSystemTags[category.id] || [];
 
             return (
-              <Card key={category.id} className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: category.color }}
-                    />
-                    <span className="font-medium">
-                      {translateCategoryName(category.name, language)}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(category)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(category.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Tags display */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Tags:</span>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Tags ajudam a organizar e categorizar suas transações</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {allTags.map((tag) => (
-                      <Badge 
-                        key={tag.id} 
-                        variant="secondary"
-                        style={{ backgroundColor: tag.color + '20', color: tag.color }}
+              <Card key={category.id} className="border border-border/50 hover:border-border transition-colors">
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-5 h-5 rounded-full border-2 border-background shadow-sm"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      <div>
+                        <h3 className="font-semibold text-foreground">
+                          {translateCategoryName(category.name, language)}
+                        </h3>
+                        {category.description && (
+                          <p className="text-sm text-muted-foreground">{category.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(category)}
+                        className="h-8 w-8 p-0 hover:bg-muted"
                       >
-                        {getTranslatedTagName(tag)}
-                      </Badge>
-                    ))}
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(category.id)}
+                        className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  
-                  {/* User tag management */}
-                  <div className="mt-3">
-                    <TagInput
-                      tags={userTagsForCategory.map(tag => ({
-                        id: tag.id,
-                        name: getTranslatedTagName({
-                          id: tag.id,
-                          name_pt: tag.tag_name,
-                          name_en: tag.tag_name_en || tag.tag_name,
-                          name_es: tag.tag_name_es || tag.tag_name,
-                          color: tag.color
-                        }),
-                        color: tag.color,
-                        removable: true
-                      }))}
-                      onAddTag={async (tagName: string) => {
-                        await addUserTag(category.id, tagName);
-                        refetchUserTags();
-                        fetchCategoryTags();
-                        return true;
-                      }}
-                      onRemoveTag={async (tagId: string) => {
-                        await removeUserTag(tagId, category.id);
-                        refetchUserTags();
-                        fetchCategoryTags();
-                      }}
-                      placeholder="Adicionar tag personalizada..."
-                    />
+
+                  {/* Tags Section */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Tag className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Tags Disponíveis
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        {systemTags
+                          .filter(tag => !excludedTagIds.includes(tag.id))
+                          .map(tag => (
+                            <Badge
+                              key={tag.id}
+                              variant="secondary"
+                              className="text-xs cursor-pointer hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                            onClick={() => excludeSystemTag(tag.id, category.id)}
+                            >
+                              {getTranslatedTagName(tag)}
+                              <X className="h-3 w-3 ml-1" />
+                            </Badge>
+                          ))
+                        }
+                        
+                        {/* User tags with different styling */}
+                        {userTagsForCategory.map(tag => (
+                          <Badge
+                            key={tag.id}
+                            variant="default"
+                            className="text-xs cursor-pointer bg-primary/10 text-primary border-primary/20 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                            onClick={() => removeUserTag(tag.id, category.id)}
+                          >
+                            {getTranslatedTagName({
+                              id: tag.id,
+                              name_pt: tag.tag_name,
+                              name_en: tag.tag_name_en || tag.tag_name,
+                              name_es: tag.tag_name_es || tag.tag_name,
+                              color: tag.color
+                            }, language)}
+                            <X className="h-3 w-3 ml-1" />
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      {/* Add tag input inline */}
+                      <TagInput
+                        tags={[]}
+                        onAddTag={async (tagName: string) => {
+                          const success = await addUserTag(category.id, tagName);
+                          if (success) {
+                            refetchUserTags();
+                            fetchCategoryTags();
+                          }
+                          return success;
+                        }}
+                        onRemoveTag={() => {}}
+                        placeholder="Adicionar tag..."
+                        className="mt-2"
+                        maxTags={15}
+                      />
+                    </div>
+
+                    {/* Hidden tags section (if any) */}
+                    {excludedTagIds.length > 0 && (
+                      <div className="pt-3 border-t border-border/30">
+                        <div className="flex items-center gap-2 mb-2">
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            Tags Ocultas ({excludedTagIds.length})
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {systemTags
+                            .filter(tag => excludedTagIds.includes(tag.id))
+                            .map(tag => (
+                              <Badge
+                                key={tag.id}
+                                variant="outline"
+                                className="text-xs cursor-pointer opacity-50 hover:opacity-100 hover:bg-muted transition-all"
+                            onClick={() => restoreSystemTag(tag.id, category.id)}
+                              >
+                                {getTranslatedTagName(tag)}
+                                <Plus className="h-3 w-3 ml-1" />
+                              </Badge>
+                            ))
+                          }
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -614,78 +669,69 @@ const CategoryManagerContent = () => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Gerenciar Categorias</h2>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => {
-                  setEditingCategory(null);
-                  setNewCategoryName("");
-                  setNewCategoryColor("#6366f1");
-                  setNewCategoryType("expense");
-                }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Categoria
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingCategory ? "Editar Categoria" : "Nova Categoria"}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {editingCategory 
-                      ? "Modifique os dados da categoria existente"
-                      : "Crie uma nova categoria para organizar suas transações"
-                    }
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Nome da Categoria</Label>
-                    <Input
-                      id="name"
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                      placeholder="Ex: Alimentação, Transporte..."
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="type">Tipo</Label>
-                    <Select value={newCategoryType} onValueChange={(value: "income" | "expense") => setNewCategoryType(value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="expense">Despesa (Saída)</SelectItem>
-                        <SelectItem value="income">Receita (Entrada)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="color">Cor</Label>
-                    <Input
-                      id="color"
-                      type="color"
-                      value={newCategoryColor}
-                      onChange={(e) => setNewCategoryColor(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button type="submit" className="flex-1">
-                      {editingCategory ? "Atualizar" : "Criar"}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancelar
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
           </div>
+          
+          {/* Dialog for adding/editing categories */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCategory ? "Editar Categoria" : "Nova Categoria"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingCategory 
+                    ? "Modifique os dados da categoria existente"
+                    : "Crie uma nova categoria para organizar suas transações"
+                  }
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Nome da Categoria</Label>
+                  <Input
+                    id="name"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Ex: Alimentação, Transporte..."
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="type">Tipo</Label>
+                  <Select value={newCategoryType} onValueChange={(value: "income" | "expense") => setNewCategoryType(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="expense">Despesa (Saída)</SelectItem>
+                      <SelectItem value="income">Receita (Entrada)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="color">Cor</Label>
+                  <Input
+                    id="color"
+                    type="color"
+                    value={newCategoryColor}
+                    onChange={(e) => setNewCategoryColor(e.target.value)}
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1">
+                    {editingCategory ? "Atualizar" : "Criar"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
           {/* Seção de Saídas (Expenses) */}
           {renderCategorySection(
