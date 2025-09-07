@@ -288,7 +288,21 @@ const CategoryManagerContent = () => {
 
   const fetchCategoryTags = async () => {
     try {
-      // Fetch all system tags for all categories
+      console.log('🏷️ Fetching category tags...');
+      
+      // Fetch all system tags by matching default category names to user categories
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get user categories to match with default categories
+      const { data: userCategories } = await supabase
+        .from('categories')
+        .select('id, name, default_category_id')
+        .eq('user_id', user.id);
+
+      if (!userCategories) return;
+
+      // Fetch category tag relations through default categories
       const { data: systemTagsData, error: systemError } = await supabase
         .from('category_tag_relations')
         .select(`
@@ -310,22 +324,29 @@ const CategoryManagerContent = () => {
 
       const tagsMap: Record<string, CategoryTag[]> = {};
       
-      // Process system tags
-      if (systemTagsData) {
+      // Map system tags to user categories through default_category_id
+      if (systemTagsData && userCategories) {
         systemTagsData.forEach((relation: any) => {
-          const categoryId = relation.category_id;
+          const defaultCategoryId = relation.category_id;
           const tag = relation.category_tags;
           
-          if (!tagsMap[categoryId]) {
-            tagsMap[categoryId] = [];
-          }
+          // Find user categories that match this default category
+          const matchingUserCategories = userCategories.filter(
+            uc => uc.default_category_id === defaultCategoryId
+          );
           
-          tagsMap[categoryId].push({
-            id: tag.id,
-            name_pt: tag.name_pt,
-            name_en: tag.name_en,
-            name_es: tag.name_es,
-            color: tag.color
+          matchingUserCategories.forEach(userCat => {
+            if (!tagsMap[userCat.id]) {
+              tagsMap[userCat.id] = [];
+            }
+            
+            tagsMap[userCat.id].push({
+              id: tag.id,
+              name_pt: tag.name_pt,
+              name_en: tag.name_en,
+              name_es: tag.name_es,
+              color: tag.color
+            });
           });
         });
       }
@@ -349,6 +370,7 @@ const CategoryManagerContent = () => {
         });
       }
 
+      console.log('🏷️ Tags map created:', tagsMap);
       setCategoryTags(tagsMap);
     } catch (error) {
       console.error('Error in fetchCategoryTags:', error);
@@ -505,15 +527,15 @@ const CategoryManagerContent = () => {
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" onClick={() => {
-                setEditingCategory(null);
-                setNewCategoryName("");
-                setNewCategoryColor("#6366f1");
-                setNewCategoryType(title.includes('Entradas') ? 'income' : 'expense');
-              }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar
-              </Button>
+               <Button variant="outline" size="sm" onClick={() => {
+                 setEditingCategory(null);
+                 setNewCategoryName("");
+                 setNewCategoryColor("#6366f1");
+                 setNewCategoryType(title.includes('Entradas') ? 'income' : 'expense');
+               }}>
+                 <Plus className="h-4 w-4 mr-2" />
+                 Adicionar Categoria
+               </Button>
             </DialogTrigger>
           </Dialog>
         </div>
@@ -562,97 +584,50 @@ const CategoryManagerContent = () => {
                     </div>
                   </div>
 
-                  {/* Tags Section */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Tag className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Tags Disponíveis
-                        </span>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2">
-                        {systemTags
-                          .filter(tag => !excludedTagIds.includes(tag.id))
-                          .map(tag => (
-                            <Badge
-                              key={tag.id}
-                              variant="secondary"
-                              className="text-xs cursor-pointer hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
-                            onClick={() => excludeSystemTag(tag.id, category.id)}
-                            >
-                              {getTranslatedTagName(tag)}
-                              <X className="h-3 w-3 ml-1" />
-                            </Badge>
-                          ))
-                        }
-                        
-                        {/* User tags with different styling */}
-                        {userTagsForCategory.map(tag => (
+                  {/* Tags Section - Aparentes e Simples */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">Tags Sugeridas</span>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {systemTags.length > 0 ? (
+                        systemTags.map(tag => (
                           <Badge
                             key={tag.id}
-                            variant="default"
-                            className="text-xs cursor-pointer bg-primary/10 text-primary border-primary/20 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
-                            onClick={() => removeUserTag(tag.id, category.id)}
+                            variant="outline"
+                            className="text-xs bg-muted/30 hover:bg-primary/10 border-primary/20 text-primary transition-colors"
+                            style={{ borderColor: tag.color + '40', color: tag.color }}
                           >
-                            {getTranslatedTagName({
-                              id: tag.id,
-                              name_pt: tag.tag_name,
-                              name_en: tag.tag_name_en || tag.tag_name,
-                              name_es: tag.tag_name_es || tag.tag_name,
-                              color: tag.color
-                            }, language)}
-                            <X className="h-3 w-3 ml-1" />
+                            {getTranslatedTagName(tag)}
                           </Badge>
-                        ))}
-                      </div>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">
+                          Carregando tags para esta categoria...
+                        </span>
+                      )}
                       
-                      {/* Add tag input inline */}
-                      <TagInput
-                        tags={[]}
-                        onAddTag={async (tagName: string) => {
-                          const success = await addUserTag(category.id, tagName);
-                          if (success) {
-                            refetchUserTags();
-                            fetchCategoryTags();
-                          }
-                          return success;
-                        }}
-                        onRemoveTag={() => {}}
-                        placeholder="Adicionar tag..."
-                        className="mt-2"
-                        maxTags={15}
-                      />
+                      {/* User tags with distinctive styling */}
+                      {userTagsForCategory.map(tag => (
+                        <Badge
+                          key={tag.id}
+                          variant="default"
+                          className="text-xs bg-primary text-primary-foreground"
+                          onClick={() => removeUserTag(tag.id, category.id)}
+                        >
+                          {getTranslatedTagName({
+                            id: tag.id,
+                            name_pt: tag.tag_name,
+                            name_en: tag.tag_name_en || tag.tag_name,
+                            name_es: tag.tag_name_es || tag.tag_name,
+                            color: tag.color
+                          }, language)}
+                          <X className="h-3 w-3 ml-1 cursor-pointer" />
+                        </Badge>
+                      ))}
                     </div>
-
-                    {/* Hidden tags section (if any) */}
-                    {excludedTagIds.length > 0 && (
-                      <div className="pt-3 border-t border-border/30">
-                        <div className="flex items-center gap-2 mb-2">
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            Tags Ocultas ({excludedTagIds.length})
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {systemTags
-                            .filter(tag => excludedTagIds.includes(tag.id))
-                            .map(tag => (
-                              <Badge
-                                key={tag.id}
-                                variant="outline"
-                                className="text-xs cursor-pointer opacity-50 hover:opacity-100 hover:bg-muted transition-all"
-                            onClick={() => restoreSystemTag(tag.id, category.id)}
-                              >
-                                {getTranslatedTagName(tag)}
-                                <Plus className="h-3 w-3 ml-1" />
-                              </Badge>
-                            ))
-                          }
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </Card>
@@ -720,10 +695,27 @@ const CategoryManagerContent = () => {
                     onChange={(e) => setNewCategoryColor(e.target.value)}
                   />
                 </div>
+
+                {/* Tag Input integrado no formulário */}
+                {!editingCategory && (
+                  <div className="space-y-2">
+                    <Label>Tags Personalizadas (Opcional)</Label>
+                    <TagInput
+                      tags={[]}
+                      onAddTag={async (tagName: string) => true}
+                      onRemoveTag={() => {}}
+                      placeholder="Adicione tags para esta categoria..."
+                      maxTags={10}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Tags serão adicionadas automaticamente baseadas no tipo de categoria
+                    </p>
+                  </div>
+                )}
                 
                 <div className="flex gap-2">
                   <Button type="submit" className="flex-1">
-                    {editingCategory ? "Atualizar" : "Criar"}
+                    {editingCategory ? "Atualizar Categoria" : "Criar Categoria"}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancelar
