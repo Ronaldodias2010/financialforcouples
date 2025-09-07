@@ -151,6 +151,20 @@ export const CategoryManager = () => {
       'reembolso': 'Refund',
       'veiculos': 'Vehicles',
       'consorcio': 'Consortium',
+      // Added missing category translations
+      'saidas_gastos': 'Expenses (Outgoing)',
+      'saidas': 'Expenses',
+      'gastos': 'Expenses',
+      'compras_pessoais': 'Personal Shopping',
+      'doacoes_presentes': 'Donations & Gifts',
+      'familia_filhos': 'Family & Children',
+      'lazer_entretenimento': 'Leisure & Entertainment',
+      'outros': 'Others',
+      'trabalho_negocios': 'Work & Business',
+      'entradas_receitas': 'Income (Revenue)',
+      'entradas': 'Income',
+      'receitas': 'Revenue',
+      'financas_servicos': 'Finance & Services',
     },
     es: {
       'alimentacao': 'Comida',
@@ -231,6 +245,20 @@ export const CategoryManager = () => {
       'reimbursement': 'Reembolso',
       'veiculos': 'Vehículos',
       'consorcio': 'Consorcio',
+      // Added missing category translations
+      'saidas_gastos': 'Gastos (Salidas)',
+      'saidas': 'Gastos',
+      'gastos': 'Gastos',
+      'compras_pessoais': 'Compras Personales',
+      'doacoes_presentes': 'Donaciones y Regalos',
+      'familia_filhos': 'Familia e Hijos',
+      'lazer_entretenimento': 'Ocio y Entretenimiento',
+      'outros': 'Otros',
+      'trabalho_negocios': 'Trabajo y Negocios',
+      'entradas_receitas': 'Ingresos (Entradas)',
+      'entradas': 'Ingresos',
+      'receitas': 'Ingresos',
+      'financas_servicos': 'Finanzas y Servicios',
     }
   };
 
