@@ -461,8 +461,8 @@ const CategoryManagerContent = () => {
                            >
                               {getTranslatedTagName(tag, language)}
                             </Badge>
-                          ))
-                        )}
+                            ))
+                          ) : null}
                        
                        {/* User tags with distinctive styling */}
                        {userTagsForCategory.map(tag => (
