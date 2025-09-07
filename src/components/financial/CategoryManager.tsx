@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
 import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
+import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { TagInput } from "@/components/ui/TagInput";
 import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -634,7 +635,7 @@ export const CategoryManager = () => {
                       }}
                     />
                     <h4 className="font-semibold text-foreground text-lg">
-                      {translateCategoryName(category.name, language)}
+                      {translateCategoryUtil(category.name, language)}
                     </h4>
                   </div>
                   
@@ -902,7 +903,7 @@ export const CategoryManager = () => {
         {/* Seção de Saídas (Expenses) */}
         {renderCategorySection(
           expenseCategories,
-          "📤 Saídas (Gastos)",
+          `📤 ${translateCategoryUtil('Saídas (Gastos)', language)}`,
           <ArrowUpCircle className="h-5 w-5 text-destructive" />,
           true
         )}
@@ -910,7 +911,7 @@ export const CategoryManager = () => {
         {/* Seção de Entradas (Income) */}
         {renderCategorySection(
           incomeCategories,
-          "📥 Entradas (Receitas)",
+          `📥 ${translateCategoryUtil('Entradas (Receitas)', language)}`,
           <ArrowDownCircle className="h-5 w-5 text-primary" />,
           false
         )}
