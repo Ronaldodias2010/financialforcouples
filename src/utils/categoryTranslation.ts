@@ -124,19 +124,8 @@ const categoryTranslations: CategoryTranslations = {
   'reforma_construcao': { pt: 'Reforma & Construção', en: 'Renovation & Construction', es: 'Renovación y Construcción' },
   'reforma_e_construcao': { pt: 'Reforma & Construção', en: 'Renovation & Construction', es: 'Renovación y Construcción' },
   'tecnologia_assinaturas_digitais': { pt: 'Tecnologia & Assinaturas Digitais', en: 'Technology & Digital Subscriptions', es: 'Tecnología y Suscripciones Digitales' },
-   'tecnologia_e_assinaturas_digitais': { pt: 'Tecnologia & Assinaturas Digitais', en: 'Technology & Digital Subscriptions', es: 'Tecnología y Suscripciones Digitales' },
-   'receita_extraordinaria': { pt: 'Receita Extraordinária', en: 'Extraordinary Income', es: 'Ingresos Extraordinarios' },
-   'renda_de_trabalho_freelance': { pt: 'Renda de trabalho freelance', en: 'Freelance work income', es: 'Ingresos de trabajo freelance' },
-   'renda_de_investimentos': { pt: 'Renda de investimentos', en: 'Investment income', es: 'Ingresos de inversiones' },
-   'receitas_nao_recorrentes_e_extraordinarias': { pt: 'Receitas não recorrentes e extraordinárias', en: 'Non-recurring and extraordinary income', es: 'Ingresos no recurrentes y extraordinarios' },
-   'renda_de_salario_e_trabalho': { pt: 'Renda de salário e trabalho', en: 'Salary and work income', es: 'Ingresos de salario y trabajo' },
-   'bonus_e_gratificacoes': { pt: 'Bônus e gratificações', en: 'Bonuses and gratuities', es: 'Bonificaciones y gratificaciones' },
-   'renda_de_vendas': { pt: 'Renda de vendas', en: 'Sales income', es: 'Ingresos de ventas' },
-   'gastos_com_animais_de_estimacao': { pt: 'Gastos com animais de estimação', en: 'Pet expenses', es: 'Gastos en mascotas' },
-   'gastos_com_beleza_e_cuidados_pessoais': { pt: 'Gastos com beleza e cuidados pessoais', en: 'Beauty and personal care expenses', es: 'Gastos en belleza y cuidado personal' },
-   'gastos_com_reformas_e_construcao': { pt: 'Gastos com reformas e construção', en: 'Renovation and construction expenses', es: 'Gastos en renovaciones y construcción' },
-   'gastos_com_tecnologia_e_servicos_digitais': { pt: 'Gastos com tecnologia e serviços digitais', en: 'Technology and digital services expenses', es: 'Gastos en tecnología y servicios digitales' },
-   'despesas_com_viagens_e_turismo': { pt: 'Despesas com viagens e turismo', en: 'Travel and tourism expenses', es: 'Gastos en viajes y turismo' }
+  'tecnologia_e_assinaturas_digitais': { pt: 'Tecnologia & Assinaturas Digitais', en: 'Technology & Digital Subscriptions', es: 'Tecnología y Suscripciones Digitales' },
+  'receita_extraordinaria': { pt: 'Receita Extraordinária', en: 'Extraordinary Income', es: 'Ingresos Extraordinarios' }
 };
 
 // Function to normalize category names (same as used in CategoryManager)
