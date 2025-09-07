@@ -133,9 +133,13 @@ const CategoryManagerContent = () => {
 
       if (systemTagsError) throw systemTagsError;
 
-      // For now, skip the mappings since the table might not exist
-      // Just set empty tags for all categories
-      setCategoryTags({});
+      // Map all system tags to each category (simple fallback)
+      const allCategories = [...incomeCategories, ...expenseCategories];
+      const tagsByCategory: Record<string, CategoryTag[]> = {};
+      allCategories.forEach(cat => {
+        tagsByCategory[cat.id] = (systemTagsData as unknown as CategoryTag[]) || [];
+      });
+      setCategoryTags(tagsByCategory);
 
     } catch (error) {
       console.error("Error fetching category tags:", error);
@@ -199,6 +203,13 @@ const CategoryManagerContent = () => {
     fetchCategoryTags();
     ensureDefaultCategories();
   }, []);
+
+  // Refresh system tags mapping once categories are loaded
+  useEffect(() => {
+    if (incomeCategories.length > 0 || expenseCategories.length > 0) {
+      fetchCategoryTags();
+    }
+  }, [incomeCategories.length, expenseCategories.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -347,36 +358,40 @@ const CategoryManagerContent = () => {
                         )}
                       </div>
                     </div>
-                    
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(category)}
                         className="h-8 w-8 p-0 hover:bg-muted"
+                        title={t('common.edit')}
+                        aria-label={t('common.edit')}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setTagEditModal({
-                            isOpen: true,
-                            categoryId: category.id,
-                            categoryName: category.name
-                          })}
-                          className="h-8 w-8 p-0 hover:bg-muted"
-                          title="Editar tags"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(category.id)}
-                          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setTagEditModal({
+                          isOpen: true,
+                          categoryId: category.id,
+                          categoryName: category.name
+                        })}
+                        className="h-8 w-8 p-0 hover:bg-muted"
+                        title={t('tags.title')}
+                        aria-label={t('tags.title')}
+                      >
+                        <Tag className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(category.id)}
+                        className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                        title={t('common.delete')}
+                        aria-label={t('common.delete')}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
