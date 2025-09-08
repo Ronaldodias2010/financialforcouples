@@ -99,12 +99,28 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     }
   };
 
+  const getCorrectPaymentMethod = async (): Promise<string> => {
+    if (paymentMethod === 'cash') return 'cash';
+    if (paymentMethod === 'account') return 'bank_transfer';
+    
+    if (paymentMethod === 'card' && selectedCard) {
+      // Get the card type to determine if it's credit or debit
+      const selectedCardData = cards.find(card => card.id === selectedCard);
+      if (selectedCardData) {
+        return selectedCardData.card_type === 'credit' ? 'credit_card' : 'debit_card';
+      }
+    }
+    
+    return 'cash'; // fallback
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) return;
 
     let result;
+    const correctPaymentMethod = await getCorrectPaymentMethod();
 
     if (expense.type === 'manual_future' && expense.manualFutureExpenseId) {
       // Handle manual future expense payment
@@ -113,7 +129,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         paymentDate,
         accountId: paymentMethod === 'account' ? selectedAccount : undefined,
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
-        paymentMethod,
+        paymentMethod: correctPaymentMethod,
       });
     } else {
       // Handle other types of expenses
@@ -125,7 +141,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         paymentDate,
         amount: expense.amount,
         description: `${expense.description}${notes ? ` - ${notes}` : ''}`,
-        paymentMethod,
+        paymentMethod: correctPaymentMethod,
         accountId: paymentMethod === 'account' ? selectedAccount : undefined,
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
       };
