@@ -101,7 +101,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
   const getCorrectPaymentMethod = async (): Promise<string> => {
     if (paymentMethod === 'cash') return 'cash';
-    if (paymentMethod === 'account') return 'account_transfer';
+    if (paymentMethod === 'account') return 'deposit'; // FIXED: Map account to deposit so it appears in dashboard
     
     if (paymentMethod === 'card' && selectedCard) {
       // Get the card type to determine if it's credit or debit
@@ -114,6 +114,31 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     return 'cash'; // fallback
   };
 
+  const getCardPaymentCategory = async (): Promise<string | undefined> => {
+    if (!user || expense.type !== 'card_payment') return undefined;
+    
+    try {
+      // Find "Pagamento de Cartão de Crédito" category
+      const { data: categories, error } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .eq('category_type', 'expense');
+      
+      if (error) throw error;
+      
+      const cardPaymentCategory = categories?.find(cat => 
+        cat.name.toLowerCase().includes('pagamento') && 
+        cat.name.toLowerCase().includes('cartão')
+      );
+      
+      return cardPaymentCategory?.id;
+    } catch (error) {
+      console.error('Error finding card payment category:', error);
+      return undefined;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -121,6 +146,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
     let result;
     const correctPaymentMethod = await getCorrectPaymentMethod();
+    const cardPaymentCategoryId = await getCardPaymentCategory();
 
     if (expense.type === 'manual_future' && expense.manualFutureExpenseId) {
       // Handle manual future expense payment
@@ -144,6 +170,8 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         paymentMethod: correctPaymentMethod,
         accountId: paymentMethod === 'account' ? selectedAccount : undefined,
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
+        // FIXED: Force card payment category for card payments to ensure proper dashboard display
+        categoryId: expense.type === 'card_payment' ? cardPaymentCategoryId : undefined,
       };
 
       result = await processPayment(paymentParams);

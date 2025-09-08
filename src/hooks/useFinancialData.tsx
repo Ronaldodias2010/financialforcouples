@@ -204,6 +204,7 @@ export const useFinancialData = () => {
         console.log('❌ User is not part of a couple - fetching only own transactions');
       }
 
+      // FIXED: Simplified query to include ALL transactions in the month by transaction_date
       const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -212,7 +213,8 @@ export const useFinancialData = () => {
           cards(name)
         `)
         .in('user_id', userIds)
-        .or(`and(type.eq.income,transaction_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},transaction_date.lte.${format(endOfMonth, 'yyyy-MM-dd')}),and(type.eq.expense,payment_method.neq.credit_card,transaction_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},transaction_date.lte.${format(endOfMonth, 'yyyy-MM-dd')}),and(type.eq.expense,payment_method.eq.credit_card,created_at.gte.${format(startOfMonth, 'yyyy-MM-dd')},created_at.lte.${format(endOfMonth, 'yyyy-MM-dd')})`)
+        .gte('transaction_date', format(startOfMonth, 'yyyy-MM-dd'))
+        .lte('transaction_date', format(endOfMonth, 'yyyy-MM-dd'))
         .order('transaction_date', { ascending: false });
 
       if (error) throw error;
