@@ -44,11 +44,26 @@ export const CashAccountCard = ({ cashAccounts, className }: CashAccountCardProp
 
   const displayCurrency = getDisplayCurrency();
 
+  // Group accounts by currency and sum balances to avoid duplicates
+  const groupedAccounts = cashAccounts.reduce((acc, account) => {
+    const existing = acc.find(item => item.currency === account.currency);
+    if (existing) {
+      existing.balance += account.balance;
+    } else {
+      acc.push({
+        id: account.id,
+        currency: account.currency,
+        balance: account.balance
+      });
+    }
+    return acc;
+  }, [] as Array<{ id: string; currency: CurrencyCode; balance: number; }>);
+
   // Find the main cash account based on user's language preference
-  const mainAccount = cashAccounts.find(acc => acc.currency === displayCurrency) || 
-                     cashAccounts.find(acc => acc.currency === 'BRL') || 
-                     cashAccounts[0];
-  const otherAccounts = cashAccounts.filter(acc => acc.id !== mainAccount?.id);
+  const mainAccount = groupedAccounts.find(acc => acc.currency === displayCurrency) || 
+                     groupedAccounts.find(acc => acc.currency === 'BRL') || 
+                     groupedAccounts[0];
+  const otherAccounts = groupedAccounts.filter(acc => acc.currency !== mainAccount?.currency);
 
   if (!mainAccount) {
     return (
