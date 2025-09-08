@@ -126,7 +126,12 @@ const categoryTranslations: CategoryTranslations = {
   'reforma_e_construcao': { pt: 'Reforma & Construção', en: 'Renovation & Construction', es: 'Renovación y Construcción' },
   'tecnologia_assinaturas_digitais': { pt: 'Tecnologia & Assinaturas Digitais', en: 'Technology & Digital Subscriptions', es: 'Tecnología y Suscripciones Digitales' },
   'tecnologia_e_assinaturas_digitais': { pt: 'Tecnologia & Assinaturas Digitais', en: 'Technology & Digital Subscriptions', es: 'Tecnología y Suscripciones Digitales' },
-  'receita_extraordinaria': { pt: 'Receita Extraordinária', en: 'Extraordinary Income', es: 'Ingresos Extraordinarios' }
+  'receita_extraordinaria': { pt: 'Receita Extraordinária', en: 'Extraordinary Income', es: 'Ingresos Extraordinarios' },
+  
+  // Withdrawal/Cash categories
+  'saque': { pt: 'Saque', en: 'Withdrawal', es: 'Retiro' },
+  'withdrawal': { pt: 'Saque', en: 'Withdrawal', es: 'Retiro' },
+  'retiro': { pt: 'Saque', en: 'Withdrawal', es: 'Retiro' }
 };
 
 // Function to normalize category names (same as used in CategoryManager)
