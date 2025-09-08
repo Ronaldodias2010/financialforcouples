@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { parseMonetaryValue, formatMonetaryValue } from "@/utils/monetary";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCashBalance } from "@/hooks/useCashBalance";
@@ -506,7 +507,7 @@ const getAccountOwnerName = (account: Account) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const transactionAmount = parseFloat(parseFloat(amount).toFixed(2));
+      const transactionAmount = formatMonetaryValue(parseMonetaryValue(amount));
 
       // Determine owner_user based on couple relationship
       let ownerUser = "user1"; // default

@@ -130,8 +130,8 @@ data.forEach((row) => {
       result = amountInBRL * exchangeRates[toCurrency];
     }
     
-    // Apply consistent rounding to 2 decimal places
-    return Math.round(result * 100) / 100;
+    // Apply more precise rounding to avoid floating point issues
+    return Math.round((result + Number.EPSILON) * 100) / 100;
   };
 
   const formatCurrency = (amount: number, currency: CurrencyCode): string => {
