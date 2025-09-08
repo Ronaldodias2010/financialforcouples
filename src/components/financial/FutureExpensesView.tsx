@@ -173,6 +173,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       // Buscar gastos futuros manuais (já filtrados por viewMode no hook)
       const manualExpenses = await fetchManualFutureExpenses(viewMode);
       for (const manualExpense of manualExpenses) {
+        // Skip paid manual expenses
+        if (manualExpense.is_paid) continue;
+        
         const dueStatus = getDueStatus(manualExpense.due_date);
         expenses.push({
           id: manualExpense.id,
@@ -183,8 +186,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           category: manualExpense.category?.name || t('common.noCategory'),
           owner_user: manualExpense.owner_user,
           manualFutureExpenseId: manualExpense.id,
-          isPaid: manualExpense.is_paid,
-          allowsPayment: !manualExpense.is_paid,
+          isPaid: false,
+          allowsPayment: true,
           dueStatus,
         });
       }
@@ -206,6 +209,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           if (!shouldInclude) continue;
           
           const isPaid = await isExpensePaid(payment.recurring_expense_id, payment.installment_transaction_id, payment.original_due_date);
+          
+          // Skip paid future payments
+          if (isPaid) continue;
           
           // Buscar nome da categoria se tiver category_id
           let categoryName = t('common.noCategory');
@@ -232,7 +238,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
              recurringExpenseId: payment.recurring_expense_id,
              installmentTransactionId: payment.installment_transaction_id,
              cardPaymentInfo: payment.card_payment_info,
-             isPaid,
+             isPaid: false,
              allowsPayment: true, // Pagamentos futuros PODEM ser pagos
            });
         }
@@ -249,6 +255,10 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         if (!shouldInclude) continue;
 
         const isPaid = await isExpensePaid(undefined, installment.id, installment.transaction_date);
+        
+        // Skip paid installments
+        if (isPaid) continue;
+        
         const transactionMonth = format(new Date(installment.transaction_date), 'yyyy-MM');
         const isCurrentMonth = transactionMonth === currentMonth;
         const installmentNumber = installment.installment_number || 1;
@@ -278,7 +288,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           installment_info: `${installment.installment_number}/${installment.total_installments}`,
           owner_user: ownerUser,
           installmentTransactionId: installment.id,
-          isPaid,
+          isPaid: false,
           allowsPayment, // Parcelas de cartão de crédito não podem ser pagas individualmente
         });
       }
@@ -302,19 +312,23 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           if (currentDueDate >= now) {
             const dueDate = format(currentDueDate, 'yyyy-MM-dd');
             const isPaid = await isExpensePaid(recur.id, undefined, dueDate);
-            expenses.push({
-              id: `${recur.id}-installment-${installmentCount}`,
-              description: recur.name,
-              amount: recur.amount,
-              due_date: dueDate,
-              type: 'recurring',
-              category: recur.categories?.name || t('common.noCategory'),
-              card_name: recur.cards?.name || recur.accounts?.name,
-              owner_user: recur.cards?.owner_user || recur.owner_user,
-              recurringExpenseId: recur.id,
-              isPaid,
-              allowsPayment: true, // Gastos recorrentes PODEM ser pagos
-            });
+            
+            // Skip paid recurring expenses
+            if (!isPaid) {
+              expenses.push({
+                id: `${recur.id}-installment-${installmentCount}`,
+                description: recur.name,
+                amount: recur.amount,
+                due_date: dueDate,
+                type: 'recurring',
+                category: recur.categories?.name || t('common.noCategory'),
+                card_name: recur.cards?.name || recur.accounts?.name,
+                owner_user: recur.cards?.owner_user || recur.owner_user,
+                recurringExpenseId: recur.id,
+                isPaid: false,
+                allowsPayment: true, // Gastos recorrentes PODEM ser pagos
+              });
+            }
           }
           
           // Calcular próxima data de vencimento

@@ -101,7 +101,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
   const getCorrectPaymentMethod = async (): Promise<string> => {
     if (paymentMethod === 'cash') return 'cash';
-    if (paymentMethod === 'account') return 'bank_transfer';
+    if (paymentMethod === 'account') return 'account_transfer';
     
     if (paymentMethod === 'card' && selectedCard) {
       // Get the card type to determine if it's credit or debit

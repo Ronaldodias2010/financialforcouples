@@ -112,11 +112,14 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
       return;
     }
 
+    // Map 'account' to 'deposit' for transaction validation
+    const mappedPaymentMethod = paymentMethod === 'account' ? 'deposit' : paymentMethod;
+    
     const result = await processCardPayment({
       cardId: cardInfo.id,
       paymentAmount: amount,
       paymentDate,
-      paymentMethod,
+      paymentMethod: mappedPaymentMethod,
       accountId: paymentMethod === 'account' ? selectedAccount : undefined,
       notes,
     });

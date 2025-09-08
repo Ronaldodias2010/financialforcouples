@@ -30,12 +30,15 @@ export const useCardPayments = () => {
     setIsProcessing(true);
     
     try {
+      // Sanitize payment method for transactions table constraint
+      const sanitizedPaymentMethod = (params.paymentMethod === 'account') ? 'deposit' : (params.paymentMethod || 'cash');
+      
       const { data, error } = await supabase.rpc('process_card_payment', {
         p_user_id: user.id,
         p_card_id: params.cardId,
         p_payment_amount: params.paymentAmount,
         p_payment_date: params.paymentDate || new Date().toISOString().split('T')[0],
-        p_payment_method: params.paymentMethod || 'cash',
+        p_payment_method: sanitizedPaymentMethod,
         p_account_id: params.accountId || null,
         p_notes: params.notes || null,
       });
