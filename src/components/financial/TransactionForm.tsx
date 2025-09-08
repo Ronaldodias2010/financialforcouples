@@ -624,6 +624,21 @@ const invTxn: TablesInsert<'transactions'> = {
       // Handle SAQUE (withdrawal) - expenses only
       if (type === "expense" && paymentMethod === "saque") {
         try {
+          console.log("🔄 Processando saque com parâmetros:", {
+            p_user_id: user.id,
+            p_amount: transactionAmount,
+            p_currency: currency,
+            p_source_account_id: saqueSourceType === "account" ? saqueSourceAccountId : null,
+            p_source_card_id: saqueSourceType === "card" ? saqueSourceAccountId : null,
+            saqueSourceType,
+            saqueSourceAccountId
+          });
+
+          // Validar se foi selecionada uma fonte para o saque
+          if (!saqueSourceAccountId) {
+            throw new Error("Selecione uma conta ou cartão para realizar o saque");
+          }
+
           // Use the process_withdrawal function to handle both account and card withdrawals
           const { data: withdrawalResult, error: withdrawalError } = await supabase.rpc(
             'process_withdrawal',
@@ -637,7 +652,12 @@ const invTxn: TablesInsert<'transactions'> = {
             }
           );
           
-          if (withdrawalError) throw withdrawalError;
+          console.log("✅ Resultado do saque:", { withdrawalResult, withdrawalError });
+          
+          if (withdrawalError) {
+            console.error("❌ Erro no saque:", withdrawalError);
+            throw withdrawalError;
+          }
           
           toast({ 
             title: t('transactionForm.success'), 
@@ -656,9 +676,25 @@ const invTxn: TablesInsert<'transactions'> = {
           setPaymentMethod("cash"); setAccountId(""); setSaqueSourceAccountId(""); setSaqueSourceType("account"); setCardId(""); setCurrency(userPreferredCurrency);
           return;
         } catch (error: any) {
+          console.error("❌ Erro completo no saque:", error);
+          
+          let errorMessage = "Erro ao processar saque";
+          
+          if (error.message) {
+            if (error.message.includes("insuficiente")) {
+              errorMessage = "Saldo insuficiente para realizar o saque";
+            } else if (error.message.includes("encontrada")) {
+              errorMessage = "Conta de dinheiro não encontrada. Verifique se você possui uma conta de dinheiro na moeda " + currency;
+            } else if (error.message.includes("fonte")) {
+              errorMessage = "Erro na fonte do saque. Verifique a conta ou cartão selecionado";
+            } else {
+              errorMessage = error.message;
+            }
+          }
+          
           toast({
             title: "Erro no saque",
-            description: error.message || "Erro ao processar saque",
+            description: errorMessage,
             variant: "destructive",
           });
           return;

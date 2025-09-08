@@ -28,10 +28,26 @@ export const CashAccountCard = ({ cashAccounts, className }: CashAccountCardProp
     }
   };
 
+  // Get currency symbol only (without duplicating currency codes)
+  const getCurrencySymbol = (currency: CurrencyCode): string => {
+    switch (currency) {
+      case 'BRL':
+        return 'R$';
+      case 'USD':
+        return '$';
+      case 'EUR':
+        return '€';
+      default:
+        return currency;
+    }
+  };
+
   const displayCurrency = getDisplayCurrency();
 
-  // Find the main cash account (BRL or first one)
-  const mainAccount = cashAccounts.find(acc => acc.currency === 'BRL') || cashAccounts[0];
+  // Find the main cash account based on user's language preference
+  const mainAccount = cashAccounts.find(acc => acc.currency === displayCurrency) || 
+                     cashAccounts.find(acc => acc.currency === 'BRL') || 
+                     cashAccounts[0];
   const otherAccounts = cashAccounts.filter(acc => acc.id !== mainAccount?.id);
 
   if (!mainAccount) {
@@ -83,9 +99,9 @@ export const CashAccountCard = ({ cashAccounts, className }: CashAccountCardProp
           <div className="mt-3 space-y-1">
             {otherAccounts.map((account) => (
               <div key={account.id} className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">{account.currency}:</span>
+                <span className="text-muted-foreground">{getCurrencySymbol(account.currency)}</span>
                 <span className={account.balance < 0 ? "text-destructive" : "text-foreground"}>
-                  {formatCurrency(account.balance, account.currency)}
+                  {Math.abs(account.balance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             ))}
