@@ -937,7 +937,7 @@ const invTxn: TablesInsert<'transactions'> = {
             .insert({
               user_id: user.id,
               owner_user: ownerUser,
-              type,
+              type: type,
               amount: transactionAmount,
               currency: currency,
               description,
@@ -950,7 +950,12 @@ const invTxn: TablesInsert<'transactions'> = {
               account_id: paymentMethod === "credit_card" ? null : (accountId || null),
               is_installment: false,
               total_installments: null,
-              installment_number: null
+              installment_number: null,
+              // Transfer-specific metadata for third party transfers
+              beneficiary_name: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryName : null,
+              beneficiary_key: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryKey : null,
+              beneficiary_bank: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryBank : null,
+              beneficiary_account: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryAccount : null,
             });
 
           if (error) {
@@ -1008,7 +1013,7 @@ const invTxn: TablesInsert<'transactions'> = {
       }
 
       // Atualizar saldo da conta para receitas com depósito ou transferência
-      if (type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer") && accountId) {
+      if (type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer" || paymentMethod === "account_investment") && accountId) {
         const selectedAccount = accounts.find(acc => acc.id === accountId);
         if (selectedAccount) {
           const accCurrency = (selectedAccount.currency || "BRL") as CurrencyCode;
@@ -1027,7 +1032,7 @@ const invTxn: TablesInsert<'transactions'> = {
       }
 
       // Atualizar saldo da conta para despesas com débito/transferência de pagamento
-      if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && accountId) {
+      if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer" || paymentMethod === "account_transfer") && accountId) {
         const selectedAccount = accounts.find(acc => acc.id === accountId);
         if (selectedAccount) {
           const accCurrency = (selectedAccount.currency || "BRL") as CurrencyCode;
@@ -1088,6 +1093,16 @@ const invTxn: TablesInsert<'transactions'> = {
       setSaqueSourceType("account");
       setCardId("");
       setCurrency(userPreferredCurrency);
+      
+      // Reset transfer-specific fields
+      setTransferType("own_accounts");
+      setBeneficiaryName("");
+      setBeneficiaryKey("");
+      setBeneficiaryBank("");
+      setBeneficiaryAccount("");
+      setFromAccountId("");
+      setToAccountId("");
+      setInvestmentId("");
     } catch (error: any) {
       const errorMessage = error.message?.includes('transaction_payment_method__check') || error.message?.includes('violates check constraint')
         ? t('transactionForm.constraintError')
@@ -1271,39 +1286,277 @@ const invTxn: TablesInsert<'transactions'> = {
             />
           </div>
 
-          {/* Payment Method */}
-          <div>
-            <Label>{type === "income" ? t('transactionForm.receiptMethod') : t('transactionForm.paymentMethod')}</Label>
-            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as any)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('transactionForm.selectPaymentMethod')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cash">{t('transactionForm.cash')}</SelectItem>
-                {type === "income" ? (
-                  <>
-                    <SelectItem value="deposit">{t('transactionForm.deposit')}</SelectItem>
-                    <SelectItem value="transfer">{t('transactionForm.receivedTransfer')}</SelectItem>
-                    <SelectItem value="account_transfer">{t('transactionForm.accountTransfer')}</SelectItem>
-                    <SelectItem value="account_investment">{t('transactionForm.accountInvestmentTransfer')}</SelectItem>
-                  </>
-                  ) : (
-                  <>
-                    <SelectItem value="debit_card">{t('transactionForm.debitCard')}</SelectItem>
-                     <SelectItem value="payment_transfer">
-                       {t('transactionForm.paymentTransfer')}
-                       <span className="text-xs text-muted-foreground ml-1">
-                         ({language === 'pt' ? 'PIX' : 'ZELLE'})
-                       </span>
-                     </SelectItem>
-                     <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
-                     <SelectItem value="card_payment">{t('transactionForm.cardPayment')}</SelectItem>
-                     <SelectItem value="saque">{t('saque')}</SelectItem>
-                  </>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Payment Method - Hidden in Transfer Mode */}
+          {!isTransferMode && (
+            <div>
+              <Label>{type === "income" ? t('transactionForm.receiptMethod') : t('transactionForm.paymentMethod')}</Label>
+              <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('transactionForm.selectPaymentMethod')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">{t('transactionForm.cash')}</SelectItem>
+                  {type === "income" ? (
+                    <>
+                      <SelectItem value="deposit">{t('transactionForm.deposit')}</SelectItem>
+                      <SelectItem value="transfer">{t('transactionForm.receivedTransfer')}</SelectItem>
+                    </>
+                    ) : (
+                    <>
+                      <SelectItem value="debit_card">{t('transactionForm.debitCard')}</SelectItem>
+                      <SelectItem value="credit_card">{t('transactionForm.creditCard')}</SelectItem>
+                      <SelectItem value="card_payment">{t('transactionForm.cardPayment')}</SelectItem>
+                      <SelectItem value="saque">{t('saque')}</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Transfer Type Selection */}
+          {isTransferMode && (
+            <div className="space-y-4">
+              <div>
+                <Label>{t('transactionForm.transferType')}</Label>
+                <Select value={transferType} onValueChange={(value) => setTransferType(value as "own_accounts" | "investment" | "third_party_pix" | "third_party_zelle")}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('transactionForm.selectTransferType')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="own_accounts">{t('transactionForm.ownAccounts')}</SelectItem>
+                    <SelectItem value="investment">{t('transactionForm.toInvestment')}</SelectItem>
+                    <SelectItem value="third_party_pix">{t('transactionForm.pixTransfer')}</SelectItem>
+                    <SelectItem value="third_party_zelle">{t('transactionForm.zelleTransfer')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Transfer Between Own Accounts */}
+              {transferType === "own_accounts" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="fromAccount">{t('transactionForm.selectSourceAccount')}</Label>
+                    <Select value={fromAccountId} onValueChange={setFromAccountId} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{account.name}</span>
+                              <span className="text-muted-foreground ml-2">
+                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="toAccount">{t('transactionForm.selectDestinationAccount')}</Label>
+                    <Select value={toAccountId} onValueChange={setToAccountId} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.filter(acc => acc.id !== fromAccountId).map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{account.name}</span>
+                              <span className="text-muted-foreground ml-2">
+                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* Transfer to Investment */}
+              {transferType === "investment" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="fromAccount">{t('transactionForm.selectSourceAccount')}</Label>
+                    <Select value={fromAccountId} onValueChange={setFromAccountId} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{account.name}</span>
+                              <span className="text-muted-foreground ml-2">
+                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="investment">{t('transactionForm.selectInvestment')}</Label>
+                    <Select value={investmentId} onValueChange={setInvestmentId} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('transactionForm.selectInvestment')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {investments.map((inv) => (
+                          <SelectItem key={inv.id} value={inv.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{inv.name}</span>
+                              {inv.broker && (
+                                <span className="text-muted-foreground ml-2">{inv.broker}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* PIX Transfer for Third Parties */}
+              {transferType === "third_party_pix" && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="sourceAccount">{t('transactionForm.selectSourceAccount')}</Label>
+                    <Select value={accountId} onValueChange={setAccountId} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{account.name}</span>
+                              <span className="text-muted-foreground ml-2">
+                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="beneficiaryName">{t('transactionForm.beneficiaryName')}</Label>
+                    <Input
+                      id="beneficiaryName"
+                      placeholder={t('transactionForm.beneficiaryNamePlaceholder')}
+                      value={beneficiaryName}
+                      onChange={(e) => setBeneficiaryName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="pixKey">{t('transactionForm.pixKey')}</Label>
+                    <Input
+                      id="pixKey"
+                      placeholder={t('transactionForm.pixKeyPlaceholder')}
+                      value={beneficiaryKey}
+                      onChange={(e) => setBeneficiaryKey(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="beneficiaryBank">{t('transactionForm.beneficiaryBank')} ({t('transactionForm.optional')})</Label>
+                      <Input
+                        id="beneficiaryBank"
+                        placeholder={t('transactionForm.beneficiaryBankPlaceholder')}
+                        value={beneficiaryBank}
+                        onChange={(e) => setBeneficiaryBank(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="beneficiaryAccount">{t('transactionForm.beneficiaryAccount')} ({t('transactionForm.optional')})</Label>
+                      <Input
+                        id="beneficiaryAccount"
+                        placeholder={t('transactionForm.beneficiaryAccountPlaceholder')}
+                        value={beneficiaryAccount}
+                        onChange={(e) => setBeneficiaryAccount(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Zelle Transfer for Third Parties */}
+              {transferType === "third_party_zelle" && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="sourceAccount">{t('transactionForm.selectSourceAccount')}</Label>
+                    <Select value={accountId} onValueChange={setAccountId} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{account.name}</span>
+                              <span className="text-muted-foreground ml-2">
+                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="beneficiaryName">{t('transactionForm.beneficiaryName')}</Label>
+                    <Input
+                      id="beneficiaryName"
+                      placeholder={t('transactionForm.beneficiaryNamePlaceholder')}
+                      value={beneficiaryName}
+                      onChange={(e) => setBeneficiaryName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="zelleKey">{t('transactionForm.zelleKey')}</Label>
+                    <Input
+                      id="zelleKey"
+                      placeholder={t('transactionForm.zelleKeyPlaceholder')}
+                      value={beneficiaryKey}
+                      onChange={(e) => setBeneficiaryKey(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="beneficiaryBank">{t('transactionForm.beneficiaryBank')} ({t('transactionForm.optional')})</Label>
+                      <Input
+                        id="beneficiaryBank"
+                        placeholder={t('transactionForm.beneficiaryBankPlaceholder')}
+                        value={beneficiaryBank}
+                        onChange={(e) => setBeneficiaryBank(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="beneficiaryAccount">{t('transactionForm.beneficiaryAccount')} ({t('transactionForm.optional')})</Label>
+                      <Input
+                        id="beneficiaryAccount"
+                        placeholder={t('transactionForm.beneficiaryAccountPlaceholder')}
+                        value={beneficiaryAccount}
+                        onChange={(e) => setBeneficiaryAccount(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Account Selection for Income with Deposit/Transfer */}
           {type === "income" && (paymentMethod === "deposit" || paymentMethod === "transfer") && (
@@ -1329,97 +1582,6 @@ const invTxn: TablesInsert<'transactions'> = {
             </div>
           )}
 
-          {/* Account Selection for Income with Account-to-Account Transfer */}
-          {type === "income" && paymentMethod === "account_transfer" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="fromAccount">{t('transactionForm.selectSourceAccount')}</Label>
-                <Select value={fromAccountId} onValueChange={setFromAccountId} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{account.name}</span>
-                          <span className="text-muted-foreground ml-2">
-                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="toAccount">{t('transactionForm.selectDestinationAccount')}</Label>
-                <Select value={toAccountId} onValueChange={setToAccountId} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{account.name}</span>
-                          <span className="text-muted-foreground ml-2">
-                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
-          {/* Account to Investment Transfer */}
-          {type === "income" && paymentMethod === "account_investment" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="fromAccount">{t('transactionForm.selectSourceAccount')}</Label>
-                <Select value={fromAccountId} onValueChange={setFromAccountId} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{account.name}</span>
-                          <span className="text-muted-foreground ml-2">
-                            {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="investment">{t('transactionForm.selectInvestment')}</Label>
-                <Select value={investmentId} onValueChange={setInvestmentId} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('transactionForm.selectInvestment')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {investments.map((inv) => (
-                      <SelectItem key={inv.id} value={inv.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{inv.name}</span>
-                          {inv.broker && (
-                            <span className="text-muted-foreground ml-2">{inv.broker}</span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
 
           {/* Card Selection for Expenses with Credit Card */}
           {type === "expense" && paymentMethod === "credit_card" && (
@@ -1489,7 +1651,7 @@ const invTxn: TablesInsert<'transactions'> = {
           )}
 
           {/* Account Selection for Expenses with Debit Card */}
-          {type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && (
+          {type === "expense" && paymentMethod === "debit_card" && (
             <div>
               <Label htmlFor="account">{t('transactionForm.selectAccount')}</Label>
               <Select value={accountId} onValueChange={setAccountId} required>
