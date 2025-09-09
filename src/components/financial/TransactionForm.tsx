@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw, CreditCard } from "lucide-react";
+import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw, CreditCard, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { enUS, ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -136,6 +136,16 @@ const [saqueSourceType, setSaqueSourceType] = useState<"account" | "card">("acco
 const [investments, setInvestments] = useState<Investment[]>([]);
 const [cardId, setCardId] = useState("");
 const [currency, setCurrency] = useState<CurrencyCode>("BRL");
+  
+  // Transfer states
+  const [isTransferMode, setIsTransferMode] = useState(false);
+  const [transferType, setTransferType] = useState<'own_accounts' | 'investment' | 'third_party_pix' | 'third_party_zelle'>('own_accounts');
+  const [beneficiaryName, setBeneficiaryName] = useState("");
+  const [beneficiaryKey, setBeneficiaryKey] = useState("");
+  const [beneficiaryBank, setBeneficiaryBank] = useState("");
+  const [beneficiaryAgency, setBeneficiaryAgency] = useState("");
+  const [beneficiaryAccount, setBeneficiaryAccount] = useState("");
+  
   const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>("BRL");
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -1101,11 +1111,14 @@ const invTxn: TablesInsert<'transactions'> = {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Transaction Type */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               type="button"
-              variant={type === "income" ? "income" : "outline"}
-              onClick={() => setType("income")}
+              variant={type === "income" && !isTransferMode ? "income" : "outline"}
+              onClick={() => {
+                setType("income");
+                setIsTransferMode(false);
+              }}
               className="flex items-center gap-2"
             >
               <PlusCircle className="h-4 w-4" />
@@ -1113,14 +1126,47 @@ const invTxn: TablesInsert<'transactions'> = {
             </Button>
             <Button
               type="button"
-              variant={type === "expense" ? "expense" : "outline"}
-              onClick={() => setType("expense")}
+              variant={type === "expense" && !isTransferMode ? "expense" : "outline"}
+              onClick={() => {
+                setType("expense");
+                setIsTransferMode(false);
+              }}
               className="flex items-center gap-2"
             >
               <MinusCircle className="h-4 w-4" />
               {t('transactionForm.expense')}
             </Button>
+            <Button
+              type="button"
+              variant={isTransferMode ? "default" : "outline"}
+              onClick={() => {
+                setIsTransferMode(true);
+                setType("expense"); // Default for transfer logic
+              }}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+              {t('transactionForm.transfers')}
+            </Button>
           </div>
+
+          {/* Transfer Type Selection */}
+          {isTransferMode && (
+            <div>
+              <Label>{t('transactionForm.selectTransferType')}</Label>
+              <Select value={transferType} onValueChange={(value: any) => setTransferType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="own_accounts">{t('transactionForm.ownAccounts')}</SelectItem>
+                  <SelectItem value="investment">{t('transactionForm.toInvestment')}</SelectItem>
+                  {language === 'pt' && <SelectItem value="third_party_pix">{t('transactionForm.pixTransfer')}</SelectItem>}
+                  {language === 'en' && <SelectItem value="third_party_zelle">{t('transactionForm.zelleTransfer')}</SelectItem>}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Date */}
           <div>

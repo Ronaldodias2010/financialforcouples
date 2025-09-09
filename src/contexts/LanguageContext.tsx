@@ -495,6 +495,25 @@ const translations = {
     'transactionForm.title': 'Nova Transação',
     'transactionForm.income': 'Receita',
     'transactionForm.expense': 'Despesa',
+    'transactionForm.transfers': 'Transferências',
+    
+    // Transfer Types
+    'transactionForm.ownAccounts': 'Entre Minhas Contas',
+    'transactionForm.toInvestment': 'Para Investimento',
+    'transactionForm.pixTransfer': 'PIX para Terceiros',
+    'transactionForm.zelleTransfer': 'Transferência Internacional',
+    
+    // Transfer Form Fields
+    'transactionForm.selectTransferType': 'Selecione o tipo de transferência',
+    'transactionForm.beneficiaryName': 'Nome do Beneficiário',
+    'transactionForm.pixKey': 'Chave PIX',
+    'transactionForm.zelleKey': 'Email/Telefone Zelle',
+    'transactionForm.beneficiaryBank': 'Banco (opcional)',
+    'transactionForm.beneficiaryAgency': 'Agência (opcional)',
+    'transactionForm.beneficiaryAccount': 'Conta (opcional)',
+    'transactionForm.transferOriginAccount': 'Conta de Origem',
+    'transactionForm.transferDestinationAccount': 'Conta de Destino',
+    'transactionForm.transferToInvestment': 'Investimento de Destino',
     'transactionForm.transactionDate': 'Data da Transação',
     'transactionForm.selectDate': 'Selecionar data',
     'transactionForm.amount': 'Valor',
@@ -1949,6 +1968,25 @@ const translations = {
     'transactionForm.title': 'New Transaction',
     'transactionForm.income': 'Income',
     'transactionForm.expense': 'Expense',
+    'transactionForm.transfers': 'Transfers',
+    
+    // Transfer Types
+    'transactionForm.ownAccounts': 'Between My Accounts',
+    'transactionForm.toInvestment': 'To Investment',
+    'transactionForm.pixTransfer': 'International Transfer',
+    'transactionForm.zelleTransfer': 'Zelle to Third Parties',
+    
+    // Transfer Form Fields
+    'transactionForm.selectTransferType': 'Select transfer type',
+    'transactionForm.beneficiaryName': 'Beneficiary Name',
+    'transactionForm.pixKey': 'Email/Phone',
+    'transactionForm.zelleKey': 'Zelle Email/Phone',
+    'transactionForm.beneficiaryBank': 'Bank (optional)',
+    'transactionForm.beneficiaryAgency': 'Routing Number (optional)',
+    'transactionForm.beneficiaryAccount': 'Account (optional)',
+    'transactionForm.transferOriginAccount': 'Origin Account',
+    'transactionForm.transferDestinationAccount': 'Destination Account',
+    'transactionForm.transferToInvestment': 'Destination Investment',
     'transactionForm.transactionDate': 'Transaction Date',
     'transactionForm.selectDate': 'Select date',
     'transactionForm.amount': 'Amount',
@@ -3458,6 +3496,25 @@ const translations = {
     'transactionForm.title': 'Nueva Transacción',
     'transactionForm.income': 'Ingreso',
     'transactionForm.expense': 'Gasto',
+    'transactionForm.transfers': 'Transferencias',
+    
+    // Transfer Types
+    'transactionForm.ownAccounts': 'Entre Mis Cuentas',
+    'transactionForm.toInvestment': 'Para Inversión',
+    'transactionForm.pixTransfer': 'Transferencia Internacional',
+    'transactionForm.zelleTransfer': 'Transferencia Internacional',
+    
+    // Transfer Form Fields
+    'transactionForm.selectTransferType': 'Seleccionar tipo de transferencia',
+    'transactionForm.beneficiaryName': 'Nombre del Beneficiario',
+    'transactionForm.pixKey': 'Email/Teléfono',
+    'transactionForm.zelleKey': 'Email/Teléfono',
+    'transactionForm.beneficiaryBank': 'Banco (opcional)',
+    'transactionForm.beneficiaryAgency': 'Código de Ruta (opcional)',
+    'transactionForm.beneficiaryAccount': 'Cuenta (opcional)',
+    'transactionForm.transferOriginAccount': 'Cuenta de Origen',
+    'transactionForm.transferDestinationAccount': 'Cuenta de Destino',
+    'transactionForm.transferToInvestment': 'Inversión de Destino',
     'transactionForm.transactionDate': 'Fecha de Transacción',
     'transactionForm.selectDate': 'Seleccionar fecha',
     'transactionForm.amount': 'Cantidad',
