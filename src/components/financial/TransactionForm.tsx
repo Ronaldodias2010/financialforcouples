@@ -309,7 +309,7 @@ const getAccountOwnerName = (account: Account) => {
       // For income/expense transactions, only show current user's accounts
       const { data, error } = await supabase
         .from('accounts')
-        .select('id, user_id, name, account_type, balance, currency, owner_user, overdraft_limit, is_active')
+        .select('id, user_id, name, account_type, balance, currency, owner_user, overdraft_limit, is_active, is_cash_account')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .order('name');
@@ -459,7 +459,7 @@ const getAccountOwnerName = (account: Account) => {
   }
 
   // Validar transferência entre contas
-  if (type === "income" && paymentMethod === "account_transfer") {
+  if (isTransferMode && transferType === "own_accounts") {
     if (!fromAccountId || !toAccountId) {
       toast({ title: "Erro", description: "Selecione as contas de origem e destino", variant: "destructive" });
       return;
@@ -470,7 +470,7 @@ const getAccountOwnerName = (account: Account) => {
     }
   }
   // Validar transferência entre conta e investimento
-  if (type === "income" && paymentMethod === "account_investment") {
+  if (isTransferMode && transferType === "investment") {
     if (!fromAccountId || !investmentId) {
       toast({ title: "Erro", description: "Selecione a conta de saída e o investimento", variant: "destructive" });
       return;
@@ -528,8 +528,8 @@ const getAccountOwnerName = (account: Account) => {
 
       console.log('Creating transaction with owner_user:', ownerUser, 'for user:', user.id);
 
-// Inserir transação (regras para fluxo especial de receitas)
-      if (type === "income" && paymentMethod === "account_transfer") {
+      // Handle transfers between own accounts
+      if (isTransferMode && transferType === "own_accounts") {
         const fromAcc = accounts.find(a => a.id === fromAccountId);
         const toAcc = accounts.find(a => a.id === toAccountId);
         if (!fromAcc || !toAcc) throw new Error("Contas inválidas");
@@ -588,10 +588,12 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           return now;
         });
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setSaqueSourceAccountId(""); setSaqueSourceType("account"); setCardId(""); setCurrency(userPreferredCurrency);
+        setIsTransferMode(false); setTransferType("own_accounts"); setBeneficiaryName(""); setBeneficiaryKey(""); setBeneficiaryBank(""); setBeneficiaryAccount("");
         return;
       }
 
-      if (type === "income" && paymentMethod === "account_investment") {
+      // Handle transfers to investments
+      if (isTransferMode && transferType === "investment") {
         const fromAcc = accounts.find(a => a.id === fromAccountId);
         if (!fromAcc) throw new Error("Conta de saída inválida");
         const amtFrom = convertCurrency(transactionAmount, currency, (fromAcc.currency || "BRL") as CurrencyCode);
@@ -628,6 +630,7 @@ const invTxn: TablesInsert<'transactions'> = {
           return now;
         });
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setSaqueSourceAccountId(""); setSaqueSourceType("account"); setCardId(""); setCurrency(userPreferredCurrency);
+        setIsTransferMode(false); setTransferType("own_accounts"); setBeneficiaryName(""); setBeneficiaryKey(""); setBeneficiaryBank(""); setBeneficiaryAccount("");
         return;
       }
 
@@ -931,45 +934,73 @@ const invTxn: TablesInsert<'transactions'> = {
             throw new Error('Falha no processamento do pagamento');
           }
         } else {
-          // Para outras transações, manter lógica existente
-          const { error } = await supabase
-            .from('transactions')
-            .insert({
-              user_id: user.id,
-              owner_user: ownerUser,
-              type: type,
-              amount: transactionAmount,
-              currency: currency,
-              description,
-              category_id: categoryId,
-              subcategory: subcategory || null,
-              transaction_date: format(transactionDate, 'yyyy-MM-dd'),
-              purchase_date: format(transactionDate, 'yyyy-MM-dd'),
-              payment_method: paymentMethod,
-              card_id: paymentMethod === "credit_card" ? cardId : null,
-              account_id: paymentMethod === "credit_card" ? null : (accountId || null),
-              is_installment: false,
-              total_installments: null,
-              installment_number: null,
-              // Transfer-specific metadata for third party transfers
-              beneficiary_name: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryName : null,
-              beneficiary_key: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryKey : null,
-              beneficiary_bank: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryBank : null,
-              beneficiary_account: (transferType === "third_party_pix" || transferType === "third_party_zelle") ? beneficiaryAccount : null,
-            });
-
-          if (error) {
-            // Handle specific cash balance error
-            if (error.message?.includes('Saldo insuficiente em dinheiro')) {
-              toast({
-                title: t('insufficientCashBalance'),
-                description: t('cashBalanceError'),
-                variant: "destructive",
+          // Handle third-party transfers
+          if (isTransferMode && (transferType === "third_party_pix" || transferType === "third_party_zelle")) {
+            const { error } = await supabase
+              .from('transactions')
+              .insert({
+                user_id: user.id,
+                owner_user: ownerUser,
+                type: "expense",
+                amount: transactionAmount,
+                currency: currency,
+                description,
+                category_id: categoryId,
+                subcategory: subcategory || null,
+                transaction_date: format(transactionDate, 'yyyy-MM-dd'),
+                purchase_date: format(transactionDate, 'yyyy-MM-dd'),
+                payment_method: "payment_transfer",
+                card_id: null,
+                account_id: accountId || null,
+                is_installment: false,
+                total_installments: null,
+                installment_number: null,
+                beneficiary_name: beneficiaryName,
+                beneficiary_key: beneficiaryKey,
+                beneficiary_bank: beneficiaryBank,
+                beneficiary_account: beneficiaryAccount,
               });
-              return;
+
+            if (error) {
+              throw error;
             }
-            throw error;
+          } else {
+            // Para outras transações, manter lógica existente
+            const { error } = await supabase
+              .from('transactions')
+              .insert({
+                user_id: user.id,
+                owner_user: ownerUser,
+                type: type,
+                amount: transactionAmount,
+                currency: currency,
+                description,
+                category_id: categoryId,
+                subcategory: subcategory || null,
+                transaction_date: format(transactionDate, 'yyyy-MM-dd'),
+                purchase_date: format(transactionDate, 'yyyy-MM-dd'),
+                payment_method: paymentMethod,
+                card_id: paymentMethod === "credit_card" ? cardId : null,
+                account_id: paymentMethod === "credit_card" ? null : (accountId || null),
+                is_installment: false,
+                total_installments: null,
+                installment_number: null,
+              });
+
+            if (error) {
+              // Handle specific cash balance error
+              if (error.message?.includes('Saldo insuficiente em dinheiro')) {
+                toast({
+                  title: t('insufficientCashBalance'),
+                  description: t('cashBalanceError'),
+                  variant: "destructive",
+                });
+                return;
+              }
+              throw error;
+            }
           }
+
         }
 
         // Show limit exceeded warning if applicable
@@ -1031,8 +1062,8 @@ const invTxn: TablesInsert<'transactions'> = {
         }
       }
 
-      // Atualizar saldo da conta para despesas com débito/transferência de pagamento
-      if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer" || paymentMethod === "account_transfer") && accountId) {
+      // Atualizar saldo da conta para despesas com débito/transferência de pagamento (exceto account_transfer que é gerenciado por trigger)
+      if (type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") && accountId) {
         const selectedAccount = accounts.find(acc => acc.id === accountId);
         if (selectedAccount) {
           const accCurrency = (selectedAccount.currency || "BRL") as CurrencyCode;
@@ -1157,6 +1188,11 @@ const invTxn: TablesInsert<'transactions'> = {
               onClick={() => {
                 setIsTransferMode(true);
                 setType("expense"); // Default for transfer logic
+                setPaymentMethod("cash"); // Reset payment method
+                setAccountId(""); // Reset account selection
+                setFromAccountId(""); // Reset transfer accounts
+                setToAccountId("");
+                setInvestmentId("");
               }}
               className="flex items-center justify-center gap-1 sm:gap-2 flex-1 text-sm sm:text-base"
             >
@@ -1325,18 +1361,18 @@ const invTxn: TablesInsert<'transactions'> = {
                       <SelectTrigger>
                         <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{account.name}</span>
-                              <span className="text-muted-foreground ml-2">
-                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                       <SelectContent>
+                         {accounts.filter(acc => !acc.is_cash_account).map((account) => (
+                           <SelectItem key={account.id} value={account.id}>
+                             <div className="flex items-center justify-between w-full">
+                               <span>{account.name}</span>
+                               <span className="text-muted-foreground ml-2">
+                                 {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                               </span>
+                             </div>
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
                     </Select>
                   </div>
                   <div>
@@ -1345,18 +1381,18 @@ const invTxn: TablesInsert<'transactions'> = {
                       <SelectTrigger>
                         <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {accounts.filter(acc => acc.id !== fromAccountId).map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{account.name}</span>
-                              <span className="text-muted-foreground ml-2">
-                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                       <SelectContent>
+                         {accounts.filter(acc => acc.id !== fromAccountId && !acc.is_cash_account).map((account) => (
+                           <SelectItem key={account.id} value={account.id}>
+                             <div className="flex items-center justify-between w-full">
+                               <span>{account.name}</span>
+                               <span className="text-muted-foreground ml-2">
+                                 {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                               </span>
+                             </div>
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
                     </Select>
                   </div>
                 </div>
@@ -1371,18 +1407,18 @@ const invTxn: TablesInsert<'transactions'> = {
                       <SelectTrigger>
                         <SelectValue placeholder={t('transactionForm.selectAccountPlaceholder')} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{account.name}</span>
-                              <span className="text-muted-foreground ml-2">
-                                {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                       <SelectContent>
+                         {accounts.filter(acc => !acc.is_cash_account).map((account) => (
+                           <SelectItem key={account.id} value={account.id}>
+                             <div className="flex items-center justify-between w-full">
+                               <span>{account.name}</span>
+                               <span className="text-muted-foreground ml-2">
+                                 {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                               </span>
+                             </div>
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
                     </Select>
                   </div>
                   <div>
