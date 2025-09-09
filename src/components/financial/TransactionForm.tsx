@@ -1126,7 +1126,7 @@ const invTxn: TablesInsert<'transactions'> = {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Transaction Type */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
               type="button"
               variant={type === "income" && !isTransferMode ? "income" : "outline"}
@@ -1134,10 +1134,10 @@ const invTxn: TablesInsert<'transactions'> = {
                 setType("income");
                 setIsTransferMode(false);
               }}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 flex-1 text-sm sm:text-base"
             >
-              <PlusCircle className="h-4 w-4" />
-              {t('transactionForm.income')}
+              <PlusCircle className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t('transactionForm.income')}</span>
             </Button>
             <Button
               type="button"
@@ -1146,10 +1146,10 @@ const invTxn: TablesInsert<'transactions'> = {
                 setType("expense");
                 setIsTransferMode(false);
               }}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 flex-1 text-sm sm:text-base"
             >
-              <MinusCircle className="h-4 w-4" />
-              {t('transactionForm.expense')}
+              <MinusCircle className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t('transactionForm.expense')}</span>
             </Button>
             <Button
               type="button"
@@ -1158,10 +1158,10 @@ const invTxn: TablesInsert<'transactions'> = {
                 setIsTransferMode(true);
                 setType("expense"); // Default for transfer logic
               }}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 flex-1 text-sm sm:text-base"
             >
-              <ArrowLeftRight className="h-4 w-4" />
-              {t('transactionForm.transfers')}
+              <ArrowLeftRight className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t('transactionForm.transfers')}</span>
             </Button>
           </div>
 
