@@ -66,10 +66,10 @@ const AppDashboard = () => {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  {!inBrazil ? tFor('en','nav.tutorial') : t('nav.tutorial')}
-                </Button>
+                 <Button variant="outline" size="sm">
+                   <BookOpen className="h-4 w-4 mr-2 hidden sm:block" />
+                   {!inBrazil ? tFor('en','nav.tutorial') : t('nav.tutorial')}
+                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => openTutorialHTML(language as 'pt' | 'en' | 'es')}>
@@ -82,14 +82,14 @@ const AppDashboard = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setCurrentPage('subscription')}
-            >
-              <Crown className="h-4 w-4 mr-2" />
-              {!inBrazil ? tFor('en','nav.subscription') : t('nav.subscription')}
-            </Button>
+             <Button 
+               variant="outline" 
+               size="sm" 
+               onClick={() => setCurrentPage('subscription')}
+             >
+               <Crown className="h-4 w-4 mr-2 hidden sm:block" />
+               {!inBrazil ? tFor('en','nav.subscription') : t('nav.subscription')}
+             </Button>
             {isAdmin && (
               <>
                 <Button 
