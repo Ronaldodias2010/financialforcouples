@@ -1940,7 +1940,7 @@ const invTxn: TablesInsert<'transactions'> = {
           )}
 
           {/* Cash Balance Warning */}
-          {type === "expense" && paymentMethod === "cash" && amount && (
+          {!isTransferMode && type === "expense" && paymentMethod === "cash" && amount && (
             <div className="mt-2">
               {!canSpendCash(parseFloat(amount), currency) ? (
                 <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
@@ -1972,8 +1972,8 @@ const invTxn: TablesInsert<'transactions'> = {
             disabled={
               type === "expense" &&
               (
-                // Cash payment validation
-                (paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency)) ||
+                // Cash payment validation (not in transfer mode)
+                (!isTransferMode && paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency)) ||
                 // Debit card and transfer validation
                 ((paymentMethod === "debit_card" || paymentMethod === "payment_transfer") &&
                 (() => {
@@ -1993,7 +1993,7 @@ const invTxn: TablesInsert<'transactions'> = {
               )
             }
             title={
-              type === "expense" && paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency)
+              (!isTransferMode && type === "expense" && paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency))
                 ? getCashBalanceError(parseFloat(amount), currency) || t('insufficientCashBalance')
                 : type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") 
                 ? t('transactionForm.blockedLimitExhausted') 
