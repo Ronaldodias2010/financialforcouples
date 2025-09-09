@@ -501,10 +501,12 @@ const translations = {
     'transactionForm.ownAccounts': 'Entre Minhas Contas',
     'transactionForm.toInvestment': 'Para Investimento',
     'transactionForm.pixTransfer': 'PIX para Terceiros',
-    'transactionForm.zelleTransfer': 'Transferência Internacional',
+    'transactionForm.zelleTransfer': 'PIX para Terceiros',
+    'transactionForm.internationalTransfer': 'Transferência Internacional',
     
     // Transfer Form Fields
     'transactionForm.selectTransferType': 'Selecione o tipo de transferência',
+    'transactionForm.transferType': 'Tipo de Transferência',
     'transactionForm.beneficiaryName': 'Nome do Beneficiário',
     'transactionForm.pixKey': 'Chave PIX',
     'transactionForm.zelleKey': 'Email/Telefone Zelle',
@@ -1981,9 +1983,11 @@ const translations = {
     'transactionForm.toInvestment': 'To Investment',
     'transactionForm.pixTransfer': 'International Transfer',
     'transactionForm.zelleTransfer': 'Zelle to Third Parties',
+    'transactionForm.internationalTransfer': 'International Transfer',
     
     // Transfer Form Fields
     'transactionForm.selectTransferType': 'Select transfer type',
+    'transactionForm.transferType': 'Transfer Type',
     'transactionForm.beneficiaryName': 'Beneficiary Name',
     'transactionForm.pixKey': 'Email/Phone',
     'transactionForm.zelleKey': 'Zelle Email/Phone',
@@ -3515,9 +3519,11 @@ const translations = {
     'transactionForm.toInvestment': 'Para Inversión',
     'transactionForm.pixTransfer': 'Transferencia Internacional',
     'transactionForm.zelleTransfer': 'Transferencia Internacional',
+    'transactionForm.internationalTransfer': 'Transferencia Internacional',
     
     // Transfer Form Fields
     'transactionForm.selectTransferType': 'Seleccionar tipo de transferencia',
+    'transactionForm.transferType': 'Tipo de Transferencia',
     'transactionForm.beneficiaryName': 'Nombre del Beneficiario',
     'transactionForm.pixKey': 'Email/Teléfono',
     'transactionForm.zelleKey': 'Email/Teléfono',

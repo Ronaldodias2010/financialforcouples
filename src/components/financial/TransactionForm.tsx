@@ -1165,23 +1165,6 @@ const invTxn: TablesInsert<'transactions'> = {
             </Button>
           </div>
 
-          {/* Transfer Type Selection */}
-          {isTransferMode && (
-            <div>
-              <Label>{t('transactionForm.selectTransferType')}</Label>
-              <Select value={transferType} onValueChange={(value: any) => setTransferType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="own_accounts">{t('transactionForm.ownAccounts')}</SelectItem>
-                  <SelectItem value="investment">{t('transactionForm.toInvestment')}</SelectItem>
-                  {language === 'pt' && <SelectItem value="third_party_pix">{t('transactionForm.pixTransfer')}</SelectItem>}
-                  {language === 'en' && <SelectItem value="third_party_zelle">{t('transactionForm.zelleTransfer')}</SelectItem>}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
 
           {/* Date */}
           <div>
@@ -1326,8 +1309,9 @@ const invTxn: TablesInsert<'transactions'> = {
                   <SelectContent>
                     <SelectItem value="own_accounts">{t('transactionForm.ownAccounts')}</SelectItem>
                     <SelectItem value="investment">{t('transactionForm.toInvestment')}</SelectItem>
-                    <SelectItem value="third_party_pix">{t('transactionForm.pixTransfer')}</SelectItem>
-                    <SelectItem value="third_party_zelle">{t('transactionForm.zelleTransfer')}</SelectItem>
+                    {language === 'pt' && <SelectItem value="third_party_pix">{t('transactionForm.pixTransfer')}</SelectItem>}
+                    {language === 'en' && <SelectItem value="third_party_zelle">{t('transactionForm.zelleTransfer')}</SelectItem>}
+                    {language === 'es' && <SelectItem value="third_party_pix">{t('transactionForm.internationalTransfer')}</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>
