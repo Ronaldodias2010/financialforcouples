@@ -136,12 +136,76 @@ const CategoryManagerContent = () => {
 
   const fetchCategoryTags = async () => {
     try {
-      console.log('🏷️ Fetching category tags...');
+      console.log('🏷️ Fetching category tags using optimized function...');
       
-      // Fetch all system tags by matching default category names to user categories
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      
+      // Try to use the optimized function first (cast as any since it's not in types yet)
+      const { data: optimizedData, error: optimizedError } = await (supabase as any).rpc('get_user_category_tags_complete', {
+        p_user_id: user.id
+      });
 
+      if (optimizedError || !optimizedData) {
+        console.warn('Optimized function not available, falling back to original method:', optimizedError);
+        // Fallback to original method
+        await fetchCategoryTagsFallback(user);
+        return;
+      }
+
+      console.log('🏷️ Using optimized category tags data:', optimizedData);
+
+      // Process optimized data
+      const tagsMap: Record<string, CategoryTag[]> = {};
+      const dataArray = Array.isArray(optimizedData) ? optimizedData : [];
+
+      dataArray.forEach((row: any) => {
+        const categoryId = row.category_id;
+        if (!categoryId) return;
+
+        // Combine system tags and user tags
+        const allTags: CategoryTag[] = [];
+        
+        // Add system tags (not excluded by user)
+        if (row.system_tags && Array.isArray(row.system_tags)) {
+          allTags.push(...row.system_tags);
+        }
+        
+        // Add user tags
+        if (row.user_tags && Array.isArray(row.user_tags)) {
+          const userTagsFormatted = row.user_tags.map((userTag: any) => ({
+            id: userTag.id,
+            name_pt: userTag.tag_name,
+            name_en: userTag.tag_name_en || userTag.tag_name,
+            name_es: userTag.tag_name_es || userTag.tag_name,
+            color: userTag.color
+          }));
+          allTags.push(...userTagsFormatted);
+        }
+
+        if (allTags.length > 0) {
+          tagsMap[categoryId] = allTags;
+        }
+      });
+
+      console.log('🏷️ Optimized tags map created:', tagsMap);
+      setCategoryTags(tagsMap);
+
+    } catch (error) {
+      console.error('Error in fetchCategoryTags:', error);
+      // Fallback to original method
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await fetchCategoryTagsFallback(user);
+      }
+    }
+  };
+
+  const fetchCategoryTagsFallback = async (user: any) => {
+    try {
+      console.log('🏷️ Using fallback method for fetching category tags...');
+      
       // Get user categories to match with default categories
       const { data: userCategories } = await supabase
         .from('categories')
@@ -218,10 +282,10 @@ const CategoryManagerContent = () => {
         });
       }
 
-      console.log('🏷️ Tags map created:', tagsMap);
+      console.log('🏷️ Fallback tags map created:', tagsMap);
       setCategoryTags(tagsMap);
     } catch (error) {
-      console.error('Error in fetchCategoryTags:', error);
+      console.error('Error in fetchCategoryTagsFallback:', error);
     }
   };
 

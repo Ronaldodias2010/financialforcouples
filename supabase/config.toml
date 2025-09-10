@@ -1,5 +1,8 @@
 project_id = "elxttabdtddlavhseipz"
 
+[functions.get-user-categories-tags]
+verify_jwt = false
+
 [functions.validate-temp-login]
 verify_jwt = false
 

@@ -24,6 +24,53 @@ export const useUserCategoryTags = () => {
     
     setIsLoading(true);
     try {
+      console.log('Fetching user tags using optimized approach...');
+      
+      // Try to use the optimized function first (cast as any since it's not in types yet)
+      const { data: optimizedData, error: optimizedError } = await (supabase as any).rpc('get_user_category_tags_complete', {
+        p_user_id: user.id
+      });
+
+      if (optimizedError || !optimizedData) {
+        console.warn('Optimized function not available, using fallback method:', optimizedError);
+        await fetchUserTagsFallback();
+        return;
+      }
+
+      // Process optimized data
+      const tagsByCategory: Record<string, UserCategoryTag[]> = {};
+      const exclusionsByCategory: Record<string, string[]> = {};
+
+      // Ensure optimizedData is an array
+      const dataArray = Array.isArray(optimizedData) ? optimizedData : [];
+      
+      dataArray.forEach((row: any) => {
+        // Process user tags
+        if (row.user_tags && Array.isArray(row.user_tags)) {
+          tagsByCategory[row.category_id] = row.user_tags;
+        }
+
+        // Process excluded system tags
+        if (row.excluded_system_tags && Array.isArray(row.excluded_system_tags)) {
+          exclusionsByCategory[row.category_id] = row.excluded_system_tags;
+        }
+      });
+
+      setUserTags(tagsByCategory);
+      setExcludedSystemTags(exclusionsByCategory);
+      console.log('Successfully used optimized user tags method');
+    } catch (error) {
+      console.error('Error fetching user tags with optimized method:', error);
+      await fetchUserTagsFallback();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchUserTagsFallback = async () => {
+    try {
+      console.log('Using fallback method for fetching user tags...');
+      
       // Fetch user custom tags with translations
       const { data: userTagsData, error: userTagsError } = await supabase
         .from('user_category_tags')
@@ -59,14 +106,12 @@ export const useUserCategoryTags = () => {
       setUserTags(tagsByCategory);
       setExcludedSystemTags(exclusionsByCategory);
     } catch (error) {
-      console.error('Error fetching user tags:', error);
+      console.error('Error fetching user tags with fallback method:', error);
       toast({
         title: "Erro ao carregar tags",
         description: "Não foi possível carregar as tags personalizadas.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -74,8 +119,8 @@ export const useUserCategoryTags = () => {
     if (!user) return false;
 
     try {
-      // Use the normalized insertion function
-      const { data, error } = await supabase.rpc('insert_normalized_user_tag', {
+      // Use the normalized insertion function (cast as any since it's not in types yet)
+      const { data, error } = await (supabase as any).rpc('insert_normalized_user_tag', {
         p_user_id: user.id,
         p_category_id: categoryId,
         p_tag_name: tagName,
