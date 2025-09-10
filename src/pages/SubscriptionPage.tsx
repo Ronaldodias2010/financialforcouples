@@ -214,14 +214,17 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
               {premiumFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
                   {feature.icon}
-                   <span className="text-sm">{feature.key === 'aiMiles' ? (
-                     <>
-                       <span className="text-foreground">Sistema </span>
-                       <span className="bg-hero-gradient bg-clip-text text-transparent font-bold">inteligente de milhagem</span>
-                       <span className="text-foreground"> com </span>
-                       <span className="text-primary font-bold">IA</span>
-                     </>
-                   ) : t(`subscription.features.${feature.key}`)}</span>
+                   <span className="text-sm">
+                     {feature.key === 'aiMiles' ? (
+                       <span className="text-foreground">
+                         <span className="text-primary font-bold bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+                           {t(`subscription.features.${feature.key}`)}
+                         </span>
+                       </span>
+                     ) : (
+                       t(`subscription.features.${feature.key}`)
+                     )}
+                   </span>
                   <Badge variant="secondary" className="ml-auto text-xs">{t('subscription.plans.premium')}</Badge>
                 </div>
               ))}
