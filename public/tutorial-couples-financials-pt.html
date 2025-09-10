@@ -51,6 +51,9 @@
             border-radius: 15px;
             margin-bottom: 30px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
         }
 
         .toc h2 {
@@ -58,18 +61,18 @@
             margin-bottom: 20px;
             border-bottom: 3px solid #667eea;
             padding-bottom: 10px;
+            grid-column: 1 / -1;
         }
 
-        .toc ul {
+        .toc-column {
             list-style: none;
-            margin-left: 0;
         }
 
-        .toc li {
+        .toc-column li {
             margin: 8px 0;
         }
 
-        .toc a {
+        .toc-column a {
             color: #555;
             text-decoration: none;
             padding: 8px 15px;
@@ -78,7 +81,7 @@
             transition: all 0.3s ease;
         }
 
-        .toc a:hover {
+        .toc-column a:hover {
             background: #667eea;
             color: white;
             transform: translateX(10px);
@@ -90,6 +93,15 @@
             margin-bottom: 30px;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            scroll-margin-top: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .section h2 {
@@ -184,6 +196,19 @@
             margin-bottom: 10px;
         }
 
+        .premium-box {
+            background: #f8f0ff;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #6f42c1;
+            margin: 20px 0;
+        }
+
+        .premium-box h4 {
+            color: #6f42c1;
+            margin-bottom: 10px;
+        }
+
         .print-button {
             position: fixed;
             bottom: 20px;
@@ -208,6 +233,10 @@
             .print-button {
                 display: none;
             }
+            .section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
         }
 
         .screenshot {
@@ -216,6 +245,20 @@
             border-radius: 8px;
             margin: 15px 0;
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .toc {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section h2 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
@@ -228,19 +271,24 @@
 
         <div class="toc">
             <h2>📑 Índice</h2>
-            <ul>
+            <div class="toc-column">
                 <li><a href="#introducao">1. Introdução</a></li>
                 <li><a href="#primeiros-passos">2. Primeiros Passos</a></li>
-                <li><a href="#contas-cartoes">3. Configurando Contas e Cartões</a></li>
+                <li><a href="#dashboard">3. Dashboard Financeiro</a></li>
                 <li><a href="#transacoes">4. Gerenciando Transações</a></li>
-                <li><a href="#conta-dinheiro">5. Gestão da Conta de Dinheiro</a></li>
-                <li><a href="#categorias">6. Organizando por Categorias</a></li>
+                <li><a href="#contas">5. Gestão de Contas Bancárias</a></li>
+                <li><a href="#cartoes">6. Gestão de Cartões</a></li>
                 <li><a href="#investimentos">7. Controle de Investimentos</a></li>
+            </div>
+            <div class="toc-column">
                 <li><a href="#milhas">8. Sistema de Milhas</a></li>
-                <li><a href="#relatorios">9. Relatórios e Análises</a></li>
+                <li><a href="#ai-features">9. Recursos de IA</a></li>
                 <li><a href="#casais">10. Funcionalidades para Casais</a></li>
-                <li><a href="#dicas-avancadas">11. Dicas Avançadas</a></li>
-            </ul>
+                <li><a href="#relatorios">11. Relatórios e Análises</a></li>
+                <li><a href="#configuracoes">12. Configurações e Perfil</a></li>
+                <li><a href="#parcerias">13. Programa de Parcerias</a></li>
+                <li><a href="#solucoes">14. Solução de Problemas</a></li>
+            </div>
         </div>
 
         <section id="introducao" class="section">
@@ -250,83 +298,134 @@
             <div class="feature-grid">
                 <div class="feature-card">
                     <h4>💡 Gestão Inteligente</h4>
-                    <p>Controle completo de receitas, despesas, investimentos e metas financeiras com ferramentas intuitivas.</p>
+                    <p>Controle completo de receitas, despesas, investimentos e metas financeiras com ferramentas intuitivas e IA integrada.</p>
                 </div>
                 <div class="feature-card">
                     <h4>👫 Colaboração em Casal</h4>
-                    <p>Funcionalidades específicas para casais compartilharem e organizarem suas finanças conjuntamente.</p>
+                    <p>Funcionalidades específicas para casais compartilharem e organizarem suas finanças conjuntamente com transparência total.</p>
                 </div>
                 <div class="feature-card">
                     <h4>📊 Análises Detalhadas</h4>
-                    <p>Relatórios visuais e insights para tomar decisões financeiras mais informadas.</p>
+                    <p>Relatórios visuais avançados e insights personalizados para tomar decisões financeiras mais informadas.</p>
                 </div>
                 <div class="feature-card">
                     <h4>✈️ Sistema de Milhas</h4>
-                    <p>Controle completo de programas de milhas e pontos com metas personalizadas.</p>
+                    <p>Controle completo de programas de milhas e pontos com metas personalizadas e aproveitamento de promoções.</p>
                 </div>
             </div>
 
+            <h3>🌟 O que Torna Nossa Plataforma Única</h3>
+            <ul>
+                <li><strong>Interface Intuitiva:</strong> Design pensado para facilitar o uso diário</li>
+                <li><strong>Segurança Avançada:</strong> Criptografia de ponta e proteção de dados</li>
+                <li><strong>Suporte Multi-moeda:</strong> Gerencie finanças em diferentes moedas</li>
+                <li><strong>Sincronização em Tempo Real:</strong> Acesso simultâneo e atualizações instantâneas</li>
+                <li><strong>Recursos Premium:</strong> IA financeira, análises preditivas e suporte prioritário</li>
+            </ul>
+
             <div class="tip-box">
-                <h4>💡 Dica Importante</h4>
-                <p>Este tutorial foi desenvolvido para ser usado tanto como referência rápida quanto como guia passo a passo. Recomendamos ler completamente antes de começar a usar a plataforma.</p>
+                <h4>💡 Como Usar Este Tutorial</h4>
+                <p>Este tutorial foi desenvolvido para ser usado tanto como referência rápida quanto como guia passo a passo. Recomendamos ler os primeiros capítulos completamente antes de começar a usar a plataforma. Para usuários experientes, use o índice para encontrar seções específicas.</p>
             </div>
         </section>
 
         <section id="primeiros-passos" class="section">
             <h2>🚀 2. Primeiros Passos</h2>
             
+            <h3>📝 Processo de Registro</h3>
             <div class="step-by-step">
                 <h4><span class="step-number">1</span>Criando sua Conta</h4>
-                <p>Acesse a plataforma e crie sua conta utilizando email e senha. O sistema automaticamente criará seu perfil e categorias padrão.</p>
+                <p>Acesse a plataforma e crie sua conta utilizando email e senha segura. O sistema automaticamente criará seu perfil personalizado e categorias padrão adaptadas ao contexto brasileiro.</p>
             </div>
 
             <div class="step-by-step">
-                <h4><span class="step-number">2</span>Configuração Inicial</h4>
-                <p>Defina sua moeda preferida, fuso horário e informações básicas do perfil. Estas configurações podem ser alteradas posteriormente.</p>
+                <h4><span class="step-number">2</span>Verificação de Email</h4>
+                <p>Confirme seu email através do link enviado. Este passo é essencial para segurança e recuperação de conta.</p>
             </div>
 
             <div class="step-by-step">
-                <h4><span class="step-number">3</span>Explorando o Dashboard</h4>
-                <p>Familiarize-se com a interface principal, onde você encontrará resumos financeiros, gráficos e acesso rápido às funcionalidades.</p>
+                <h4><span class="step-number">3</span>Configuração Inicial</h4>
+                <p>Defina sua moeda preferida (Real brasileiro por padrão), fuso horário, idioma e informações básicas do perfil. Estas configurações podem ser alteradas posteriormente.</p>
+            </div>
+
+            <h3>🏠 Explorando a Interface</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📱 Menu Principal</h4>
+                    <p>Navegação lateral com acesso rápido a todas as funcionalidades principais da plataforma.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Dashboard Central</h4>
+                    <p>Visão geral das suas finanças com gráficos, saldos atualizados e resumos mensais.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚡ Ações Rápidas</h4>
+                    <p>Botões flutuantes para adicionar transações, fazer transferências e consultas rápidas.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔔 Central de Notificações</h4>
+                    <p>Alertas inteligentes sobre vencimentos, metas e oportunidades financeiras.</p>
+                </div>
             </div>
 
             <div class="warning-box">
-                <h4>⚠️ Importante</h4>
-                <p>Mantenha suas informações de login seguras e use uma senha forte. O sistema conta com criptografia de ponta para proteger seus dados financeiros.</p>
+                <h4>🔐 Segurança e Privacidade</h4>
+                <p>Mantenha suas informações de login seguras e use uma senha forte com pelo menos 8 caracteres, incluindo números e símbolos. O sistema conta com criptografia AES-256 para proteger todos os seus dados financeiros. Nunca compartilhe suas credenciais com terceiros.</p>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Recursos Premium Disponíveis</h4>
+                <p>Usuários Premium têm acesso a funcionalidades exclusivas como IA financeira, análises preditivas, relatórios avançados, suporte prioritário e integração com WhatsApp para consultas por voz.</p>
             </div>
         </section>
 
-        <section id="contas-cartoes" class="section">
-            <h2>🏦 3. Configurando Contas e Cartões</h2>
+        <section id="dashboard" class="section">
+            <h2>📊 3. Dashboard Financeiro</h2>
             
-            <h3>💳 Adicionando Contas Bancárias</h3>
-            <div class="step-by-step">
-                <h4><span class="step-number">1</span>Acesso ao Menu de Contas</h4>
-                <p>Navigate até "Contas" no menu principal e clique em "Adicionar Nova Conta".</p>
-            </div>
+            <h3>🎯 Visão Geral Financeira</h3>
+            <p>O dashboard é o centro de controle das suas finanças, apresentando informações essenciais de forma visual e intuitiva.</p>
 
-            <div class="step-by-step">
-                <h4><span class="step-number">2</span>Informações da Conta</h4>
-                <p>Preencha os dados: nome do banco, tipo de conta (corrente/poupança), saldo inicial e limite de cheque especial (se aplicável).</p>
-            </div>
-
-            <h3>💳 Configurando Cartões</h3>
-            <p>O sistema suporta tanto cartões de crédito quanto débito:</p>
-            
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>Cartões de Crédito</h4>
-                    <p>Configure limite, data de fechamento, vencimento e fatura inicial para controle completo dos gastos.</p>
+                    <h4>💰 Resumo de Saldos</h4>
+                    <p>Visualização em tempo real dos saldos de todas as contas, cartões e investimentos, com totais consolidados.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>Cartões de Débito</h4>
-                    <p>Vincule-os às suas contas bancárias para desconto automático do saldo disponível.</p>
+                    <h4>📈 Gráficos Interativos</h4>
+                    <p>Gráficos de receitas vs despesas, evolução patrimonial e distribuição por categorias com filtros personalizáveis.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📅 Agenda Financeira</h4>
+                    <p>Calendário com vencimentos de cartões, parcelas e compromissos financeiros futuros.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Metas e Objetivos</h4>
+                    <p>Progresso visual das suas metas de economia, investimento e redução de gastos por categoria.</p>
                 </div>
             </div>
 
+            <h3>⚡ Widgets Personalizáveis</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Configuração de Widgets</h4>
+                <p>Personalize seu dashboard escolhendo quais informações deseja ver primeiro. Arraste e solte widgets para reorganizar.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Filtros Inteligentes</h4>
+                <p>Configure filtros por período, categoria, tipo de transação ou membro do casal para análises específicas.</p>
+            </div>
+
+            <h3>📊 Análises em Tempo Real</h3>
+            <ul>
+                <li><strong>Balanço Mensal:</strong> Comparação automática entre receitas e despesas do mês</li>
+                <li><strong>Tendências:</strong> Identificação de padrões de gastos e oportunidades de economia</li>
+                <li><strong>Alertas Inteligentes:</strong> Notificações sobre gastos incomuns ou aproximação de limites</li>
+                <li><strong>Projeções:</strong> Estimativas de saldo futuro baseadas no histórico de transações</li>
+            </ul>
+
             <div class="tip-box">
-                <h4>💡 Dica de Organização</h4>
-                <p>Use nomes descritivos para suas contas e cartões (ex: "Itaú Corrente Principal", "Nubank Crédito"). Isso facilitará a identificação nas transações.</p>
+                <h4>💡 Dica de Produtividade</h4>
+                <p>Configure seu dashboard para mostrar as informações mais importantes para sua rotina. Se você consulta frequentemente saldos de cartões, mantenha esse widget no topo. Para casais, ative a visualização consolidada para ter uma visão unificada das finanças.</p>
             </div>
         </section>
 
@@ -336,105 +435,219 @@
             <h3>➕ Adicionando Receitas</h3>
             <div class="step-by-step">
                 <h4><span class="step-number">1</span>Nova Receita</h4>
-                <p>Clique em "Adicionar Transação" e selecione "Receita". Informe valor, data, categoria e método de recebimento.</p>
+                <p>Clique em "Adicionar Transação" e selecione "Receita". Informe valor, data, categoria (salário, freelance, vendas, etc.) e método de recebimento (conta bancária, dinheiro, PIX).</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Categorização Automática</h4>
+                <p>O sistema aprende com suas transações e sugere automaticamente categorias baseadas no histórico e descrições similares.</p>
             </div>
 
             <h3>➖ Registrando Despesas</h3>
             <div class="step-by-step">
                 <h4><span class="step-number">1</span>Nova Despesa</h4>
-                <p>Selecione "Despesa", informe o valor, escolha a categoria, método de pagamento (dinheiro, cartão, conta) e adicione uma descrição.</p>
+                <p>Selecione "Despesa", informe o valor, escolha a categoria apropriada, método de pagamento (dinheiro, cartão, conta, PIX) e adicione uma descrição detalhada.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Parcelamento Inteligente</h4>
+                <p>Para compras parceladas, o sistema automaticamente distribui o valor nas próximas faturas do cartão de crédito.</p>
             </div>
 
             <h3>🔄 Transações Recorrentes</h3>
-            <p>Para despesas fixas mensais como aluguel, financiamentos:</p>
+            <p>Ideal para despesas fixas como aluguel, financiamentos, assinaturas e salários:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📅 Configuração de Recorrência</h4>
+                    <p>Defina frequência (diária, semanal, quinzenal, mensal, anual) e período de vigência.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔄 Geração Automática</h4>
+                    <p>O sistema cria automaticamente as próximas ocorrências, mantendo seu controle sempre atualizado.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✏️ Edição Flexível</h4>
+                    <p>Modifique valores específicos sem afetar o padrão geral da recorrência.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Projeções Futuras</h4>
+                    <p>Visualize o impacto de gastos recorrentes no planejamento financeiro futuro.</p>
+                </div>
+            </div>
+
+            <h3>🏷️ Sistema de Tags e Observações</h3>
             <ul>
-                <li>Configure a recorrência (mensal, semanal, etc.)</li>
-                <li>Defina data de início e fim (se aplicável)</li>
-                <li>O sistema criará automaticamente as próximas parcelas</li>
+                <li><strong>Tags Personalizadas:</strong> Crie etiquetas para organizar transações (ex: "urgente", "lazer", "trabalho")</li>
+                <li><strong>Observações Detalhadas:</strong> Adicione contexto importante sobre cada transação</li>
+                <li><strong>Anexos:</strong> Vincule fotos de notas fiscais e comprovantes</li>
+                <li><strong>Localização:</strong> Registre onde a transação foi realizada</li>
             </ul>
 
             <div class="warning-box">
-                <h4>⚠️ Atenção ao Método de Pagamento</h4>
-                <p>Sempre selecione corretamente se a transação foi feita em dinheiro, cartão ou conta bancária. Isso afeta diretamente os saldos disponíveis.</p>
+                <h4>⚠️ Boas Práticas para Registro</h4>
+                <p>Sempre selecione corretamente o método de pagamento - isso afeta diretamente os saldos disponíveis. Para cartões de crédito, considere a data de vencimento da fatura. Para débito e dinheiro, o impacto é imediato no saldo. Use descrições claras para facilitar futuras consultas e análises.</p>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Recursos Premium de Transações</h4>
+                <p>Usuários Premium têm acesso a importação automática de extratos bancários, categorização inteligente por IA, detecção de duplicatas e análises preditivas de padrões de gastos.</p>
             </div>
         </section>
 
-        <section id="conta-dinheiro" class="section">
-            <h2>💵 5. Gestão da Conta de Dinheiro</h2>
+        <section id="contas" class="section">
+            <h2>🏦 5. Gestão de Contas Bancárias</h2>
             
-            <h3>🎯 Como Funciona</h3>
-            <p>A conta de dinheiro funciona de forma <strong>independente</strong> das demais contas e cartões:</p>
+            <h3>➕ Adicionando Contas</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acesso ao Menu de Contas</h4>
+                <p>Navegue até "Contas" no menu principal e clique em "Adicionar Nova Conta".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Informações da Conta</h4>
+                <p>Preencha: nome do banco (com seleção de ícones dos principais bancos brasileiros), tipo de conta (corrente/poupança), saldo inicial e limite de cheque especial se aplicável.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Configurações Específicas</h4>
+                <p>Defina se a conta permite saque, transferências, se é conta principal e configure alertas de saldo baixo.</p>
+            </div>
+
+            <h3>💰 Gestão da Conta de Dinheiro</h3>
+            <p>A conta de dinheiro funciona de forma <strong>independente</strong> das demais contas:</p>
             
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>💰 Receitas em Dinheiro</h4>
-                    <p>Registre apenas quando você realmente receber dinheiro físico. Ex: "Recebido R$ 20 de um amigo".</p>
+                    <h4>💵 Receitas em Dinheiro</h4>
+                    <p>Registre apenas quando receber dinheiro físico real. Ex: "Recebido R$ 50 de venda" ou "Troco recebido R$ 10".</p>
                 </div>
                 <div class="feature-card">
                     <h4>💸 Despesas em Dinheiro</h4>
-                    <p>Só é possível gastar se houver saldo suficiente na conta de dinheiro. O sistema impedirá gastos sem saldo.</p>
+                    <p>Só é possível gastar se houver saldo suficiente. O sistema impede gastos sem saldo disponível.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏧 Conexão via Saques</h4>
+                    <p>A única ligação entre contas: saque retira da conta bancária e adiciona à conta de dinheiro automaticamente.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Controle Preciso</h4>
+                    <p>Acompanhe exatamente quanto dinheiro físico você possui e onde foi gasto.</p>
                 </div>
             </div>
 
-            <h3>🏧 Saques - Única Conexão Entre Contas</h3>
-            <p>O único momento em que as contas se conectam é durante os <strong>saques</strong>:</p>
-            
+            <h3>🔄 Transferências Entre Contas</h3>
             <div class="step-by-step">
-                <h4><span class="step-number">1</span>Saque de Conta Bancária</h4>
-                <p>Registre um saque: o valor sai da conta bancária e automaticamente entra na conta de dinheiro.</p>
+                <h4><span class="step-number">1</span>Nova Transferência</h4>
+                <p>Selecione conta de origem e destino, informe o valor e adicione uma descrição (ex: "Transferência para poupança").</p>
             </div>
 
             <div class="step-by-step">
-                <h4><span class="step-number">2</span>Adiantamento no Cartão</h4>
-                <p>Para adiantamentos em cartão de crédito: o valor é debitado do limite e creditado na conta de dinheiro.</p>
+                <h4><span class="step-number">2</span>Tipos de Transferência</h4>
+                <p>Suporte a TED, DOC, PIX e transferências internas com registro automático em ambas as contas.</p>
             </div>
+
+            <h3>📊 Monitoramento e Alertas</h3>
+            <ul>
+                <li><strong>Saldo em Tempo Real:</strong> Acompanhamento constante de todas as contas</li>
+                <li><strong>Alertas de Limite:</strong> Notificações quando saldo fica baixo ou usa cheque especial</li>
+                <li><strong>Histórico Detalhado:</strong> Todas as movimentações com filtros avançados</li>
+                <li><strong>Reconciliação:</strong> Compare seus registros com extratos bancários</li>
+            </ul>
 
             <div class="tip-box">
-                <h4>💡 Exemplo Prático</h4>
-                <p><strong>Cenário:</strong> Você tem R$ 1000 no banco e precisa de R$ 100 em dinheiro.</p>
-                <p><strong>Processo:</strong> Registre um saque de R$ 100. Resultado: R$ 900 no banco + R$ 100 em dinheiro.</p>
+                <h4>💡 Exemplo Prático de Uso</h4>
+                <p><strong>Cenário:</strong> Você tem R$ 2.000 no Itaú e precisa de R$ 200 em dinheiro para uma feira.</p>
+                <p><strong>Processo:</strong> Registre um saque de R$ 200. Resultado automático: R$ 1.800 no Itaú + R$ 200 na conta de dinheiro.</p>
+                <p><strong>Compra na feira:</strong> Registre despesa de R$ 150 em dinheiro. Resultado: R$ 50 restam na conta de dinheiro.</p>
             </div>
 
             <div class="warning-box">
-                <h4>⚠️ Importante</h4>
-                <p>Nunca registre transações em dinheiro diretamente em contas bancárias ou cartões. Use apenas a conta de dinheiro para transações físicas em espécie.</p>
+                <h4>⚠️ Importante sobre Contas de Dinheiro</h4>
+                <p>Nunca registre transações em dinheiro diretamente em contas bancárias. Use exclusivamente a conta de dinheiro para transações físicas em espécie. Esta separação garante controle preciso sobre cada tipo de saldo.</p>
             </div>
         </section>
 
-        <section id="categorias" class="section">
-            <h2>🏷️ 6. Organizando por Categorias</h2>
+        <section id="cartoes" class="section">
+            <h2>💳 6. Gestão de Cartões</h2>
             
-            <h3>📋 Categorias Padrão</h3>
-            <p>O sistema vem com categorias pré-definidas, mas você pode personalizá-las completamente:</p>
-            
+            <h3>➕ Adicionando Cartões</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Configuração Inicial</h4>
+                <p>Acesse "Cartões" e adicione novo cartão informando nome, bandeira (Visa, Mastercard, etc.), tipo (crédito/débito) e banco emissor.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Cartões de Crédito</h4>
+                <p>Configure limite total, data de fechamento (quando a fatura é gerada), data de vencimento e melhor dia de compra para maximizar o prazo.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Cartões de Débito</h4>
+                <p>Vincule à conta bancária correspondente para desconto automático do saldo disponível a cada compra.</p>
+            </div>
+
+            <h3>💳 Gestão de Faturas</h3>
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>🍽️ Alimentação</h4>
-                    <p>Restaurantes, supermercado, delivery</p>
+                    <h4>📊 Controle de Limite</h4>
+                    <p>Acompanhe limite disponível, valor da fatura atual e projeção para próximas faturas.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🚗 Transporte</h4>
-                    <p>Combustível, transporte público, manutenção</p>
+                    <h4>📅 Calendário de Vencimentos</h4>
+                    <p>Visualize todas as datas de vencimento em um calendário integrado com alertas automáticos.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🏠 Moradia</h4>
-                    <p>Aluguel, condomínio, manutenção doméstica</p>
+                    <h4>💰 Pagamento de Faturas</h4>
+                    <p>Registre pagamentos totais ou parciais com histórico completo de quitações.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🎯 Lazer</h4>
-                    <p>Cinema, viagens, hobbies</p>
+                    <h4>🔄 Parcelamentos</h4>
+                    <p>Gerencie compras parceladas com distribuição automática entre faturas futuras.</p>
                 </div>
             </div>
 
-            <h3>➕ Criando Categorias Personalizadas</h3>
+            <h3>✈️ Cartões de Milhas</h3>
+            <p>Para cartões que acumulam milhas ou pontos:</p>
+            <ul>
+                <li><strong>Configuração de Acúmulo:</strong> Defina quantos pontos por real gasto</li>
+                <li><strong>Metas de Milhas:</strong> Estabeleça objetivos de acúmulo mensal/anual</li>
+                <li><strong>Promoções Especiais:</strong> Registre multiplicadores em categorias específicas</li>
+                <li><strong>Histórico de Resgates:</strong> Acompanhe utilização de pontos e milhas</li>
+            </ul>
+
+            <h3>🤖 Pagamentos Inteligentes</h3>
             <div class="step-by-step">
-                <h4><span class="step-number">1</span>Nova Categoria</h4>
-                <p>Acesse "Categorias" e clique em "Adicionar". Defina nome, cor e ícone para fácil identificação.</p>
+                <h4><span class="step-number">1</span>Sugestão de Cartão</h4>
+                <p>O sistema sugere automaticamente o melhor cartão para cada compra baseado em benefícios, limites e datas de vencimento.</p>
             </div>
 
             <div class="step-by-step">
-                <h4><span class="step-number">2</span>Organização Visual</h4>
-                <p>Use cores diferentes para tipos de gastos: vermelho para essenciais, azul para lazer, verde para investimentos.</p>
+                <h4><span class="step-number">2</span>Otimização de Parcelas</h4>
+                <p>Calcule automaticamente a melhor distribuição de parcelas considerando limites e fluxo de caixa.</p>
+            </div>
+
+            <h3>📊 Análises de Uso</h3>
+            <ul>
+                <li><strong>Gastos por Categoria:</strong> Entenda onde está gastando mais com cada cartão</li>
+                <li><strong>Comparativo de Benefícios:</strong> Veja qual cartão oferece mais vantagens por uso</li>
+                <li><strong>Utilização de Limite:</strong> Monitore percentual de uso para manter score saudável</li>
+                <li><strong>Cashback e Benefícios:</strong> Acompanhe retornos obtidos por cada cartão</li>
+            </ul>
+
+            <div class="tip-box">
+                <h4>💡 Dica para Maximizar Benefícios</h4>
+                <p>Use nomes descritivos como "Nubank Roxinho", "Itaú Click Mastercard" para fácil identificação. Configure alertas de vencimento com 3-5 dias de antecedência. Para cartões com anuidade, monitore se os benefícios compensam o custo anual.</p>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Recursos Premium para Cartões</h4>
+                <p>Análise comparativa automática de benefícios, sugestões de cartões ideais para seu perfil, alertas de promoções especiais e otimização inteligente de pagamentos para maximizar cashback e milhas.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Gestão Responsável de Cartões</h4>
+                <p>Mantenha o uso dos cartões abaixo de 30% do limite para preservar seu score. Configure alertas de limite próximo ao máximo. Quite sempre que possível o valor total da fatura para evitar juros rotativos. Use o sistema para simular o impacto de grandes compras no seu orçamento.</p>
             </div>
         </section>
 
@@ -444,213 +657,873 @@
             <h3>💼 Cadastrando Investimentos</h3>
             <div class="step-by-step">
                 <h4><span class="step-number">1</span>Novo Investimento</h4>
-                <p>Informe nome, tipo (CDB, ações, etc.), valor investido, data e corretora.</p>
+                <p>Acesse "Investimentos" e adicione informando nome do produto, tipo (CDB, LCI/LCA, ações, fundos, etc.), valor investido, data de aplicação e instituição financeira.</p>
             </div>
 
             <div class="step-by-step">
-                <h4><span class="step-number">2</span>Acompanhamento</h4>
-                <p>Atualize periodicamente o valor atual para acompanhar rendimentos e perdas.</p>
+                <h4><span class="step-number">2</span>Configurações Avançadas</h4>
+                <p>Defina rentabilidade esperada, prazo de vencimento, liquidez (D+0, D+1, etc.) e se há proteção do FGC.</p>
             </div>
 
-            <h3>🎯 Metas de Investimento</h3>
-            <p>Defina objetivos claros:</p>
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Acompanhamento de Performance</h4>
+                <p>Atualize periodicamente o valor atual para monitorar rendimentos, perdas e compare com metas estabelecidas.</p>
+            </div>
+
+            <h3>📊 Tipos de Investimento Suportados</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🏦 Renda Fixa</h4>
+                    <p>CDB, LCI, LCA, Tesouro Direto, CRI, CRA com cálculo automático de rentabilidade bruta e líquida.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Renda Variável</h4>
+                    <p>Ações, FIIs, ETFs com acompanhamento de cotações e dividendos recebidos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏢 Fundos de Investimento</h4>
+                    <p>Fundos multimercado, DI, ações com controle de cotas e performance histórica.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🌍 Internacional</h4>
+                    <p>REITs, ações americanas, bonds com conversão automática de moedas.</p>
+                </div>
+            </div>
+
+            <h3>🎯 Metas e Objetivos</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Definindo Metas</h4>
+                <p>Estabeleça objetivos claros: valor total desejado, prazo para atingir e propósito específico (aposentadoria, casa própria, viagem, etc.).</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Estratégias de Aporte</h4>
+                <p>Configure aportes mensais automáticos e simule diferentes cenários de investimento.</p>
+            </div>
+
+            <h3>📊 Análises de Portfólio</h3>
             <ul>
-                <li>Meta de valor total</li>
-                <li>Prazo para atingir</li>
-                <li>Propósito (aposentadoria, viagem, etc.)</li>
+                <li><strong>Diversificação:</strong> Gráficos mostrando distribuição por tipo, prazo e risco</li>
+                <li><strong>Performance:</strong> Comparação com CDI, IPCA e outros benchmarks</li>
+                <li><strong>Rentabilidade:</strong> Cálculos de juros compostos e projeções futuras</li>
+                <li><strong>Liquidez:</strong> Análise de quanto do patrimônio está disponível rapidamente</li>
             </ul>
 
+            <h3>💰 Gestão de Resgates</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Planejamento de Resgates</h4>
+                <p>Simule diferentes cenários de resgate considerando impostos, taxas e impacto no portfólio.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Registro de Resgates</h4>
+                <p>Registre retiradas com valor bruto, descontos de IR e taxas, valor líquido recebido.</p>
+            </div>
+
             <div class="tip-box">
-                <h4>💡 Diversificação</h4>
-                <p>Use diferentes tipos de investimento no sistema para ter uma visão completa do seu portfólio e nível de diversificação.</p>
+                <h4>💡 Estratégia de Diversificação</h4>
+                <p>Use o sistema para manter uma carteira diversificada: 20-40% renda fixa, 40-60% renda variável, 10-20% reserva de emergência. Reavalie periodicamente e rebalanceie conforme necessário. Para casais, considere objetivos individuais e conjuntos.</p>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Recursos Premium de Investimentos</h4>
+                <p>Integração com APIs de cotações em tempo real, recomendações personalizadas de IA, análise de risco automatizada, alertas de oportunidades e comparação automática com carteiras de referência.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Considerações Importantes</h4>
+                <p>Lembre-se de considerar impostos (IR progressivo para renda fixa, 15% para ações após 6 meses), taxas de administração e custódia. Mantenha sempre uma reserva de emergência antes de investir. Diversifique entre diferentes tipos e prazos de investimento.</p>
             </div>
         </section>
 
         <section id="milhas" class="section">
             <h2>✈️ 8. Sistema de Milhas</h2>
             
-            <h3>🎯 Configurando Cartões de Milhas</h3>
+            <h3>🎯 Configuração de Programas</h3>
             <div class="step-by-step">
-                <h4><span class="step-number">1</span>Regras de Acúmulo</h4>
-                <p>Configure quantas milhas você ganha por real gasto em cada cartão (ex: 1 milha por R$ 1 gasto).</p>
+                <h4><span class="step-number">1</span>Adicionando Programas</h4>
+                <p>Cadastre seus programas de fidelidade: LATAM Pass, Smiles, TudoAzul, Livelo, etc. Informe saldo inicial e validade dos pontos.</p>
             </div>
 
             <div class="step-by-step">
-                <h4><span class="step-number">2</span>Saldo Inicial</h4>
-                <p>Informe quantas milhas você já possui para ter o controle total do saldo.</p>
+                <h4><span class="step-number">2</span>Metas de Acúmulo</h4>
+                <p>Defina objetivos específicos: "Acumular 50.000 milhas LATAM até dezembro para viagem à Europa" com prazo e valor de passagem desejada.</p>
             </div>
 
-            <h3>🏆 Metas de Milhas</h3>
-            <p>Crie metas específicas:</p>
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Vinculação com Cartões</h4>
+                <p>Configure quais cartões geram milhas em cada programa e suas respectivas taxas de conversão (ex: 1 real = 1 ponto Livelo).</p>
+            </div>
+
+            <h3>💳 Estratégias de Acúmulo</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🛒 Gastos Recorrentes</h4>
+                    <p>Use cartões de milhas para pagamentos fixos: condomínio, escola, combustível, supermercado.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛍️ Promoções Especiais</h4>
+                    <p>Monitore campanhas de bonificação: 3x pontos em farmácias, 5x em postos, compre e ganhe.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏪 Parceiros</h4>
+                    <p>Acumule em parceiros: hotéis, locadoras, e-commerce, restaurantes com multiplicadores especiais.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Transferências</h4>
+                    <p>Gerencie transferências entre programas considerando taxas e bonificações sazonais.</p>
+                </div>
+            </div>
+
+            <h3>🎁 Gestão de Resgates</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Planejamento de Viagens</h4>
+                <p>Simule resgates para diferentes destinos e datas. Compare custos em milhas vs dinheiro para encontrar o melhor custo-benefício.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Produtos e Serviços</h4>
+                <p>Avalie resgates alternativos: upgrades, produtos, cashback quando não há disponibilidade de passagens.</p>
+            </div>
+
+            <h3>📊 Monitoramento e Alertas</h3>
             <ul>
-                <li>Viagem para destino específico</li>
-                <li>Quantidade de milhas para acumular</li>
-                <li>Prazo para atingir a meta</li>
+                <li><strong>Vencimento de Pontos:</strong> Alertas automáticos para pontos próximos ao vencimento</li>
+                <li><strong>Promoções Ativas:</strong> Notificações sobre campanhas de bonificação em andamento</li>
+                <li><strong>Metas de Progresso:</strong> Acompanhamento visual do progresso para atingir objetivos</li>
+                <li><strong>Análise de Valor:</strong> Cálculo do CPM (custo por milha) de cada estratégia</li>
             </ul>
 
-            <h3>📊 Acompanhamento Automático</h3>
-            <p>O sistema calcula automaticamente:</p>
-            <ul>
-                <li>Milhas ganhas por transação</li>
-                <li>Progresso das metas</li>
-                <li>Projeções baseadas nos gastos atuais</li>
-            </ul>
+            <h3>🤝 Funcionalidades para Casais</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>👫 Conta Conjunta</h4>
+                    <p>Visualize saldos consolidados do casal em cada programa de milhas.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Metas Compartilhadas</h4>
+                    <p>Definam objetivos conjuntos: "Lua de mel em Paris - 100.000 milhas LATAM".</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Estratégia Coordenada</h4>
+                    <p>Otimize gastos entre cartões dos dois para maximizar acúmulo conjunto.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎁 Transferências Internas</h4>
+                    <p>Gerencie transferências de pontos entre cônjuges quando permitido pelo programa.</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Estratégias Avançadas</h4>
+                <p>Use cartões diferentes para categorias específicas: cartão A para supermercado (3x pontos), cartão B para combustível (5x pontos). Aproveite promoções sazonais e compre pontos com desconto quando necessário. Monitore constantemente as regras dos programas que mudam frequentemente.</p>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Recursos Premium de Milhas</h4>
+                <p>Sincronização automática com sites de programas, alertas de promoções personalizados, calculadora avançada de CPM, sugestões de estratégias otimizadas por IA e análise preditiva de melhores períodos para resgates.</p>
+            </div>
 
             <div class="warning-box">
-                <h4>⚠️ Validade das Milhas</h4>
-                <p>Lembre-se de verificar periodicamente a validade das suas milhas nos programas oficiais das companhias aéreas.</p>
+                <h4>⚠️ Cuidados com Milhas</h4>
+                <p>Acompanhe datas de validade - pontos vencidos não podem ser recuperados. Não acumule indefinidamente; use regularmente para evitar perdas. Considere o custo real: se precisar gastar mais para ganhar milhas, avalie se vale a pena. Mantenha-se atualizado com mudanças nas regras dos programas.</p>
             </div>
         </section>
 
-        <section id="relatorios" class="section">
-            <h2>📊 9. Relatórios e Análises</h2>
+        <section id="ai-features" class="section">
+            <h2>🤖 9. Recursos de IA</h2>
             
-            <h3>📈 Dashboard Principal</h3>
-            <p>Visão geral com:</p>
-            <ul>
-                <li>Resumo mensal de receitas vs despesas</li>
-                <li>Gráficos de categorias</li>
-                <li>Evolução patrimonial</li>
-                <li>Próximas contas a vencer</li>
-            </ul>
-
-            <h3>📋 Relatórios Detalhados</h3>
+            <h3>💡 Recomendações Personalizadas</h3>
+            <p>Nossa IA financeira analisa seus dados para fornecer insights valiosos:</p>
+            
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>📊 Por Período</h4>
-                    <p>Analise qualquer período específico com filtros personalizados</p>
+                    <h4>📊 Análise de Padrões</h4>
+                    <p>Identifica tendências de gastos, sazonalidades e oportunidades de economia baseadas no seu histórico financeiro.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🏷️ Por Categoria</h4>
-                    <p>Veja onde você mais gasta e identifique oportunidades de economia</p>
+                    <h4>💰 Otimização de Cartões</h4>
+                    <p>Sugere qual cartão usar em cada situação para maximizar benefícios, cashback e milhas.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>💳 Por Método de Pagamento</h4>
-                    <p>Compare uso de dinheiro, cartões e contas bancárias</p>
+                    <h4>🎯 Metas Inteligentes</h4>
+                    <p>Propõe metas realistas baseadas na sua capacidade financeira e objetivos declarados.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>📈 Tendências</h4>
-                    <p>Identifique padrões de gastos e comportamentos financeiros</p>
+                    <h4>⚠️ Alertas Preditivos</h4>
+                    <p>Avisa sobre possíveis problemas financeiros futuros e sugere ações preventivas.</p>
                 </div>
             </div>
 
-            <h3>📤 Exportação de Dados</h3>
-            <p>Exporte seus dados em diferentes formatos:</p>
+            <h3>📱 WhatsApp Smart (Premium)</h3>
+            <div class="premium-box">
+                <h4>⭐ Consultas por Voz e Texto</h4>
+                <p>Acesse suas informações financeiras via WhatsApp:</p>
+                <ul>
+                    <li><strong>Consultas de Saldo:</strong> "Qual meu saldo no Nubank?"</li>
+                    <li><strong>Gastos por Período:</strong> "Quanto gastei em alimentação este mês?"</li>
+                    <li><strong>Lembretes:</strong> "Quais cartões vencem esta semana?"</li>
+                    <li><strong>Análises Rápidas:</strong> "Como está meu orçamento?"</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Configuração do WhatsApp</h4>
+                <p>Conecte seu número na área Premium do sistema. Receba um código de verificação via SMS para confirmar.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Comandos Disponíveis</h4>
+                <p>Use comandos naturais em português. A IA entende contexto e pode responder perguntas complexas sobre suas finanças.</p>
+            </div>
+
+            <h3>🔮 Análise Preditiva</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📈 Projeções Financeiras</h4>
+                    <p>Prevê saldos futuros baseados em padrões históricos e transações programadas.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎯 Simulação de Cenários</h4>
+                    <p>Analisa o impacto de grandes compras, mudanças de renda ou novos investimentos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💡 Sugestões de Investimento</h4>
+                    <p>Recomenda produtos financeiros adequados ao seu perfil e objetivos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚡ Otimização Automática</h4>
+                    <p>Sugere realocações de recursos para maximizar rentabilidade e liquidez.</p>
+                </div>
+            </div>
+
+            <h3>🧠 Consultor Financeiro IA</h3>
+            <div class="premium-box">
+                <h4>⭐ Assistente Inteligente 24/7</h4>
+                <p>Chat avançado com IA especializada em finanças pessoais:</p>
+                <ul>
+                    <li><strong>Planejamento Financeiro:</strong> Ajuda a criar estratégias personalizadas</li>
+                    <li><strong>Educação Financeira:</strong> Explica conceitos e responde dúvidas</li>
+                    <li><strong>Análise de Investimentos:</strong> Avalia oportunidades e riscos</li>
+                    <li><strong>Gestão de Dívidas:</strong> Estratégias para quitação otimizada</li>
+                </ul>
+            </div>
+
+            <h3>📊 Insights Automatizados</h3>
             <ul>
-                <li>Excel (.xlsx) para análises avançadas</li>
-                <li>PDF para impressão e arquivamento</li>
-                <li>CSV para importação em outras ferramentas</li>
+                <li><strong>Relatórios Inteligentes:</strong> Análises automáticas semanais e mensais</li>
+                <li><strong>Detecção de Anomalias:</strong> Identifica gastos incomuns ou suspeitos</li>
+                <li><strong>Benchmarking:</strong> Compara seu desempenho com usuários similares</li>
+                <li><strong>Recomendações Sazonais:</strong> Sugere ajustes para diferentes épocas do ano</li>
             </ul>
+
+            <div class="tip-box">
+                <h4>💡 Maximizando os Recursos de IA</h4>
+                <p>Para melhores resultados, mantenha seus dados sempre atualizados e utilize as categorias corretas. Quanto mais informações precisas, mais assertivas serão as recomendações da IA. Configure seus objetivos e metas para receber sugestões personalizadas.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>🔒 Privacidade e Segurança</h4>
+                <p>Todos os recursos de IA operam com total segurança e privacidade. Seus dados nunca são compartilhados com terceiros. A IA processa informações localmente sempre que possível, e quando necessário usar serviços externos, os dados são criptografados e anonimizados.</p>
+            </div>
         </section>
 
         <section id="casais" class="section">
             <h2>👫 10. Funcionalidades para Casais</h2>
             
-            <h3>🤝 Conectando Perfis</h3>
+            <h3>🤝 Convite e Configuração</h3>
             <div class="step-by-step">
                 <h4><span class="step-number">1</span>Enviando Convite</h4>
-                <p>Um dos parceiros envia convite através do email do outro.</p>
+                <p>Na área "Casal", envie um convite por email para seu cônjuge. Ele receberá um link para criar conta vinculada.</p>
             </div>
 
             <div class="step-by-step">
-                <h4><span class="step-number">2</span>Aceitando a Conexão</h4>
-                <p>O parceiro recebe o convite por email e aceita a conexão.</p>
+                <h4><span class="step-number">2</span>Definindo Permissões</h4>
+                <p>Configure o que cada um pode ver e editar: contas individuais, contas conjuntas, cartões pessoais vs compartilhados.</p>
             </div>
 
-            <h3>👁️ Modos de Visualização</h3>
-            <p>Após conectar os perfis, vocês podem alternar entre:</p>
-            <ul>
-                <li><strong>Visão Individual:</strong> Apenas suas transações</li>
-                <li><strong>Visão do Parceiro:</strong> Apenas as transações do parceiro</li>
-                <li><strong>Visão Combinada:</strong> Todas as transações do casal</li>
-            </ul>
-
-            <h3>🔐 Privacidade e Controle</h3>
-            <div class="tip-box">
-                <h4>🔒 Suas Transações Permanecem Suas</h4>
-                <p>Cada pessoa mantém controle total sobre suas próprias transações. O parceiro pode visualizar, mas não editar ou excluir.</p>
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Sincronização de Dados</h4>
+                <p>Escolha quais informações serão compartilhadas automaticamente entre os perfis do casal.</p>
             </div>
 
-            <h3>🎯 Metas Compartilhadas</h3>
-            <p>Criem metas financeiras conjuntas:</p>
-            <ul>
-                <li>Reserva de emergência familiar</li>
-                <li>Viagem dos sonhos</li>
-                <li>Entrada da casa própria</li>
-                <li>Aposentadoria conjunta</li>
-            </ul>
-        </section>
-
-        <section id="dicas-avancadas" class="section">
-            <h2>🎯 11. Dicas Avançadas</h2>
-            
-            <h3>⚡ Produtividade</h3>
-            <div class="tip-box">
-                <h4>📱 Registre na Hora</h4>
-                <p>Registre transações imediatamente após realizá-las. Isso evita esquecimentos e mantém dados sempre atualizados.</p>
-            </div>
-
-            <div class="tip-box">
-                <h4>🗓️ Revisão Semanal</h4>
-                <p>Reserve 15 minutos semanais para revisar e categorizar transações pendentes.</p>
-            </div>
-
-            <h3>💡 Organização Inteligente</h3>
+            <h3>💰 Gestão Financeira Conjunta</h3>
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>🏷️ Use Descrições Detalhadas</h4>
-                    <p>Em vez de "Mercado", use "Mercado - Compras da semana". Facilita buscas futuras.</p>
+                    <h4>🏦 Contas Compartilhadas</h4>
+                    <p>Marquem contas como "conjuntas" para ambos terem visibilidade e acesso total aos dados.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>📅 Padronize Datas</h4>
-                    <p>Para contas recorrentes, use sempre o mesmo dia (ex: todo dia 5 para aluguel).</p>
+                    <h4>💳 Cartões do Casal</h4>
+                    <p>Gerenciem cartões compartilhados com visibilidade de gastos de ambos os portadores.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🎨 Cores Consistentes</h4>
-                    <p>Use um padrão de cores para categorias similares em todo o sistema.</p>
+                    <h4>📊 Dashboard Unificado</h4>
+                    <p>Visualização consolidada das finanças do casal com separação por responsável quando necessário.</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🔍 Use Filtros</h4>
-                    <p>Aproveite os filtros avançados para análises específicas por período, valor ou categoria.</p>
+                    <h4>🎯 Metas Conjuntas</h4>
+                    <p>Definam objetivos financeiros em conjunto: casa própria, viagens, aposentadoria.</p>
                 </div>
             </div>
 
-            <h3>📈 Análise Estratégica</h3>
-            <div class="warning-box">
-                <h4>🎯 Regra 50-30-20</h4>
-                <p><strong>50%</strong> para necessidades básicas, <strong>30%</strong> para desejos pessoais, <strong>20%</strong> para poupança e investimentos. Use os relatórios para verificar se está seguindo essa proporção.</p>
+            <h3>📊 Relatórios para Casais</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Gastos Consolidados</h4>
+                <p>Visualizem gastos totais do casal por categoria, período e responsável. Identifiquem padrões de consumo conjunto.</p>
             </div>
 
-            <h3>🔐 Segurança</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Divisão de Despesas</h4>
+                <p>Acompanhem divisões proporcionais: 50/50, por renda, por categoria específica ou modelo personalizado.</p>
+            </div>
+
+            <h3>💡 Funcionalidades Colaborativas</h3>
             <ul>
-                <li>Mantenha sempre o aplicativo atualizado</li>
-                <li>Use senhas fortes e únicas</li>
-                <li>Faça logout em dispositivos compartilhados</li>
-                <li>Revise periodicamente os acessos da sua conta</li>
+                <li><strong>Orçamento Compartilhado:</strong> Definam limites de gastos por categoria que ambos devem respeitar</li>
+                <li><strong>Notificações Cruzadas:</strong> Recebam alertas sobre gastos importantes do cônjuge</li>
+                <li><strong>Lista de Compras:</strong> Compartilhem listas sincronizadas para evitar compras duplicadas</li>
+                <li><strong>Planejamento de Viagens:</strong> Organização financeira conjunta para viagens e eventos</li>
             </ul>
 
-            <h3>🆘 Suporte</h3>
-            <p>Em caso de dúvidas ou problemas:</p>
+            <h3>🎯 Metas e Objetivos em Casal</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🏠 Sonho da Casa Própria</h4>
+                    <p>Calculem valor necessário para entrada, financiamento e acompanhem progresso conjunto da poupança.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✈️ Viagens dos Sonhos</h4>
+                    <p>Planejem destinos, custos e estratégias de economia. Incluam milhas e pontos no planejamento.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>👶 Filhos e Educação</h4>
+                    <p>Organizem financeiramente para filhos: parto, educação, planos de saúde e reserva para futuro.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏖️ Aposentadoria</h4>
+                    <p>Planejem aposentadoria conjunta com metas de investimento e projeções de longo prazo.</p>
+                </div>
+            </div>
+
+            <h3>🔐 Privacidade e Autonomia</h3>
+            <div class="warning-box">
+                <h4>⚖️ Equilíbrio entre Transparência e Privacidade</h4>
+                <p>Mesmo em relacionamentos, cada pessoa tem direito à privacidade financeira. Configure adequadamente:</p>
+                <ul>
+                    <li>Contas pessoais vs conjuntas</li>
+                    <li>Gastos individuais vs compartilhados</li>
+                    <li>Limite de valores para notificações automáticas</li>
+                    <li>Informações que devem permanecer privadas</li>
+                </ul>
+            </div>
+
+            <h3>💬 Comunicação Financeira</h3>
+            <div class="tip-box">
+                <h4>💡 Dicas para Comunicação Saudável</h4>
+                <p>Use o sistema para facilitar conversas sobre dinheiro:</p>
+                <ul>
+                    <li>Revisem relatórios mensais juntos</li>
+                    <li>Definam reuniões financeiras regulares</li>
+                    <li>Celebrem metas atingidas em conjunto</li>
+                    <li>Discutam ajustes necessários com dados concretos</li>
+                    <li>Usem alertas para evitar surpresas desagradáveis</li>
+                </ul>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Recursos Premium para Casais</h4>
+                <p>Mediação inteligente de conflitos financeiros, sugestões personalizadas para harmonia financeira, análise comparativa de compatibilidade financeira e consultoria especializada para casais via IA.</p>
+            </div>
+        </section>
+
+        <section id="relatorios" class="section">
+            <h2>📊 11. Relatórios e Análises</h2>
+            
+            <h3>📈 Relatórios Básicos</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Fluxo de Caixa</h4>
+                    <p>Acompanhe entradas vs saídas mensais com projeções para meses futuros baseadas em padrões históricos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏷️ Gastos por Categoria</h4>
+                    <p>Visualize distribuição percentual de gastos com gráficos de pizza e barras interativos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💳 Análise de Cartões</h4>
+                    <p>Utilização de limites, gastos por cartão e otimização de benefícios recebidos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📅 Evolução Temporal</h4>
+                    <p>Gráficos de linha mostrando evolução patrimonial, gastos mensais e tendências.</p>
+                </div>
+            </div>
+
+            <h3>🎯 Análises Avançadas</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Comparativos Períodos</h4>
+                <p>Compare meses, trimestres ou anos para identificar sazonalidades e mudanças de comportamento financeiro.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Análise de Metas</h4>
+                <p>Acompanhe progresso de todas as metas com projeções de quando serão atingidas baseadas no ritmo atual.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Rentabilidade de Investimentos</h4>
+                <p>Performance detalhada do portfólio com comparações contra benchmarks (CDI, IPCA, IBOVESPA).</p>
+            </div>
+
+            <h3>📊 Dashboards Interativos</h3>
             <ul>
-                <li>Consulte primeiro este tutorial completo</li>
-                <li>Use a função de busca dentro da plataforma</li>
-                <li>Entre em contato através do suporte integrado</li>
-                <li>Participe da comunidade de usuários para dicas e truques</li>
+                <li><strong>Filtros Avançados:</strong> Por período, categoria, membro do casal, tipo de transação</li>
+                <li><strong>Drill-down:</strong> Clique em gráficos para ver detalhes específicos</li>
+                <li><strong>Exportação:</strong> PDF, Excel, CSV para análises externas</li>
+                <li><strong>Agendamento:</strong> Receba relatórios automáticos por email</li>
+            </ul>
+
+            <h3>💡 Insights Automáticos</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔍 Detecção de Padrões</h4>
+                    <p>IA identifica tendências: "Gastos com alimentação aumentaram 15% nos últimos 3 meses".</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚠️ Alertas Inteligentes</h4>
+                    <p>Notificações sobre gastos incomuns, aproximação de limites e oportunidades de economia.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Projeções</h4>
+                    <p>Estimativas de saldos futuros e tempo para atingir metas baseadas em comportamento atual.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💰 Oportunidades</h4>
+                    <p>Sugestões para otimização: "Transferir R$ 5.000 para investimento pode render R$ 300 extras por ano".</p>
+                </div>
+            </div>
+
+            <h3>📱 Relatórios Mobile</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Dashboard Simplificado</h4>
+                <p>Versão otimizada para celular com informações essenciais e navegação intuitiva.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Notificações Push</h4>
+                <p>Receba resumos diários, alertas importantes e insights diretamente no celular.</p>
+            </div>
+
+            <h3>🎨 Personalização de Relatórios</h3>
+            <ul>
+                <li><strong>Widgets Customizáveis:</strong> Escolha quais gráficos aparecem no dashboard principal</li>
+                <li><strong>Cores e Temas:</strong> Personalize aparência para sua preferência</li>
+                <li><strong>Frequência de Atualizações:</strong> Configure intervalos de refresh automático</li>
+                <li><strong>Métricas Favoritas:</strong> Destaque KPIs mais importantes para seu perfil</li>
             </ul>
 
             <div class="tip-box">
-                <h4>🎉 Parabéns!</h4>
-                <p>Você concluiu o tutorial completo do Couples Financials. Com essas informações, você está pronto para ter controle total sobre suas finanças pessoais e familiares!</p>
+                <h4>💡 Usando Relatórios para Decisões</h4>
+                <p>Transforme dados em ações concretas:</p>
+                <ul>
+                    <li>Identifique categorias com gastos crescentes para ajustar orçamento</li>
+                    <li>Use análises de cartões para maximizar benefícios</li>
+                    <li>Monitore performance de investimentos para rebalanceamento</li>
+                    <li>Analise sazonalidades para planejar gastos futuros</li>
+                </ul>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Relatórios Premium</h4>
+                <p>Análises preditivas avançadas, comparações com benchmarks de mercado, relatórios personalizados por IA, integração com planilhas do Google e análises de risco automatizadas.</p>
             </div>
         </section>
+
+        <section id="configuracoes" class="section">
+            <h2>⚙️ 12. Configurações e Perfil</h2>
+            
+            <h3>👤 Configurações Pessoais</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Informações do Perfil</h4>
+                <p>Atualize nome, email, telefone, foto do perfil e informações pessoais. Mantenha dados sempre atualizados para melhor experiência.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Preferências Regionais</h4>
+                <p>Configure idioma (português, inglês, espanhol), moeda principal, fuso horário e formato de data/hora.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Tema e Interface</h4>
+                <p>Escolha entre modo claro/escuro, densidade de informações e configurações de acessibilidade.</p>
+            </div>
+
+            <h3>🔒 Segurança e Privacidade</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔑 Gestão de Senha</h4>
+                    <p>Altere senha regularmente, ative autenticação de dois fatores e gerencie dispositivos conectados.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Autenticação 2FA</h4>
+                    <p>Configure 2FA via SMS, app autenticador ou email para segurança adicional em acessos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🕐 Histórico de Acesso</h4>
+                    <p>Monitore logins recentes, dispositivos utilizados e localizações de acesso.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ Privacidade de Dados</h4>
+                    <p>Configure níveis de compartilhamento, backup automático e retenção de dados históricos.</p>
+                </div>
+            </div>
+
+            <h3>🔔 Sistema de Notificações</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Preferências de Notificação</h4>
+                <p>Configure quais eventos geram alertas: vencimentos, metas atingidas, gastos incomuns, novos recursos.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Canais de Comunicação</h4>
+                <p>Escolha como receber notificações: email, SMS, push no app, WhatsApp (Premium).</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Frequência e Horários</h4>
+                <p>Defina horários para receber resumos diários/semanais e configure modo "não perturbe".</p>
+            </div>
+
+            <h3>💰 Configurações Financeiras</h3>
+            <ul>
+                <li><strong>Moeda Principal:</strong> Real brasileiro, Dólar americano, Euro ou outras</li>
+                <li><strong>Casas Decimais:</strong> Precisão para exibição de valores monetários</li>
+                <li><strong>Categorias Padrão:</strong> Personalização das categorias que aparecem primeiro</li>
+                <li><strong>Metas Automáticas:</strong> Configuração de metas recorrentes mensais/anuais</li>
+            </ul>
+
+            <h3>📊 Configurações de Relatórios</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📈 Dashboard Padrão</h4>
+                    <p>Configure quais widgets aparecem por padrão na tela inicial e sua ordem de exibição.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📅 Períodos de Análise</h4>
+                    <p>Defina período padrão para gráficos (30, 60, 90 dias) e configurações de comparação.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💾 Exportação Automática</h4>
+                    <p>Configure backup automático de dados e envio de relatórios mensais por email.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎨 Personalização Visual</h4>
+                    <p>Esquemas de cores, tipos de gráficos preferidos e densidade de informações.</p>
+                </div>
+            </div>
+
+            <h3>🌍 Configurações Multi-moeda</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Moedas Secundárias</h4>
+                <p>Adicione moedas que você utiliza ocasionalmente para viagens ou investimentos internacionais.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Taxas de Conversão</h4>
+                <p>Configure atualização automática de câmbio ou defina taxas fixas para controle específico.</p>
+            </div>
+
+            <h3>🔄 Backup e Sincronização</h3>
+            <ul>
+                <li><strong>Backup Automático:</strong> Dados salvos na nuvem diariamente</li>
+                <li><strong>Sincronização Multi-dispositivo:</strong> Acesso sincronizado entre celular, tablet e computador</li>
+                <li><strong>Exportação de Dados:</strong> Download completo em formatos padrão (JSON, CSV)</li>
+                <li><strong>Importação:</strong> Migração de dados de outras plataformas financeiras</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>🔐 Segurança Recomendada</h4>
+                <p>Para máxima segurança: ative 2FA, use senha única e forte, revise dispositivos conectados mensalmente, mantenha email de recuperação atualizado e configure alertas de acesso suspeito.</p>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Otimização de Performance</h4>
+                <p>Para melhor experiência: mantenha apenas widgets essenciais no dashboard, configure períodos adequados aos seus hábitos de análise, use categorias consistentes e revise configurações trimestralmente.</p>
+            </div>
+        </section>
+
+        <section id="parcerias" class="section">
+            <h2>🤝 13. Programa de Parcerias</h2>
+            
+            <h3>💼 Sistema de Afiliados</h3>
+            <p>Monetize sua rede compartilhando o Couples Financials:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Comissões Atrativas</h4>
+                    <p>Ganhe até 30% de comissão recorrente para cada usuário Premium indicado que permanecer ativo.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔗 Link Personalizado</h4>
+                    <p>Receba seu link único de afiliado para rastrear conversões e comissões de forma transparente.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Dashboard de Afiliado</h4>
+                    <p>Monitore cliques, conversões, comissões ganhas e pendentes em tempo real.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💳 Pagamentos Mensais</h4>
+                    <p>Receba comissões mensalmente via PIX, transferência bancária ou cartão pré-pago.</p>
+                </div>
+            </div>
+
+            <h3>🎯 Como Funciona o Programa</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Candidatura</h4>
+                <p>Preencha formulário detalhado sobre seu perfil: audiência, canais de divulgação, experiência com produtos financeiros.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Análise e Aprovação</h4>
+                <p>Nossa equipe analisa sua candidatura em até 5 dias úteis. Priorizamos influenciadores de finanças, casais e educadores.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Materiais de Apoio</h4>
+                <p>Acesse kit completo: banners, vídeos, scripts, templates para stories e posts nas redes sociais.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Divulgação e Ganhos</h4>
+                <p>Compartilhe seu link, acompanhe resultados e receba comissões mensais por indicações convertidas.</p>
+            </div>
+
+            <h3>🎁 Benefícios Exclusivos para Parceiros</h3>
+            <ul>
+                <li><strong>Acesso Premium Gratuito:</strong> Conta Premium vitalícia para parceiros aprovados</li>
+                <li><strong>Suporte Prioritário:</strong> Canal direto com equipe para dúvidas e sugestões</li>
+                <li><strong>Materiais Exclusivos:</strong> Conteúdos e recursos disponíveis apenas para afiliados</li>
+                <li><strong>Eventos e Webinars:</strong> Participação em treinamentos e lançamentos</li>
+                <li><strong>Comissões Progressivas:</strong> Percentual aumenta conforme performance</li>
+            </ul>
+
+            <h3>📈 Estrutura de Comissões</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🥉 Nível Bronze</h4>
+                    <p>1-10 conversões/mês: 20% de comissão recorrente + bônus de R$ 10 por conversão</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🥈 Nível Prata</h4>
+                    <p>11-25 conversões/mês: 25% de comissão recorrente + bônus de R$ 15 por conversão</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🥇 Nível Ouro</h4>
+                    <p>26-50 conversões/mês: 30% de comissão recorrente + bônus de R$ 20 por conversão</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💎 Nível Diamante</h4>
+                    <p>50+ conversões/mês: 35% de comissão recorrente + bônus de R$ 30 + participação nos lucros</p>
+                </div>
+            </div>
+
+            <h3>🎨 Kit de Materiais Marketing</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Recursos Visuais</h4>
+                <p>Banners em diversos tamanhos, logos, ícones, templates para stories do Instagram, posts para LinkedIn e Facebook.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Conteúdo Escrito</h4>
+                <p>Scripts para vídeos, textos para posts, templates de email marketing e artigos para blogs.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Recursos Interativos</h4>
+                <p>Vídeos demonstrativos, webinars gravados, apresentações e calculadoras financeiras personalizadas.</p>
+            </div>
+
+            <h3>📊 Perfis Ideais para Parceria</h3>
+            <ul>
+                <li><strong>Influenciadores Financeiros:</strong> Criadores de conteúdo sobre finanças pessoais</li>
+                <li><strong>Casais Influencers:</strong> Perfis que compartilham vida a dois e planejamento conjunto</li>
+                <li><strong>Educadores:</strong> Professores, coaches e consultores financeiros</li>
+                <li><strong>Blogueiros:</strong> Escritores de blogs sobre relacionamentos e finanças</li>
+                <li><strong>YouTubers:</strong> Criadores de vídeos educacionais e de lifestyle</li>
+            </ul>
+
+            <div class="premium-box">
+                <h4>⭐ Programa VIP para Super Parceiros</h4>
+                <p>Parceiros de alta performance têm acesso a: participação em decisões de produto, beta testing de novas funcionalidades, eventos exclusivos, comissões especiais e co-marketing personalizado.</p>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Dicas para Sucesso como Afiliado</h4>
+                <p>Conheça profundamente o produto, compartilhe experiências genuínas, foque em educar sua audiência sobre finanças, use dados e resultados reais, engaje com comentários e dúvidas, e mantenha consistência na divulgação.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>📋 Termos e Condições</h4>
+                <p>Leia atentamente o contrato de afiliados. Práticas proibidas: spam, compras falsas, publicidade enganosa. Comissões são pagas apenas para conversões legítimas. Reservamo-nos o direito de revisar e aprovar materiais de marketing.</p>
+            </div>
+        </section>
+
+        <section id="solucoes" class="section">
+            <h2>🛠️ 14. Solução de Problemas</h2>
+            
+            <h3>❓ Perguntas Frequentes (FAQ)</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔐 "Esqueci minha senha"</h4>
+                    <p>Use "Esqueci senha" na tela de login. Verifique spam/lixo eletrônico. Se não receber, entre em contato conosco.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💰 "Saldos não conferem"</h4>
+                    <p>Verifique se todas as transações foram registradas corretamente. Compare com extratos bancários reais.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 "App não sincroniza"</h4>
+                    <p>Verifique conexão com internet. Force fechamento e reabra o app. Faça logout/login se necessário.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>👫 "Problemas com convite de casal"</h4>
+                    <p>Verifique se email está correto. Cônjuge deve usar o mesmo email do convite para criar conta.</p>
+                </div>
+            </div>
+
+            <h3>🔧 Problemas Técnicos Comuns</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Problemas de Login</h4>
+                <p><strong>Sintomas:</strong> Não consegue entrar, erro de credenciais.</p>
+                <p><strong>Soluções:</strong> Verifique caps lock, limpe cache do navegador, tente navegador diferente, reset de senha.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Lentidão na Plataforma</h4>
+                <p><strong>Sintomas:</strong> Sistema carrega devagar, timeouts.</p>
+                <p><strong>Soluções:</strong> Verifique velocidade da internet, feche outras abas, limpe cache, use conexão mais estável.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Dados Não Aparecem</h4>
+                <p><strong>Sintomas:</strong> Transações, gráficos ou saldos em branco.</p>
+                <p><strong>Soluções:</strong> Recarregue página, verifique filtros aplicados, aguarde alguns minutos, entre em contato se persistir.</p>
+            </div>
+
+            <h3>📊 Problemas com Dados Financeiros</h3>
+            <ul>
+                <li><strong>Categorização Incorreta:</strong> Edite transações individuais ou atualize regras automáticas</li>
+                <li><strong>Duplicatas:</strong> Use função "Detectar Duplicatas" ou delete manualmente</li>
+                <li><strong>Valores Incorretos:</strong> Sempre confirme valores antes de salvar transações</li>
+                <li><strong>Datas Erradas:</strong> Verifique fuso horário nas configurações</li>
+            </ul>
+
+            <h3>💳 Problemas com Cartões e Contas</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Limite Incorreto</h4>
+                    <p>Edite informações do cartão nas configurações. Confirme com dados reais da instituição financeira.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📅 Datas de Vencimento</h4>
+                    <p>Verifique datas de fechamento vs vencimento. Confirme se está configurado corretamente no sistema.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏦 Saldo Bancário</h4>
+                    <p>Compare com extratos oficiais. Registre transferências e saques que podem ter passado despercebidos.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔄 Transferências</h4>
+                    <p>Confirme se transferência foi registrada em ambas as contas (origem e destino).</p>
+                </div>
+            </div>
+
+            <h3>🤝 Problemas de Casal</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Convite Não Chegou</h4>
+                <p>Verifique spam, reenvie convite, confirme email exato, use outro email se necessário.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Permissões Incorretas</h4>
+                <p>Revise configurações de privacidade, ajuste níveis de acesso, confirme alterações com cônjuge.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Dados Não Sincronizam</h4>
+                <p>Ambos devem estar conectados à internet, aguardar alguns minutos, recarregar página, logout/login se necessário.</p>
+            </div>
+
+            <h3>📞 Canais de Suporte</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💬 Chat Online</h4>
+                    <p>Disponível 24/7 para usuários Premium. Resposta em até 2 horas durante horário comercial.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📧 Email Support</h4>
+                    <p>suporte@couplesfinancials.com - Resposta em até 24h para usuários gratuitos, 4h para Premium.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 WhatsApp Business</h4>
+                    <p>Para usuários Premium: atendimento via WhatsApp com suporte técnico especializado.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📚 Central de Ajuda</h4>
+                    <p>Base de conhecimento completa com tutoriais, vídeos e soluções detalhadas.</p>
+                </div>
+            </div>
+
+            <h3>🔒 Questões de Segurança</h3>
+            <div class="warning-box">
+                <h4>🚨 Atividade Suspeita</h4>
+                <p>Se suspeitar de acesso não autorizado:</p>
+                <ul>
+                    <li>Altere senha imediatamente</li>
+                    <li>Revise histórico de acessos</li>
+                    <li>Desconecte todos os dispositivos</li>
+                    <li>Ative autenticação de dois fatores</li>
+                    <li>Entre em contato conosco urgentemente</li>
+                </ul>
+            </div>
+
+            <h3>💡 Dicas de Prevenção</h3>
+            <ul>
+                <li><strong>Backups Regulares:</strong> Exporte dados mensalmente como backup</li>
+                <li><strong>Verificação Constante:</strong> Compare dados com extratos reais regularmente</li>
+                <li><strong>Atualizações:</strong> Mantenha app sempre atualizado</li>
+                <li><strong>Internet Estável:</strong> Use conexão confiável para transações importantes</li>
+                <li><strong>Dupla Checagem:</strong> Sempre confirme valores e datas antes de salvar</li>
+            </ul>
+
+            <h3>📋 Relatando Bugs</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Documente o Problema</h4>
+                <p>Anote: o que estava fazendo, mensagem de erro exata, browser/dispositivo usado, horário do problema.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Screenshots e Evidências</h4>
+                <p>Capture telas do erro, copie URLs problemáticas, exporte dados se relevante.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Entre em Contato</h4>
+                <p>Use canal de suporte com todas as informações coletadas. Seja específico e detalhado.</p>
+            </div>
+
+            <div class="tip-box">
+                <h4>🎯 Para Resolução Mais Rápida</h4>
+                <p>Seja específico ao descrever problemas, forneça screenshots quando possível, inclua informações do dispositivo/browser, teste em navegador diferente antes de reportar, e tenha paciência - nossa equipe está sempre trabalhando para melhorar sua experiência.</p>
+            </div>
+        </section>
+
+        <button class="print-button" onclick="window.print()">🖨️ Imprimir Tutorial</button>
     </div>
 
-    <button class="print-button" onclick="window.print()">
-        🖨️ Imprimir Tutorial
-    </button>
-
     <script>
-        // Smooth scrolling for internal links
+        // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -664,25 +1537,17 @@
             });
         });
 
-        // Add animation classes when sections come into view
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
+        // Intersection Observer for section animations
+        const sections = document.querySelectorAll('.section');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+                    entry.target.classList.add('visible');
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.1 });
 
-        document.querySelectorAll('.section').forEach(section => {
-            section.style.opacity = '0';
-            section.style.transform = 'translateY(20px)';
-            section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        sections.forEach(section => {
             observer.observe(section);
         });
     </script>
