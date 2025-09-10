@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
+import { translateCategoryName } from "@/utils/categoryTranslation";
 import { format } from 'date-fns';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -25,7 +26,7 @@ interface ExpensesPieChartProps {
 export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) => {
   const { user } = useAuth();
   const { couple: coupleData } = useCouple();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { names } = usePartnerNames();
   
   const [expenseDataUser1, setExpenseDataUser1] = useState<ExpenseByCategory[]>([]);
@@ -37,88 +38,6 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
   });
   const [loading, setLoading] = useState(false);
 
-  // Function to translate category names from database to localized names
-  const translateCategoryName = React.useCallback((categoryName: string): string => {
-    if (!categoryName) return t('categories.uncategorized');
-    
-    console.log('translateCategoryName called with:', categoryName, 'current lang test:', t('categories.food'));
-    
-    // Normalize the category name (remove accents and convert to lowercase for better matching)
-    const normalizedName = categoryName.toLowerCase().trim();
-    
-    const categoryMap: { [key: string]: string } = {
-      // Portuguese variations
-      'alimentação': t('categories.food'),
-      'alimentacao': t('categories.food'),
-      'comida': t('categories.food'),
-      'transporte': t('categories.transport'),
-      'combustível': t('categories.fuel'),
-      'combustivel': t('categories.fuel'),
-      'gasolina': t('categories.fuel'),
-      'saúde': t('categories.health'),
-      'saude': t('categories.health'),
-      'entretenimento': t('categories.entertainment'),
-      'educação': t('categories.education'),
-      'educacao': t('categories.education'),
-      'moradia': t('categories.housing'),
-      'casa': t('categories.housing'),
-      'vestuário': t('categories.clothing'),
-      'vestuario': t('categories.clothing'),
-      'roupa': t('categories.clothing'),
-      'utilidades': t('categories.utilities'),
-      'contas': t('categories.utilities'),
-      'contas básicas': t('categories.basicBills'),
-      'contas basicas': t('categories.basicBills'),
-      'presente ou doação': t('categories.giftOrDonation'),
-      'presente ou doacao': t('categories.giftOrDonation'),
-      'aposentadoria': t('categories.retirement'),
-      'reembolso': t('categories.refund'),
-      'outros': t('categories.other'),
-      'outro': t('categories.other'),
-      
-      // English variations
-      'food': t('categories.food'),
-      'transportation': t('categories.transport'),
-      'transport': t('categories.transport'),
-      'fuel': t('categories.fuel'),
-      'gas': t('categories.fuel'),
-      'gasoline': t('categories.fuel'),
-      'health': t('categories.health'),
-      'entertainment': t('categories.entertainment'),
-      'education': t('categories.education'),
-      'housing': t('categories.housing'),
-      'clothing': t('categories.clothing'),
-      'utilities': t('categories.utilities'),
-      'basic bills': t('categories.basicBills'),
-      'gift or donation': t('categories.giftOrDonation'),
-      'retirement': t('categories.retirement'),
-      'refund': t('categories.refund'),
-      'other': t('categories.other'),
-      
-      // Spanish variations
-      'alimentación': t('categories.food'),
-      'alimentacion': t('categories.food'),
-      'combustible': t('categories.fuel'),
-      'salud': t('categories.health'),
-      'entretenimiento': t('categories.entertainment'),
-      'educación': t('categories.education'),
-      'educacion': t('categories.education'),
-      'vivienda': t('categories.housing'),
-      'ropa': t('categories.clothing'),
-      'servicios': t('categories.utilities'),
-      'cuentas básicas': t('categories.basicBills'),
-      'cuentas basicas': t('categories.basicBills'),
-      'regalo o donación': t('categories.giftOrDonation'),
-      'regalo o donacion': t('categories.giftOrDonation'),
-      'jubilación': t('categories.retirement'),
-      'jubilacion': t('categories.retirement'),
-      'otros': t('categories.other'),
-    };
-
-    const result = categoryMap[normalizedName] || categoryName;
-    console.log('translateCategoryName result:', normalizedName, '->', result);
-    return result;
-  }, [t]); // Dependency on 't' so it updates when language changes
 
   const fetchExpensesByCategory = async () => {
     if (!user) return;
@@ -166,7 +85,7 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       
         data?.forEach((transaction) => {
         const originalCategoryName = transaction.categories?.name || t('categories.uncategorized');
-        const categoryName = translateCategoryName(originalCategoryName);
+        const categoryName = translateCategoryName(originalCategoryName, language);
         const categoryColor = transaction.categories?.color || '#6366f1';
         const amount = Number(transaction.amount);
         // Determine which user this transaction belongs to using user_id mapping

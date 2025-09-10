@@ -239,6 +239,31 @@ const categoryDescriptionTranslations: CategoryDescriptionTranslations = {
     en: 'Other income',
     es: 'Otros ingresos'
   },
+  'total': {
+    pt: 'Total',
+    en: 'Total',
+    es: 'Total'
+  },
+  'pagamento_de_cartao_de_credito': {
+    pt: 'Pagamento de Cartão de Crédito',
+    en: 'Credit Card Payment',
+    es: 'Pago de Tarjeta de Crédito'
+  },
+  'financas_e_servicos': {
+    pt: 'Finanças & Serviços',
+    en: 'Finance & Services',
+    es: 'Finanzas y Servicios'
+  },
+  'doacoes_e_presentes': {
+    pt: 'Doações & Presentes',
+    en: 'Donations & Gifts',
+    es: 'Donaciones y Regalos'
+  },
+  'veiculos_financiamentos': {
+    pt: 'Veículos & Financiamentos',
+    en: 'Vehicles & Financing',
+    es: 'Vehículos y Financiación'
+  },
   'gastos_relacionados_a_veiculos_proprios_e_financiamentos': {
     pt: 'Gastos relacionados a veículos próprios e financiamentos',
     en: 'Expenses related to personal vehicles and financing',
