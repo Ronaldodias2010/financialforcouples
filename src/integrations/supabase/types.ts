@@ -168,21 +168,28 @@ export type Database = {
         Row: {
           airline_code: string
           airline_name: string
+          boarding_tax: number | null
           bonus_percentage: number | null
           created_at: string
           currency: string | null
+          data_source: string | null
+          departure_date: string | null
           description: string | null
           discount_percentage: number | null
           end_date: string
           external_promotion_id: string | null
+          external_reference: string | null
           id: string
           is_active: boolean
+          is_round_trip: boolean | null
           last_synced_at: string | null
           miles_required: number | null
           original_price: number | null
           promotion_type: string
           promotion_url: string | null
           promotional_price: number | null
+          raw_price: number | null
+          return_date: string | null
           route_from: string | null
           route_to: string | null
           start_date: string
@@ -193,21 +200,28 @@ export type Database = {
         Insert: {
           airline_code: string
           airline_name: string
+          boarding_tax?: number | null
           bonus_percentage?: number | null
           created_at?: string
           currency?: string | null
+          data_source?: string | null
+          departure_date?: string | null
           description?: string | null
           discount_percentage?: number | null
           end_date: string
           external_promotion_id?: string | null
+          external_reference?: string | null
           id?: string
           is_active?: boolean
+          is_round_trip?: boolean | null
           last_synced_at?: string | null
           miles_required?: number | null
           original_price?: number | null
           promotion_type?: string
           promotion_url?: string | null
           promotional_price?: number | null
+          raw_price?: number | null
+          return_date?: string | null
           route_from?: string | null
           route_to?: string | null
           start_date: string
@@ -218,21 +232,28 @@ export type Database = {
         Update: {
           airline_code?: string
           airline_name?: string
+          boarding_tax?: number | null
           bonus_percentage?: number | null
           created_at?: string
           currency?: string | null
+          data_source?: string | null
+          departure_date?: string | null
           description?: string | null
           discount_percentage?: number | null
           end_date?: string
           external_promotion_id?: string | null
+          external_reference?: string | null
           id?: string
           is_active?: boolean
+          is_round_trip?: boolean | null
           last_synced_at?: string | null
           miles_required?: number | null
           original_price?: number | null
           promotion_type?: string
           promotion_url?: string | null
           promotional_price?: number | null
+          raw_price?: number | null
+          return_date?: string | null
           route_from?: string | null
           route_to?: string | null
           start_date?: string
@@ -1244,6 +1265,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moblix_offers: {
+        Row: {
+          created_at: string | null
+          external_id: string
+          id: string
+          processed: boolean | null
+          raw_data: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          external_id: string
+          id?: string
+          processed?: boolean | null
+          raw_data: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          external_id?: string
+          id?: string
+          processed?: boolean | null
+          raw_data?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       partnership_applications: {
         Row: {
