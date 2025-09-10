@@ -19,10 +19,8 @@ interface Transfer {
   payment_method: string;
   user_id: string;
   owner_user?: string;
-  account_id?: string;
-  accounts?: {
-    name: string;
-  };
+  source_account_name: string;
+  dest_account_name: string;
 }
 
 interface TransfersBetweenAccountsProps {
@@ -58,7 +56,8 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
         userIds = [couple.user1_id, couple.user2_id];
       }
 
-      let query = supabase
+      // Query to get unique transfers by pairing expense/income transactions
+      const { data: rawData, error } = await supabase
         .from('transactions')
         .select(`
           id,
@@ -68,6 +67,7 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
           payment_method,
           user_id,
           owner_user,
+          type,
           account_id,
           accounts(name)
         `)
@@ -77,14 +77,56 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
         .lte('transaction_date', endDate)
         .order('transaction_date', { ascending: false });
 
-      const { data, error } = await query;
-
       if (error) {
         console.error('Error fetching transfers:', error);
         return;
       }
 
-      let filteredData = data || [];
+      // Process transfers to avoid duplication - group by description, amount, date, user
+      const transfersMap = new Map();
+      const rawTransfers = rawData || [];
+
+      for (const transaction of rawTransfers) {
+        const key = `${transaction.description}-${transaction.amount}-${transaction.transaction_date}-${transaction.user_id}-${transaction.payment_method}`;
+        
+        if (!transfersMap.has(key)) {
+          transfersMap.set(key, {
+            expense: null,
+            income: null
+          });
+        }
+
+        if (transaction.type === 'expense') {
+          transfersMap.get(key).expense = transaction;
+        } else if (transaction.type === 'income') {
+          transfersMap.get(key).income = transaction;
+        }
+      }
+
+      // Build final transfers array with source and destination
+      const processedTransfers: Transfer[] = [];
+      
+      for (const [key, pair] of transfersMap.entries()) {
+        if (pair.expense) {
+          // Use the expense transaction as the main record
+          const transfer: Transfer = {
+            id: pair.expense.id,
+            amount: pair.expense.amount,
+            description: pair.expense.description,
+            transaction_date: pair.expense.transaction_date,
+            payment_method: pair.expense.payment_method,
+            user_id: pair.expense.user_id,
+            owner_user: pair.expense.owner_user,
+            source_account_name: pair.expense.accounts?.name || t('transfers.unknownAccount'),
+            dest_account_name: pair.income?.accounts?.name || 
+              (pair.expense.payment_method === 'account_investment' ? t('transfers.investment') : t('transfers.unknownAccount'))
+          };
+          
+          processedTransfers.push(transfer);
+        }
+      }
+
+      let filteredData = processedTransfers;
       
       // Apply user filter based on viewMode
       if (viewMode !== "both" && couple) {
@@ -205,28 +247,27 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-blue-600 border-blue-200">
-                        {getTransferTypeText(transfer.payment_method)}
-                      </Badge>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {transfer.accounts?.name || t('transfers.unknownDestination')}
-                      </span>
+                       <span className="font-medium text-blue-600 dark:text-blue-400">
+                         {t('transfers.transferAmount').replace('{{amount}}', formatCurrency(transfer.amount))}
+                       </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <span className="font-medium">{transfer.source_account_name}</span>
+                      <ArrowRight className="h-4 w-4" />
+                      <span className="font-medium">{transfer.dest_account_name}</span>
                     </div>
                     
                     <div className="space-y-1">
-                      <p className="font-medium">{transfer.description}</p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">{transfer.description}</p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>{formatDate(transfer.transaction_date)}</span>
                         <span>{getUserName(transfer)}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {getTransferTypeText(transfer.payment_method)}
+                        </Badge>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                      {formatCurrency(transfer.amount)}
-                    </p>
                   </div>
                 </div>
               ))}

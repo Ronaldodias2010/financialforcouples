@@ -448,6 +448,9 @@ const translations = {
     'transfers.summary': 'Resumo de Transferências',
     'transfers.noTransfers': 'Nenhuma transferência encontrada para o período selecionado',
     'transfers.unknownDestination': 'Destino não identificado',
+    'transfers.unknownAccount': 'Conta desconhecida',
+    'transfers.investment': 'Investimento',
+    'transfers.transferAmount': 'Transferência de {{amount}}',
     
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
@@ -1957,6 +1960,9 @@ const translations = {
     'transfers.summary': 'Transfer Summary',
     'transfers.noTransfers': 'No transfers found for the selected period',
     'transfers.unknownDestination': 'Unknown destination',
+    'transfers.unknownAccount': 'Unknown account',
+    'transfers.investment': 'Investment',
+    'transfers.transferAmount': 'Transfer of {{amount}}',
     
     // Calendar
     'viewInCalendar': 'View in Calendar',
@@ -3502,6 +3508,9 @@ const translations = {
     'transfers.summary': 'Resumen de Transferencias',
     'transfers.noTransfers': 'No se encontraron transferencias para el período seleccionado',
     'transfers.unknownDestination': 'Destino desconocido',
+    'transfers.unknownAccount': 'Cuenta desconocida',
+    'transfers.investment': 'Inversión',
+    'transfers.transferAmount': 'Transferencia de {{amount}}',
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',
