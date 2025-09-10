@@ -1352,6 +1352,8 @@ const translations = {
     'recurring.userNotAuth': 'Usuário não autenticado',
     'recurring.remaining': 'Restam',
     'recurring.installments': 'parcelas',
+    'recurring.installmentsLabel': 'Parcelas',
+    'recurring.progressLabel': 'Progresso',
     'subscription.upgradeToPremium': 'Fazer Upgrade para Premium',
     'subscription.features.aiFinancialPlanning': 'Planejamento financeiro com IA',
     'subscription.features.voiceInput': 'Input por voz via WhatsApp',
@@ -2953,6 +2955,8 @@ const translations = {
     'recurring.userNotAuth': 'User not authenticated',
     'recurring.remaining': 'Remaining',
     'recurring.installments': 'installments',
+    'recurring.installmentsLabel': 'Installments',
+    'recurring.progressLabel': 'Progress',
     
     // Footer
     'footer.description': 'Organize your couple\'s finances simply and intelligently. Transform relationship financial management into something easy and transparent.',
@@ -4509,6 +4513,10 @@ const translations = {
     'recurring.deleteError': 'Error al eliminar gasto recurrente',
     'recurring.statusError': 'Error al cambiar estado',
     'recurring.userNotAuth': 'Usuario no autenticado',
+    'recurring.remaining': 'Restantes',
+    'recurring.installments': 'cuotas',
+    'recurring.installmentsLabel': 'Cuotas',
+    'recurring.progressLabel': 'Progreso',
     
     // Footer
     'footer.description': 'Organiza las finanzas de tu pareja de forma simple e inteligente. Transforma la gestión financiera de la relación en algo fácil y transparente.',

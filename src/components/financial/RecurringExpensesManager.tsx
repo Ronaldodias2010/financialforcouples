@@ -23,6 +23,7 @@ const InstallmentProgress = ({ total, remaining, nextDueDate }: {
   remaining: number, 
   nextDueDate: Date 
 }) => {
+  const { t } = useLanguage();
   const [hasFutureExpense, setHasFutureExpense] = useState(false);
   
   useEffect(() => {
@@ -49,7 +50,7 @@ const InstallmentProgress = ({ total, remaining, nextDueDate }: {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span>Progresso: {total - remaining}/{total}</span>
+        <span>{t('recurring.progressLabel')}: {total - remaining}/{total}</span>
         <span>{progress.toFixed(0)}%</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -581,7 +582,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                   {expense.remaining_installments !== null && expense.total_installments ? (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground font-medium text-primary">
-                        📊 Parcelas: {expense.remaining_installments} de {expense.total_installments} restantes
+                        📊 {t('recurring.installmentsLabel')}: {expense.remaining_installments} de {expense.total_installments} restantes
                       </p>
                       {expense.remaining_installments > 0 && (
                         <InstallmentProgress 
