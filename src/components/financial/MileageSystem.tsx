@@ -589,10 +589,7 @@ export const MileageSystem = () => {
         </Card>
       </div>
 
-      {/* Promotions Section */}
-      <PromotionsSection userTotalMiles={totalMiles} />
-
-      {/* Main Content */}
+      {/* Main Content - Regras, Metas e Histórico */}
       <Tabs defaultValue="rules" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="rules" className="text-xs sm:text-sm">
@@ -1176,6 +1173,9 @@ export const MileageSystem = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Promoções de Companhias Aéreas */}
+      <PromotionsSection userTotalMiles={totalMiles} />
     </div>
   );
 };
