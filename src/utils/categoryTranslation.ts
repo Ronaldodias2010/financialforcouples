@@ -238,6 +238,51 @@ const categoryDescriptionTranslations: CategoryDescriptionTranslations = {
     pt: 'Outros rendimentos',
     en: 'Other income',
     es: 'Otros ingresos'
+  },
+  'gastos_relacionados_a_veiculos_proprios_e_financiamentos': {
+    pt: 'Gastos relacionados a veículos próprios e financiamentos',
+    en: 'Expenses related to personal vehicles and financing',
+    es: 'Gastos relacionados con vehículos propios y financiación'
+  },
+  'renda_de_alugueis': {
+    pt: 'Renda de aluguéis',
+    en: 'Rental income',
+    es: 'Ingresos por alquiler'
+  },
+  'bonus_e_gratificacoes': {
+    pt: 'Bônus e gratificações',
+    en: 'Bonuses and gratuities',
+    es: 'Bonificaciones y gratificaciones'
+  },
+  'renda_de_trabalho_freelance': {
+    pt: 'Renda de trabalho freelance',
+    en: 'Freelance work income',
+    es: 'Ingresos de trabajo independiente'
+  },
+  'renda_de_investimentos': {
+    pt: 'Renda de investimentos',
+    en: 'Investment income',
+    es: 'Ingresos de inversiones'
+  },
+  'outras_receitas': {
+    pt: 'Outras receitas',
+    en: 'Other revenues',
+    es: 'Otros ingresos'
+  },
+  'receitas_nao_recorrentes_e_extraordinarias': {
+    pt: 'Receitas não recorrentes e extraordinárias',
+    en: 'Non-recurring and extraordinary income',
+    es: 'Ingresos no recurrentes y extraordinarios'
+  },
+  'renda_de_salario_e_trabalho': {
+    pt: 'Renda de salário e trabalho',
+    en: 'Salary and employment income',
+    es: 'Ingresos de salario y trabajo'
+  },
+  'renda_de_vendas': {
+    pt: 'Renda de vendas',
+    en: 'Sales income',
+    es: 'Ingresos de ventas'
   }
 };
 
