@@ -124,6 +124,7 @@ export const UserExpenseChart = () => {
         .select('user_id, owner_user, amount, transaction_date, created_at, payment_method')
         .in('user_id', userIds)
         .eq('type', 'expense')
+        .not('payment_method', 'in', '(account_transfer,account_investment)')
         .gte('transaction_date', startStr)
         .lte('transaction_date', endStr);
 
@@ -135,6 +136,7 @@ export const UserExpenseChart = () => {
         .select('user_id, owner_user, amount, transaction_date')
         .in('user_id', userIds)
         .eq('type', 'income')
+        .not('payment_method', 'eq', 'account_transfer')
         .gte('transaction_date', startStr)
         .lte('transaction_date', endStr);
 

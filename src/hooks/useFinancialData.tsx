@@ -271,7 +271,7 @@ export const useFinancialData = () => {
 
     filteredTransactions.forEach((transaction) => {
       // Skip account transfers to prevent double counting
-      if (transaction.payment_method === 'account_transfer') {
+      if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
         return;
       }
 
@@ -370,7 +370,7 @@ export const useFinancialData = () => {
 
       (prevTransactions || []).forEach((transaction) => {
         // Skip account transfers to prevent double counting
-        if (transaction.payment_method === 'account_transfer') {
+        if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
           return;
         }
 
@@ -393,7 +393,7 @@ export const useFinancialData = () => {
 
       (currentTransactions || []).forEach((transaction) => {
         // Skip account transfers to prevent double counting
-        if (transaction.payment_method === 'account_transfer') {
+        if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
           return;
         }
 
@@ -471,11 +471,17 @@ export const useFinancialData = () => {
     const allTransactions = viewMode === 'both' ? transactions : getTransactionsByUser(viewMode);
     
     const user1Expenses = allTransactions
-      .filter(t => t.type === 'expense' && (!coupleIds || t.user_id === coupleIds.user1_id))
+      .filter(t => t.type === 'expense' && 
+        t.payment_method !== 'account_transfer' && 
+        t.payment_method !== 'account_investment' && 
+        (!coupleIds || t.user_id === coupleIds.user1_id))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
     
     const user2Expenses = allTransactions
-      .filter(t => t.type === 'expense' && (coupleIds ? t.user_id === coupleIds.user2_id : false))
+      .filter(t => t.type === 'expense' && 
+        t.payment_method !== 'account_transfer' && 
+        t.payment_method !== 'account_investment' && 
+        (coupleIds ? t.user_id === coupleIds.user2_id : false))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
 
     return { user1Expenses, user2Expenses };
@@ -537,7 +543,9 @@ export const useFinancialData = () => {
   // Returns the sum of transaction-based expenses only (no accounts, no transfers)
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
-    const expenseOnly = filteredTransactions.filter(t => t.type === 'expense' && t.payment_method !== 'account_transfer');
+    const expenseOnly = filteredTransactions.filter(t => t.type === 'expense' && 
+      t.payment_method !== 'account_transfer' && 
+      t.payment_method !== 'account_investment');
     const total = expenseOnly.reduce((sum, t) => {
       return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
     }, 0);

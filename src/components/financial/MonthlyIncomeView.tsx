@@ -185,6 +185,7 @@ const fetchCategories = async () => {
         `)
         .in('user_id', userIds)
         .eq('type', 'income')
+        .not('payment_method', 'eq', 'account_transfer')
         .gte('transaction_date', startDate)
         .lte('transaction_date', endDate)
         .order('transaction_date', { ascending: false });
@@ -265,7 +266,7 @@ if (selectedCategory !== "all") {
     }
   };
 
-  const totalIncome = transactions.filter(t => t.payment_method !== 'account_transfer').reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0);
 
   const getExportTitle = () => {
     const [year, month] = selectedMonth.split('-').map(Number);
