@@ -492,9 +492,9 @@ const translations = {
 
     // Smart Mileage Section
     'smartMileage.badge': 'Exclusivo',
-    'smartMileage.title': 'Notificações Inteligentes de',
-    'smartMileage.title.highlight': 'Milhas',
-    'smartMileage.subtitle': 'Seja alertado automaticamente quando suas milhas podem ser usadas em promoções exclusivas',
+     'smartMileage.title': 'Gestão de Milhagem',
+     'smartMileage.title.highlight': 'Automatizada',
+     'smartMileage.subtitle': 'Seja alertado automaticamente quando suas milhas podem ser usadas em promoções exclusivas com inteligência artificial',
     'smartMileage.benefit1.title': 'Alertas Automáticos',
     'smartMileage.benefit1.description': 'Sistema monitora promoções 24/7 e te avisa quando você tem milhas suficientes',
     'smartMileage.benefit2.title': 'Múltiplas Companhias',
@@ -949,7 +949,7 @@ const translations = {
     'pricing.premium.feature4': 'Controle por voz via WhatsApp',
     'pricing.premium.feature5': 'Simulador de investimentos',
     'pricing.premium.feature6': 'Relatórios avançados e insights',
-    'pricing.premium.feature7': 'Gestão de milhas aéreas',
+    'pricing.premium.feature7': 'Gestão de Milhagem automatizada com IA',
     'pricing.premium.feature8': 'Suporte prioritário',
     'pricing.premium.button': 'Experimentar Premium',
     
@@ -2443,7 +2443,7 @@ const translations = {
     'pricing.premium.feature4': 'Voice control via WhatsApp',
     'pricing.premium.feature5': 'Investment simulator',
     'pricing.premium.feature6': 'Advanced reports and insights',
-    'pricing.premium.feature7': 'Airline miles management',
+    'pricing.premium.feature7': 'AI-powered automated mileage management',
     'pricing.premium.feature8': 'Priority support',
     'pricing.premium.button': 'Try Premium',
     
@@ -3066,9 +3066,9 @@ const translations = {
 
     // Smart Mileage Section
     'smartMileage.badge': 'Exclusive',
-    'smartMileage.title': 'Smart Mileage',
-    'smartMileage.title.highlight': 'Notifications',
-    'smartMileage.subtitle': 'Get automatically notified when your miles can be used for exclusive promotions',
+     'smartMileage.title': 'Automated Mileage',
+     'smartMileage.title.highlight': 'Management',
+     'smartMileage.subtitle': 'Get automatically notified when your miles can be used for exclusive promotions with artificial intelligence',
     'smartMileage.benefit1.title': 'Automatic Alerts',
     'smartMileage.benefit1.description': 'System monitors promotions 24/7 and alerts you when you have enough miles',
     'smartMileage.benefit2.title': 'Multiple Airlines',
@@ -4003,7 +4003,7 @@ const translations = {
     'pricing.premium.feature4': 'Control por voz vía WhatsApp',
     'pricing.premium.feature5': 'Simulador de inversiones',
     'pricing.premium.feature6': 'Reportes avanzados e insights',
-    'pricing.premium.feature7': 'Gestión de millas aéreas',
+    'pricing.premium.feature7': 'Gestión de millaje automatizada con IA',
     'pricing.premium.feature8': 'Soporte prioritario',
     'pricing.premium.button': 'Probar Premium',
     
@@ -4584,9 +4584,9 @@ const translations = {
 
     // Smart Mileage Section
     'smartMileage.badge': 'Exclusivo',
-    'smartMileage.title': 'Notificaciones Inteligentes de',
-    'smartMileage.title.highlight': 'Millas',
-    'smartMileage.subtitle': 'Recibe alertas automáticas cuando tus millas pueden usarse en promociones exclusivas',
+     'smartMileage.title': 'Gestión de Millaje',
+     'smartMileage.title.highlight': 'Automatizada',
+     'smartMileage.subtitle': 'Recibe alertas automáticas cuando tus millas pueden usarse en promociones exclusivas con inteligencia artificial',
     'smartMileage.benefit1.title': 'Alertas Automáticas',
     'smartMileage.benefit1.description': 'El sistema monitorea promociones 24/7 y te avisa cuando tienes millas suficientes',
     'smartMileage.benefit2.title': 'Múltiples Aerolíneas',

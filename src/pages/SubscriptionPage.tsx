@@ -90,14 +90,14 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
     { icon: <Shield className="h-4 w-4" />, key: 'jointAnalysis' },
     { icon: <Star className="h-4 w-4" />, key: 'multiLanguage' },
     { icon: <BarChart3 className="h-4 w-4" />, key: 'investmentControl' },
-    { icon: <Star className="h-4 w-4" />, key: 'manualMiles' },
+    
     { icon: <BarChart3 className="h-4 w-4" />, key: 'profitabilitySimulator' },
     { icon: <Shield className="h-4 w-4" />, key: 'basicSecurity' }
   ];
 
   const premiumFeatures = [
     { icon: <Bot className="h-4 w-4" />, key: 'voiceWhatsApp' },
-    { icon: <Bot className="h-4 w-4" />, key: 'aiMiles' },
+    { icon: <Bot className="h-4 w-4 bg-hero-gradient bg-clip-text text-transparent" />, key: 'aiMiles' },
     { icon: <Bot className="h-4 w-4" />, key: 'aiPlanning' },
     { icon: <Star className="h-4 w-4" />, key: 'personalizedInvestments' },
     { icon: <Star className="h-4 w-4" />, key: 'customGoals' },
@@ -214,7 +214,14 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
               {premiumFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
                   {feature.icon}
-                  <span className="text-sm">{t(`subscription.features.${feature.key}`)}</span>
+                   <span className="text-sm">{feature.key === 'aiMiles' ? (
+                     <>
+                       <span className="text-foreground">Sistema </span>
+                       <span className="bg-hero-gradient bg-clip-text text-transparent font-bold">inteligente de milhagem</span>
+                       <span className="text-foreground"> com </span>
+                       <span className="text-primary font-bold">IA</span>
+                     </>
+                   ) : t(`subscription.features.${feature.key}`)}</span>
                   <Badge variant="secondary" className="ml-auto text-xs">{t('subscription.plans.premium')}</Badge>
                 </div>
               ))}

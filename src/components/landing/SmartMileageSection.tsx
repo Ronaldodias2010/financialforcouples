@@ -48,9 +48,10 @@ const SmartMileageSection = () => {
                 </Badge>
                 <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
                   {t('smartMileage.title')}{" "}
-                  <span className="bg-hero-gradient bg-clip-text text-transparent">
+                  <span className="bg-hero-gradient bg-clip-text text-transparent font-extrabold">
                     {t('smartMileage.title.highlight')}
                   </span>
+                  <span className="text-primary font-extrabold"> com IA</span>
                 </h2>
                 <p className="text-xl text-muted-foreground">
                   {t('smartMileage.subtitle')}
