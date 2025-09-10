@@ -493,7 +493,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     return Object.keys(groups)
       .sort()
       .map(monthKey => {
-        const date = new Date(monthKey + '-01');
+        const [year, month] = monthKey.split('-').map(Number);
+        const date = new Date(year, month - 1, 1);
         const monthLabel = date.toLocaleDateString('pt-BR', { 
           month: 'long', 
           year: 'numeric' 
