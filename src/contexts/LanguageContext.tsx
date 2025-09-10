@@ -370,6 +370,7 @@ const translations = {
     'common.success': 'Sucesso',
     'common.error': 'Erro',
     'common.locale': 'pt-BR',
+    'common.color': 'Cor',
     'back': 'Voltar',
     
     // Currency Display
@@ -1354,6 +1355,7 @@ const translations = {
     'recurring.installments': 'parcelas',
     'recurring.installmentsLabel': 'Parcelas',
     'recurring.progressLabel': 'Progresso',
+    
     'subscription.upgradeToPremium': 'Fazer Upgrade para Premium',
     'subscription.features.aiFinancialPlanning': 'Planejamento financeiro com IA',
     'subscription.features.voiceInput': 'Input por voz via WhatsApp',
@@ -1903,6 +1905,7 @@ const translations = {
     'common.success': 'Success',
     'common.error': 'Error',
     'common.locale': 'en-US',
+    'common.color': 'Color',
     'back': 'Back',
     
     // Currency Display
@@ -2958,6 +2961,15 @@ const translations = {
     'recurring.installmentsLabel': 'Installments',
     'recurring.progressLabel': 'Progress',
     
+    // Category Manager (moved to avoid duplicates)
+    'categories.customTags': 'Custom Tags (Optional)',
+    'categories.customTagsPlaceholder': 'Add tags for this category...',
+    'categories.customTagsHelp': 'Tags will be added automatically based on category type',
+    'categories.createCategory': 'Create Category',
+    'categories.updateCategory': 'Update Category',
+    'categories.expense': 'Expense (Outgoing)',
+    'categories.income': 'Income (Incoming)',
+    
     // Footer
     'footer.description': 'Organize your couple\'s finances simply and intelligently. Transform relationship financial management into something easy and transparent.',
     'footer.product': 'Product',
@@ -3429,6 +3441,7 @@ const translations = {
     'common.none': 'Ninguno',
     'common.select': 'Seleccionar',
     'common.refresh': 'Actualizar',
+    'common.color': 'Color',
     'back': 'Atrás',
     
     // Currency Display
@@ -4516,7 +4529,15 @@ const translations = {
     'recurring.remaining': 'Restantes',
     'recurring.installments': 'cuotas',
     'recurring.installmentsLabel': 'Cuotas',
-    'recurring.progressLabel': 'Progreso',
+    
+    // Category Manager (moved to avoid duplicates) 
+    'categories.customTags': 'Etiquetas Personalizadas (Opcional)',
+    'categories.customTagsPlaceholder': 'Agrega etiquetas para esta categoría...',
+    'categories.customTagsHelp': 'Las etiquetas se agregarán automáticamente según el tipo de categoría',
+    'categories.createCategory': 'Crear Categoría',
+    'categories.updateCategory': 'Actualizar Categoría',
+    'categories.expense': 'Gasto (Salida)',
+    'categories.income': 'Ingreso (Entrada)',
     
     // Footer
     'footer.description': 'Organiza las finanzas de tu pareja de forma simple e inteligente. Transforma la gestión financiera de la relación en algo fácil y transparente.',

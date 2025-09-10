@@ -592,14 +592,14 @@ const CategoryManagerContent = () => {
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="expense">Despesa (Saída)</SelectItem>
-                      <SelectItem value="income">Receita (Entrada)</SelectItem>
+                      <SelectItem value="expense">{t('categories.expense')}</SelectItem>
+                      <SelectItem value="income">{t('categories.income')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div>
-                  <Label htmlFor="color">Cor</Label>
+                  <Label htmlFor="color">{t('common.color')}</Label>
                   <Input
                     id="color"
                     type="color"
@@ -611,26 +611,26 @@ const CategoryManagerContent = () => {
                 {/* Tag Input integrado no formulário */}
                 {!editingCategory && (
                   <div className="space-y-2">
-                    <Label>Tags Personalizadas (Opcional)</Label>
+                    <Label>{t('categories.customTags')}</Label>
                     <TagInput
                       tags={[]}
                       onAddTag={async (tagName: string) => true}
                       onRemoveTag={() => {}}
-                      placeholder="Adicione tags para esta categoria..."
+                      placeholder={t('categories.customTagsPlaceholder')}
                       maxTags={10}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Tags serão adicionadas automaticamente baseadas no tipo de categoria
+                      {t('categories.customTagsHelp')}
                     </p>
                   </div>
                 )}
                 
                 <div className="flex gap-2">
                   <Button type="submit" className="flex-1">
-                    {editingCategory ? "Atualizar Categoria" : "Criar Categoria"}
+                    {editingCategory ? t('categories.updateCategory') : t('categories.createCategory')}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancelar
+                    {t('common.cancel')}
                   </Button>
                 </div>
               </form>
