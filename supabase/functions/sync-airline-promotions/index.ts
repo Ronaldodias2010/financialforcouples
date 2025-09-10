@@ -231,6 +231,7 @@ async function syncMoblixOffers(supabase: any) {
           HasResult: responseData.HasResult,
           DataType: Array.isArray(responseData.Data) ? 'array' : typeof responseData.Data,
           DataLength: Array.isArray(responseData.Data) ? responseData.Data.length : 'not array',
+          ExErro: responseData.ExErro,
           ExceptionErro: responseData.ExceptionErro,
           MensagemErro: responseData.MensagemErro
         });
@@ -263,7 +264,8 @@ async function syncMoblixOffers(supabase: any) {
             Success: responseData.Success !== false, // Default to true if not specified
             HasResult: responseData.HasResult !== false,
             Data: normalizedData,
-            ExceptionErro: responseData.ExceptionErro,
+            ExErro: responseData.ExErro, // Updated field name
+            ExceptionErro: responseData.ExceptionErro, // Keep both for compatibility
             MensagemErro: responseData.MensagemErro
           };
           successfulUrl = url;
@@ -354,14 +356,14 @@ async function syncMoblixOffers(supabase: any) {
         // Robust data extraction with fallbacks
         const originCity = offer.Origem?.Cidade || offer.IataOrigem;
         const destCity = offer.Destino?.Cidade || offer.IataDestino;
-        const airlineName = offer.Cia?.Nome || `${offer.IataOrigem}/${offer.IataDestino}`;
+        const airlineName = offer.Cia?.Nome || `Companhia Aérea (${offer.IataOrigem}/${offer.IataDestino})`;
         
         // Convert to airline_promotions format with better date handling
         const routeDescription = offer.SoIda 
           ? `Viagem de ${originCity} para ${destCity} (só ida)`
           : `Viagem de ${originCity} para ${destCity} (ida e volta)`;
 
-        // Parse dates more carefully
+        // Parse dates more carefully - Moblix uses ISO format
         const departureDate = new Date(offer.Ida);
         const isValidDeparture = !isNaN(departureDate.getTime());
         
@@ -377,8 +379,12 @@ async function syncMoblixOffers(supabase: any) {
             endDate = new Date(departureDate.getTime() + 30 * 24 * 60 * 60 * 1000);
           }
         } else {
-          // For one-way flights, set end date to 30 days from now
-          endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          // For one-way flights, set end date to 30 days from departure
+          if (isValidDeparture) {
+            endDate = new Date(departureDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+          } else {
+            endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          }
         }
 
         // Ensure end_date is in the future for active promotions
