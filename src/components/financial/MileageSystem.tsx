@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User } from "lucide-react";
 import { PromotionsSection } from './PromotionsSection';
 import { format } from "date-fns";
+import { parseLocalDate } from "@/utils/date";
 
 interface Card {
   id: string;
@@ -1162,7 +1163,7 @@ export const MileageSystem = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-muted-foreground">
-                          {format(new Date(record.calculation_date), "dd/MM/yyyy")}
+                          {format(parseLocalDate(record.calculation_date), "dd/MM/yyyy")}
                         </p>
                       </div>
                     </div>
