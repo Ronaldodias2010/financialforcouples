@@ -109,8 +109,11 @@ serve(async (req) => {
     // Check for users eligible for new promotions
     await checkEligibleUsers(supabase);
 
+    // Determine overall success based on Moblix results
+    const overallSuccess = moblixResult?.success !== false && (moblixResult?.errors || 0) === 0;
+
     const summary = {
-      success: true,
+      success: overallSuccess,
       processed: moblixResult?.processed || 0,
       inserted: moblixResult?.inserted || 0,
       updated: moblixResult?.updated || 0,
@@ -187,39 +190,130 @@ async function syncMoblixOffers(supabase: any) {
 
     console.log('✅ Successfully authenticated with Moblix');
 
-    // Step 2: Fetch offers from Moblix (following Moblix example - simple GET without Authorization)
-    const offersUrl = `${moblixBaseUrl}/oferta/api/ofertas?international=false&quatidade=10&shuffle=false`;
-    console.log(`📥 Fetching offers from: ${offersUrl}`);
+    // Step 2: Robust offers fetching with multiple URL variations
+    let offersData: any = null;
+    let successfulUrl = '';
     
-    const offersResponse = await fetch(offersUrl, {
-      method: 'GET',
-      redirect: 'follow' // Following Moblix example
-    });
+    // URL variations to try
+    const urlVariations = [
+      `${moblixBaseUrl}/oferta/api/ofertas?international=false&quatidade=50&shuffle=false`,
+      `${moblixBaseUrl}/oferta/api/ofertas?international=false&quantidade=50&shuffle=false`, 
+      `${moblixBaseUrl}/oferta/api/ofertas?international=true&quatidade=50&shuffle=false`,
+      `${moblixBaseUrl}/oferta/api/ofertas?international=true&quantidade=50&shuffle=false`
+    ];
 
-    console.log(`📊 Offers response status: ${offersResponse.status}`);
+    for (const url of urlVariations) {
+      try {
+        console.log(`📥 Trying offers URL: ${url}`);
+        
+        const offersResponse = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Origin': 'externo', // Add Origin header to offers request too
+          },
+          redirect: 'follow'
+        });
 
-    if (!offersResponse.ok) {
-      const errorText = await offersResponse.text();
-      console.error(`❌ Offers fetch failed - Status: ${offersResponse.status}, Response: ${errorText}`);
-      throw new Error(`Failed to fetch offers from Moblix: ${offersResponse.status} - ${errorText}`);
+        console.log(`📊 Offers response status: ${offersResponse.status}`);
+
+        if (!offersResponse.ok) {
+          const errorText = await offersResponse.text();
+          console.error(`❌ URL failed - Status: ${offersResponse.status}, Response: ${errorText.substring(0, 200)}...`);
+          continue; // Try next URL variation
+        }
+
+        const responseData = await offersResponse.json();
+        
+        // Log raw response structure for debugging
+        console.log('🔍 Raw response structure:', {
+          keys: Object.keys(responseData),
+          Success: responseData.Success,
+          HasResult: responseData.HasResult,
+          DataType: Array.isArray(responseData.Data) ? 'array' : typeof responseData.Data,
+          DataLength: Array.isArray(responseData.Data) ? responseData.Data.length : 'not array',
+          ExceptionErro: responseData.ExceptionErro,
+          MensagemErro: responseData.MensagemErro
+        });
+
+        // Robust response format handling
+        let normalizedData: MoblixOffer[] = [];
+        
+        // Handle different response formats
+        if (Array.isArray(responseData.Data) && responseData.Data.length > 0) {
+          // Standard format with Data array
+          normalizedData = responseData.Data;
+          console.log(`✅ Found ${normalizedData.length} offers in Data array`);
+        } else if (Array.isArray(responseData) && responseData.length > 0) {
+          // Response is directly an array
+          normalizedData = responseData;
+          console.log(`✅ Found ${normalizedData.length} offers in root array`);
+        } else if (responseData.data && Array.isArray(responseData.data) && responseData.data.length > 0) {
+          // Lowercase data field
+          normalizedData = responseData.data;
+          console.log(`✅ Found ${normalizedData.length} offers in lowercase data field`);
+        } else if (responseData.ofertas && Array.isArray(responseData.ofertas) && responseData.ofertas.length > 0) {
+          // Ofertas field
+          normalizedData = responseData.ofertas;
+          console.log(`✅ Found ${normalizedData.length} offers in ofertas field`);
+        }
+
+        // If we found data, use this response
+        if (normalizedData.length > 0) {
+          offersData = {
+            Success: responseData.Success !== false, // Default to true if not specified
+            HasResult: responseData.HasResult !== false,
+            Data: normalizedData,
+            ExceptionErro: responseData.ExceptionErro,
+            MensagemErro: responseData.MensagemErro
+          };
+          successfulUrl = url;
+          console.log(`🎯 Successfully got ${normalizedData.length} offers from: ${url}`);
+          
+          // Log first offer structure for validation
+          if (normalizedData[0]) {
+            console.log('🔍 First offer sample:', {
+              IdGeral: normalizedData[0].IdGeral,
+              IataOrigem: normalizedData[0].IataOrigem,
+              IataDestino: normalizedData[0].IataDestino,
+              hasOrigem: !!normalizedData[0].Origem,
+              hasDestino: !!normalizedData[0].Destino,
+              hasValoradulto: !!normalizedData[0].ValorAdulto,
+              hasPontosAdulto: !!normalizedData[0].PontosAdulto
+            });
+          }
+          break; // Success, stop trying other URLs
+        } else {
+          console.log(`⚠️ URL returned no data: ${url}`);
+          // Log raw response for debugging if no data found
+          if (responseData && typeof responseData === 'object') {
+            const debugText = JSON.stringify(responseData).substring(0, 500);
+            console.log(`🔍 Raw response debug: ${debugText}...`);
+          }
+        }
+        
+      } catch (urlError) {
+        console.error(`❌ Error with URL ${url}:`, urlError.message);
+        continue; // Try next URL variation
+      }
     }
 
-    const offersData: MoblixApiResponse = await offersResponse.json();
-    console.log('🔍 Offers response structure:', {
-      Success: offersData.Success,
-      HasResult: offersData.HasResult,
-      DataLength: offersData.Data?.length || 0,
-      ExceptionErro: offersData.ExceptionErro,
-      MensagemErro: offersData.MensagemErro
-    });
-
-    if (!offersData.Success || !offersData.HasResult || !offersData.Data) {
-      throw new Error(`Moblix API returned error: ${offersData.MensagemErro || 'Unknown error'}`);
+    // Check if any URL worked
+    if (!offersData || !offersData.Data || offersData.Data.length === 0) {
+      const errorMsg = 'No offers found from any URL variation';
+      console.error(`❌ ${errorMsg}`);
+      return {
+        processed: 0,
+        inserted: 0,
+        updated: 0,
+        errors: 1,
+        error: errorMsg,
+        message: 'Moblix sync failed - no data returned'
+      };
     }
 
-    console.log(`📦 Fetched ${offersData.Data.length} offers from Moblix`);
+    console.log(`📦 Successfully fetched ${offersData.Data.length} offers from Moblix using: ${successfulUrl}`);
 
-    // Step 3: Process offers
+    // Step 3: Process offers with robust data validation
     let processedCount = 0;
     let insertedCount = 0;
     let updatedCount = 0;
@@ -227,6 +321,18 @@ async function syncMoblixOffers(supabase: any) {
 
     for (const offer of offersData.Data) {
       try {
+        // Validate required fields
+        if (!offer.IdGeral || !offer.IataOrigem || !offer.IataDestino || !offer.Ida) {
+          console.error(`⚠️ Skipping invalid offer - missing required fields:`, {
+            IdGeral: !!offer.IdGeral,
+            IataOrigem: !!offer.IataOrigem, 
+            IataDestino: !!offer.IataDestino,
+            Ida: !!offer.Ida
+          });
+          errorCount++;
+          continue;
+        }
+
         // Store raw offer data
         const { error: rawInsertError } = await supabase
           .from('moblix_offers')
@@ -245,32 +351,72 @@ async function syncMoblixOffers(supabase: any) {
           continue;
         }
 
-        // Convert to airline_promotions format
+        // Robust data extraction with fallbacks
+        const originCity = offer.Origem?.Cidade || offer.IataOrigem;
+        const destCity = offer.Destino?.Cidade || offer.IataDestino;
+        const airlineName = offer.Cia?.Nome || `${offer.IataOrigem}/${offer.IataDestino}`;
+        
+        // Convert to airline_promotions format with better date handling
         const routeDescription = offer.SoIda 
-          ? `Viagem de ${offer.Origem.Cidade} para ${offer.Destino.Cidade} (só ida)`
-          : `Viagem de ${offer.Origem.Cidade} para ${offer.Destino.Cidade} (ida e volta)`;
+          ? `Viagem de ${originCity} para ${destCity} (só ida)`
+          : `Viagem de ${originCity} para ${destCity} (ida e volta)`;
+
+        // Parse dates more carefully
+        const departureDate = new Date(offer.Ida);
+        const isValidDeparture = !isNaN(departureDate.getTime());
+        
+        let returnDate = null;
+        let endDate = new Date();
+        
+        if (!offer.SoIda && offer.Volta) {
+          returnDate = new Date(offer.Volta);
+          if (!isNaN(returnDate.getTime())) {
+            endDate = returnDate;
+          } else {
+            // Fallback: 30 days from departure
+            endDate = new Date(departureDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+          }
+        } else {
+          // For one-way flights, set end date to 30 days from now
+          endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        }
+
+        // Ensure end_date is in the future for active promotions
+        const today = new Date();
+        if (endDate <= today) {
+          endDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000); // +7 days minimum
+        }
 
         const airlinePromotion: AirlinePromotion = {
           airline_code: `${offer.IataOrigem}-${offer.IataDestino}`,
-          airline_name: offer.Cia.Nome || `${offer.IataOrigem}/${offer.IataDestino}`,
-          title: `${offer.Origem.Cidade} → ${offer.Destino.Cidade}`,
+          airline_name: airlineName,
+          title: `${originCity} → ${destCity}`,
           description: routeDescription,
           promotion_type: 'route_promotion',
-          miles_required: offer.PontosAdulto,
-          route_from: offer.Origem.Cidade,
-          route_to: offer.Destino.Cidade,
-          start_date: new Date(offer.Ida).toISOString().split('T')[0],
-          end_date: offer.SoIda 
-            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // +30 days
-            : new Date(offer.Volta).toISOString().split('T')[0],
+          miles_required: offer.PontosAdulto || 0,
+          route_from: originCity,
+          route_to: destCity,
+          start_date: isValidDeparture ? departureDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
           data_source: 'moblix',
           external_reference: offer.IdGeral,
-          raw_price: offer.ValorAdulto,
-          boarding_tax: offer.TaxaEmbarque,
-          departure_date: new Date(offer.Ida).toISOString().split('T')[0],
-          return_date: offer.SoIda ? null : new Date(offer.Volta).toISOString().split('T')[0],
+          raw_price: offer.ValorAdulto || 0,
+          boarding_tax: offer.TaxaEmbarque || 0,
+          departure_date: isValidDeparture ? departureDate.toISOString().split('T')[0] : null,
+          return_date: (!offer.SoIda && returnDate && !isNaN(returnDate.getTime())) ? returnDate.toISOString().split('T')[0] : null,
           is_round_trip: !offer.SoIda,
         };
+
+        // Log first few promotions for debugging
+        if (processedCount < 3) {
+          console.log(`🔍 Processing promotion ${processedCount + 1}:`, {
+            title: airlinePromotion.title,
+            miles_required: airlinePromotion.miles_required,
+            start_date: airlinePromotion.start_date,
+            end_date: airlinePromotion.end_date,
+            raw_price: airlinePromotion.raw_price
+          });
+        }
 
         // Check if promotion already exists
         const { data: existingPromo } = await supabase
@@ -326,13 +472,13 @@ async function syncMoblixOffers(supabase: any) {
         processedCount++;
 
       } catch (offerError) {
-        console.error(`❌ Error processing Moblix offer ${offer.IdGeral}:`, offerError);
+        console.error(`❌ Error processing Moblix offer ${offer?.IdGeral || 'unknown'}:`, offerError);
         errorCount++;
       }
     }
 
     // Deactivate old Moblix offers that are no longer available
-    const currentExternalIds = offersData.Data.map(offer => offer.IdGeral);
+    const currentExternalIds = offersData.Data.map(offer => offer.IdGeral).filter(id => id);
     
     if (currentExternalIds.length > 0) {
       const { error: deactivateError } = await supabase
@@ -348,16 +494,26 @@ async function syncMoblixOffers(supabase: any) {
       }
     }
 
+    // Determine success based on actual results 
+    const success = (insertedCount + updatedCount) > 0 && errorCount === 0;
+    const message = success 
+      ? 'Moblix sync completed successfully'
+      : errorCount > 0 
+        ? `Moblix sync completed with ${errorCount} errors`
+        : 'Moblix sync completed but no promotions were processed';
+
     const result = {
       processed: processedCount,
       inserted: insertedCount,
       updated: updatedCount,
       errors: errorCount,
       total_fetched: offersData.Data.length,
-      message: 'Moblix sync completed successfully'
+      successful_url: successfulUrl,
+      success: success,
+      message: message
     };
 
-    console.log('✅ Moblix sync completed:', result);
+    console.log('🎯 Moblix sync completed:', result);
     return result;
 
   } catch (error) {
@@ -367,6 +523,7 @@ async function syncMoblixOffers(supabase: any) {
       inserted: 0,
       updated: 0,
       errors: 1,
+      success: false,
       error: error.message,
       message: 'Moblix sync failed'
     };
