@@ -11,31 +11,9 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { usePromotionFilters } from '@/hooks/usePromotionFilters';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { Database } from '@/integrations/supabase/types';
 
-interface AirlinePromotion {
-  id: string;
-  airline_code: string;
-  airline_name: string;
-  title: string;
-  description: string;
-  promotion_type: string;
-  miles_required?: number;
-  bonus_percentage?: number;
-  discount_percentage?: number;
-  route_from?: string;
-  route_to?: string;
-  promotion_url?: string;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  data_source?: string;
-  external_reference?: string;
-  raw_price?: number;
-  boarding_tax?: number;
-  departure_date?: string;
-  return_date?: string;
-  is_round_trip?: boolean;
-}
+type AirlinePromotion = Database['public']['Tables']['airline_promotions']['Row'];
 
 interface PromotionsSectionProps {
   userTotalMiles: number;
@@ -385,21 +363,21 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                     </div>
                   )}
 
-                  {(promotion as any).raw_price && (promotion as any).data_source === 'moblix' && (
+                  {promotion.raw_price && promotion.data_source === 'moblix' && (
                     <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm text-blue-600">
-                      <span className="font-medium">R$ {(promotion as any).raw_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                      {(promotion as any).boarding_tax && (
-                        <span className="text-muted-foreground">+ R$ {(promotion as any).boarding_tax.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} taxa</span>
+                      <span className="font-medium">R$ {promotion.raw_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      {promotion.boarding_tax && (
+                        <span className="text-muted-foreground">+ R$ {promotion.boarding_tax.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} taxa</span>
                       )}
                     </div>
                   )}
 
-                  {(promotion as any).departure_date && (promotion as any).data_source === 'moblix' && (
+                  {promotion.departure_date && promotion.data_source === 'moblix' && (
                     <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm">
                       <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span>Ida: {new Date((promotion as any).departure_date).toLocaleDateString('pt-BR')}</span>
-                      {(promotion as any).return_date && (
-                        <span>• Volta: {new Date((promotion as any).return_date).toLocaleDateString('pt-BR')}</span>
+                      <span>Ida: {new Date(promotion.departure_date).toLocaleDateString('pt-BR')}</span>
+                      {promotion.return_date && (
+                        <span>• Volta: {new Date(promotion.return_date).toLocaleDateString('pt-BR')}</span>
                       )}
                     </div>
                   )}

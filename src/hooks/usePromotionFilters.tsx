@@ -1,24 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useFavorites } from './useFavorites';
+import type { Database } from '@/integrations/supabase/types';
 
-interface AirlinePromotion {
-  id: string;
-  airline_code: string;
-  airline_name: string;
-  title: string;
-  description: string;
-  promotion_type: string;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  miles_required?: number;
-  route_from?: string;
-  route_to?: string;
-  bonus_percentage?: number;
-  discount_percentage?: number;
-  promotion_url?: string;
-  terms_conditions?: string;
-}
+type AirlinePromotion = Database['public']['Tables']['airline_promotions']['Row'];
 
 interface FilterState {
   searchTerm: string;
