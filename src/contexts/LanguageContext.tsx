@@ -378,6 +378,7 @@ const translations = {
     // Monthly Expenses
     'monthlyExpenses.currentExpenses': 'Gastos Atuais',
     'monthlyExpenses.futureExpenses': 'Gastos Futuros',
+    'monthlyExpenses.transfers': 'Transferências',
     'monthlyExpenses.title': 'Gastos Mensais',
     'monthlyExpenses.month': 'Mês',
     'monthlyExpenses.selectMonth': 'Selecione o mês',
@@ -440,6 +441,13 @@ const translations = {
     'monthlyExpenses.pdfPaymentMethod': 'Forma de Pagamento',
     'monthlyExpenses.description': 'Descrição',
     'monthlyExpenses.amount': 'Valor',
+
+    // Transfers
+    'transfers.betweenAccounts': 'Transferências entre Contas',
+    'transfers.toInvestment': 'Transferência para Investimento',
+    'transfers.summary': 'Resumo de Transferências',
+    'transfers.noTransfers': 'Nenhuma transferência encontrada para o período selecionado',
+    'transfers.unknownDestination': 'Destino não identificado',
     
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
@@ -1892,6 +1900,7 @@ const translations = {
     // Monthly Expenses
     'monthlyExpenses.currentExpenses': 'Current Expenses',
     'monthlyExpenses.futureExpenses': 'Future Expenses',
+    'monthlyExpenses.transfers': 'Transfers',
     'monthlyExpenses.title': 'Monthly Expenses',
     'monthlyExpenses.month': 'Month',
     'monthlyExpenses.selectMonth': 'Select month',
@@ -1939,6 +1948,15 @@ const translations = {
     'monthlyExpenses.pdfTotalExpenses': 'Total Expenses',
     'monthlyExpenses.pdfUser': 'User',
     'monthlyExpenses.pdfPaymentMethod': 'Payment Method',
+    'monthlyExpenses.description': 'Description',
+    'monthlyExpenses.amount': 'Amount',
+
+    // Transfers
+    'transfers.betweenAccounts': 'Account Transfers',
+    'transfers.toInvestment': 'Investment Transfer',
+    'transfers.summary': 'Transfer Summary',
+    'transfers.noTransfers': 'No transfers found for the selected period',
+    'transfers.unknownDestination': 'Unknown destination',
     
     // Calendar
     'viewInCalendar': 'View in Calendar',
@@ -3425,7 +3443,9 @@ const translations = {
     'monthlyIncome.pdfTitle': 'Informe de Ingresos Mensuales',
     'monthlyIncome.pdfPeriod': 'Período',
     'monthlyIncome.pdfTotalIncome': 'Total de Ingresos',
+    'monthlyExpenses.currentExpenses': 'Gastos Actuales',
     'monthlyExpenses.futureExpenses': 'Gastos Futuros',
+    'monthlyExpenses.transfers': 'Transferencias',
     'monthlyExpenses.title': 'Gastos Mensuales',
     'monthlyExpenses.month': 'Mes',
     'monthlyExpenses.selectMonth': 'Seleccionar mes',
@@ -3475,6 +3495,13 @@ const translations = {
     'monthlyExpenses.pdfPaymentMethod': 'Método de Pago',
     'monthlyExpenses.description': 'Descripción',
     'monthlyExpenses.amount': 'Valor',
+
+    // Transfers
+    'transfers.betweenAccounts': 'Transferencias entre Cuentas',
+    'transfers.toInvestment': 'Transferencia a Inversión',
+    'transfers.summary': 'Resumen de Transferencias',
+    'transfers.noTransfers': 'No se encontraron transferencias para el período seleccionado',
+    'transfers.unknownDestination': 'Destino desconocido',
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',

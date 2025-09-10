@@ -15,6 +15,7 @@ import { translateCategoryName as translateCategoryUtil } from "@/utils/category
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { FutureExpensesView } from "./FutureExpensesView";
+import { TransfersBetweenAccounts } from "./TransfersBetweenAccounts";
 import { formatLocalDate, getLocaleForLanguage, getMonthDateRange } from "@/utils/date";
 import { ExportUtils } from "./ExportUtils";
 
@@ -317,9 +318,10 @@ if (selectedCategory !== "all") {
 
   return (
     <Tabs defaultValue="current" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="current">{t('monthlyExpenses.currentExpenses')}</TabsTrigger>
         <TabsTrigger value="future">{t('monthlyExpenses.futureExpenses')}</TabsTrigger>
+        <TabsTrigger value="transfers">{t('monthlyExpenses.transfers')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="current">
@@ -510,6 +512,10 @@ if (selectedCategory !== "all") {
 
       <TabsContent value="future">
         <FutureExpensesView viewMode={viewMode} />
+      </TabsContent>
+
+      <TabsContent value="transfers">
+        <TransfersBetweenAccounts viewMode={viewMode} />
       </TabsContent>
     </Tabs>
   );
