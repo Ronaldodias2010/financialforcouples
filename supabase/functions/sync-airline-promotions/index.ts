@@ -154,11 +154,12 @@ async function syncMoblixOffers(supabase: any) {
 
     console.log('🔐 Authenticating with Moblix API...');
 
-    // Step 1: Get authentication token
+    // Step 1: Get authentication token (following Moblix example exactly)
     const tokenResponse = await fetch(`${moblixBaseUrl}/api/Token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Origin': 'externo', // Required by Moblix API
       },
       body: new URLSearchParams({
         grant_type: 'password',
@@ -167,11 +168,17 @@ async function syncMoblixOffers(supabase: any) {
       }),
     });
 
+    console.log(`🔐 Token request to: ${moblixBaseUrl}/api/Token`);
+    console.log(`📊 Token response status: ${tokenResponse.status}`);
+
     if (!tokenResponse.ok) {
-      throw new Error(`Failed to authenticate with Moblix: ${tokenResponse.status}`);
+      const errorText = await tokenResponse.text();
+      console.error(`❌ Authentication failed - Status: ${tokenResponse.status}, Response: ${errorText}`);
+      throw new Error(`Failed to authenticate with Moblix: ${tokenResponse.status} - ${errorText}`);
     }
 
     const tokenData = await tokenResponse.json();
+    console.log('🔍 Token response data keys:', Object.keys(tokenData));
     const authToken = tokenData.access_token;
 
     if (!authToken) {
@@ -180,24 +187,31 @@ async function syncMoblixOffers(supabase: any) {
 
     console.log('✅ Successfully authenticated with Moblix');
 
-    // Step 2: Fetch offers from Moblix
-    console.log('📥 Fetching offers from Moblix...');
-    const offersResponse = await fetch(
-      `${moblixBaseUrl}/oferta/api/ofertas?international=false&quatidade=10&shuffle=false`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // Step 2: Fetch offers from Moblix (following Moblix example - simple GET without Authorization)
+    const offersUrl = `${moblixBaseUrl}/oferta/api/ofertas?international=false&quatidade=10&shuffle=false`;
+    console.log(`📥 Fetching offers from: ${offersUrl}`);
+    
+    const offersResponse = await fetch(offersUrl, {
+      method: 'GET',
+      redirect: 'follow' // Following Moblix example
+    });
+
+    console.log(`📊 Offers response status: ${offersResponse.status}`);
 
     if (!offersResponse.ok) {
-      throw new Error(`Failed to fetch offers from Moblix: ${offersResponse.status}`);
+      const errorText = await offersResponse.text();
+      console.error(`❌ Offers fetch failed - Status: ${offersResponse.status}, Response: ${errorText}`);
+      throw new Error(`Failed to fetch offers from Moblix: ${offersResponse.status} - ${errorText}`);
     }
 
     const offersData: MoblixApiResponse = await offersResponse.json();
+    console.log('🔍 Offers response structure:', {
+      Success: offersData.Success,
+      HasResult: offersData.HasResult,
+      DataLength: offersData.Data?.length || 0,
+      ExceptionErro: offersData.ExceptionErro,
+      MensagemErro: offersData.MensagemErro
+    });
 
     if (!offersData.Success || !offersData.HasResult || !offersData.Data) {
       throw new Error(`Moblix API returned error: ${offersData.MensagemErro || 'Unknown error'}`);
