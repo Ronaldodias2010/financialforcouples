@@ -28,6 +28,13 @@ interface AirlinePromotion {
   start_date: string;
   end_date: string;
   is_active: boolean;
+  data_source?: string;
+  external_reference?: string;
+  raw_price?: number;
+  boarding_tax?: number;
+  departure_date?: string;
+  return_date?: string;
+  is_round_trip?: boolean;
 }
 
 interface PromotionsSectionProps {
@@ -87,6 +94,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
       'transfer_bonus': 'Bônus Transferência',
       'buy_miles': 'Compra de Milhas',
       'route_discount': 'Desconto em Rota',
+      'route_promotion': 'Oferta de Rota',
       'double_points': 'Pontos em Dobro',
       'status_match': 'Equivalência Status'
     };
@@ -98,6 +106,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
       'transfer_bonus': 'bg-blue-500/10 text-blue-700 border-blue-200',
       'buy_miles': 'bg-green-500/10 text-green-700 border-green-200',
       'route_discount': 'bg-purple-500/10 text-purple-700 border-purple-200',
+      'route_promotion': 'bg-indigo-500/10 text-indigo-700 border-indigo-200',
       'double_points': 'bg-orange-500/10 text-orange-700 border-orange-200',
       'status_match': 'bg-pink-500/10 text-pink-700 border-pink-200'
     };
@@ -288,6 +297,14 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                       >
                         {getPromotionTypeLabel(promotion.promotion_type)}
                       </Badge>
+                      {promotion.data_source === 'moblix' && (
+                        <Badge 
+                          variant="outline" 
+                          className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs font-semibold"
+                        >
+                          Moblix
+                        </Badge>
+                      )}
                       {isEligible && (
                         <Badge variant="default" className="bg-green-600 text-xs">
                           Elegível
@@ -365,6 +382,25 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                     <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm text-blue-600">
                       <Percent className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                       <span>{promotion.discount_percentage}% de desconto</span>
+                    </div>
+                  )}
+
+                  {(promotion as any).raw_price && (promotion as any).data_source === 'moblix' && (
+                    <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm text-blue-600">
+                      <span className="font-medium">R$ {(promotion as any).raw_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      {(promotion as any).boarding_tax && (
+                        <span className="text-muted-foreground">+ R$ {(promotion as any).boarding_tax.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} taxa</span>
+                      )}
+                    </div>
+                  )}
+
+                  {(promotion as any).departure_date && (promotion as any).data_source === 'moblix' && (
+                    <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span>Ida: {new Date((promotion as any).departure_date).toLocaleDateString('pt-BR')}</span>
+                      {(promotion as any).return_date && (
+                        <span>• Volta: {new Date((promotion as any).return_date).toLocaleDateString('pt-BR')}</span>
+                      )}
                     </div>
                   )}
 

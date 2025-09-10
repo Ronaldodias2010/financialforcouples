@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Plane } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -23,9 +23,19 @@ export const SyncPromotionsButton = ({ onSyncComplete }: SyncPromotionsButtonPro
         throw error;
       }
 
+      const result = data;
+      const totalProcessed = result?.processed || 0;
+      const moblixStats = result?.moblix_stats;
+
+      let message = `Sincronização concluída! ${totalProcessed} promoções processadas.`;
+      
+      if (moblixStats && moblixStats.total_fetched > 0) {
+        message += ` Moblix: ${moblixStats.inserted} novas + ${moblixStats.updated} atualizadas.`;
+      }
+
       toast({
         title: "Sucesso",
-        description: "Promoções sincronizadas com sucesso!",
+        description: message,
       });
 
       onSyncComplete?.();
@@ -47,8 +57,13 @@ export const SyncPromotionsButton = ({ onSyncComplete }: SyncPromotionsButtonPro
       size="sm"
       onClick={handleSync}
       disabled={syncing}
+      className="gap-2"
     >
-      <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+      {syncing ? (
+        <RefreshCw className="h-4 w-4 animate-spin" />
+      ) : (
+        <Plane className="h-4 w-4" />
+      )}
       {syncing ? 'Sincronizando...' : 'Sincronizar Promoções'}
     </Button>
   );
