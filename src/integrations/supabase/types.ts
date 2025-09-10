@@ -1555,9 +1555,12 @@ export type Database = {
           frequency_days: number
           id: string
           is_active: boolean | null
+          is_completed: boolean | null
           name: string
           next_due_date: string
           owner_user: string | null
+          remaining_installments: number | null
+          total_installments: number | null
           updated_at: string
           user_id: string
         }
@@ -1572,9 +1575,12 @@ export type Database = {
           frequency_days?: number
           id?: string
           is_active?: boolean | null
+          is_completed?: boolean | null
           name: string
           next_due_date: string
           owner_user?: string | null
+          remaining_installments?: number | null
+          total_installments?: number | null
           updated_at?: string
           user_id: string
         }
@@ -1589,9 +1595,12 @@ export type Database = {
           frequency_days?: number
           id?: string
           is_active?: boolean | null
+          is_completed?: boolean | null
           name?: string
           next_due_date?: string
           owner_user?: string | null
+          remaining_installments?: number | null
+          total_installments?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -2443,6 +2452,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      process_recurring_expenses_daily: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       process_withdrawal: {
         Args: {

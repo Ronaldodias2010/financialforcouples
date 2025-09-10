@@ -28,6 +28,9 @@ interface RecurringExpense {
   owner_user?: string;
   contract_duration_months?: number;
   created_at: string;
+  remaining_installments?: number;
+  total_installments?: number;
+  is_completed?: boolean;
 }
 
 interface Category {
@@ -78,6 +81,8 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
       const { data, error } = await supabase
         .from('recurring_expenses')
         .select('*, created_at')
+        .eq('is_active', true)
+        .eq('is_completed', false)
         .order('next_due_date');
 
       if (error) throw error;
@@ -176,6 +181,10 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
       if (!user) throw new Error(t('recurring.userNotAuth'));
 
       if (editingExpense) {
+        // Recalculate total installments if contract duration or frequency changed
+        const totalInstallments = contractDuration ? 
+          Math.ceil((parseInt(contractDuration) * 30) / parseInt(frequencyDays)) : null;
+          
         const { error } = await supabase
           .from('recurring_expenses')
           .update({
@@ -186,6 +195,8 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             frequency_days: parseInt(frequencyDays),
             next_due_date: nextDueDate.toISOString().split('T')[0],
             contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
+            total_installments: totalInstallments,
+            remaining_installments: totalInstallments
           })
           .eq('id', editingExpense.id);
 
@@ -208,6 +219,10 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
           ? (coupleData.user1_id === user.id ? 'user1' : 'user2')
           : 'user1';
 
+        // Calculate total installments based on contract duration and frequency
+        const totalInstallments = contractDuration ? 
+          Math.ceil((parseInt(contractDuration) * 30) / parseInt(frequencyDays)) : null;
+
         const { error } = await supabase
           .from('recurring_expenses')
           .insert({
@@ -220,6 +235,9 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             owner_user: ownerUser,
             user_id: user.id,
             contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
+            total_installments: totalInstallments,
+            remaining_installments: totalInstallments,
+            is_completed: false
           });
 
         if (error) throw error;
@@ -496,7 +514,11 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                   <p className="text-xs text-muted-foreground">
                     {t('recurring.next')}: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
                   </p>
-                  {expense.contract_duration_months && (
+                  {expense.remaining_installments && expense.total_installments ? (
+                    <p className="text-xs text-muted-foreground font-medium text-primary">
+                      Parcelas: {expense.remaining_installments} de {expense.total_installments} restantes
+                    </p>
+                  ) : expense.contract_duration_months && (
                     <p className="text-xs text-muted-foreground">
                       {(() => {
                         const startDate = new Date(expense.created_at);
