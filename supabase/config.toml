@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.schedule-exchange-rates]
 verify_jwt = false
+
+[functions.test-moblix-sync]
+verify_jwt = false
