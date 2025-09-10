@@ -10,6 +10,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { format } from 'date-fns';
 import { formatLocalDate, getMonthDateRange } from "@/utils/date";
 import { ArrowRight } from "lucide-react";
+import { ExportUtils } from '@/components/financial/ExportUtils';
 
 interface Transfer {
   id: string;
@@ -200,24 +201,73 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
     return options;
   };
 
+  const formatRowForCSV = (transfer: Transfer): string[] => {
+    return [
+      formatDate(transfer.transaction_date),
+      transfer.description,
+      transfer.source_account_name || '',
+      transfer.dest_account_name || '',
+      formatCurrency(transfer.amount),
+      getUserName(transfer),
+      getTransferTypeText(transfer.payment_method || '')
+    ];
+  };
+
+  const formatRowForPDF = (transfer: Transfer): string[] => {
+    return [
+      formatDate(transfer.transaction_date),
+      transfer.description.length > 30 ? transfer.description.substring(0, 30) + '...' : transfer.description,
+      transfer.source_account_name || '',
+      transfer.dest_account_name || '',
+      formatCurrency(transfer.amount),
+      getUserName(transfer).split(' ')[0], // Apenas primeiro nome para PDF
+      getTransferTypeText(transfer.payment_method || '')
+    ];
+  };
+
+  const exportHeaders = [
+    t('export.date'),
+    t('transactions.description'),
+    t('transfers.fromAccount'),
+    t('transfers.toAccount'),
+    t('export.amount'),
+    t('export.user'),
+    t('transfers.transferType')
+  ];
+
   const totalTransfers = transfers.reduce((sum, transfer) => sum + transfer.amount, 0);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{t('transfers.betweenAccounts')}</h3>
-        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {getMonthOptions().map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-4">
+          <ExportUtils
+            data={transfers}
+            filename={`transferencias-${selectedMonth}`}
+            headers={exportHeaders}
+            formatRowForCSV={formatRowForCSV}
+            formatRowForPDF={formatRowForPDF}
+            title={`${t('transfers.betweenAccounts')} - ${getMonthOptions().find(opt => opt.value === selectedMonth)?.label}`}
+            additionalInfo={[
+              { label: t('export.totalTransfers'), value: formatCurrency(totalTransfers) },
+              { label: t('export.period'), value: getMonthOptions().find(opt => opt.value === selectedMonth)?.label || '' }
+            ]}
+            disabled={loading}
+          />
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {getMonthOptions().map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Card>

@@ -420,6 +420,12 @@ const translations = {
     'export.formats.csv': 'CSV (Comma Separated Values)',
     'export.formats.pdf': 'PDF (Portable Document Format)', 
     'export.formats.excel': 'Excel (Planilha Eletrônica)',
+    'export.totalTransfers': 'Total de Transferências',
+    
+    // Transfers
+    'transfers.fromAccount': 'De',
+    'transfers.toAccount': 'Para',
+    'transfers.transferType': 'Tipo',
     
     // Future Expenses PDF/CSV Export
     'futureExpenses.description': 'Descrição',
@@ -3032,6 +3038,12 @@ const translations = {
     'export.formats.csv': 'CSV (Comma Separated Values)',
     'export.formats.pdf': 'PDF (Portable Document Format)', 
     'export.formats.excel': 'Excel (Spreadsheet)',
+    'export.totalTransfers': 'Total Transfers',
+    
+    // Transfers
+    'transfers.fromAccount': 'From',
+    'transfers.toAccount': 'To',
+    'transfers.transferType': 'Type',
 
     // Monthly Income translations
     'monthlyIncome.monthLabel': 'Month',
@@ -3430,6 +3442,12 @@ const translations = {
     'export.formats.csv': 'CSV (Valores Separados por Comas)',
     'export.formats.pdf': 'PDF (Formato de Documento Portátil)', 
     'export.formats.excel': 'Excel (Hoja de Cálculo)',
+    'export.totalTransfers': 'Total de Transferencias',
+    
+    // Transfers
+    'transfers.fromAccount': 'De',
+    'transfers.toAccount': 'A',
+    'transfers.transferType': 'Tipo',
     
     // Monthly Income translations
     'monthlyIncome.monthLabel': 'Mes',
