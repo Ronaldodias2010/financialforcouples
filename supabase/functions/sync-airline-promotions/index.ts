@@ -86,175 +86,9 @@ serve(async (req) => {
 
     console.log('🚀 Starting airline promotions sync...');
 
-    // Simulate fetching data from various airline APIs
-    // In a real implementation, you would make actual API calls to:
-    // - LATAM Pass API
-    // - GOL Smiles API  
-    // - Azul TudoAzul API
-    // - Avianca LifeMiles API
-    // - MaxMilhas/123milhas aggregator APIs
+    // Now using real Moblix API data only - no more mock data
 
-    const mockPromotions: AirlinePromotion[] = [
-      {
-        external_promotion_id: 'TRANSFER_BONUS_2024_01',
-        airline_code: 'LATAM',
-        airline_name: 'LATAM Airlines',
-        title: 'Super Transferência com 120% de Bônus',
-        description: 'Transfira pontos de cartões de crédito e ganhe 120% de bônus nas suas milhas LATAM Pass.',
-        promotion_type: 'transfer_bonus',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        bonus_percentage: 120,
-        promotion_url: 'https://www.latam.com/br/pt/latam-pass/transferir-pontos'
-      },
-      {
-        external_promotion_id: 'BUY_MILES_2024_01', 
-        airline_code: 'GOL',
-        airline_name: 'GOL Linhas Aéreas',
-        title: 'Compre Milhas com 60% OFF',
-        description: 'Compre milhas Smiles com até 60% de desconto por tempo limitado.',
-        promotion_type: 'buy_miles',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        discount_percentage: 60,
-        promotion_url: 'https://www.smiles.com.br/comprar-milhas'
-      },
-      {
-        external_promotion_id: 'ROUTE_SP_LISBOA_2024',
-        airline_code: 'TAP',
-        airline_name: 'TAP Air Portugal', 
-        title: 'São Paulo → Lisboa por 35.000 pontos',
-        description: 'Voe para Lisboa usando apenas 35.000 pontos + taxas na classe econômica.',
-        promotion_type: 'route_discount',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        route_from: 'São Paulo',
-        route_to: 'Lisboa',
-        miles_required: 35000,
-        promotion_url: 'https://www.tap.pt/pt/tap-miles-and-go'
-      },
-      {
-        external_promotion_id: 'ROUTE_BOG_MIAMI_2024',
-        airline_code: 'AVIANCA',
-        airline_name: 'Avianca',
-        title: 'Bogotá → Miami por 25.000 milhas',
-        description: 'Promoção especial para voos Bogotá-Miami na classe econômica.',
-        promotion_type: 'route_discount', 
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        route_from: 'Bogotá',
-        route_to: 'Miami',
-        miles_required: 25000,
-        promotion_url: 'https://www.avianca.com/br/pt/lifemiles/'
-      },
-      {
-        external_promotion_id: 'ROUTE_RIO_PARIS_2024',
-        airline_code: 'AIR_FRANCE',
-        airline_name: 'Air France',
-        title: 'Rio → Paris Premium por 85.000 pontos',
-        description: 'Voe na classe Premium Economy do Rio para Paris com desconto especial.',
-        promotion_type: 'route_discount',
-        start_date: new Date().toISOString().split('T')[0], 
-        end_date: new Date(Date.now() + 150 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        route_from: 'Rio de Janeiro',
-        route_to: 'Paris',
-        miles_required: 85000,
-        promotion_url: 'https://www.airfrance.com.br/flying-blue'
-      },
-      {
-        external_promotion_id: 'AZUL_TURBO_2024',
-        airline_code: 'AZUL',
-        airline_name: 'Azul Linhas Aéreas',
-        title: 'TudoAzul Turbo - Dobro de Pontos',
-        description: 'Acumule pontos em dobro em todos os voos Azul por tempo limitado.',
-        promotion_type: 'double_points',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        bonus_percentage: 100,
-        promotion_url: 'https://www.tudoazul.com'
-      },
-      {
-        external_promotion_id: 'AMERICAN_STATUS_2024',
-        airline_code: 'AMERICAN',
-        airline_name: 'American Airlines',
-        title: 'Status Match Especial',
-        description: 'Equivalência de status para membros de outros programas com bônus de 50% nas milhas.',
-        promotion_type: 'status_match',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        bonus_percentage: 50,
-        promotion_url: 'https://www.aa.com/aadvantage'
-      },
-      {
-        external_promotion_id: 'UNITED_MILEAGEPLUS_2024',
-        airline_code: 'UNITED',
-        airline_name: 'United Airlines',
-        title: 'São Paulo → Nova York por 40.000 milhas',
-        description: 'Tarifa promocional para voos São Paulo - Nova York na classe econômica.',
-        promotion_type: 'route_discount',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        route_from: 'São Paulo',
-        route_to: 'Nova York',
-        miles_required: 40000,
-        promotion_url: 'https://www.united.com/mileageplus'
-      }
-    ];
-
-    console.log(`📥 Processing ${mockPromotions.length} promotions...`);
-
-    let insertedCount = 0;
-    let updatedCount = 0;
-    let errorCount = 0;
-
-    for (const promotion of mockPromotions) {
-      try {
-        // Check if promotion already exists
-        const { data: existingPromo } = await supabase
-          .from('airline_promotions')
-          .select('id')
-          .eq('external_promotion_id', promotion.external_promotion_id)
-          .single();
-
-        if (existingPromo) {
-          // Update existing promotion
-          const { error: updateError } = await supabase
-            .from('airline_promotions')
-            .update({
-              ...promotion,
-              last_synced_at: new Date().toISOString()
-            })
-            .eq('id', existingPromo.id);
-
-          if (updateError) {
-            console.error(`❌ Error updating promotion ${promotion.external_promotion_id}:`, updateError);
-            errorCount++;
-          } else {
-            console.log(`✅ Updated promotion: ${promotion.title}`);
-            updatedCount++;
-          }
-        } else {
-          // Insert new promotion
-          const { error: insertError } = await supabase
-            .from('airline_promotions')
-            .insert({
-              ...promotion,
-              last_synced_at: new Date().toISOString()
-            });
-
-          if (insertError) {
-            console.error(`❌ Error inserting promotion ${promotion.external_promotion_id}:`, insertError);
-            errorCount++;
-          } else {
-            console.log(`🆕 Inserted new promotion: ${promotion.title}`);
-            insertedCount++;
-          }
-        }
-      } catch (error) {
-        console.error(`❌ Error processing promotion ${promotion.external_promotion_id}:`, error);
-        errorCount++;
-      }
-    }
+    console.log('📥 Skipping mock promotions - using real Moblix API data only...');
 
     // Mark expired promotions as inactive
     const { error: expireError } = await supabase
@@ -277,10 +111,10 @@ serve(async (req) => {
 
     const summary = {
       success: true,
-      processed: mockPromotions.length + (moblixResult?.processed || 0),
-      inserted: insertedCount + (moblixResult?.inserted || 0),
-      updated: updatedCount + (moblixResult?.updated || 0),
-      errors: errorCount + (moblixResult?.errors || 0),
+      processed: moblixResult?.processed || 0,
+      inserted: moblixResult?.inserted || 0,
+      updated: moblixResult?.updated || 0,
+      errors: moblixResult?.errors || 0,
       moblix_stats: moblixResult,
       timestamp: new Date().toISOString()
     };
@@ -311,7 +145,7 @@ async function syncMoblixOffers(supabase: any) {
     // Get Moblix API credentials
     const moblixUsername = Deno.env.get('MOBLIX_USERNAME');
     const moblixPassword = Deno.env.get('MOBLIX_PASSWORD');
-    const moblixBaseUrl = Deno.env.get('MOBLIX_API_BASE_URL');
+    const moblixBaseUrl = Deno.env.get('MOBLIX_BASE_URL');
 
     if (!moblixUsername || !moblixPassword || !moblixBaseUrl) {
       console.log('⚠️ Moblix credentials not found, skipping Moblix sync');
@@ -324,11 +158,12 @@ async function syncMoblixOffers(supabase: any) {
     const tokenResponse = await fetch(`${moblixBaseUrl}/api/Token`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({
-        UserName: moblixUsername,
-        Password: moblixPassword,
+      body: new URLSearchParams({
+        grant_type: 'password',
+        username: moblixUsername,
+        password: moblixPassword,
       }),
     });
 
@@ -348,7 +183,7 @@ async function syncMoblixOffers(supabase: any) {
     // Step 2: Fetch offers from Moblix
     console.log('📥 Fetching offers from Moblix...');
     const offersResponse = await fetch(
-      `${moblixBaseUrl}/oferta/api/ofertas?international=true&quatidade=20&shuffle=false`,
+      `${moblixBaseUrl}/oferta/api/ofertas?international=false&quatidade=10&shuffle=false`,
       {
         method: 'GET',
         headers: {
