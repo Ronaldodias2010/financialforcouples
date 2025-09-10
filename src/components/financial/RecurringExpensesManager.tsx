@@ -614,13 +614,6 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleEdit(expense)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => handleDelete(expense.id)}
                     className="text-red-600 hover:text-red-700"
                   >
