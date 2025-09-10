@@ -561,6 +561,15 @@ INSTRUÇÕES SOBRE SISTEMA DE MILHAS:
 - NUNCA duplique as milhas iniciais ao calcular quanto falta para atingir uma meta
 - Se uma meta tem current_miles maior que zero, esse valor já considera milhas iniciais + milhas de gastos
 
+INSTRUÇÕES SOBRE TRANSFERÊNCIAS ENTRE CONTAS:
+- CRÍTICO: Transferências são movimentações NEUTRAS entre contas e não afetam o patrimônio total
+- Transferências NÃO são gastos nem receitas reais - são apenas reorganização de dinheiro
+- Quando analisar gastos/receitas totais, IGNORE as transferências para evitar duplicação
+- Use as transferências para identificar padrões de organização financeira do usuário
+- Exemplo correto: "Você gastou R$ 1.500 em compras e fez 3 transferências de organização (R$ 800 total)"
+- Exemplo incorreto: "Você gastou R$ 2.300 incluindo transferências" (isso seria duplicação)
+- As transferências mostram como o usuário organiza seu dinheiro entre diferentes contas
+
 Forneça uma resposta detalhada, personalizada e profissional EM PORTUGUÊS.`,
     
     en: `You are an expert financial consultant specialized in personalized service for couples and individuals.
@@ -583,6 +592,15 @@ MILEAGE SYSTEM INSTRUCTIONS:
 - NEVER duplicate initial miles when calculating how much is left to reach a goal
 - If a goal has current_miles greater than zero, this value already considers initial miles + spending miles
 
+TRANSFER BETWEEN ACCOUNTS INSTRUCTIONS:
+- CRITICAL: Transfers are NEUTRAL movements between accounts and do not affect total wealth
+- Transfers are NOT real expenses or income - they are just money reorganization
+- When analyzing total expenses/income, IGNORE transfers to avoid duplication
+- Use transfers to identify user's financial organization patterns
+- Correct example: "You spent $1,500 on purchases and made 3 organizational transfers ($800 total)"
+- Incorrect example: "You spent $2,300 including transfers" (this would be duplication)
+- Transfers show how the user organizes their money between different accounts
+
 Provide a detailed, personalized and professional response IN ENGLISH.`,
     
     es: `Eres un consultor financiero experto especializado en atención personalizada para parejas e individuos.
@@ -604,6 +622,15 @@ INSTRUCCIONES DEL SISTEMA DE MILLAS:
 - Las millas mostradas en el historial son SOLO de transacciones/gastos realizados
 - NUNCA dupliques las millas iniciales al calcular cuánto falta para alcanzar una meta
 - Si una meta tiene current_miles mayor que cero, este valor ya considera millas iniciales + millas de gastos
+
+INSTRUCCIONES SOBRE TRANSFERENCIAS ENTRE CUENTAS:
+- CRÍTICO: Las transferencias son movimientos NEUTRALES entre cuentas y no afectan el patrimonio total
+- Las transferencias NO son gastos ni ingresos reales - son solo reorganización de dinero
+- Al analizar gastos/ingresos totales, IGNORA las transferencias para evitar duplicación
+- Usa las transferencias para identificar patrones de organización financiera del usuario
+- Ejemplo correcto: "Gastaste $1,500 en compras e hiciste 3 transferencias organizacionales ($800 total)"
+- Ejemplo incorrecto: "Gastaste $2,300 incluyendo transferencias" (esto sería duplicación)
+- Las transferencias muestran cómo el usuario organiza su dinero entre diferentes cuentas
 
 Proporciona una respuesta detallada, personalizada y profesional EN ESPAÑOL.`
   };
@@ -717,6 +744,49 @@ function generateIndividualContext(
   const todayExpenseTotal = todayExpenses.reduce((sum, t) => sum + Number(t.amount), 0);
   const todayIncomeTotal = todayIncome.reduce((sum, t) => sum + Number(t.amount), 0);
 
+  // Process transfers between accounts
+  const transferTransactions = data.transactions?.filter(t => 
+    t.payment_method === 'account_transfer' || t.payment_method === 'account_investment'
+  ) || [];
+  
+  // Group transfer transactions by date, amount and description to identify pairs
+  const transferPairs: { [key: string]: any[] } = {};
+  transferTransactions.forEach(transaction => {
+    const key = `${transaction.transaction_date}_${transaction.amount}_${transaction.description}`;
+    if (!transferPairs[key]) {
+      transferPairs[key] = [];
+    }
+    transferPairs[key].push(transaction);
+  });
+
+  // Process transfer pairs to show origin → destination
+  const processedTransfers: any[] = [];
+  Object.values(transferPairs).forEach(pair => {
+    if (pair.length >= 2) {
+      const expense = pair.find(t => t.type === 'expense');
+      const income = pair.find(t => t.type === 'income');
+      
+      if (expense && income) {
+        // Find account names
+        const sourceAccount = data.accounts?.find(a => a.id === expense.account_id);
+        const destAccount = data.accounts?.find(a => a.id === income.account_id);
+        
+        processedTransfers.push({
+          date: expense.transaction_date,
+          amount: expense.amount,
+          currency: expense.currency,
+          description: expense.description,
+          sourceAccount: sourceAccount?.name || 'Conta desconhecida',
+          destAccount: destAccount?.name || 'Conta desconhecida',
+          owner_user: expense.owner_user
+        });
+      }
+    }
+  });
+
+  // Calculate transfer totals
+  const transferTotal = processedTransfers.reduce((sum, t) => sum + Number(t.amount), 0);
+
   // Add TODAY's section first for immediate questions
   if (language === 'pt') {
     context += `GASTOS HOJE (${today}):\n`;
@@ -740,6 +810,106 @@ function generateIndividualContext(
     }
     context += `\n`;
   }
+
+  // Add TRANSFERS section
+  const transfersTitle = language === 'pt' 
+    ? '\n====== TRANSFERÊNCIAS ENTRE CONTAS ======\n'
+    : language === 'en' 
+    ? '\n====== TRANSFERS BETWEEN ACCOUNTS ======\n'
+    : '\n====== TRANSFERENCIAS ENTRE CUENTAS ======\n';
+  
+  context += transfersTitle;
+
+  if (processedTransfers.length > 0) {
+    const transferSummary = language === 'pt' 
+      ? `Total transferido entre contas: ${formatCurrency(transferTotal)}\nNúmero de transferências: ${processedTransfers.length}\n\n`
+      : language === 'en' 
+      ? `Total transferred between accounts: ${formatCurrency(transferTotal)}\nNumber of transfers: ${processedTransfers.length}\n\n`
+      : `Total transferido entre cuentas: ${formatCurrency(transferTotal)}\nNúmero de transferencias: ${processedTransfers.length}\n\n`;
+    
+    context += transferSummary;
+
+    const transfersLabel = language === 'pt' 
+      ? 'Detalhamento das transferências:\n'
+      : language === 'en' 
+      ? 'Transfer details:\n'
+      : 'Detalles de transferencias:\n';
+    
+    context += transfersLabel;
+
+    processedTransfers.forEach(transfer => {
+      const formattedDate = new Date(transfer.date).toLocaleDateString('pt-BR');
+      const transferDetail = language === 'pt' 
+        ? `- ${formattedDate}: Transferência de ${formatCurrency(transfer.amount, transfer.currency)} - ${transfer.sourceAccount} → ${transfer.destAccount}`
+        : language === 'en' 
+        ? `- ${formattedDate}: Transfer of ${formatCurrency(transfer.amount, transfer.currency)} - ${transfer.sourceAccount} → ${transfer.destAccount}`
+        : `- ${formattedDate}: Transferencia de ${formatCurrency(transfer.amount, transfer.currency)} - ${transfer.sourceAccount} → ${transfer.destAccount}`;
+      
+      context += transferDetail + '\n';
+    });
+
+    // Add behavioral analysis
+    const behaviorLabel = language === 'pt' 
+      ? '\nPadrões de movimentação:\n'
+      : language === 'en' 
+      ? '\nMovement patterns:\n'
+      : '\nPatrones de movimiento:\n';
+    
+    context += behaviorLabel;
+
+    // Find most active accounts in transfers
+    const sourceAccountFreq: { [key: string]: number } = {};
+    const destAccountFreq: { [key: string]: number } = {};
+    
+    processedTransfers.forEach(t => {
+      sourceAccountFreq[t.sourceAccount] = (sourceAccountFreq[t.sourceAccount] || 0) + 1;
+      destAccountFreq[t.destAccount] = (destAccountFreq[t.destAccount] || 0) + 1;
+    });
+
+    const mostUsedSource = Object.entries(sourceAccountFreq).sort((a, b) => b[1] - a[1])[0];
+    const mostUsedDest = Object.entries(destAccountFreq).sort((a, b) => b[1] - a[1])[0];
+
+    if (mostUsedSource) {
+      const behaviorSource = language === 'pt' 
+        ? `- Conta mais utilizada como origem: ${mostUsedSource[0]} (${mostUsedSource[1]} transferências)\n`
+        : language === 'en' 
+        ? `- Most used source account: ${mostUsedSource[0]} (${mostUsedSource[1]} transfers)\n`
+        : `- Cuenta más utilizada como origen: ${mostUsedSource[0]} (${mostUsedSource[1]} transferencias)\n`;
+      
+      context += behaviorSource;
+    }
+
+    if (mostUsedDest) {
+      const behaviorDest = language === 'pt' 
+        ? `- Conta mais utilizada como destino: ${mostUsedDest[0]} (${mostUsedDest[1]} transferências)\n`
+        : language === 'en' 
+        ? `- Most used destination account: ${mostUsedDest[0]} (${mostUsedDest[1]} transfers)\n`
+        : `- Cuenta más utilizada como destino: ${mostUsedDest[0]} (${mostUsedDest[1]} transferencias)\n`;
+      
+      context += behaviorDest;
+    }
+
+    // Average transfer amount
+    const avgTransfer = transferTotal / processedTransfers.length;
+    const avgLabel = language === 'pt' 
+      ? `- Valor médio por transferência: ${formatCurrency(avgTransfer)}\n`
+      : language === 'en' 
+      ? `- Average transfer amount: ${formatCurrency(avgTransfer)}\n`
+      : `- Monto promedio por transferencia: ${formatCurrency(avgTransfer)}\n`;
+    
+    context += avgLabel;
+
+  } else {
+    const noTransfers = language === 'pt' 
+      ? 'Nenhuma transferência entre contas no período analisado.\n'
+      : language === 'en' 
+      ? 'No transfers between accounts in the analyzed period.\n'
+      : 'No hay transferencias entre cuentas en el período analizado.\n';
+    
+    context += noTransfers;
+  }
+
+  context += '\n';
 
   // Mileage Goals Analysis - COM CORREÇÃO CRÍTICA
   if (data.mileageGoals && data.mileageGoals.length > 0) {
