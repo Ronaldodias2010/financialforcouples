@@ -725,7 +725,7 @@ export const MileageSystem = () => {
             </Card>
           )}
 
-          <div className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {mileageRules.map((rule) => (
               <Card key={rule.id}>
                 <CardContent className="pt-6">
