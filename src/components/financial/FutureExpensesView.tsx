@@ -38,6 +38,13 @@ interface FutureExpense {
   dueStatus?: 'future' | 'today' | 'overdue'; // Status de vencimento
 }
 
+interface MonthlyExpenseGroup {
+  monthKey: string;
+  monthLabel: string;
+  expenses: FutureExpense[];
+  total: number;
+}
+
 interface FutureExpensesViewProps {
   viewMode: "both" | "user1" | "user2";
 }
@@ -51,6 +58,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { fetchManualFutureExpenses, payManualExpense, getDueStatus } = useManualFutureExpenses();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
+  const [monthlyGroups, setMonthlyGroups] = useState<MonthlyExpenseGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [paymentModal, setPaymentModal] = useState<{
@@ -454,15 +462,53 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
       });
 
-      // Armazenar ambos os conjuntos
+      // Agrupar gastos por mês
+      const groupedExpenses = groupExpensesByMonth(expensesForList);
+      
+      // Armazenar todos os conjuntos
       setFutureExpenses(expensesForList);
       setAllFutureExpenses(expensesForCalendar);
+      setMonthlyGroups(groupedExpenses);
     } catch (error) {
       console.error("Error fetching future expenses:", error);
       toast.error("Erro ao carregar gastos futuros");
     } finally {
       setLoading(false);
     }
+  };
+
+  const groupExpensesByMonth = (expenses: FutureExpense[]): MonthlyExpenseGroup[] => {
+    const groups: { [key: string]: FutureExpense[] } = {};
+    
+    expenses.forEach(expense => {
+      const date = new Date(expense.due_date);
+      const monthKey = format(date, 'yyyy-MM');
+      
+      if (!groups[monthKey]) {
+        groups[monthKey] = [];
+      }
+      groups[monthKey].push(expense);
+    });
+
+    return Object.keys(groups)
+      .sort()
+      .map(monthKey => {
+        const date = new Date(monthKey + '-01');
+        const monthLabel = date.toLocaleDateString('pt-BR', { 
+          month: 'long', 
+          year: 'numeric' 
+        });
+        
+        const expenses = groups[monthKey];
+        const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        
+        return {
+          monthKey,
+          monthLabel: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
+          expenses,
+          total
+        };
+      });
   };
 
   const calculateCardPaymentAmount = async (card: any, userId: string): Promise<number> => {
@@ -596,16 +642,29 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   };
 
   const categories = Array.from(new Set((futureExpenses || []).map(expense => expense.category)));
-  const filteredExpenses = selectedCategory === "all" 
-    ? (futureExpenses || [])
-    : (futureExpenses || []).filter(expense => expense.category === selectedCategory);
+  
+  // Filtrar grupos mensais por categoria
+  const filteredMonthlyGroups = monthlyGroups.map(group => ({
+    ...group,
+    expenses: selectedCategory === "all" 
+      ? group.expenses 
+      : group.expenses.filter(expense => expense.category === selectedCategory),
+    total: selectedCategory === "all" 
+      ? group.total 
+      : group.expenses
+          .filter(expense => expense.category === selectedCategory)
+          .reduce((sum, expense) => sum + expense.amount, 0)
+  })).filter(group => group.expenses.length > 0);
 
-  const totalAmount = (filteredExpenses || []).reduce((sum, expense) => sum + (expense?.amount || 0), 0);
+  const totalAmount = filteredMonthlyGroups.reduce((sum, group) => sum + group.total, 0);
 
   const getExportTitle = () => {
     const categoryLabel = selectedCategory === "all" ? "todas-categorias" : selectedCategory.toLowerCase().replace(/\s+/g, '-');
     return `gastos-futuros-${categoryLabel}`;
   };
+
+  // Achatar lista para exportação
+  const allFilteredExpenses = filteredMonthlyGroups.flatMap(group => group.expenses);
 
   if (loading) {
     return <div>{t('monthlyExpenses.loading')}</div>;
@@ -631,9 +690,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           {/* Actions - Responsive layout */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {/* Export Utils */}
-            {filteredExpenses.length > 0 && (
+            {allFilteredExpenses.length > 0 && (
               <ExportUtils
-                data={filteredExpenses.map(expense => ({
+                data={allFilteredExpenses.map(expense => ({
                   id: expense.id,
                   description: expense.description,
                   amount: expense.amount,
@@ -665,7 +724,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                   { label: t('futureExpenses.total'), value: formatCurrency(totalAmount) }
                 ]}
                 formatRowForCSV={(item) => {
-                  const mappedExpense = filteredExpenses.find(exp => exp.id === item.id);
+                  const mappedExpense = allFilteredExpenses.find(exp => exp.id === item.id);
                   return [
                     item.description,
                     formatCurrency(item.amount),
@@ -676,7 +735,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                   ];
                 }}
                 formatRowForPDF={(item) => {
-                  const mappedExpense = filteredExpenses.find(exp => exp.id === item.id);
+                  const mappedExpense = allFilteredExpenses.find(exp => exp.id === item.id);
                   return [
                     item.description,
                     formatCurrency(item.amount),
@@ -724,14 +783,38 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           ))}
         </div>
 
-        {filteredExpenses.length === 0 ? (
+        {filteredMonthlyGroups.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>{t('monthlyExpenses.noFutureExpenses')}</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredExpenses.map((expense) => {
+          <div className="space-y-6">
+            {filteredMonthlyGroups.map((monthGroup) => (
+              <div key={monthGroup.monthKey} className="space-y-3">
+                {/* Cabeçalho do Mês */}
+                <div className="flex items-center justify-between bg-muted/50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    <div>
+                      <h4 className="text-lg font-semibold text-foreground">
+                        {monthGroup.monthLabel}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {monthGroup.expenses.length} {monthGroup.expenses.length === 1 ? 'gasto' : 'gastos'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="secondary" className="text-base px-3 py-1">
+                      Total: {formatCurrency(monthGroup.total)}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Gastos do Mês */}
+                <div className="space-y-3 pl-4">
+                  {monthGroup.expenses.map((expense) => {
               // Função para determinar classe do card baseado no status de vencimento
               const getCardClassName = (expense: FutureExpense) => {
                 if (expense.dueStatus === 'overdue') {
@@ -773,67 +856,70 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                 return null;
               };
 
-              return (
-                <Card key={expense.id} className={getCardClassName(expense)}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {getTypeIcon(expense.type)}
-                      {getStatusIcon(expense)}
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-medium">{expense.description}</h4>
-                          {getStatusBadge(expense)}
-                          <Badge className={getTypeColor(expense.type)}>
-                            {getTypeLabel(expense.type)}
-                          </Badge>
-                          {expense.installment_info && (
-                            <Badge variant="outline">{expense.installment_info}</Badge>
-                          )}
+                    return (
+                      <Card key={expense.id} className={getCardClassName(expense)}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {getTypeIcon(expense.type)}
+                            {getStatusIcon(expense)}
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-medium">{expense.description}</h4>
+                                {getStatusBadge(expense)}
+                                <Badge className={getTypeColor(expense.type)}>
+                                  {getTypeLabel(expense.type)}
+                                </Badge>
+                                {expense.installment_info && (
+                                  <Badge variant="outline">{expense.installment_info}</Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="font-semibold text-lg text-destructive">
+                                {formatCurrency(expense.amount)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {expense.isPaid ? (
+                                <Badge variant="default" className="bg-success text-success-foreground">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Pago
+                                </Badge>
+                              ) : expense.allowsPayment === false ? (
+                                // Transações do cartão - apenas informativo, SEM botão
+                                <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300">
+                                  <Receipt className="h-3 w-3 mr-1" />
+                                  Gasto do Cartão
+                                </Badge>
+                              ) : (
+                                // Cartões de crédito, gastos recorrentes e parcelas - COM botão
+                                <Button
+                                  size="sm"
+                                  onClick={() => handlePayExpense(expense)}
+                                  className="flex items-center gap-2"
+                                  variant={expense.dueStatus === 'overdue' ? 'default' : 'default'}
+                                >
+                                  <Receipt className="h-4 w-4" />
+                                  {expense.dueStatus === 'overdue' ? 'Pagar Urgente' : 'Pagar'}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="font-semibold text-lg text-destructive">
-                          {formatCurrency(expense.amount)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {expense.isPaid ? (
-                          <Badge variant="default" className="bg-success text-success-foreground">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Pago
-                          </Badge>
-                        ) : expense.allowsPayment === false ? (
-                          // Transações do cartão - apenas informativo, SEM botão
-                          <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300">
-                            <Receipt className="h-3 w-3 mr-1" />
-                            Gasto do Cartão
-                          </Badge>
-                        ) : (
-                          // Cartões de crédito, gastos recorrentes e parcelas - COM botão
-                          <Button
-                            size="sm"
-                            onClick={() => handlePayExpense(expense)}
-                            className="flex items-center gap-2"
-                            variant={expense.dueStatus === 'overdue' ? 'default' : 'default'}
-                          >
-                            <Receipt className="h-4 w-4" />
-                            {expense.dueStatus === 'overdue' ? 'Pagar Urgente' : 'Pagar'}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
