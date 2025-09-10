@@ -201,7 +201,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
         <CardDescription className="text-sm">
           {showHidden 
             ? `Exibindo ${hiddenCards.size} promoções escondidas`
-            : `Promoções ativas baseadas nas suas milhas (${userTotalMiles.toLocaleString()} milhas)`
+            : `Promoções ativas baseadas nas suas milhas (${Math.floor(userTotalMiles).toLocaleString()} milhas)`
           }
         </CardDescription>
       </CardHeader>
@@ -345,7 +345,7 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                   {promotion.miles_required && (
                     <div className="flex items-center gap-2 mb-2 text-xs sm:text-sm">
                       <Target className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">{promotion.miles_required.toLocaleString()} milhas necessárias</span>
+                      <span className="truncate">{Math.floor(promotion.miles_required).toLocaleString()} milhas necessárias</span>
                     </div>
                   )}
 
