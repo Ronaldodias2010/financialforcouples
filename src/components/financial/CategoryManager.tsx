@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
 import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
-import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
+import { translateCategoryName as translateCategoryUtil, translateCategoryDescription } from "@/utils/categoryTranslation";
 import { TagInput } from "@/components/ui/TagInput";
 import { TagEditModal } from "./TagEditModal";
 import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle, Tag, X, EyeOff } from "lucide-react";
@@ -472,7 +472,9 @@ const CategoryManagerContent = () => {
                           {translateCategoryUtil(category.name, language)}
                         </h3>
                         {category.description && (
-                          <p className="text-sm text-muted-foreground">{category.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {translateCategoryDescription(category.description, language)}
+                          </p>
                         )}
                       </div>
                     </div>

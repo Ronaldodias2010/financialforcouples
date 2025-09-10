@@ -9,6 +9,14 @@ interface CategoryTranslations {
   };
 }
 
+interface CategoryDescriptionTranslations {
+  [key: string]: {
+    pt: string;
+    en: string;
+    es: string;
+  };
+}
+
 // Normalized category name mappings
 const categoryTranslations: CategoryTranslations = {
   // Income categories
@@ -134,6 +142,105 @@ const categoryTranslations: CategoryTranslations = {
   'retiro': { pt: 'Saque', en: 'Withdrawal', es: 'Retiro' }
 };
 
+// Category description translations
+const categoryDescriptionTranslations: CategoryDescriptionTranslations = {
+  'gastos_com_animais_de_estimacao': {
+    pt: 'Gastos com animais de estimação',
+    en: 'Pet expenses',
+    es: 'Gastos con mascotas'
+  },
+  'gastos_com_beleza_e_cuidados_pessoais': {
+    pt: 'Gastos com beleza e cuidados pessoais',
+    en: 'Beauty and personal care expenses',
+    es: 'Gastos en belleza y cuidado personal'
+  },
+  'gastos_com_reformas_e_construcao': {
+    pt: 'Gastos com reformas e construção',
+    en: 'Renovation and construction expenses',
+    es: 'Gastos en reformas y construcción'
+  },
+  'gastos_com_tecnologia_e_servicos_digitais': {
+    pt: 'Gastos com tecnologia e serviços digitais',
+    en: 'Technology and digital services expenses',
+    es: 'Gastos en tecnología y servicios digitales'
+  },
+  'despesas_com_viagens_e_turismo': {
+    pt: 'Despesas com viagens e turismo',
+    en: 'Travel and tourism expenses',
+    es: 'Gastos de viajes y turismo'
+  },
+  'gastos_com_alimentacao_e_restaurantes': {
+    pt: 'Gastos com alimentação e restaurantes',
+    en: 'Food and restaurant expenses',
+    es: 'Gastos en alimentación y restaurantes'
+  },
+  'gastos_com_transporte_e_combustivel': {
+    pt: 'Gastos com transporte e combustível',
+    en: 'Transportation and fuel expenses',
+    es: 'Gastos en transporte y combustible'
+  },
+  'gastos_com_moradia_e_utilidades': {
+    pt: 'Gastos com moradia e utilidades',
+    en: 'Housing and utilities expenses',
+    es: 'Gastos en vivienda y servicios públicos'
+  },
+  'gastos_com_saude_e_medicina': {
+    pt: 'Gastos com saúde e medicina',
+    en: 'Health and medical expenses',
+    es: 'Gastos en salud y medicina'
+  },
+  'gastos_com_educacao_e_cursos': {
+    pt: 'Gastos com educação e cursos',
+    en: 'Education and course expenses',
+    es: 'Gastos en educación y cursos'
+  },
+  'gastos_com_entretenimento_e_lazer': {
+    pt: 'Gastos com entretenimento e lazer',
+    en: 'Entertainment and leisure expenses',
+    es: 'Gastos en entretenimiento y ocio'
+  },
+  'gastos_com_compras_e_vestuario': {
+    pt: 'Gastos com compras e vestuário',
+    en: 'Shopping and clothing expenses',
+    es: 'Gastos en compras y ropa'
+  },
+  'gastos_com_servicos_e_taxas': {
+    pt: 'Gastos com serviços e taxas',
+    en: 'Services and fees expenses',
+    es: 'Gastos en servicios y tarifas'
+  },
+  'rendimentos_do_trabalho': {
+    pt: 'Rendimentos do trabalho',
+    en: 'Employment income',
+    es: 'Ingresos del trabajo'
+  },
+  'rendimentos_de_investimentos': {
+    pt: 'Rendimentos de investimentos',
+    en: 'Investment income',
+    es: 'Ingresos de inversiones'
+  },
+  'rendimentos_extras_e_bonus': {
+    pt: 'Rendimentos extras e bônus',
+    en: 'Extra income and bonuses',
+    es: 'Ingresos extra y bonificaciones'
+  },
+  'rendimentos_de_vendas': {
+    pt: 'Rendimentos de vendas',
+    en: 'Sales income',
+    es: 'Ingresos de ventas'
+  },
+  'rendimentos_de_aluguel': {
+    pt: 'Rendimentos de aluguel',
+    en: 'Rental income',
+    es: 'Ingresos por alquiler'
+  },
+  'outros_rendimentos': {
+    pt: 'Outros rendimentos',
+    en: 'Other income',
+    es: 'Otros ingresos'
+  }
+};
+
 // Function to normalize category names (same as used in CategoryManager)
 const normalize = (str: string): string => {
   const normalized = str
@@ -180,6 +287,29 @@ export const translateCategoryName = (categoryName: string, language: Language):
   // If no translation found, return original name
   console.log(`❌ No translation found for "${categoryName}" (normalized: "${normalizedName}")`);
   return categoryName;
+};
+
+/**
+ * Translates a category description to the specified language
+ * @param description - The original category description (usually in Portuguese)
+ * @param language - Target language code
+ * @returns Translated category description
+ */
+export const translateCategoryDescription = (description: string, language: Language): string => {
+  if (!description) return '';
+  
+  // If already in target language, return as is
+  if (language === 'pt') return description;
+  
+  const normalizedDescription = normalize(description);
+  const translation = categoryDescriptionTranslations[normalizedDescription];
+  
+  if (translation) {
+    return translation[language];
+  }
+  
+  // If no translation found, return original description
+  return description;
 };
 
 export default translateCategoryName;
