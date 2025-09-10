@@ -16,6 +16,56 @@ import { cn } from "@/lib/utils";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName } from "@/utils/categoryTranslation";
+
+// Component to show installment progress and future expense status
+const InstallmentProgress = ({ total, remaining, nextDueDate }: { 
+  total: number, 
+  remaining: number, 
+  nextDueDate: Date 
+}) => {
+  const [hasFutureExpense, setHasFutureExpense] = useState(false);
+  
+  useEffect(() => {
+    const checkFutureExpense = async () => {
+      try {
+        const { data } = await supabase
+          .from('manual_future_expenses')
+          .select('id')
+          .eq('is_paid', false)
+          .eq('due_date', nextDueDate.toISOString().split('T')[0])
+          .limit(1);
+        
+        setHasFutureExpense((data || []).length > 0);
+      } catch (error) {
+        console.error('Error checking future expense:', error);
+      }
+    };
+    
+    checkFutureExpense();
+  }, [nextDueDate]);
+
+  const progress = ((total - remaining) / total) * 100;
+  
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span>Progresso: {total - remaining}/{total}</span>
+        <span>{progress.toFixed(0)}%</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-primary h-2 rounded-full transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      {hasFutureExpense && (
+        <p className="text-xs text-blue-600 font-medium">
+          💳 Próxima parcela em Gastos Futuros
+        </p>
+      )}
+    </div>
+  );
+};
 interface RecurringExpense {
   id: string;
   name: string;
@@ -78,11 +128,10 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
 
   const fetchRecurringExpenses = async () => {
     try {
+      // Fetch both active and completed recurring expenses for better overview
       const { data, error } = await supabase
         .from('recurring_expenses')
         .select('*, created_at')
-        .eq('is_active', true)
-        .eq('is_completed', false)
         .order('next_due_date');
 
       if (error) throw error;
@@ -92,7 +141,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
         next_due_date: new Date(expense.next_due_date)
       }));
 
-      // Filtrar por viewMode
+      // Filter by viewMode
       if (viewMode !== "both") {
         allExpenses = allExpenses.filter(expense => {
           const ownerUser = expense.owner_user || 'user1';
@@ -100,7 +149,12 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
         });
       }
 
-      setExpenses(allExpenses);
+      // Separate active from completed for better display
+      const activeExpenses = allExpenses.filter(exp => exp.is_active && !exp.is_completed);
+      const completedExpenses = allExpenses.filter(exp => exp.is_completed);
+
+      // Show active first, then completed with different styling
+      setExpenses([...activeExpenses, ...completedExpenses]);
     } catch (error) {
       toast({
         title: t('recurring.error'),
@@ -496,7 +550,11 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
           </Card>
         ) : (
           expenses.map((expense) => (
-            <Card key={expense.id} className={cn("p-4", !expense.is_active && "opacity-50")}>
+            <Card key={expense.id} className={cn(
+              "p-4", 
+              !expense.is_active && "opacity-50",
+              expense.is_completed && "border-green-200 bg-green-50"
+            )}>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -511,13 +569,28 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                   <p className="text-sm text-muted-foreground">
                     R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)} • {getOwnerName(expense.owner_user)}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('recurring.next')}: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
-                  </p>
-                  {expense.remaining_installments && expense.total_installments ? (
-                    <p className="text-xs text-muted-foreground font-medium text-primary">
-                      Parcelas: {expense.remaining_installments} de {expense.total_installments} restantes
+                  {expense.is_completed ? (
+                    <p className="text-xs text-green-600 font-medium">
+                      ✅ Gasto recorrente finalizado
                     </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      {t('recurring.next')}: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
+                    </p>
+                  )}
+                  {expense.remaining_installments !== null && expense.total_installments ? (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium text-primary">
+                        📊 Parcelas: {expense.remaining_installments} de {expense.total_installments} restantes
+                      </p>
+                      {expense.remaining_installments > 0 && (
+                        <InstallmentProgress 
+                          total={expense.total_installments} 
+                          remaining={expense.remaining_installments}
+                          nextDueDate={expense.next_due_date}
+                        />
+                      )}
+                    </div>
                   ) : expense.contract_duration_months && (
                     <p className="text-xs text-muted-foreground">
                       {(() => {
@@ -525,7 +598,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                         const currentDate = new Date();
                         const monthsPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
                         const remainingMonths = Math.max(0, expense.contract_duration_months - monthsPassed);
-                        return `${monthsPassed + 1}/${expense.contract_duration_months} • ${t('recurring.remaining')} ${remainingMonths} ${t('recurring.installments')}`;
+                        return `📅 ${monthsPassed + 1}/${expense.contract_duration_months} • ${t('recurring.remaining')} ${remainingMonths} ${t('recurring.installments')}`;
                       })()}
                     </p>
                   )}
