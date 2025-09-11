@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useFutureExpensePayments } from '@/hooks/useFutureExpensePayments';
 import { useManualFutureExpenses } from '@/hooks/useManualFutureExpenses';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useCurrencyConverter, type CurrencyCode } from '@/hooks/useCurrencyConverter';
 
 interface PayFutureExpenseModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface PayFutureExpenseModalProps {
     installmentTransactionId?: string;
     cardPaymentInfo?: any;
     manualFutureExpenseId?: string;
+    currency?: import('@/hooks/useCurrencyConverter').CurrencyCode;
   };
   onPaymentSuccess: () => void;
 }
@@ -53,6 +55,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const { processPayment, isProcessing } = useFutureExpensePayments();
   const { payManualExpense } = useManualFutureExpenses();
   const { t } = useLanguage();
+  const { formatCurrency: formatCurrencyWithConverter } = useCurrencyConverter();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -194,7 +197,10 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     setNotes('');
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number, currency?: CurrencyCode) => {
+    if (currency && currency !== 'BRL') {
+      return formatCurrencyWithConverter(amount, currency);
+    }
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -237,7 +243,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">{t('payFutureExpense.amount')}:</span>
-              <span className="font-bold text-destructive">{formatCurrency(expense.amount)}</span>
+              <span className="font-bold text-destructive">{formatCurrency(expense.amount, expense.currency)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">{t('payFutureExpense.dueDate')}:</span>

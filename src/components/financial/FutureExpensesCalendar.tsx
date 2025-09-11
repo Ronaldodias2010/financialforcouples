@@ -8,6 +8,7 @@ import { Calendar as CalendarIcon, CreditCard, AlertCircle, DollarSign } from "l
 import { format, parseISO, isSameDay } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 
 interface FutureExpense {
   id: string;
@@ -20,6 +21,7 @@ interface FutureExpense {
   installment_info?: string;
   owner_user?: string;
   allowsPayment?: boolean;
+  currency?: CurrencyCode;
 }
 
 interface FutureExpensesCalendarProps {
@@ -34,8 +36,12 @@ export const FutureExpensesCalendar = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isOpen, setIsOpen] = useState(false);
   const { t, language } = useLanguage();
+  const { formatCurrency: formatCurrencyWithConverter } = useCurrencyConverter();
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number, currency?: CurrencyCode) => {
+    if (currency && currency !== 'BRL') {
+      return formatCurrencyWithConverter(value, currency);
+    }
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -208,9 +214,9 @@ export const FutureExpensesCalendar = ({
                               </div>
                             </div>
                             <div className="text-right ml-2">
-                              <p className="font-semibold text-sm">
-                                {formatCurrency(expense.amount)}
-                              </p>
+                               <p className="font-semibold text-sm">
+                                 {formatCurrency(expense.amount, expense.currency)}
+                               </p>
                             </div>
                           </div>
                         </div>

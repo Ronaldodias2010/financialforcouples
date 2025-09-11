@@ -18,6 +18,7 @@ import { PayCardModal } from "./PayCardModal";
 import { AddFutureExpenseModal } from "./AddFutureExpenseModal";
 import { useFutureExpensePayments } from "@/hooks/useFutureExpensePayments";
 import { useManualFutureExpenses, type ManualFutureExpense } from "@/hooks/useManualFutureExpenses";
+import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 
 interface FutureExpense {
   id: string;
@@ -36,6 +37,7 @@ interface FutureExpense {
   isPaid?: boolean;
   allowsPayment?: boolean; // Define se mostra o botão de pagar
   dueStatus?: 'future' | 'today' | 'overdue'; // Status de vencimento
+  currency?: CurrencyCode; // Currency of the expense
 }
 
 interface MonthlyExpenseGroup {
@@ -56,6 +58,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { t, language } = useLanguage();
   const { isExpensePaid } = useFutureExpensePayments();
   const { fetchManualFutureExpenses, payManualExpense, getDueStatus } = useManualFutureExpenses();
+  const { formatCurrency: formatCurrencyWithConverter } = useCurrencyConverter();
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
   const [monthlyGroups, setMonthlyGroups] = useState<MonthlyExpenseGroup[]>([]);
@@ -427,6 +430,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               category: t('transactionForm.creditCard'),
               card_name: card.name,
               owner_user: card.owner_user,
+              currency: card.currency as CurrencyCode, // Add card's currency
               cardPaymentInfo: { 
                 cardId: card.id, 
                 cardName: card.name,
@@ -548,7 +552,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     return format(nextDueDate, 'yyyy-MM-dd');
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number, currency?: CurrencyCode) => {
+    if (currency && currency !== 'BRL') {
+      // For non-BRL currencies, show the original currency
+      return formatCurrencyWithConverter(value, currency);
+    }
+    // Default BRL formatting
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -885,7 +894,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                           <div className="flex items-center gap-3">
                             <div className="text-right">
                               <p className="font-semibold text-lg text-destructive">
-                                {formatCurrency(expense.amount)}
+                                {formatCurrency(expense.amount, expense.currency)}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
