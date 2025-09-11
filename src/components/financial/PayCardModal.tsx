@@ -9,6 +9,7 @@ import { Calendar, CreditCard, Wallet, Building2, Calculator } from 'lucide-reac
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useCardPayments } from '@/hooks/useCardPayments';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface PayCardModalProps {
   isOpen: boolean;
@@ -37,6 +38,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { processCardPayment, isProcessing } = useCardPayments();
+  const { t } = useLanguage();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -170,7 +172,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="w-5 h-5" />
-            Pagar Cartão de Crédito
+            {t('payCard.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -178,15 +180,15 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
           {/* Card Info */}
           <div className="bg-muted/50 p-4 rounded-lg space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Cartão:</span>
+              <span className="text-sm text-muted-foreground">{t('payCard.card')}:</span>
               <span className="font-medium">{cardInfo.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Total da Fatura:</span>
+              <span className="text-sm text-muted-foreground">{t('payCard.totalAmount')}:</span>
               <span className="font-bold text-destructive">{formatCurrency(cardInfo.totalAmount)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Pagamento Mínimo:</span>
+              <span className="text-sm text-muted-foreground">{t('payCard.minimumPayment')}:</span>
               <span className="font-medium">{formatCurrency(minPayment)}</span>
             </div>
           </div>
@@ -195,28 +197,28 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
             {/* Payment Type */}
             {cardInfo.allowsPartialPayment !== false && (
               <div className="space-y-2">
-                <Label>Tipo de Pagamento</Label>
+                <Label>{t('payCard.paymentType')}</Label>
                 <Select value={paymentType} onValueChange={(value: 'full' | 'minimum' | 'custom') => setPaymentType(value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background z-50">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border shadow-md z-50">
                     <SelectItem value="full">
                       <div className="flex items-center gap-2">
                         <CreditCard className="w-4 h-4" />
-                        Pagamento Total - {formatCurrency(cardInfo.totalAmount)}
+                        {t('payCard.fullPayment')} - {formatCurrency(cardInfo.totalAmount)}
                       </div>
                     </SelectItem>
                     <SelectItem value="minimum">
                       <div className="flex items-center gap-2">
                         <Calculator className="w-4 h-4" />
-                        Pagamento Mínimo - {formatCurrency(minPayment)}
+                        {t('payCard.minimumPaymentOption')} - {formatCurrency(minPayment)}
                       </div>
                     </SelectItem>
                     <SelectItem value="custom">
                       <div className="flex items-center gap-2">
                         <Wallet className="w-4 h-4" />
-                        Valor Personalizado
+                        {t('payCard.customPayment')}
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -226,7 +228,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
 
             {/* Payment Amount */}
             <div className="space-y-2">
-              <Label htmlFor="paymentAmount">Valor do Pagamento</Label>
+              <Label htmlFor="paymentAmount">{t('payCard.paymentAmount')}</Label>
               <Input
                 id="paymentAmount"
                 type="number"
@@ -249,14 +251,14 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
               />
               {paymentType === 'custom' && (
                 <p className="text-sm text-muted-foreground">
-                  Valor entre {formatCurrency(minPayment)} e {formatCurrency(cardInfo.totalAmount)}
+                  {t('payCard.amountRange')} {formatCurrency(minPayment)} e {formatCurrency(cardInfo.totalAmount)}
                 </p>
               )}
             </div>
 
             {/* Payment Date */}
             <div className="space-y-2">
-              <Label htmlFor="paymentDate">Data do Pagamento</Label>
+              <Label htmlFor="paymentDate">{t('payCard.paymentDate')}</Label>
               <Input
                 id="paymentDate"
                 type="date"
@@ -268,25 +270,25 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
 
             {/* Payment Method */}
             <div className="space-y-2">
-              <Label htmlFor="paymentMethod">Método de Pagamento</Label>
+              <Label htmlFor="paymentMethod">{t('payCard.paymentMethod')}</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background z-50">
                   <div className="flex items-center gap-2">
                     {getPaymentMethodIcon()}
-                    <SelectValue placeholder="Selecione o método" />
+                    <SelectValue placeholder={t('payCard.selectMethod')} />
                   </div>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="cash">
                     <div className="flex items-center gap-2">
                       <Wallet className="w-4 h-4" />
-                      Dinheiro
+                      {t('payCard.cash')}
                     </div>
                   </SelectItem>
                   <SelectItem value="account">
                     <div className="flex items-center gap-2">
                       <Building2 className="w-4 h-4" />
-                      Conta Bancária
+                      {t('payCard.bankAccount')}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -296,12 +298,12 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
             {/* Account Selection */}
             {paymentMethod === 'account' && (
               <div className="space-y-2">
-                <Label htmlFor="account">Conta</Label>
+                <Label htmlFor="account">{t('payCard.account')}</Label>
                 <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a conta" />
+                  <SelectTrigger className="bg-background z-50">
+                    <SelectValue placeholder={t('payCard.selectAccount')} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border shadow-md z-50">
                     {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         {account.name} - {formatCurrency(account.balance)}
@@ -314,10 +316,10 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Observações (opcional)</Label>
+              <Label htmlFor="notes">{t('payCard.notes')}</Label>
               <Textarea
                 id="notes"
-                placeholder="Adicione observações sobre este pagamento..."
+                placeholder={t('payCard.notesPlaceholder')}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -333,14 +335,14 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
                 className="flex-1"
                 disabled={isProcessing}
               >
-                Cancelar
+                {t('payCard.cancel')}
               </Button>
               <Button
                 type="submit"
                 className="flex-1"
                 disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount)}
               >
-                {isProcessing ? 'Processando...' : 'Pagar Cartão'}
+                {isProcessing ? t('payCard.processing') : t('payCard.payButton')}
               </Button>
             </div>
           </form>

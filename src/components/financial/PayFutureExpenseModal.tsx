@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useFutureExpensePayments } from '@/hooks/useFutureExpensePayments';
 import { useManualFutureExpenses } from '@/hooks/useManualFutureExpenses';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface PayFutureExpenseModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const { user } = useAuth();
   const { processPayment, isProcessing } = useFutureExpensePayments();
   const { payManualExpense } = useManualFutureExpenses();
+  const { t } = useLanguage();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -222,7 +224,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Pagar Gasto Futuro
+            {t('payFutureExpense.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -230,15 +232,15 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
           {/* Expense Info */}
           <div className="bg-muted/50 p-4 rounded-lg space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Descrição:</span>
+              <span className="text-sm text-muted-foreground">{t('payFutureExpense.description')}:</span>
               <span className="font-medium">{expense.description}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Valor:</span>
+              <span className="text-sm text-muted-foreground">{t('payFutureExpense.amount')}:</span>
               <span className="font-bold text-destructive">{formatCurrency(expense.amount)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Vencimento:</span>
+              <span className="text-sm text-muted-foreground">{t('payFutureExpense.dueDate')}:</span>
               <span>{formatDate(expense.due_date)}</span>
             </div>
           </div>
@@ -246,7 +248,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Payment Date */}
             <div className="space-y-2">
-              <Label htmlFor="paymentDate">Data do Pagamento</Label>
+              <Label htmlFor="paymentDate">{t('payFutureExpense.paymentDate')}</Label>
               <Input
                 id="paymentDate"
                 type="date"
@@ -258,31 +260,31 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
             {/* Payment Method */}
             <div className="space-y-2">
-              <Label htmlFor="paymentMethod">Método de Pagamento</Label>
+              <Label htmlFor="paymentMethod">{t('payFutureExpense.paymentMethod')}</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background z-50">
                   <div className="flex items-center gap-2">
                     {getPaymentMethodIcon()}
-                    <SelectValue placeholder="Selecione o método" />
+                    <SelectValue placeholder={t('payFutureExpense.selectMethod')} />
                   </div>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="cash">
                     <div className="flex items-center gap-2">
                       <Wallet className="w-4 h-4" />
-                      Dinheiro
+                      {t('payFutureExpense.cash')}
                     </div>
                   </SelectItem>
                   <SelectItem value="account">
                     <div className="flex items-center gap-2">
                       <Building2 className="w-4 h-4" />
-                      Conta Bancária
+                      {t('payFutureExpense.bankAccount')}
                     </div>
                   </SelectItem>
                   <SelectItem value="card">
                     <div className="flex items-center gap-2">
                       <CreditCard className="w-4 h-4" />
-                      Cartão
+                      {t('payFutureExpense.card')}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -292,12 +294,12 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
             {/* Account Selection */}
             {paymentMethod === 'account' && (
               <div className="space-y-2">
-                <Label htmlFor="account">Conta</Label>
+                <Label htmlFor="account">{t('payFutureExpense.account')}</Label>
                 <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a conta" />
+                  <SelectTrigger className="bg-background z-50">
+                    <SelectValue placeholder={t('payFutureExpense.selectAccount')} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border shadow-md z-50">
                     {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         {account.name} - {formatCurrency(account.balance)}
@@ -311,12 +313,12 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
             {/* Card Selection */}
             {paymentMethod === 'card' && (
               <div className="space-y-2">
-                <Label htmlFor="card">Cartão</Label>
+                <Label htmlFor="card">{t('payFutureExpense.card')}</Label>
                 <Select value={selectedCard} onValueChange={setSelectedCard}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o cartão" />
+                  <SelectTrigger className="bg-background z-50">
+                    <SelectValue placeholder={t('payFutureExpense.selectCard')} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border shadow-md z-50">
                     {cards.map((card) => (
                       <SelectItem key={card.id} value={card.id}>
                         {card.name} ({card.card_type})
@@ -329,10 +331,10 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Observações (opcional)</Label>
+              <Label htmlFor="notes">{t('payFutureExpense.notes')}</Label>
               <Textarea
                 id="notes"
-                placeholder="Adicione observações sobre este pagamento..."
+                placeholder={t('payFutureExpense.notesPlaceholder')}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -348,14 +350,14 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 className="flex-1"
                 disabled={isProcessing}
               >
-                Cancelar
+                {t('payFutureExpense.cancel')}
               </Button>
               <Button
                 type="submit"
                 className="flex-1"
                 disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount) || (paymentMethod === 'card' && !selectedCard)}
               >
-                {isProcessing ? 'Processando...' : 'Pagar Gasto'}
+                {isProcessing ? t('payFutureExpense.processing') : t('payFutureExpense.payButton')}
               </Button>
             </div>
           </form>

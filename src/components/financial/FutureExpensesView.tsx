@@ -685,7 +685,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Adicionar Gasto Futuro
+            {t('futureExpenses.addFutureExpense')}
           </Button>
           
           {/* Actions - Responsive layout */}
@@ -802,7 +802,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                         {monthGroup.monthLabel}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        {monthGroup.expenses.length} {monthGroup.expenses.length === 1 ? 'gasto' : 'gastos'}
+                        {monthGroup.expenses.length} {monthGroup.expenses.length === 1 ? t('futureExpenses.expensesSingular') : t('futureExpenses.expensesPlural')}
                       </p>
                     </div>
                   </div>
@@ -843,14 +843,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                   return (
                     <Badge className="bg-danger text-danger-foreground">
                       <AlertCircle className="h-3 w-3 mr-1" />
-                      Vencido
+                      {t('futureExpenses.overdue')}
                     </Badge>
                   );
                 } else if (expense.dueStatus === 'today') {
                   return (
                     <Badge className="bg-warning text-warning-foreground">
                       <Clock className="h-3 w-3 mr-1" />
-                      Vence Hoje
+                      {t('futureExpenses.dueToday')}
                     </Badge>
                   );
                 }
@@ -892,13 +892,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                               {expense.isPaid ? (
                                 <Badge variant="default" className="bg-success text-success-foreground">
                                   <CheckCircle className="h-3 w-3 mr-1" />
-                                  Pago
+                                  {t('futureExpenses.paid')}
                                 </Badge>
                               ) : expense.allowsPayment === false ? (
                                 // Transações do cartão - apenas informativo, SEM botão
                                 <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300">
                                   <Receipt className="h-3 w-3 mr-1" />
-                                  Gasto do Cartão
+                                  {t('futureExpenses.cardExpense')}
                                 </Badge>
                               ) : (
                                 // Cartões de crédito, gastos recorrentes e parcelas - COM botão
@@ -909,7 +909,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                                   variant={expense.dueStatus === 'overdue' ? 'default' : 'default'}
                                 >
                                   <Receipt className="h-4 w-4" />
-                                  {expense.dueStatus === 'overdue' ? 'Pagar Urgente' : 'Pagar'}
+                                  {expense.dueStatus === 'overdue' ? t('futureExpenses.payUrgentButton') : t('futureExpenses.payButton')}
                                 </Button>
                               )}
                             </div>
