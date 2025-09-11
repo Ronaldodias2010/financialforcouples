@@ -58,7 +58,15 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const { t, language } = useLanguage();
   const { isExpensePaid } = useFutureExpensePayments();
   const { fetchManualFutureExpenses, payManualExpense, getDueStatus } = useManualFutureExpenses();
-  const { formatCurrency: formatCurrencyWithConverter } = useCurrencyConverter();
+  const { formatCurrency: formatCurrencyWithConverter, convertCurrency } = useCurrencyConverter();
+  
+  // Helper function to sum expenses with currency conversion to BRL
+  const sumExpensesInBRL = (expenses: FutureExpense[]): number => {
+    return expenses.reduce((sum, expense) => {
+      const convertedAmount = convertCurrency(expense.amount, expense.currency || 'BRL', 'BRL');
+      return sum + convertedAmount;
+    }, 0);
+  };
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [allFutureExpenses, setAllFutureExpenses] = useState<FutureExpense[]>([]);
   const [monthlyGroups, setMonthlyGroups] = useState<MonthlyExpenseGroup[]>([]);
@@ -505,7 +513,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         });
         
         const expenses = groups[monthKey];
-        const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        const total = sumExpensesInBRL(expenses);
         
         return {
           monthKey,
@@ -661,9 +669,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       : group.expenses.filter(expense => expense.category === selectedCategory),
     total: selectedCategory === "all" 
       ? group.total 
-      : group.expenses
-          .filter(expense => expense.category === selectedCategory)
-          .reduce((sum, expense) => sum + expense.amount, 0)
+      : sumExpensesInBRL(group.expenses.filter(expense => expense.category === selectedCategory))
   })).filter(group => group.expenses.length > 0);
 
   const totalAmount = filteredMonthlyGroups.reduce((sum, group) => sum + group.total, 0);

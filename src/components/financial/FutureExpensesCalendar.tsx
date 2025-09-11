@@ -36,7 +36,7 @@ export const FutureExpensesCalendar = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isOpen, setIsOpen] = useState(false);
   const { t, language } = useLanguage();
-  const { formatCurrency: formatCurrencyWithConverter } = useCurrencyConverter();
+  const { formatCurrency: formatCurrencyWithConverter, convertCurrency } = useCurrencyConverter();
 
   const formatCurrency = (value: number, currency?: CurrencyCode) => {
     if (currency && currency !== 'BRL') {
@@ -119,7 +119,10 @@ export const FutureExpensesCalendar = ({
     ? expenses.filter(expense => isSameDay(parseISO(expense.due_date), selectedDate))
     : [];
 
-  const totalForSelectedDate = selectedDateExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalForSelectedDate = selectedDateExpenses.reduce((sum, expense) => {
+    const convertedAmount = convertCurrency(expense.amount, expense.currency || 'BRL', 'BRL');
+    return sum + convertedAmount;
+  }, 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
