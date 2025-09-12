@@ -88,7 +88,8 @@ const SmartMileageSection = () => {
                     }}
                   >
                     <Plane 
-                      className="w-6 h-6 text-primary"
+                      className="w-6 h-6"
+                      style={{ color: "hsl(var(--primary))" }}
                     />
                   </div>
                   <div>
@@ -171,7 +172,8 @@ const SmartMileageSection = () => {
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-sm">{t('smartMileage.notification.promotion')}</span>
                         <Plane 
-                          className="w-4 h-4 text-primary"
+                          className="w-4 h-4"
+                          style={{ color: "hsl(var(--primary))" }}
                         />
                       </div>
                       <div className="flex items-center justify-between text-sm">
