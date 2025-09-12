@@ -23,12 +23,20 @@ export const CurrencyRefreshButton: React.FC = () => {
       }
       
       console.log('[CurrencyRefresh] Success:', data);
-      toast.success('Cotações atualizadas com sucesso!');
+      
+      if (data?.success && data?.usd_to_brl) {
+        const usdRate = data.usd_to_brl.toFixed(2);
+        toast.success(`Cotações atualizadas! 1 USD = R$ ${usdRate}`, {
+          duration: 4000
+        });
+      } else {
+        toast.success('Cotações atualizadas com sucesso!');
+      }
       
       // Reload page to show updated rates
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 2000);
       
     } catch (err) {
       console.error('[CurrencyRefresh] Unexpected error:', err);

@@ -24,38 +24,72 @@ async function fetchJson(url: string, timeoutMs = 8000) {
 }
 
 async function fetchRates() {
-  // Try Frankfurter (no API key)
-  try {
-    const url = 'https://api.frankfurter.app/latest?from=BRL&to=USD,EUR,GBP';
-    console.log('[update-exchange-rates] Provider: Frankfurter ->', url);
-    const json = await fetchJson(url);
-    console.log('[update-exchange-rates] Frankfurter response:', JSON.stringify(json));
-    if (!json || !json.rates) throw new Error('Missing rates object from Frankfurter');
-    const rates = json.rates as { USD?: number; EUR?: number; GBP?: number };
-    if (typeof rates.USD !== 'number' || typeof rates.EUR !== 'number' || typeof rates.GBP !== 'number') {
-      throw new Error(`Invalid rates from Frankfurter: USD=${rates.USD}, EUR=${rates.EUR}, GBP=${rates.GBP}`);
+  let bestRates: { USD: number; EUR: number; GBP: number } | null = null;
+  const providers = [
+    {
+      name: 'Frankfurter',
+      url: 'https://api.frankfurter.app/latest?from=BRL&to=USD,EUR,GBP',
+      parser: (json: any) => json.rates
+    },
+    {
+      name: 'ExchangeRate-API',
+      url: 'https://v6.exchangerate-api.com/v6/latest/BRL',
+      parser: (json: any) => json.rates
+    },
+    {
+      name: 'ER-API',
+      url: 'https://open.er-api.com/v6/latest/BRL',
+      parser: (json: any) => json.rates
+    },
+    {
+      name: 'Fixer (fallback)',
+      url: 'https://api.fixer.io/latest?base=BRL&symbols=USD,EUR,GBP',
+      parser: (json: any) => json.rates
     }
-    return { USD: rates.USD, EUR: rates.EUR, GBP: rates.GBP };
-  } catch (e) {
-    console.warn('[update-exchange-rates] Frankfurter failed, falling back. Reason:', e);
+  ];
+
+  for (const provider of providers) {
+    try {
+      console.log(`[update-exchange-rates] Trying provider: ${provider.name} -> ${provider.url}`);
+      const json = await fetchJson(provider.url);
+      console.log(`[update-exchange-rates] ${provider.name} response:`, JSON.stringify(json));
+      
+      if (!json) throw new Error(`No response from ${provider.name}`);
+      
+      const rates = provider.parser(json);
+      if (!rates || typeof rates !== 'object') {
+        throw new Error(`Missing rates object from ${provider.name}`);
+      }
+
+      const { USD, EUR, GBP } = rates as { USD?: number; EUR?: number; GBP?: number };
+      
+      if (typeof USD !== 'number' || typeof EUR !== 'number' || typeof GBP !== 'number') {
+        throw new Error(`Invalid rates from ${provider.name}: USD=${USD}, EUR=${EUR}, GBP=${GBP}`);
+      }
+
+      // Validate rates are reasonable (USD should be between 0.10 and 0.30 for BRL)
+      if (USD < 0.10 || USD > 0.30) {
+        throw new Error(`Suspicious USD rate from ${provider.name}: ${USD}`);
+      }
+
+      console.log(`[update-exchange-rates] ✅ ${provider.name} success: USD=${USD} (1 USD = ${(1/USD).toFixed(2)} BRL)`);
+      
+      // Use the first valid rate we get
+      if (!bestRates) {
+        bestRates = { USD, EUR, GBP };
+        break;
+      }
+    } catch (e) {
+      console.warn(`[update-exchange-rates] ❌ ${provider.name} failed:`, e);
+      continue;
+    }
   }
 
-  // Fallback: open.er-api (no API key)
-  try {
-    const url = 'https://open.er-api.com/v6/latest/BRL';
-    console.log('[update-exchange-rates] Provider: ER-API ->', url);
-    const json = await fetchJson(url);
-    console.log('[update-exchange-rates] ER-API response:', JSON.stringify(json));
-    if (!json || !json.rates) throw new Error('Missing rates object from ER-API');
-    const rates = json.rates as { USD?: number; EUR?: number; GBP?: number };
-    if (typeof rates.USD !== 'number' || typeof rates.EUR !== 'number' || typeof rates.GBP !== 'number') {
-      throw new Error(`Invalid rates from ER-API: USD=${rates.USD}, EUR=${rates.EUR}, GBP=${rates.GBP}`);
-    }
-    return { USD: rates.USD, EUR: rates.EUR, GBP: rates.GBP };
-  } catch (e) {
-    console.error('[update-exchange-rates] All providers failed:', e);
+  if (!bestRates) {
     throw new Error('Failed to fetch exchange rates from all providers');
   }
+
+  return bestRates;
 }
 
 async function upsertRate(target: 'USD' | 'EUR' | 'GBP', rate: number) {
@@ -73,16 +107,41 @@ serve(async (req) => {
   }
 
   try {
+    const body = await req.json().catch(() => ({}));
+    const isManual = body.manual || body.scheduled;
+    
+    console.log(`[update-exchange-rates] Starting ${isManual ? 'manual' : 'automatic'} update`);
+    
     const rates = await fetchRates();
 
     await upsertRate('USD', rates.USD);
     await upsertRate('EUR', rates.EUR);
     await upsertRate('GBP', rates.GBP);
 
-    const body = { success: true, rates };
-    return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    const usdToBrl = (1 / rates.USD).toFixed(4);
+    console.log(`[update-exchange-rates] ✅ Rates updated successfully. 1 USD = R$ ${usdToBrl}`);
+
+    const responseBody = { 
+      success: true, 
+      rates,
+      usd_to_brl: parseFloat(usdToBrl),
+      updated_at: new Date().toISOString(),
+      manual: isManual
+    };
+    
+    return new Response(JSON.stringify(responseBody), { 
+      status: 200, 
+      headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+    });
   } catch (e) {
     console.error('[update-exchange-rates] Error:', e);
-    return new Response(JSON.stringify({ success: false, error: String(e) }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: String(e),
+      timestamp: new Date().toISOString()
+    }), { 
+      status: 500, 
+      headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+    });
   }
 });
