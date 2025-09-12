@@ -1,0 +1,108 @@
+{
+    "name": "Couples Financials - Gestão Financeira para Casais",
+    "short_name": "CouplesFinancials",
+    "description": "A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos.",
+    "start_url": "/app",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#10b981",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "pt-BR",
+    "categories": ["finance", "productivity", "business"],
+    "screenshots": [
+        {
+            "src": "/lovable-uploads/7334c1f2-b2ea-42c6-8031-74d75d699133.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "form_factor": "wide"
+        }
+    ],
+    "icons": [
+        {
+            "src": "/icons/icon-512x512.png?v=12",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/maskable-icon-512x512.png?v=12",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/android-chrome-512x512.png?v=12",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-384x384.png?v=12",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-256x256.png?v=12",
+            "sizes": "256x256",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/android-chrome-192x192.png?v=12",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/maskable-icon-192x192.png?v=12",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/icon-192x192.png?v=12",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-144x144.png?v=12",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-xxhdpi-144x144.png?v=12",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/notification-icon-128x128.png?v=12",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "notification"
+        },
+        {
+            "src": "/icons/icon-96x96.png?v=12",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-48x48.png?v=12",
+            "sizes": "48x48",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "prefer_related_applications": false,
+    "related_applications": [
+        {
+            "platform": "webapp",
+            "url": "https://couplesfinancials.com/manifest.json"
+        }
+    ]
+}
