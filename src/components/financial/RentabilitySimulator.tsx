@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, TrendingUp, DollarSign } from "lucide-react";
+import { Calculator, TrendingUp, DollarSign, Target, Clock } from "lucide-react";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import type { CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useLanguage } from "@/hooks/useLanguage";
+import { formatMonetaryValue, parseMonetaryValue } from "@/utils/monetary";
 
 interface RentabilitySimulatorProps {
   userPreferredCurrency: string;
@@ -17,6 +19,11 @@ interface SimulationResult {
   totalInvested: number;
   totalReturn: number;
   returnPercentage: number;
+  timeToGoal?: {
+    years: number;
+    months: number;
+    achievable: boolean;
+  };
   monthlyBreakdown: {
     month: number;
     investment: number;
@@ -27,12 +34,15 @@ interface SimulationResult {
 
 export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimulatorProps) => {
   const { t, language } = useLanguage();
-  const { formatCurrency } = useCurrencyConverter();
+  const { formatCurrency, convertCurrency } = useCurrencyConverter();
+  const [simulationMode, setSimulationMode] = useState<'time' | 'goal'>('time');
   const [formData, setFormData] = useState({
     initialAmount: "",
     monthlyAmount: "",
     annualRate: "",
     years: "",
+    targetGoal: "",
+    targetCurrency: language === 'pt' ? 'BRL' : language === 'en' ? 'USD' : 'EUR',
     investmentType: language === 'pt' ? "tesouro_selic" : "treasury_bills"
   });
   const [result, setResult] = useState<SimulationResult | null>(null);
@@ -69,16 +79,69 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
 
   const investmentTypes = getInvestmentTypes();
 
+  const calculateTimeToGoal = (initial: number, monthly: number, monthlyRate: number, targetGoal: number) => {
+    if (targetGoal <= initial) {
+      return { years: 0, months: 0, achievable: true };
+    }
+
+    if (monthly <= 0 && monthlyRate <= 0) {
+      return { years: 0, months: 0, achievable: false };
+    }
+
+    let accumulated = initial;
+    let months = 0;
+    const maxMonths = 100 * 12; // Limite máximo de 100 anos
+
+    while (accumulated < targetGoal && months < maxMonths) {
+      months++;
+      const interestEarned = accumulated * monthlyRate;
+      accumulated += interestEarned + monthly;
+    }
+
+    if (months >= maxMonths) {
+      return { years: 0, months: 0, achievable: false };
+    }
+
+    return {
+      years: Math.floor(months / 12),
+      months: months % 12,
+      achievable: true
+    };
+  };
+
   const calculateCompoundInterest = () => {
-    const initial = parseFloat(formData.initialAmount) || 0;
-    const monthly = parseFloat(formData.monthlyAmount) || 0;
+    const initial = parseMonetaryValue(formData.initialAmount);
+    const monthly = parseMonetaryValue(formData.monthlyAmount);
     const selectedType = investmentTypes.find(t => t.value === formData.investmentType);
     const annualRate = formData.investmentType === "custom" 
-      ? (parseFloat(formData.annualRate) || 0) / 100
+      ? (parseMonetaryValue(formData.annualRate)) / 100
       : (selectedType?.rate || 0) / 100;
-    const years = parseFloat(formData.years) || 0;
-    const months = years * 12;
     const monthlyRate = annualRate / 12;
+
+    let timeToGoal: { years: number; months: number; achievable: boolean } | undefined;
+
+    // Se estiver no modo Meta, calcular o tempo necessário
+    if (simulationMode === 'goal' && formData.targetGoal) {
+      let targetGoalValue = parseMonetaryValue(formData.targetGoal);
+      
+      // Converter meta para moeda do usuário se necessário
+      if (formData.targetCurrency !== userPreferredCurrency) {
+        targetGoalValue = convertCurrency(
+          targetGoalValue,
+          formData.targetCurrency as CurrencyCode,
+          userPreferredCurrency as CurrencyCode
+        );
+      }
+
+      timeToGoal = calculateTimeToGoal(initial, monthly, monthlyRate, targetGoalValue);
+    }
+
+    // Calcular com base no período definido ou na meta
+    const years = simulationMode === 'time' 
+      ? parseFloat(formData.years) || 0 
+      : (timeToGoal?.achievable ? timeToGoal.years + (timeToGoal.months / 12) : 10);
+    
+    const months = years * 12;
 
     let accumulated = initial;
     const monthlyBreakdown = [];
@@ -92,20 +155,21 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
       monthlyBreakdown.push({
         month,
         investment: monthly,
-        accumulated,
-        interest: interestEarned
+        accumulated: formatMonetaryValue(accumulated),
+        interest: formatMonetaryValue(interestEarned)
       });
     }
 
-    const finalAmount = accumulated;
-    const totalReturn = finalAmount - totalInvested;
+    const finalAmount = formatMonetaryValue(accumulated);
+    const totalReturn = formatMonetaryValue(finalAmount - totalInvested);
     const returnPercentage = totalInvested > 0 ? (totalReturn / totalInvested) * 100 : 0;
 
     setResult({
       finalAmount,
-      totalInvested,
+      totalInvested: formatMonetaryValue(totalInvested),
       totalReturn,
       returnPercentage,
+      timeToGoal,
       monthlyBreakdown
     });
   };
@@ -116,6 +180,8 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
       monthlyAmount: "",
       annualRate: "",
       years: "",
+      targetGoal: "",
+      targetCurrency: language === 'pt' ? 'BRL' : language === 'en' ? 'USD' : 'EUR',
       investmentType: language === 'pt' ? "tesouro_selic" : "treasury_bills"
     });
     setResult(null);
@@ -135,6 +201,29 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Seletor de Modo */}
+            <div className="space-y-2">
+              <Label>{t('simulator.parameters')}</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={simulationMode === 'time' ? 'default' : 'outline'}
+                  onClick={() => setSimulationMode('time')}
+                  className="flex-1"
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  {t('simulator.timeMode')}
+                </Button>
+                <Button
+                  variant={simulationMode === 'goal' ? 'default' : 'outline'}
+                  onClick={() => setSimulationMode('goal')}
+                  className="flex-1"
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  {t('simulator.goalMode')}
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="initialAmount">{t('simulator.initialAmount')}</Label>
               <Input
@@ -192,17 +281,50 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="years">{t('simulator.period')}</Label>
-              <Input
-                id="years"
-                type="number"
-                step="0.5"
-                value={formData.years}
-                onChange={(e) => setFormData({...formData, years: e.target.value})}
-                placeholder="5"
-              />
-            </div>
+            {/* Campos condicionais baseados no modo */}
+            {simulationMode === 'time' ? (
+              <div className="space-y-2">
+                <Label htmlFor="years">{t('simulator.period')}</Label>
+                <Input
+                  id="years"
+                  type="number"
+                  step="0.5"
+                  value={formData.years}
+                  onChange={(e) => setFormData({...formData, years: e.target.value})}
+                  placeholder="5"
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="targetGoal">{t('simulator.targetGoal')}</Label>
+                  <Input
+                    id="targetGoal"
+                    type="number"
+                    step="0.01"
+                    value={formData.targetGoal}
+                    onChange={(e) => setFormData({...formData, targetGoal: e.target.value})}
+                    placeholder="100000.00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="targetCurrency">{t('simulator.targetCurrency')}</Label>
+                  <Select
+                    value={formData.targetCurrency}
+                    onValueChange={(value) => setFormData({...formData, targetCurrency: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BRL">Real (BRL)</SelectItem>
+                      <SelectItem value="USD">Dólar (USD)</SelectItem>
+                      <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-4">
               <Button onClick={calculateCompoundInterest} className="flex-1">
@@ -227,6 +349,37 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
           <CardContent>
             {result ? (
               <div className="space-y-6">
+                {/* Resultado da Meta (se aplicável) */}
+                {simulationMode === 'goal' && result.timeToGoal && (
+                  <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Target className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold text-primary">{t('simulator.timeToGoal')}</h4>
+                    </div>
+                    {result.timeToGoal.achievable ? (
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-primary">
+                          {result.timeToGoal.years > 0 && `${result.timeToGoal.years} ${result.timeToGoal.years === 1 ? t('simulator.year') : t('simulator.years')}`}
+                          {result.timeToGoal.years > 0 && result.timeToGoal.months > 0 && ' e '}
+                          {result.timeToGoal.months > 0 && `${result.timeToGoal.months} ${result.timeToGoal.months === 1 ? t('simulator.month') : t('simulator.months')}`}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {t('simulator.goalAchievable')} {formatCurrency(parseMonetaryValue(formData.targetGoal), formData.targetCurrency as CurrencyCode)}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-red-600">
+                          {t('simulator.goalNotAchievable')}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {t('simulator.increaseContribution')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Resumo dos Resultados */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-primary/10 rounded-lg">
