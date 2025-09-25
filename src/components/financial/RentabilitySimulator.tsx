@@ -383,7 +383,7 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
                   <div className="text-center p-4 bg-primary/10 rounded-lg">
                     <p className="text-sm text-muted-foreground">{t('simulator.finalAmount')}</p>
                     <p className="text-2xl font-bold text-primary">
-                      {formatCurrency(result.finalAmount, userPreferredCurrency as any)}
+                      {formatCurrency(result.finalAmount, formData.targetCurrency as CurrencyCode)}
                     </p>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
@@ -395,13 +395,13 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <p className="text-sm text-muted-foreground">{t('simulator.totalInvested')}</p>
                     <p className="text-xl font-semibold text-blue-600">
-                      {formatCurrency(result.totalInvested, userPreferredCurrency as any)}
+                      {formatCurrency(result.totalInvested, formData.targetCurrency as CurrencyCode)}
                     </p>
                   </div>
                   <div className="text-center p-4 bg-orange-50 rounded-lg">
                     <p className="text-sm text-muted-foreground">{t('simulator.totalProfit')}</p>
                     <p className="text-xl font-semibold text-orange-600">
-                      {formatCurrency(result.totalReturn, userPreferredCurrency as any)}
+                      {formatCurrency(result.totalReturn, formData.targetCurrency as CurrencyCode)}
                     </p>
                   </div>
                 </div>
@@ -437,10 +437,10 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
                           <span className="font-medium">{type.label}</span>
                           <div className="text-right">
                             <p className="font-semibold">
-                              {formatCurrency(accumulated, userPreferredCurrency as any)}
+                              {formatCurrency(accumulated, formData.targetCurrency as CurrencyCode)}
                             </p>
                             <p className={`text-sm ${isHigher ? 'text-green-600' : 'text-red-600'}`}>
-                              {isHigher ? '+' : ''}{formatCurrency(difference, userPreferredCurrency as any)}
+                              {isHigher ? '+' : ''}{formatCurrency(difference, formData.targetCurrency as CurrencyCode)}
                             </p>
                           </div>
                         </div>
