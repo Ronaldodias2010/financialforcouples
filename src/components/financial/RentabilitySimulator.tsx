@@ -48,8 +48,6 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
   const [result, setResult] = useState<SimulationResult | null>(null);
 
   const getInvestmentTypes = () => {
-    const { language } = useLanguage();
-    
     if (language === 'pt') {
       return [
         { value: "tesouro_selic", label: "Tesouro Selic", rate: 11.5 },
@@ -64,15 +62,15 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
     } else {
       // US/International market investments
       return [
-        { value: "treasury_bills", label: t('simulator.investments.treasuryBills'), rate: 4.5 },
-        { value: "treasury_notes", label: t('simulator.investments.treasuryNotes'), rate: 4.8 },
-        { value: "treasury_bonds", label: t('simulator.investments.treasuryBonds'), rate: 5.0 },
-        { value: "corporate_bonds", label: t('simulator.investments.corporateBonds'), rate: 6.5 },
-        { value: "cds", label: t('simulator.investments.cds'), rate: 4.2 },
-        { value: "stocks", label: t('simulator.investments.stocks'), rate: 10.0 },
-        { value: "etfs", label: t('simulator.investments.etfs'), rate: 8.5 },
-        { value: "reits", label: t('simulator.investments.reits'), rate: 7.8 },
-        { value: "custom", label: t('simulator.investments.custom'), rate: 0 }
+        { value: "treasury_bills", label: t('simulator.investments.treasuryBills') || 'Treasury Bills', rate: 4.5 },
+        { value: "treasury_notes", label: t('simulator.investments.treasuryNotes') || 'Treasury Notes', rate: 4.8 },
+        { value: "treasury_bonds", label: t('simulator.investments.treasuryBonds') || 'Treasury Bonds', rate: 5.0 },
+        { value: "corporate_bonds", label: t('simulator.investments.corporateBonds') || 'Corporate Bonds', rate: 6.5 },
+        { value: "cds", label: t('simulator.investments.cds') || 'Certificates of Deposit', rate: 4.2 },
+        { value: "stocks", label: t('simulator.investments.stocks') || 'Stocks (historical)', rate: 10.0 },
+        { value: "etfs", label: t('simulator.investments.etfs') || 'ETFs', rate: 8.5 },
+        { value: "reits", label: t('simulator.investments.reits') || 'REITs', rate: 7.8 },
+        { value: "custom", label: t('simulator.investments.custom') || 'Custom Rate', rate: 0 }
       ];
     }
   };
