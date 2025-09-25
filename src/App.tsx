@@ -74,12 +74,12 @@ const AppRoutes = () => {
         enableSystem
         disableTransitionOnChange
       >
-        <AuthProvider>
-          <LanguageProvider>
-            <ClientOnly>
-              <SafeTooltipProvider>
-                <SubscriptionProvider>
-                  <GlobalErrorBoundary>
+        <GlobalErrorBoundary>
+          <AuthProvider>
+            <LanguageProvider>
+              <ClientOnly>
+                <SafeTooltipProvider>
+                  <SubscriptionProvider>
                     <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
                       <Routes>
                         <Route path="/" element={<Landing />} />
@@ -117,18 +117,17 @@ const AppRoutes = () => {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
-                  </GlobalErrorBoundary>
-                  <Toaster />
-                  <Sonner />
-                  <GlobalErrorLogger />
-                  <PerformanceMonitor />
-                  <RouteSEO />
-                 </SubscriptionProvider>
-               </SafeTooltipProvider>
-             </ClientOnly>
-           
-           </LanguageProvider>
+                   </SubscriptionProvider>
+                </SafeTooltipProvider>
+              </ClientOnly>
+            </LanguageProvider>
           </AuthProvider>
+          <Toaster />
+          <Sonner />
+          <GlobalErrorLogger />
+          <PerformanceMonitor />
+          <RouteSEO />
+        </GlobalErrorBoundary>
       </ThemeProvider>
     </QueryClientProvider>
   );

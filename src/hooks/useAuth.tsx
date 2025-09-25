@@ -13,28 +13,34 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  console.log('🔄 AuthProvider renderizando...');
+  
+  // Versão simplificada para debug
+  const [user, setUser] = React.useState<User | null>(null);
+  const [session, setSession] = React.useState<Session | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
+    console.log('🔄 AuthProvider useEffect iniciando...');
     let mounted = true;
     
     const initAuth = async () => {
       try {
-        // Get initial session
+        console.log('🔄 Obtendo sessão inicial...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (mounted) {
           if (error) {
-            console.error('Auth error:', error);
+            console.error('❌ Erro de auth:', error);
+          } else {
+            console.log('✅ Sessão obtida:', session ? 'Logado' : 'Não logado');
           }
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('❌ Erro na inicialização do auth:', error);
         if (mounted) {
           setLoading(false);
         }
@@ -44,6 +50,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('🔄 Mudança de estado auth:', event);
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
@@ -55,6 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initAuth();
 
     return () => {
+      console.log('🧹 AuthProvider cleanup');
       mounted = false;
       subscription.unsubscribe();
     };
@@ -62,13 +70,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signOut = async () => {
     try {
+      console.log('🔄 Fazendo logout...');
       // Clean up auth state to prevent limbo
       const { cleanupAuthState } = await import('@/utils/authCleanup');
       cleanupAuthState();
       try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
       window.location.href = '/auth';
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('❌ Erro ao fazer logout:', error);
       window.location.href = '/auth';
     }
   };
@@ -80,6 +89,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     signOut,
   };
 
+  console.log('✅ AuthProvider renderizado com sucesso');
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
