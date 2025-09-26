@@ -4,7 +4,7 @@ import { TransactionForm } from "./TransactionForm";
 import { UserExpenseChart } from "./UserExpenseChart";
 import { MonthlyExpensesView } from "./MonthlyExpensesView";
 import { MonthlyIncomeView } from "./MonthlyIncomeView";
-import { CategoryManager } from "./CategoryManager";
+import CategoryManager from "./CategoryManager";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
 import { ExpensesPieChart } from "./ExpensesPieChart";
 import { AIRecommendations } from "./AIRecommendations";

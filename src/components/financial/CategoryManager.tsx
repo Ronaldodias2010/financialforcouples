@@ -1,21 +1,17 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
 import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
 import { translateCategoryName as translateCategoryUtil, translateCategoryDescription } from "@/utils/categoryTranslation";
-import { TagInput } from "@/components/ui/TagInput";
 import { TagEditModal } from "./TagEditModal";
-import { Plus, Trash2, Edit, ArrowUpCircle, ArrowDownCircle, HelpCircle, Tag, X, EyeOff } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CategoryEditModal } from "./CategoryEditModal";
+import { Plus, Trash2, ArrowUpCircle, ArrowDownCircle, Settings, Tag, X, EyeOff } from "lucide-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface Category {
@@ -39,15 +35,14 @@ const CategoryManagerContent = () => {
   const [incomeCategories, setIncomeCategories] = useState<Category[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<Category[]>([]);
   const [categoryTags, setCategoryTags] = useState<Record<string, CategoryTag[]>>({});
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryColor, setNewCategoryColor] = useState("#6366f1");
-  const [newCategoryType, setNewCategoryType] = useState<"income" | "expense">("expense");
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [tagEditModal, setTagEditModal] = useState<{ isOpen: boolean; categoryId: string; categoryName: string }>({
     isOpen: false,
     categoryId: "",
     categoryName: ""
+  });
+  const [categoryEditModal, setCategoryEditModal] = useState<{ isOpen: boolean; category: Category | null }>({
+    isOpen: false,
+    category: null
   });
   const { toast } = useToast();
   const { language, t } = useLanguage();
@@ -62,7 +57,6 @@ const CategoryManagerContent = () => {
     refetch: refetchUserTags
   } = useUserCategoryTags();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
-
 
   // Safe translation helper with deduplication
   const getTranslatedTagName = (tag: CategoryTag, lang?: string): string => {
@@ -323,82 +317,6 @@ const CategoryManagerContent = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newCategoryName.trim()) {
-      toast({
-        title: "Erro",
-        description: "Nome da categoria é obrigatório",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      if (editingCategory) {
-        const { error } = await supabase
-          .from('categories')
-          .update({
-            name: newCategoryName.trim(),
-            color: newCategoryColor,
-            category_type: newCategoryType,
-          })
-          .eq('id', editingCategory.id)
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Sucesso",
-          description: "Categoria atualizada com sucesso!",
-        });
-      } else {
-        const { error } = await supabase
-          .from('categories')
-          .insert({
-            name: newCategoryName.trim(),
-            color: newCategoryColor,
-            category_type: newCategoryType,
-            user_id: user.id,
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: "Sucesso",
-          description: "Categoria criada com sucesso!",
-        });
-      }
-
-      setNewCategoryName("");
-      setNewCategoryColor("#6366f1");
-      setNewCategoryType("expense");
-      setEditingCategory(null);
-      setIsDialogOpen(false);
-      fetchCategories();
-      fetchCategoryTags();
-    } catch (error: any) {
-      console.error('Error saving category:', error);
-      toast({
-        title: "Erro",
-        description: error.message || "Erro ao salvar categoria",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setNewCategoryName(category.name);
-    setNewCategoryColor(category.color || "#6366f1");
-    setNewCategoryType(category.category_type);
-    setIsDialogOpen(true);
-  };
-
   const handleDelete = async (categoryId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -437,19 +355,17 @@ const CategoryManagerContent = () => {
             {icon}
             <h3 className="text-lg font-semibold">{title}</h3>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-               <Button variant="outline" size="sm" onClick={() => {
-                 setEditingCategory(null);
-                 setNewCategoryName("");
-                 setNewCategoryColor("#6366f1");
-                 setNewCategoryType(title.includes('Entradas') ? 'income' : 'expense');
-               }}>
-                 <Plus className="h-4 w-4 mr-2" />
-                 Adicionar Categoria
-               </Button>
-            </DialogTrigger>
-          </Dialog>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCategoryEditModal({
+              isOpen: true,
+              category: null
+            })}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Adicionar Categoria
+          </Button>
         </div>
         
         <div className="grid gap-4">
@@ -463,9 +379,14 @@ const CategoryManagerContent = () => {
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-5 h-5 rounded-full border-2 border-background shadow-sm"
+                      <button
+                        className="w-5 h-5 rounded-full border-2 border-background shadow-sm hover:scale-110 transition-transform cursor-pointer ring-offset-2 focus:ring-2 focus:ring-ring"
                         style={{ backgroundColor: category.color }}
+                        onClick={() => setCategoryEditModal({
+                          isOpen: true,
+                          category
+                        })}
+                        title="Clique para alterar cor"
                       />
                       <div>
                         <h3 className="font-semibold text-foreground">
@@ -482,6 +403,18 @@ const CategoryManagerContent = () => {
                        <Button
                          variant="ghost"
                          size="sm"
+                         onClick={() => setCategoryEditModal({
+                           isOpen: true,
+                           category
+                         })}
+                         className="h-8 w-8 p-0 hover:bg-muted"
+                         title="Editar categoria"
+                       >
+                         <Settings className="h-4 w-4" />
+                       </Button>
+                       <Button
+                         variant="ghost"
+                         size="sm"
                          onClick={() => setTagEditModal({
                            isOpen: true,
                            categoryId: category.id,
@@ -490,57 +423,68 @@ const CategoryManagerContent = () => {
                          className="h-8 w-8 p-0 hover:bg-muted"
                          title="Editar tags"
                        >
-                         <Edit className="h-4 w-4" />
+                         <Tag className="h-4 w-4" />
                        </Button>
                        <Button
                          variant="ghost"
                          size="sm"
                          onClick={() => handleDelete(category.id)}
                          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                         title="Remover categoria"
                        >
                          <Trash2 className="h-4 w-4" />
                        </Button>
                      </div>
                   </div>
 
-                  {/* Tags Section - Aparentes e Simples */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Tag className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">{t('tags.suggested')}</span>
+                  {/* Tags Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Tag className="h-4 w-4" />
+                      Tags disponíveis
                     </div>
-                    
-                     <div className="flex flex-wrap gap-2">
-                         {systemTags.length > 0 ? (
-                           systemTags
-                             .filter((tag, index, arr) => {
-                               const translatedName = getTranslatedTagName(tag, language);
-                               return arr.findIndex(t => getTranslatedTagName(t, language) === translatedName) === index;
-                             })
-                             .filter(tag => !excludedTagIds.includes(tag.id))
-                             .map(tag => (
-                            <Badge
-                              key={tag.id}
-                              variant="outline"
-                              className="text-xs bg-muted/30 hover:bg-primary/10 border-primary/20 text-primary transition-colors"
-                             style={{ borderColor: tag.color + '40', color: tag.color }}
-                           >
-                              {getTranslatedTagName(tag, language)}
-                            </Badge>
-                            ))
-                          ) : null}
-                       
-                       {/* User tags with distinctive styling */}
-                       {userTagsForCategory.map(tag => (
-                         <Badge
-                           key={tag.id}
-                           variant="outline"
-                           className="text-xs bg-accent/30 hover:bg-primary/10 border-accent/40 text-accent-foreground transition-colors"
-                         >
-                           {tag.tag_name}
-                          <X className="h-3 w-3 ml-1 cursor-pointer" />
+                    <div className="flex flex-wrap gap-2">
+                      {deduplicateSystemTags(systemTags).map((tag) => {
+                        const isExcluded = excludedTagIds.includes(tag.id);
+                        const translatedName = getTranslatedTagName(tag, language);
+                        
+                        return (
+                          <Badge
+                            key={tag.id}
+                            variant={isExcluded ? "outline" : "secondary"}
+                            className={`text-xs ${isExcluded ? 'opacity-50' : ''}`}
+                            style={{
+                              backgroundColor: isExcluded ? 'transparent' : tag.color + '20',
+                              borderColor: tag.color,
+                              color: tag.color,
+                            }}
+                          >
+                            {isExcluded && <EyeOff className="h-3 w-3 mr-1" />}
+                            {translatedName}
+                          </Badge>
+                        );
+                      })}
+                      
+                      {userTagsForCategory.map((userTag) => (
+                        <Badge
+                          key={userTag.id}
+                          variant="secondary"
+                          className="text-xs"
+                          style={{
+                            backgroundColor: userTag.color + '20',
+                            borderColor: userTag.color,
+                            color: userTag.color,
+                          }}
+                        >
+                          {userTag.tag_name}
                         </Badge>
                       ))}
+                      
+                      {systemTags.length === 0 && userTagsForCategory.length === 0 && (
+                        <span className="text-xs text-muted-foreground italic">
+                          Nenhuma tag disponível
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -560,85 +504,6 @@ const CategoryManagerContent = () => {
             <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
           </div>
           
-          {/* Dialog for adding/editing categories */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingCategory ? t('categories.editCategory') : t('categories.newCategory')}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingCategory 
-                    ? t('categories.editCategoryDescription')
-                    : t('categories.newCategoryDescription')
-                  }
-                </DialogDescription>
-              </DialogHeader>
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">{t('categories.name')}</Label>
-                  <Input
-                    id="name"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder={t('categories.placeholder')}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="type">{t('categories.type')}</Label>
-                  <Select value={newCategoryType} onValueChange={(value: "income" | "expense") => setNewCategoryType(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('categories.selectType')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="expense">{t('categories.expense')}</SelectItem>
-                      <SelectItem value="income">{t('categories.income')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="color">{t('common.color')}</Label>
-                  <Input
-                    id="color"
-                    type="color"
-                    value={newCategoryColor}
-                    onChange={(e) => setNewCategoryColor(e.target.value)}
-                  />
-                </div>
-
-                {/* Tag Input integrado no formulário */}
-                {!editingCategory && (
-                  <div className="space-y-2">
-                    <Label>{t('categories.customTags')}</Label>
-                    <TagInput
-                      tags={[]}
-                      onAddTag={async (tagName: string) => true}
-                      onRemoveTag={() => {}}
-                      placeholder={t('categories.customTagsPlaceholder')}
-                      maxTags={10}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('categories.customTagsHelp')}
-                    </p>
-                  </div>
-                )}
-                
-                <div className="flex gap-2">
-                  <Button type="submit" className="flex-1">
-                    {editingCategory ? t('categories.updateCategory') : t('categories.createCategory')}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    {t('common.cancel')}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-
           {/* Seção de Saídas (Expenses) */}
           {renderCategorySection(
             expenseCategories,
@@ -651,41 +516,45 @@ const CategoryManagerContent = () => {
             incomeCategories,
             `📥 ${translateCategoryUtil('Entradas (Receitas)', language)}`,
             <ArrowDownCircle className="h-5 w-5 text-primary" />
-           )}
+          )}
          </Card>
 
-         <TagEditModal
-           isOpen={tagEditModal.isOpen}
-           onClose={() => setTagEditModal({ isOpen: false, categoryId: "", categoryName: "" })}
-           categoryId={tagEditModal.categoryId}
-           categoryName={tagEditModal.categoryName}
-            systemTags={(categoryTags[tagEditModal.categoryId] || []).filter((tag, index, arr) => {
-              const translatedName = getTranslatedTagName(tag, language);
-              return arr.findIndex(t => getTranslatedTagName(t, language) === translatedName) === index;
-            })}
-           excludedTagIds={excludedSystemTags[tagEditModal.categoryId] || []}
-           onExcludeSystemTag={excludeSystemTag}
-           onRestoreSystemTag={restoreSystemTag}
-         />
-       </div>
-     </TooltipProvider>
-   );
- };
+          <CategoryEditModal
+            isOpen={categoryEditModal.isOpen}
+            onClose={() => setCategoryEditModal({ isOpen: false, category: null })}
+            category={categoryEditModal.category}
+            onSuccess={() => {
+              fetchCategories();
+              fetchCategoryTags();
+            }}
+          />
 
-// Create a small QueryClient for CategoryManager if not in a QueryClientProvider context
-const categoryQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+          <TagEditModal
+            isOpen={tagEditModal.isOpen}
+            onClose={() => setTagEditModal({ isOpen: false, categoryId: "", categoryName: "" })}
+            categoryId={tagEditModal.categoryId}
+            categoryName={tagEditModal.categoryName}
+             systemTags={(categoryTags[tagEditModal.categoryId] || []).filter((tag, index, arr) => {
+               const translatedName = getTranslatedTagName(tag, language);
+               return arr.findIndex(t => getTranslatedTagName(t, language) === translatedName) === index;
+             })}
+            excludedTagIds={excludedSystemTags[tagEditModal.categoryId] || []}
+            onExcludeSystemTag={excludeSystemTag}
+            onRestoreSystemTag={restoreSystemTag}
+          />
+      </div>
+    </TooltipProvider>
+  );
+};
 
-export const CategoryManager = () => {
+const queryClient = new QueryClient();
+
+const CategoryManager = () => {
   return (
-    <QueryClientProvider client={categoryQueryClient}>
+    <QueryClientProvider client={queryClient}>
       <CategoryManagerContent />
     </QueryClientProvider>
   );
 };
+
+export default CategoryManager;
