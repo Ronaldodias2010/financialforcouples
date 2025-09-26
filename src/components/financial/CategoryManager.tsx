@@ -565,33 +565,33 @@ const CategoryManagerContent = () => {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingCategory ? "Editar Categoria" : "Nova Categoria"}
+                  {editingCategory ? t('categories.editCategory') : t('categories.newCategory')}
                 </DialogTitle>
                 <DialogDescription>
                   {editingCategory 
-                    ? "Modifique os dados da categoria existente"
-                    : "Crie uma nova categoria para organizar suas transações"
+                    ? t('categories.editCategoryDescription')
+                    : t('categories.newCategoryDescription')
                   }
                 </DialogDescription>
               </DialogHeader>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Nome da Categoria</Label>
+                  <Label htmlFor="name">{t('categories.name')}</Label>
                   <Input
                     id="name"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="Ex: Alimentação, Transporte..."
+                    placeholder={t('categories.placeholder')}
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="type">Tipo</Label>
+                  <Label htmlFor="type">{t('categories.type')}</Label>
                   <Select value={newCategoryType} onValueChange={(value: "income" | "expense") => setNewCategoryType(value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
+                      <SelectValue placeholder={t('categories.selectType')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="expense">{t('categories.expense')}</SelectItem>
