@@ -25,6 +25,7 @@ interface Category {
   id: string;
   name: string;
   color: string;
+  category_type: 'income' | 'expense';
 }
 
 export const AddFutureExpenseModal: React.FC<AddFutureExpenseModalProps> = ({
@@ -56,7 +57,7 @@ export const AddFutureExpenseModal: React.FC<AddFutureExpenseModalProps> = ({
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, color')
+        .select('id, name, color, category_type')
         .eq('user_id', user.id)
         .eq('category_type', 'expense')
         .order('name');
@@ -66,7 +67,10 @@ export const AddFutureExpenseModal: React.FC<AddFutureExpenseModalProps> = ({
         return;
       }
 
-      setCategories(data || []);
+      setCategories((data || []).map(cat => ({
+        ...cat,
+        category_type: cat.category_type as 'income' | 'expense'
+      })));
     } catch (error) {
       console.error('Error fetching categories:', error);
     }

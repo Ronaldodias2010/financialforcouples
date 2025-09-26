@@ -87,7 +87,7 @@ interface RecurringExpense {
 interface Category {
   id: string;
   name: string;
-  category_type: string;
+  category_type: 'income' | 'expense';
 }
 
 interface Card {

@@ -43,6 +43,7 @@ interface Transaction {
 interface Category {
   id: string;
   name: string;
+  category_type: 'income' | 'expense';
 }
 
 interface Card {
@@ -196,7 +197,15 @@ const getAccountOwnerName = (account: Account) => {
     if (isTransferMode && transferType === "investment") {
       fetchInvestments();
     }
-  }, [type, paymentMethod, isTransferMode, transferType]); // Adicionamos isTransferMode e transferType como dependências
+  }, [type, paymentMethod, isTransferMode, transferType]);
+
+  // Limpar seleção de categoria quando mudar o tipo de transação
+  useEffect(() => {
+    const selectedCategory = categories.find(c => c.id === categoryId);
+    if (selectedCategory && selectedCategory.category_type !== type) {
+      setCategoryId("");
+    }
+  }, [type, categories, categoryId]);
 
   // Auto-selecionar categoria "Pagamento de Cartão de Crédito" quando método "card_payment" for selecionado
   useEffect(() => {
@@ -244,10 +253,17 @@ const getAccountOwnerName = (account: Account) => {
 
       const userIds = coupleData ? [coupleData.user1_id, coupleData.user2_id] : [user.id];
 
+      // Determinar o tipo de categoria baseado no modo
+      let categoryTypeFilter = type;
+      // Para transferências, usar sempre expense para gastos/pagamentos
+      if (isTransferMode) {
+        categoryTypeFilter = 'expense';
+      }
+
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, category_type, user_id')
-        .eq('category_type', type)
+        .eq('category_type', categoryTypeFilter)
         .in('user_id', userIds)
         .order('name');
 
@@ -256,7 +272,7 @@ const getAccountOwnerName = (account: Account) => {
       // Deduplicate by normalized name, prefer current user's category id
       const normalize = (s: string) =>
         s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
-      const map = new Map<string, { name: string; id: string }>();
+      const map = new Map<string, { name: string; id: string; category_type: 'income' | 'expense' }>();
       (data || []).forEach((c: any) => {
         const key = normalize(c.name);
         
@@ -267,15 +283,15 @@ const getAccountOwnerName = (account: Account) => {
         
         const preferred = map.get(key);
         if (!preferred) {
-          map.set(key, { name: c.name, id: c.user_id === user.id ? c.id : c.id });
+          map.set(key, { name: c.name, id: c.user_id === user.id ? c.id : c.id, category_type: c.category_type });
         } else if (c.user_id === user.id) {
           // Replace with current user's id if we previously stored partner's id
-          map.set(key, { name: preferred.name, id: c.id });
+          map.set(key, { name: preferred.name, id: c.id, category_type: c.category_type });
         }
       });
 
       // Ensure "Credit Card Payment" category exists for the current user (expense type only)
-      if (type === 'expense') {
+      if (categoryTypeFilter === 'expense') {
         const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
         const targetName = CREDIT_CARD_PAYMENT_NAMES[language as 'pt' | 'en'] || CREDIT_CARD_PAYMENT_NAMES.en;
         const hasAnyPaymentCat = Array.from(map.values()).some((c) => paymentNames.includes(c.name));
@@ -292,13 +308,13 @@ const getAccountOwnerName = (account: Account) => {
             .select('id, name, category_type, user_id')
             .single();
           if (!insertErr && inserted) {
-            map.set(normalize(inserted.name), { name: inserted.name, id: inserted.id });
+            map.set(normalize(inserted.name), { name: inserted.name, id: inserted.id, category_type: inserted.category_type as 'income' | 'expense' });
           }
         }
       }
 
       const result = Array.from(map.values());
-      setCategories(result as { id: string; name: string }[]);
+      setCategories(result as Category[]);
     } catch (error) {
       toast({
         title: "Erro",
