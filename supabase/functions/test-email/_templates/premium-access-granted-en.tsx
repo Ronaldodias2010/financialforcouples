@@ -1,4 +1,4 @@
-import React from 'npm:react@18.3.1';
+import React from 'https://esm.sh/react@18.3.1';
 import {
   Html,
   Head,
@@ -10,7 +10,7 @@ import {
   Hr,
   Img,
   Heading,
-} from 'npm:@react-email/components@0.0.22';
+} from 'https://esm.sh/@react-email/components@0.0.22';
 
 interface PremiumAccessGrantedEmailProps {
   user_email: string;

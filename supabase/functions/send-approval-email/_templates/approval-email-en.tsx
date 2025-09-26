@@ -10,7 +10,7 @@ import {
   Hr,
   Img,
 } from 'https://esm.sh/@react-email/components@0.0.22';
-import React from 'npm:react@18.3.1';
+import React from 'https://esm.sh/react@18.3.1';
 
 interface ApprovalEmailProps {
   partnerName: string;
