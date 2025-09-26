@@ -21,7 +21,7 @@ const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
 const AboutUs = lazy(() => import("./pages/AboutUs"));
 const Partnership = lazy(() => import("./pages/Partnership"));
 import Auth from "./pages/Auth";
-const Landing = lazy(() => import("./pages/Landing"));
+import Landing from "./pages/Landing";
 const DirectCheckout = lazy(() => import("./pages/DirectCheckout"));
 const CheckoutEmailConfirmation = lazy(() => import("./pages/CheckoutEmailConfirmation"));
 const AppDashboard = lazy(() => import("./pages/AppDashboard"));
