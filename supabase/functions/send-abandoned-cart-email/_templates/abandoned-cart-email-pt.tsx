@@ -75,8 +75,8 @@ export const AbandonedCartEmailPT = ({
           ),
           React.createElement(
             Text,
-            { style: planPrice },
-            `${planPrice}`
+            { style: text },
+            planPrice
           )
         ),
         React.createElement(

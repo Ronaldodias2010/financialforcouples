@@ -36,6 +36,12 @@ function estimateCostBRL(inputTokens: number, outputTokens: number): number {
   return totalCostUSD * 5.2;
 }
 
+interface AIUsageData {
+  requests_count: number;
+  tokens_used: number;
+  estimated_cost_brl: number;
+}
+
 interface FinancialData {
   transactions: any[];
   accounts: any[];
@@ -66,6 +72,8 @@ interface FinancialData {
       mileageGoals: any[];
       mileageHistory: any[];
       cardMileageRules: any[];
+      recurringExpenses: any[];
+      manualFutureExpenses: any[];
     };
     partner?: {
       transactions: any[];
@@ -76,6 +84,8 @@ interface FinancialData {
       mileageGoals: any[];
       mileageHistory: any[];
       cardMileageRules: any[];
+      recurringExpenses: any[];
+      manualFutureExpenses: any[];
     };
     combined: {
       transactions: any[];
@@ -86,6 +96,8 @@ interface FinancialData {
       mileageGoals: any[];
       mileageHistory: any[];
       cardMileageRules: any[];
+      recurringExpenses: any[];
+      manualFutureExpenses: any[];
     };
   };
 }
@@ -156,7 +168,7 @@ serve(async (req) => {
     // Get current usage for today
     const { data: currentUsage } = await supabaseClient
       .rpc('get_user_daily_ai_usage', { p_user_id: user.id })
-      .single();
+      .single() as { data: AIUsageData | null };
 
     console.log('Current usage:', currentUsage, 'Limits:', limits);
 
@@ -334,8 +346,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in AI Financial Consultant:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro interno do servidor';
     return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor',
+      error: errorMessage,
       details: 'Falha ao processar consulta financeira'
     }), {
       status: 500,
@@ -473,28 +486,28 @@ async function collectFinancialData(
   if (coupleData && partnerUserId) {
     segmentedData = {
       currentUser: {
-        transactions: transactions.filter(t => t.user_id === userId),
-        accounts: accounts.filter(a => a.user_id === userId),
-        cards: cards.filter(c => c.user_id === userId),
-        investments: investments.filter(i => i.user_id === userId),
-        investmentGoals: investmentGoals.filter(g => g.user_id === userId),
-        mileageGoals: mileageGoals.filter(g => g.user_id === userId),
-        mileageHistory: mileageHistory.filter(h => h.user_id === userId),
-        cardMileageRules: cardMileageRules.filter(r => r.user_id === userId),
-        recurringExpenses: recurringExpenses.filter(r => r.user_id === userId),
-        manualFutureExpenses: manualFutureExpenses.filter(m => m.user_id === userId)
+        transactions: transactions.filter((t: any) => t.user_id === userId),
+        accounts: accounts.filter((a: any) => a.user_id === userId),
+        cards: cards.filter((c: any) => c.user_id === userId),
+        investments: investments.filter((i: any) => i.user_id === userId),
+        investmentGoals: investmentGoals.filter((g: any) => g.user_id === userId),
+        mileageGoals: mileageGoals.filter((g: any) => g.user_id === userId),
+        mileageHistory: mileageHistory.filter((h: any) => h.user_id === userId),
+        cardMileageRules: cardMileageRules.filter((r: any) => r.user_id === userId),
+        recurringExpenses: recurringExpenses.filter((r: any) => r.user_id === userId),
+        manualFutureExpenses: manualFutureExpenses.filter((m: any) => m.user_id === userId)
       },
       partner: {
-        transactions: transactions.filter(t => t.user_id === partnerUserId),
-        accounts: accounts.filter(a => a.user_id === partnerUserId),
-        cards: cards.filter(c => c.user_id === partnerUserId),
-        investments: investments.filter(i => i.user_id === partnerUserId),
-        investmentGoals: investmentGoals.filter(g => g.user_id === partnerUserId),
-        mileageGoals: mileageGoals.filter(g => g.user_id === partnerUserId),
-        mileageHistory: mileageHistory.filter(h => h.user_id === partnerUserId),
-        cardMileageRules: cardMileageRules.filter(r => r.user_id === partnerUserId),
-        recurringExpenses: recurringExpenses.filter(r => r.user_id === partnerUserId),
-        manualFutureExpenses: manualFutureExpenses.filter(m => m.user_id === partnerUserId)
+        transactions: transactions.filter((t: any) => t.user_id === partnerUserId),
+        accounts: accounts.filter((a: any) => a.user_id === partnerUserId),
+        cards: cards.filter((c: any) => c.user_id === partnerUserId),
+        investments: investments.filter((i: any) => i.user_id === partnerUserId),
+        investmentGoals: investmentGoals.filter((g: any) => g.user_id === partnerUserId),
+        mileageGoals: mileageGoals.filter((g: any) => g.user_id === partnerUserId),
+        mileageHistory: mileageHistory.filter((h: any) => h.user_id === partnerUserId),
+        cardMileageRules: cardMileageRules.filter((r: any) => r.user_id === partnerUserId),
+        recurringExpenses: recurringExpenses.filter((r: any) => r.user_id === partnerUserId),
+        manualFutureExpenses: manualFutureExpenses.filter((m: any) => m.user_id === partnerUserId)
       },
       combined: {
         transactions,
@@ -737,21 +750,21 @@ function generateIndividualContext(
 
   // Calculate TODAY's transactions for immediate questions
   const today = new Date().toISOString().split('T')[0];
-  const todayTransactions = data.transactions?.filter(t => t.transaction_date === today) || [];
-  const todayExpenses = todayTransactions.filter(t => t.type === 'expense');
-  const todayIncome = todayTransactions.filter(t => t.type === 'income');
+  const todayTransactions = data.transactions?.filter((t: any) => t.transaction_date === today) || [];
+  const todayExpenses = todayTransactions.filter((t: any) => t.type === 'expense');
+  const todayIncome = todayTransactions.filter((t: any) => t.type === 'income');
   
-  const todayExpenseTotal = todayExpenses.reduce((sum, t) => sum + Number(t.amount), 0);
-  const todayIncomeTotal = todayIncome.reduce((sum, t) => sum + Number(t.amount), 0);
+  const todayExpenseTotal = todayExpenses.reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+  const todayIncomeTotal = todayIncome.reduce((sum: number, t: any) => sum + Number(t.amount), 0);
 
   // Process transfers between accounts
-  const transferTransactions = data.transactions?.filter(t => 
+  const transferTransactions = data.transactions?.filter((t: any) => 
     t.payment_method === 'account_transfer' || t.payment_method === 'account_investment'
   ) || [];
   
   // Group transfer transactions by date, amount and description to identify pairs
   const transferPairs: { [key: string]: any[] } = {};
-  transferTransactions.forEach(transaction => {
+  transferTransactions.forEach((transaction: any) => {
     const key = `${transaction.transaction_date}_${transaction.amount}_${transaction.description}`;
     if (!transferPairs[key]) {
       transferPairs[key] = [];
@@ -768,8 +781,8 @@ function generateIndividualContext(
       
       if (expense && income) {
         // Find account names
-        const sourceAccount = data.accounts?.find(a => a.id === expense.account_id);
-        const destAccount = data.accounts?.find(a => a.id === income.account_id);
+        const sourceAccount = data.accounts?.find((a: any) => a.id === expense.account_id);
+        const destAccount = data.accounts?.find((a: any) => a.id === income.account_id);
         
         processedTransfers.push({
           date: expense.transaction_date,
@@ -792,7 +805,7 @@ function generateIndividualContext(
     context += `GASTOS HOJE (${today}):\n`;
     if (todayExpenses.length > 0) {
       context += `Total gasto hoje: ${formatCurrency(todayExpenseTotal)}\n`;
-      todayExpenses.forEach(t => {
+      todayExpenses.forEach((t: any) => {
         context += `- ${t.description}: ${formatCurrency(t.amount, t.currency)}\n`;
       });
     } else {
@@ -802,7 +815,7 @@ function generateIndividualContext(
     context += `\nRECEITAS HOJE (${today}):\n`;
     if (todayIncome.length > 0) {
       context += `Total recebido hoje: ${formatCurrency(todayIncomeTotal)}\n`;
-      todayIncome.forEach(t => {
+      todayIncome.forEach((t: any) => {
         context += `- ${t.description}: ${formatCurrency(t.amount, t.currency)}\n`;
       });
     } else {
@@ -919,7 +932,7 @@ function generateIndividualContext(
       ? `\nMILEAGE GOALS:\n`
       : `\nOBJETIVOS DE MILLAS:\n`;
     
-    data.mileageGoals.forEach(goal => {
+    data.mileageGoals.forEach((goal: any) => {
       const progress = goal.target_miles > 0 ? (goal.current_miles / goal.target_miles * 100).toFixed(1) : '0.0';
       const remaining = Math.max(0, goal.target_miles - goal.current_miles);
       
@@ -936,12 +949,12 @@ function generateIndividualContext(
 
   // Card Mileage Rules Analysis - COM DETALHAMENTO CORRETO
   if (data.cardMileageRules && data.cardMileageRules.length > 0) {
-    const totalExistingMiles = data.cardMileageRules.reduce((sum, rule) => sum + (rule.existing_miles || 0), 0);
+    const totalExistingMiles = data.cardMileageRules.reduce((sum: number, rule: any) => sum + (rule.existing_miles || 0), 0);
     
     // Calcular milhas do histórico por cartão
     const mileageByCard: Record<string, number> = {};
     if (data.mileageHistory) {
-      data.mileageHistory.forEach(record => {
+      data.mileageHistory.forEach((record: any) => {
         if (!mileageByCard[record.card_id]) {
           mileageByCard[record.card_id] = 0;
         }
@@ -961,7 +974,7 @@ function generateIndividualContext(
       ? `Total initial accumulated miles: ${formatMiles(totalExistingMiles)}\n`
       : `Total de millas iniciales acumuladas: ${formatMiles(totalExistingMiles)}\n`;
     
-    data.cardMileageRules.forEach(rule => {
+    data.cardMileageRules.forEach((rule: any) => {
       const historyMiles = mileageByCard[rule.card_id] || 0;
       const totalCardMiles = (rule.existing_miles || 0) + historyMiles;
       
@@ -984,10 +997,10 @@ function generateIndividualContext(
   listLimitDate.setMonth(listLimitDate.getMonth() + 1);
   listLimitDate.setDate(new Date(listLimitDate.getFullYear(), listLimitDate.getMonth() + 1, 0).getDate());
   
-  const futureExpensesData = [];
+  const futureExpensesData: any[] = [];
   
   // 1. INSTALLMENTS: add from futureInstallments (already filtered for next month)
-  (data.futureInstallments || []).forEach(installment => {
+  (data.futureInstallments || []).forEach((installment: any) => {
     futureExpensesData.push({
       type: 'installment',
       description: installment.description,
@@ -1002,7 +1015,7 @@ function generateIndividualContext(
   });
   
   // 2. RECURRING EXPENSES: calculate ALL future occurrences like FutureExpensesView.tsx
-  (data.recurringExpenses || []).forEach(recur => {
+  (data.recurringExpenses || []).forEach((recur: any) => {
     let currentDueDate = new Date(recur.next_due_date);
     let installmentCount = 0;
     const maxInstallments = recur.contract_duration_months || 120; // Default to 10 years if no duration
@@ -1066,7 +1079,7 @@ function generateIndividualContext(
     return card.current_balance || 0;
   };
   
-  (data.futureCardPayments || []).forEach(card => {
+  (data.futureCardPayments || []).forEach((card: any) => {
     if (card.due_date) {
       const paymentAmount = calculateCardPaymentAmount(card);
       if (paymentAmount > 0) {
@@ -1147,11 +1160,11 @@ function generateIndividualContext(
   
   if (data.recurringExpenses && data.recurringExpenses.length > 0) {
     // Separate active and inactive
-    const activeRecurring = data.recurringExpenses.filter(exp => exp.is_active);
-    const inactiveRecurring = data.recurringExpenses.filter(exp => !exp.is_active);
+    const activeRecurring = data.recurringExpenses.filter((exp: any) => exp.is_active);
+    const inactiveRecurring = data.recurringExpenses.filter((exp: any) => !exp.is_active);
     
     if (activeRecurring.length > 0) {
-      const totalActiveRecurring = activeRecurring.reduce((sum, expense) => sum + Number(expense.amount), 0);
+      const totalActiveRecurring = activeRecurring.reduce((sum: number, expense: any) => sum + Number(expense.amount), 0);
       
       context += language === 'pt' 
         ? `DESPESAS RECORRENTES ATIVAS:\nTotal mensal estimado: ${formatCurrency(totalActiveRecurring)}\n\n`
@@ -1159,7 +1172,7 @@ function generateIndividualContext(
         ? `ACTIVE RECURRING EXPENSES:\nEstimated monthly total: ${formatCurrency(totalActiveRecurring)}\n\n`
         : `GASTOS RECURRENTES ACTIVOS:\nTotal mensual estimado: ${formatCurrency(totalActiveRecurring)}\n\n`;
       
-      activeRecurring.forEach(expense => {
+      activeRecurring.forEach((expense: any) => {
         const nextDue = new Date(expense.next_due_date);
         const formattedDate = nextDue.toLocaleDateString('pt-BR');
         
@@ -1179,7 +1192,7 @@ function generateIndividualContext(
         ? `INACTIVE/PAUSED RECURRING EXPENSES (${inactiveRecurring.length}):\n`
         : `GASTOS RECURRENTES INACTIVOS/PAUSADOS (${inactiveRecurring.length}):\n`;
       
-      inactiveRecurring.forEach(expense => {
+      inactiveRecurring.forEach((expense: any) => {
         context += language === 'pt' 
           ? `- ${expense.name}: ${formatCurrency(expense.amount, expense.currency)} (pausado/cancelado)\n`
           : language === 'en' 
@@ -1205,11 +1218,11 @@ function generateIndividualContext(
   
   if (data.manualFutureExpenses && data.manualFutureExpenses.length > 0) {
     // Separate paid and unpaid
-    const unpaidManual = data.manualFutureExpenses.filter(exp => !exp.is_paid);
-    const paidManual = data.manualFutureExpenses.filter(exp => exp.is_paid);
+    const unpaidManual = data.manualFutureExpenses.filter((exp: any) => !exp.is_paid);
+    const paidManual = data.manualFutureExpenses.filter((exp: any) => exp.is_paid);
     
     if (unpaidManual.length > 0) {
-      const totalUnpaidManual = unpaidManual.reduce((sum, expense) => sum + Number(expense.amount), 0);
+      const totalUnpaidManual = unpaidManual.reduce((sum: number, expense: any) => sum + Number(expense.amount), 0);
       
       context += language === 'pt' 
         ? `GASTOS FUTUROS PENDENTES:\nTotal a pagar: ${formatCurrency(totalUnpaidManual)}\n\n`
@@ -1217,7 +1230,7 @@ function generateIndividualContext(
         ? `PENDING FUTURE EXPENSES:\nTotal to pay: ${formatCurrency(totalUnpaidManual)}\n\n`
         : `GASTOS FUTUROS PENDIENTES:\nTotal a pagar: ${formatCurrency(totalUnpaidManual)}\n\n`;
       
-      unpaidManual.forEach(expense => {
+      unpaidManual.forEach((expense: any) => {
         const dueDate = new Date(expense.due_date);
         const formattedDate = dueDate.toLocaleDateString('pt-BR');
         const isOverdue = dueDate < new Date();
@@ -1239,7 +1252,7 @@ function generateIndividualContext(
         ? `ALREADY PAID FUTURE EXPENSES (${paidManual.length}):\n`
         : `GASTOS FUTUROS YA PAGADOS (${paidManual.length}):\n`;
       
-      paidManual.slice(0, 5).forEach(expense => { // Show only last 5 paid
+      paidManual.slice(0, 5).forEach((expense: any) => { // Show only last 5 paid
         const paidDate = expense.paid_at ? new Date(expense.paid_at).toLocaleDateString('pt-BR') : 'N/A';
         
         context += language === 'pt' 
@@ -1274,7 +1287,7 @@ function generateIndividualContext(
       ? '\nAVAILABLE CATEGORIES:\n'
       : '\nCATEGORÍAS DISPONIBLES:\n';
     
-    data.categories.forEach(category => {
+    data.categories.forEach((category: any) => {
       const typeLabel = language === 'pt' 
         ? (category.category_type === 'income' ? 'Receita' : 'Despesa')
         : language === 'en' 

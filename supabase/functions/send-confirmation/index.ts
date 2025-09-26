@@ -33,11 +33,19 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { userEmail, language = 'pt' }: ConfirmationEmailRequest = await req.json();
 
+    // Get user by email using listUsers which searches by email
+    const { data: usersData } = await supabase.auth.admin.listUsers();
+    const targetUser = usersData?.users?.find(u => u.email === userEmail);
+    
+    if (!targetUser) {
+      throw new Error(`User with email ${userEmail} not found`);
+    }
+
     // Get user's display name from the database
     const { data: userProfile } = await supabase
       .from('profiles')
       .select('display_name')
-      .eq('user_id', (await supabase.auth.admin.getUserByEmail(userEmail)).data.user?.id)
+      .eq('user_id', targetUser.id)
       .single();
 
     const userName = userProfile?.display_name || userEmail.split('@')[0];

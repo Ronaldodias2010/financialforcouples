@@ -113,7 +113,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         verified: false,
-        error: error.message || 'Failed to verify code' 
+        error: error instanceof Error ? error.message : 'Failed to verify code' 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

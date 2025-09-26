@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Webhook payload received (ack fast):', JSON.stringify({ user: payload.user.email }, null, 2));
 
     // Start background email render/send to avoid 5s timeout
-    EdgeRuntime.waitUntil((async () => {
+    (async () => {
       try {
         const { user, email_data } = payload;
         const { token_hash, redirect_to, email_action_type } = email_data;
@@ -124,7 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
       } catch (bgErr) {
         console.error('Error sending confirmation email in background:', bgErr);
       }
-    })());
+    })();
 
     // Immediate ACK to prevent timeout
     return new Response(JSON.stringify({ accepted: true }), {

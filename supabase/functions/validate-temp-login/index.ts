@@ -178,6 +178,11 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // Default response if no conditions are met
+    return new Response(JSON.stringify({ error: 'Invalid request' }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
 
   } catch (error: any) {
     console.error("Error in validate-temp-login function:", error);

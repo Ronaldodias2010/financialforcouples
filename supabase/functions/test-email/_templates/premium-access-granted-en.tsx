@@ -87,7 +87,7 @@ export const PremiumAccessGrantedEmailEN: React.FC<PremiumAccessGrantedEmailProp
           </Section>
           
           <Section style={buttonSection}>
-            <Button pX={20} pY={12} style={button} href={login_url}>
+            <Button style={button} href={login_url}>
               🚀 Access My Premium Account
             </Button>
           </Section>

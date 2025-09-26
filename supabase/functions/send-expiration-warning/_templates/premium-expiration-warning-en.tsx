@@ -25,7 +25,7 @@ export const PremiumExpirationWarningEN = ({
 }: PremiumExpirationWarningProps) => (
   <Html>
     <Head />
-    <Preview>Your premium access expires in {daysRemaining} day(s)</Preview>
+    <Preview>Your premium access expires in {String(daysRemaining)} day(s)</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>⏰ Premium Expiration Notice</Heading>

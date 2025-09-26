@@ -109,7 +109,7 @@ serve(async (req) => {
     console.error('Error in send-phone-verification:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to send verification code' 
+        error: error instanceof Error ? error.message : 'Failed to send verification code' 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

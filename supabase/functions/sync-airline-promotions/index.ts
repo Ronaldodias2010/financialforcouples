@@ -132,7 +132,7 @@ serve(async (req) => {
     console.error('💥 Fatal error in sync process:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     }), {
       status: 500,
@@ -294,7 +294,7 @@ async function syncMoblixOffers(supabase: any) {
         }
         
       } catch (urlError) {
-        console.error(`❌ Error with URL ${url}:`, urlError.message);
+        console.error(`❌ Error with URL ${url}:`, urlError instanceof Error ? urlError.message : 'Unknown error');
         continue; // Try next URL variation
       }
     }
@@ -408,8 +408,8 @@ async function syncMoblixOffers(supabase: any) {
           external_reference: offer.IdGeral,
           raw_price: offer.ValorAdulto || 0,
           boarding_tax: offer.TaxaEmbarque || 0,
-          departure_date: isValidDeparture ? departureDate.toISOString().split('T')[0] : null,
-          return_date: (!offer.SoIda && returnDate && !isNaN(returnDate.getTime())) ? returnDate.toISOString().split('T')[0] : null,
+          departure_date: isValidDeparture ? departureDate.toISOString().split('T')[0] : undefined,
+          return_date: (!offer.SoIda && returnDate && !isNaN(returnDate.getTime())) ? returnDate.toISOString().split('T')[0] : undefined,
           is_round_trip: !offer.SoIda,
         };
 
@@ -484,14 +484,14 @@ async function syncMoblixOffers(supabase: any) {
     }
 
     // Deactivate old Moblix offers that are no longer available
-    const currentExternalIds = offersData.Data.map(offer => offer.IdGeral).filter(id => id);
+    const currentExternalIds = offersData.Data.map((offer: any) => offer.IdGeral).filter((id: any) => id);
     
     if (currentExternalIds.length > 0) {
       const { error: deactivateError } = await supabase
         .from('airline_promotions')
         .update({ is_active: false })
         .eq('data_source', 'moblix')
-        .not('external_reference', 'in', `(${currentExternalIds.map(id => `'${id}'`).join(',')})`);
+        .not('external_reference', 'in', `(${currentExternalIds.map((id: any) => `'${id}'`).join(',')})`);
 
       if (deactivateError) {
         console.error('❌ Error deactivating old Moblix offers:', deactivateError);
@@ -530,7 +530,7 @@ async function syncMoblixOffers(supabase: any) {
       updated: 0,
       errors: 1,
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       message: 'Moblix sync failed'
     };
   }
@@ -571,7 +571,7 @@ async function checkEligibleUsers(supabase: any) {
       return;
     }
 
-    const uniqueUsers = [...new Set(users?.map(u => u.user_id) || [])];
+    const uniqueUsers = [...new Set(users?.map((u: any) => u.user_id) || [])];
     console.log(`👥 Checking ${uniqueUsers.length} unique users`);
 
     let notificationsCreated = 0;
@@ -590,8 +590,8 @@ async function checkEligibleUsers(supabase: any) {
           .eq('user_id', userId)
           .eq('is_active', true);
 
-        const totalHistoryMiles = historyMiles?.reduce((sum, record) => sum + (record.miles_earned || 0), 0) || 0;
-        const totalExistingMiles = existingMiles?.reduce((sum, rule) => sum + (rule.existing_miles || 0), 0) || 0;
+        const totalHistoryMiles = historyMiles?.reduce((sum: number, record: any) => sum + (record.miles_earned || 0), 0) || 0;
+        const totalExistingMiles = existingMiles?.reduce((sum: number, rule: any) => sum + (rule.existing_miles || 0), 0) || 0;
         const userTotalMiles = totalHistoryMiles + totalExistingMiles;
 
         // Check each promotion

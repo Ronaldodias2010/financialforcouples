@@ -70,7 +70,7 @@ export const PremiumWelcomeEmailPT: React.FC<PremiumWelcomeEmailProps> = ({
           </Text>
           
           <Section style={buttonSection}>
-            <Button pX={20} pY={12} style={button} href={login_url}>
+            <Button style={button} href={login_url}>
               🚀 Começar a Usar Agora
             </Button>
           </Section>

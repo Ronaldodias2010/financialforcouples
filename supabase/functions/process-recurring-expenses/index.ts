@@ -91,7 +91,7 @@ serve(async (req) => {
     console.error('💥 Unexpected error in process-recurring-expenses:', error);
     return new Response(JSON.stringify({ 
       error: 'Internal server error', 
-      details: error.message,
+      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     }), {
       status: 500,

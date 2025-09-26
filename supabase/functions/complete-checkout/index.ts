@@ -204,7 +204,7 @@ serve(async (req) => {
           });
         }
       } catch (error) {
-        logStep("Error recording promo usage", { error: error.message });
+        logStep("Error recording promo usage", { error: error instanceof Error ? error.message : 'Unknown error' });
         // Don't fail checkout if promo tracking fails
       }
     }

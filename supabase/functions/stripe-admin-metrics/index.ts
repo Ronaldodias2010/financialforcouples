@@ -107,7 +107,7 @@ serve(async (req) => {
           limit: 100
         });
         
-        failedPayments = paymentIntents.data.filter(pi => 
+        failedPayments = paymentIntents.data.filter((pi: any) => 
           pi.status === 'payment_failed' || pi.status === 'requires_payment_method'
         ).length;
       } catch (paymentError) {
