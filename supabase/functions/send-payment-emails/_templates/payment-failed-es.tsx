@@ -14,15 +14,15 @@ import {
 } from 'https://esm.sh/@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-interface PaymentGracePeriodPTProps {
+interface PaymentFailedESProps {
   userName: string;
   customerPortalUrl: string;
 }
 
-export const PaymentGracePeriodPT = ({ userName, customerPortalUrl }: PaymentGracePeriodPTProps) => (
+export const PaymentFailedES = ({ userName, customerPortalUrl }: PaymentFailedESProps) => (
   <Html>
     <Head />
-    <Preview>Período de graça de 24h - Seus dados estão seguros</Preview>
+    <Preview>Pago fallido - Actualiza tu método de pago</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
@@ -35,60 +35,58 @@ export const PaymentGracePeriodPT = ({ userName, customerPortalUrl }: PaymentGra
           />
         </Section>
         
-        <Heading style={h1}>⚠️ Período de Graça Ativado</Heading>
+        <Heading style={h1}>🚨 Pago Fallido</Heading>
         
-        <Text style={text}>Olá, {userName}!</Text>
+        <Text style={text}>¡Hola, {userName}!</Text>
         
         <Text style={text}>
-          Seu acesso premium foi temporariamente suspenso devido à falha no pagamento, mas temos uma boa notícia:
+          Intentamos procesar el pago de tu suscripción premium, pero desafortunadamente no pudimos completar la transacción.
         </Text>
 
-        <Section style={safetyBox}>
-          <Text style={safetyText}>
-            🛡️ <strong>Seus dados estão 100% seguros!</strong><br />
-            Mantemos todas as suas informações financeiras protegidas por 90 dias.
+        <Section style={warningBox}>
+          <Text style={warningText}>
+            ⚠️ <strong>Acción requerida:</strong> Para mantener tu acceso premium, necesitas actualizar tu método de pago en las próximas 24 horas.
           </Text>
         </Section>
 
         <Text style={text}>
-          <strong>O que acontece agora?</strong>
+          <strong>¿Qué pasó?</strong><br />
+          Esto pudo haber ocurrido por varios motivos:
         </Text>
         
-        <Text style={timelineText}>
-          ⏰ <strong>Próximas 24 horas:</strong> Tempo para resolver o pagamento<br />
-          🔒 <strong>Após 24h:</strong> Acesso alterado para plano Essential<br />
-          🛡️ <strong>Próximos 90 dias:</strong> Seus dados permanecem seguros<br />
-          ✅ <strong>Pagamento resolvido:</strong> Acesso premium restaurado imediatamente
+        <Text style={bulletList}>
+          • Tarjeta de crédito expirada<br />
+          • Información de facturación desactualizada<br />
+          • Límite insuficiente<br />
+          • Problema temporal con el banco
         </Text>
 
         <Section style={buttonContainer}>
           <Button style={button} href={customerPortalUrl}>
-            Resolver Pagamento Agora
+            Actualizar Método de Pago
           </Button>
         </Section>
 
         <Text style={text}>
-          <strong>O que você ainda pode fazer no plano Essential:</strong>
+          <strong>Tus beneficios premium:</strong>
         </Text>
         
-        <Text style={essentialList}>
-          ✅ Adicionar transações manualmente<br />
-          ✅ Visualizar relatórios básicos<br />
-          ✅ Gerenciar categorias<br />
-          ✅ Acessar seus dados históricos
+        <Text style={benefitsList}>
+          ✅ Entrada por voz<br />
+          ✅ IA para Planificación Financiera<br />
+          ✅ Análisis Avanzados<br />
+          ✅ Soporte Prioritario<br />
+          ✅ Metas de Millas e Inversiones
         </Text>
 
         <Hr style={hr} />
 
-        <Section style={urgencyBox}>
-          <Text style={urgencyText}>
-            🚨 <strong>Ação recomendada:</strong><br />
-            Resolva o pagamento nas próximas 24h para manter todos os seus benefícios premium ativos.
-          </Text>
-        </Section>
+        <Text style={smallText}>
+          Tienes <strong>24 horas</strong> para actualizar tu método de pago. Después de este período, tu acceso será cambiado al plan Essential, pero tus datos permanecerán seguros por 90 días.
+        </Text>
 
         <Text style={footer}>
-          Precisa de ajuda? Nossa equipe está aqui para você em{' '}
+          ¿Necesitas ayuda? Contáctanos en{' '}
           <Link href="mailto:support@couplesfinancials.com" style={link}>
             support@couplesfinancials.com
           </Link>
@@ -133,31 +131,31 @@ const text = {
   margin: '16px 0',
 };
 
-const safetyBox = {
-  backgroundColor: '#10B981',
+const warningBox = {
+  backgroundColor: '#F59E0B',
   borderRadius: '8px',
-  padding: '20px',
+  padding: '16px',
   margin: '24px 0',
-  textAlign: 'center' as const,
 };
 
-const safetyText = {
+const warningText = {
   color: '#000000',
   fontSize: '16px',
   fontWeight: '500',
   margin: '0',
+  textAlign: 'center' as const,
 };
 
-const timelineText = {
+const bulletList = {
   color: '#d1d5db',
-  fontSize: '15px',
-  lineHeight: '28px',
-  margin: '20px 0',
-  paddingLeft: '8px',
+  fontSize: '14px',
+  lineHeight: '24px',
+  margin: '16px 0',
+  paddingLeft: '20px',
 };
 
-const essentialList = {
-  color: '#d1d5db',
+const benefitsList = {
+  color: '#10B981',
   fontSize: '15px',
   lineHeight: '24px',
   margin: '16px 0',
@@ -179,22 +177,7 @@ const button = {
   display: 'block',
   padding: '16px 32px',
   margin: '0 auto',
-  maxWidth: '250px',
-};
-
-const urgencyBox = {
-  backgroundColor: '#F59E0B',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '24px 0',
-  textAlign: 'center' as const,
-};
-
-const urgencyText = {
-  color: '#000000',
-  fontSize: '15px',
-  fontWeight: '500',
-  margin: '0',
+  maxWidth: '280px',
 };
 
 const hr = {
@@ -207,6 +190,14 @@ const link = {
   textDecoration: 'underline',
 };
 
+const smallText = {
+  color: '#d1d5db',
+  fontSize: '14px',
+  lineHeight: '20px',
+  margin: '16px 0',
+  textAlign: 'center' as const,
+};
+
 const footer = {
   color: '#9CA3AF',
   fontSize: '12px',
@@ -215,4 +206,4 @@ const footer = {
   textAlign: 'center' as const,
 };
 
-export default PaymentGracePeriodPT;
+export default PaymentFailedES;

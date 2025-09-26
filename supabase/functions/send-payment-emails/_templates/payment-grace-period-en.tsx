@@ -14,15 +14,15 @@ import {
 } from 'https://esm.sh/@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-interface PaymentGracePeriodPTProps {
+interface PaymentGracePeriodENProps {
   userName: string;
   customerPortalUrl: string;
 }
 
-export const PaymentGracePeriodPT = ({ userName, customerPortalUrl }: PaymentGracePeriodPTProps) => (
+export const PaymentGracePeriodEN = ({ userName, customerPortalUrl }: PaymentGracePeriodENProps) => (
   <Html>
     <Head />
-    <Preview>Período de graça de 24h - Seus dados estão seguros</Preview>
+    <Preview>24-hour grace period - Your data is safe</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
@@ -35,60 +35,60 @@ export const PaymentGracePeriodPT = ({ userName, customerPortalUrl }: PaymentGra
           />
         </Section>
         
-        <Heading style={h1}>⚠️ Período de Graça Ativado</Heading>
+        <Heading style={h1}>⚠️ Grace Period Activated</Heading>
         
-        <Text style={text}>Olá, {userName}!</Text>
+        <Text style={text}>Hi, {userName}!</Text>
         
         <Text style={text}>
-          Seu acesso premium foi temporariamente suspenso devido à falha no pagamento, mas temos uma boa notícia:
+          Your premium access has been temporarily suspended due to payment failure, but we have good news:
         </Text>
 
         <Section style={safetyBox}>
           <Text style={safetyText}>
-            🛡️ <strong>Seus dados estão 100% seguros!</strong><br />
-            Mantemos todas as suas informações financeiras protegidas por 90 dias.
+            🛡️ <strong>Your data is 100% safe!</strong><br />
+            We keep all your financial information protected for 90 days.
           </Text>
         </Section>
 
         <Text style={text}>
-          <strong>O que acontece agora?</strong>
+          <strong>What happens now?</strong>
         </Text>
         
         <Text style={timelineText}>
-          ⏰ <strong>Próximas 24 horas:</strong> Tempo para resolver o pagamento<br />
-          🔒 <strong>Após 24h:</strong> Acesso alterado para plano Essential<br />
-          🛡️ <strong>Próximos 90 dias:</strong> Seus dados permanecem seguros<br />
-          ✅ <strong>Pagamento resolvido:</strong> Acesso premium restaurado imediatamente
+          ⏰ <strong>Next 24 hours:</strong> Time to resolve payment<br />
+          🔒 <strong>After 24h:</strong> Access changed to Essential plan<br />
+          🛡️ <strong>Next 90 days:</strong> Your data remains safe<br />
+          ✅ <strong>Payment resolved:</strong> Premium access restored immediately
         </Text>
 
         <Section style={buttonContainer}>
           <Button style={button} href={customerPortalUrl}>
-            Resolver Pagamento Agora
+            Resolve Payment Now
           </Button>
         </Section>
 
         <Text style={text}>
-          <strong>O que você ainda pode fazer no plano Essential:</strong>
+          <strong>What you can still do on Essential plan:</strong>
         </Text>
         
         <Text style={essentialList}>
-          ✅ Adicionar transações manualmente<br />
-          ✅ Visualizar relatórios básicos<br />
-          ✅ Gerenciar categorias<br />
-          ✅ Acessar seus dados históricos
+          ✅ Add transactions manually<br />
+          ✅ View basic reports<br />
+          ✅ Manage categories<br />
+          ✅ Access your historical data
         </Text>
 
         <Hr style={hr} />
 
         <Section style={urgencyBox}>
           <Text style={urgencyText}>
-            🚨 <strong>Ação recomendada:</strong><br />
-            Resolva o pagamento nas próximas 24h para manter todos os seus benefícios premium ativos.
+            🚨 <strong>Recommended action:</strong><br />
+            Resolve payment within the next 24h to keep all your premium benefits active.
           </Text>
         </Section>
 
         <Text style={footer}>
-          Precisa de ajuda? Nossa equipe está aqui para você em{' '}
+          Need help? Our team is here for you at{' '}
           <Link href="mailto:support@couplesfinancials.com" style={link}>
             support@couplesfinancials.com
           </Link>
@@ -215,4 +215,4 @@ const footer = {
   textAlign: 'center' as const,
 };
 
-export default PaymentGracePeriodPT;
+export default PaymentGracePeriodEN;

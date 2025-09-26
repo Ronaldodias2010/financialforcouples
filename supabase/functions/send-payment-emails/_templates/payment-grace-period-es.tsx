@@ -14,15 +14,15 @@ import {
 } from 'https://esm.sh/@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-interface PaymentGracePeriodPTProps {
+interface PaymentGracePeriodESProps {
   userName: string;
   customerPortalUrl: string;
 }
 
-export const PaymentGracePeriodPT = ({ userName, customerPortalUrl }: PaymentGracePeriodPTProps) => (
+export const PaymentGracePeriodES = ({ userName, customerPortalUrl }: PaymentGracePeriodESProps) => (
   <Html>
     <Head />
-    <Preview>Período de graça de 24h - Seus dados estão seguros</Preview>
+    <Preview>Período de gracia de 24h - Tus datos están seguros</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
@@ -35,60 +35,60 @@ export const PaymentGracePeriodPT = ({ userName, customerPortalUrl }: PaymentGra
           />
         </Section>
         
-        <Heading style={h1}>⚠️ Período de Graça Ativado</Heading>
+        <Heading style={h1}>⚠️ Período de Gracia Activado</Heading>
         
-        <Text style={text}>Olá, {userName}!</Text>
+        <Text style={text}>¡Hola, {userName}!</Text>
         
         <Text style={text}>
-          Seu acesso premium foi temporariamente suspenso devido à falha no pagamento, mas temos uma boa notícia:
+          Tu acceso premium ha sido temporalmente suspendido debido al fallo en el pago, pero tenemos buenas noticias:
         </Text>
 
         <Section style={safetyBox}>
           <Text style={safetyText}>
-            🛡️ <strong>Seus dados estão 100% seguros!</strong><br />
-            Mantemos todas as suas informações financeiras protegidas por 90 dias.
+            🛡️ <strong>¡Tus datos están 100% seguros!</strong><br />
+            Mantenemos toda tu información financiera protegida por 90 días.
           </Text>
         </Section>
 
         <Text style={text}>
-          <strong>O que acontece agora?</strong>
+          <strong>¿Qué pasa ahora?</strong>
         </Text>
         
         <Text style={timelineText}>
-          ⏰ <strong>Próximas 24 horas:</strong> Tempo para resolver o pagamento<br />
-          🔒 <strong>Após 24h:</strong> Acesso alterado para plano Essential<br />
-          🛡️ <strong>Próximos 90 dias:</strong> Seus dados permanecem seguros<br />
-          ✅ <strong>Pagamento resolvido:</strong> Acesso premium restaurado imediatamente
+          ⏰ <strong>Próximas 24 horas:</strong> Tiempo para resolver el pago<br />
+          🔒 <strong>Después de 24h:</strong> Acceso cambiado al plan Essential<br />
+          🛡️ <strong>Próximos 90 días:</strong> Tus datos permanecen seguros<br />
+          ✅ <strong>Pago resuelto:</strong> Acceso premium restaurado inmediatamente
         </Text>
 
         <Section style={buttonContainer}>
           <Button style={button} href={customerPortalUrl}>
-            Resolver Pagamento Agora
+            Resolver Pago Ahora
           </Button>
         </Section>
 
         <Text style={text}>
-          <strong>O que você ainda pode fazer no plano Essential:</strong>
+          <strong>Qué puedes hacer aún en el plan Essential:</strong>
         </Text>
         
         <Text style={essentialList}>
-          ✅ Adicionar transações manualmente<br />
-          ✅ Visualizar relatórios básicos<br />
-          ✅ Gerenciar categorias<br />
-          ✅ Acessar seus dados históricos
+          ✅ Añadir transacciones manualmente<br />
+          ✅ Ver reportes básicos<br />
+          ✅ Gestionar categorías<br />
+          ✅ Acceder a tus datos históricos
         </Text>
 
         <Hr style={hr} />
 
         <Section style={urgencyBox}>
           <Text style={urgencyText}>
-            🚨 <strong>Ação recomendada:</strong><br />
-            Resolva o pagamento nas próximas 24h para manter todos os seus benefícios premium ativos.
+            🚨 <strong>Acción recomendada:</strong><br />
+            Resuelve el pago en las próximas 24h para mantener todos tus beneficios premium activos.
           </Text>
         </Section>
 
         <Text style={footer}>
-          Precisa de ajuda? Nossa equipe está aqui para você em{' '}
+          ¿Necesitas ayuda? Nuestro equipo está aquí para ti en{' '}
           <Link href="mailto:support@couplesfinancials.com" style={link}>
             support@couplesfinancials.com
           </Link>
@@ -215,4 +215,4 @@ const footer = {
   textAlign: 'center' as const,
 };
 
-export default PaymentGracePeriodPT;
+export default PaymentGracePeriodES;
