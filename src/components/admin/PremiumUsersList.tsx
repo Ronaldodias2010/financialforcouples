@@ -92,8 +92,8 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
         const profile = profiles.find(p => p.user_id === s.user_id);
         const manualAccess = manualAccessUsers.find(m => m.user_id === s.user_id);
         
-        // Check if subscription is actually expired
-        const isExpired = s.subscription_end ? new Date(s.subscription_end) < new Date() : false;
+        // Check if subscription is actually expired - comparing dates properly
+        const isExpired = s.subscription_end ? new Date(s.subscription_end).getTime() < new Date().getTime() : false;
         
         const { data: couple } = await supabase
           .from('user_couples')
