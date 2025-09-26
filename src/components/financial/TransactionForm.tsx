@@ -72,6 +72,8 @@ interface Investment {
   id: string;
   name: string;
   broker?: string;
+  current_value: number;
+  currency: string;
 }
 
 const normalizeCategory = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -359,7 +361,7 @@ const getAccountOwnerName = (account: Account) => {
     try {
       const { data, error } = await supabase
         .from('investments')
-        .select('id, name, broker')
+        .select('id, name, broker, current_value, currency')
         .order('name');
       if (error) throw error;
       setInvestments((data as any) || []);
@@ -600,14 +602,21 @@ const transferInserts: TablesInsert<'transactions'>[] = [
       // Handle transfers to investments
       if (isTransferMode && transferType === "investment") {
         const fromAcc = accounts.find(a => a.id === fromAccountId);
+        const selectedInvestment = investments.find(inv => inv.id === investmentId);
         if (!fromAcc) throw new Error("Conta de saída inválida");
+        if (!selectedInvestment) throw new Error("Investimento inválido");
+        
         const amtFrom = convertCurrency(transactionAmount, currency, (fromAcc.currency || "BRL") as CurrencyCode);
+        
+        // Convert amount to investment currency for adding to investment value
+        const investmentCurrency = (selectedInvestment.currency || "BRL") as CurrencyCode;
+        const amtToInvestment = convertCurrency(transactionAmount, currency, investmentCurrency);
 
-        // Saldo será atualizado automaticamente pelo trigger do banco
+        // Saldo da conta será atualizado automaticamente pelo trigger do banco
 
         // Registra transação de saída da conta para investimento
-        const transferDesc = description || 'Transferência para investimento';
-const invTxn: TablesInsert<'transactions'> = {
+        const transferDesc = description || `Transferência para investimento - ${selectedInvestment.name}`;
+        const invTxn: TablesInsert<'transactions'> = {
           user_id: user.id,
           owner_user: ownerUser,
           type: 'expense',
@@ -627,7 +636,53 @@ const invTxn: TablesInsert<'transactions'> = {
         const { error: invErr } = await supabase.from('transactions').insert(invTxn);
         if (invErr) throw invErr;
 
-        toast({ title: t('transactionForm.success'), description: t('transactionForm.investmentTransferSuccess') });
+        // Update investment current_value
+        const newInvestmentValue = Number(selectedInvestment.current_value) + amtToInvestment;
+        const { error: updateInvErr } = await supabase
+          .from('investments')
+          .update({ 
+            current_value: newInvestmentValue,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', investmentId);
+        
+        if (updateInvErr) throw updateInvErr;
+
+        // Update related investment goal if exists
+        const { data: relatedGoals, error: goalErr } = await supabase
+          .from('investment_goals')
+          .select('*')
+          .eq('user_id', user.id);
+        
+        if (!goalErr && relatedGoals) {
+          // Find goal that might be related to this investment (by name similarity or manual association)
+          const relatedGoal = relatedGoals.find(goal => 
+            goal.name.toLowerCase().includes('visto') || 
+            goal.name.toLowerCase().includes('green card') ||
+            goal.name.toLowerCase().includes('eb1a')
+          );
+          
+          if (relatedGoal) {
+            // Convert goal amount to same currency for comparison
+            const goalCurrency = (relatedGoal.currency || "BRL") as CurrencyCode;
+            const amtToGoal = convertCurrency(transactionAmount, currency, goalCurrency);
+            
+            const newGoalAmount = Number(relatedGoal.current_amount) + amtToGoal;
+            await supabase
+              .from('investment_goals')
+              .update({ 
+                current_amount: newGoalAmount,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', relatedGoal.id);
+          }
+        }
+
+        toast({ 
+          title: t('transactionForm.success'), 
+          description: `Transferência para investimento realizada com sucesso! Valor adicionado: ${formatCurrency(amtToInvestment, investmentCurrency)}` 
+        });
+        
         // Reset
         setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(() => {
           const now = new Date();
