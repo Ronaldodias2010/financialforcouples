@@ -82,6 +82,43 @@ serve(async (req) => {
       }
     }
 
+    // Calculate annual revenue from actual payments made this year
+    const currentYear = new Date().getFullYear();
+    const startOfYear = Math.floor(new Date(currentYear, 0, 1).getTime() / 1000);
+    const endOfYear = Math.floor(new Date(currentYear, 11, 31, 23, 59, 59).getTime() / 1000);
+
+    try {
+      // Get all paid invoices from this year
+      const paidInvoices = await stripe.invoices.list({
+        status: 'paid',
+        created: {
+          gte: startOfYear,
+          lte: endOfYear
+        },
+        limit: 100
+      });
+
+      // Sum up all payments made this year
+      let actualAnnualRevenueBRL = 0;
+      for (const invoice of paidInvoices.data) {
+        actualAnnualRevenueBRL += (invoice.amount_paid || 0) / 100; // Convert cents to BRL
+      }
+
+      // Use actual payments instead of projected annual revenue
+      annualRevenueBRL = actualAnnualRevenueBRL;
+      
+      logStep("Calculated annual revenue from paid invoices", {
+        year: currentYear,
+        paidInvoicesCount: paidInvoices.data.length,
+        actualAnnualRevenueBRL
+      });
+
+    } catch (annualRevenueError) {
+      logStep("Failed to fetch annual revenue from invoices", { error: annualRevenueError });
+      // Fallback: project monthly revenue for the year
+      annualRevenueBRL = monthlyRevenueBRL * 12;
+    }
+
     // Get failed payments from recent invoices
     let failedPayments = 0;
     const thirtyDaysAgo = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
