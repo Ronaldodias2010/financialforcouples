@@ -1,5 +1,14 @@
 project_id = "elxttabdtddlavhseipz"
 
+[functions.stripe-payment-webhook]
+verify_jwt = false
+
+[functions.send-payment-emails]
+verify_jwt = false
+
+[functions.process-payment-emails]
+verify_jwt = false
+
 [functions.get-user-categories-tags]
 verify_jwt = false
 

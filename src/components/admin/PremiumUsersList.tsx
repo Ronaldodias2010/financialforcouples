@@ -11,6 +11,8 @@ interface PremiumUserData {
   subscribed: boolean;
   subscription_tier: string;
   user_id: string;
+  subscription_end?: string;
+  isExpired?: boolean;
   isCoupled?: boolean;
   partnerName?: string;
   isManualAccess?: boolean;
@@ -58,12 +60,11 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch premium, subscribed users
+      // Fetch premium users (including those with expired subscriptions for admin review)
       const { data: premiumSubscribers, error } = await supabase
         .from('subscribers')
         .select('*')
-        .eq('subscription_tier', 'premium')
-        .eq('subscribed', true);
+        .eq('subscription_tier', 'premium');
 
       if (error) throw error;
 
@@ -91,6 +92,9 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
         const profile = profiles.find(p => p.user_id === s.user_id);
         const manualAccess = manualAccessUsers.find(m => m.user_id === s.user_id);
         
+        // Check if subscription is actually expired
+        const isExpired = s.subscription_end ? new Date(s.subscription_end) < new Date() : false;
+        
         const { data: couple } = await supabase
           .from('user_couples')
           .select('user1_id, user2_id')
@@ -114,8 +118,10 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
           user_id: s.user_id,
           email: s.email,
           display_name: profile?.display_name || s.email?.split('@')[0] || 'Usuário',
-          subscribed: s.subscribed,
+          subscribed: s.subscribed && !isExpired, // Show as not subscribed if expired
           subscription_tier: s.subscription_tier,
+          subscription_end: s.subscription_end,
+          isExpired: isExpired,
           isCoupled,
           partnerName,
           isManualAccess: !!manualAccess,
@@ -188,9 +194,16 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                     </td>
                     <td className="p-4 align-middle">{u.email}</td>
                     <td className="p-4 align-middle">
-                      <Badge variant={u.subscribed ? 'default' : 'secondary'}>
-                        {u.subscribed ? t.active : t.inactive}
-                      </Badge>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={u.isExpired ? 'destructive' : u.subscribed ? 'default' : 'secondary'}>
+                          {u.isExpired ? 'Expirado' : u.subscribed ? t.active : t.inactive}
+                        </Badge>
+                        {u.subscription_end && (
+                          <span className="text-xs text-muted-foreground">
+                            Expira: {new Date(u.subscription_end).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 align-middle">
                       <Badge 

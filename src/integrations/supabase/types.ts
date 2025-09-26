@@ -1349,6 +1349,105 @@ export type Database = {
           },
         ]
       }
+      payment_email_queue: {
+        Row: {
+          created_at: string
+          email_address: string
+          email_type: string
+          failure_reason: string | null
+          id: string
+          language: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          subscription_end_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_address: string
+          email_type: string
+          failure_reason?: string | null
+          id?: string
+          language?: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+          subscription_end_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_address?: string
+          email_type?: string
+          failure_reason?: string | null
+          id?: string
+          language?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          subscription_end_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_failures: {
+        Row: {
+          created_at: string
+          downgrade_scheduled_for: string | null
+          email: string
+          failure_date: string
+          failure_reason: string | null
+          grace_period_ends_at: string | null
+          grace_period_started_at: string | null
+          id: string
+          notification_emails_sent: Json | null
+          resolved_at: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_invoice_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          downgrade_scheduled_for?: string | null
+          email: string
+          failure_date?: string
+          failure_reason?: string | null
+          grace_period_ends_at?: string | null
+          grace_period_started_at?: string | null
+          id?: string
+          notification_emails_sent?: Json | null
+          resolved_at?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_invoice_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          downgrade_scheduled_for?: string | null
+          email?: string
+          failure_date?: string
+          failure_reason?: string | null
+          grace_period_ends_at?: string | null
+          grace_period_started_at?: string | null
+          id?: string
+          notification_emails_sent?: Json | null
+          resolved_at?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_invoice_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       phone_verifications: {
         Row: {
           created_at: string | null
