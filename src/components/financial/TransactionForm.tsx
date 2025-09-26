@@ -189,7 +189,12 @@ const getAccountOwnerName = (account: Account) => {
       fetchCards();
       fetchAccounts(); // Buscar contas também para despesas (cartão de débito)
     }
-  }, [type, paymentMethod]); // Adicionamos paymentMethod como dependência
+    
+    // Carregar investimentos quando estiver no modo de transferência para investimento
+    if (isTransferMode && transferType === "investment") {
+      fetchInvestments();
+    }
+  }, [type, paymentMethod, isTransferMode, transferType]); // Adicionamos isTransferMode e transferType como dependências
 
   // Auto-selecionar categoria "Pagamento de Cartão de Crédito" quando método "card_payment" for selecionado
   useEffect(() => {
