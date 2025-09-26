@@ -82,41 +82,113 @@ serve(async (req) => {
       }
     }
 
-    // Calculate annual revenue from actual payments made this year
+    // Calculate annual revenue with month-by-month accumulation
     const currentYear = new Date().getFullYear();
-    const startOfYear = Math.floor(new Date(currentYear, 0, 1).getTime() / 1000);
-    const endOfYear = Math.floor(new Date(currentYear, 11, 31, 23, 59, 59).getTime() / 1000);
-
+    const currentMonth = new Date().getMonth() + 1; // 1-12
+    let actualAnnualRevenueBRL = 0;
+    
     try {
-      // Get all paid invoices from this year
-      const paidInvoices = await stripe.invoices.list({
-        status: 'paid',
-        created: {
-          gte: startOfYear,
-          lte: endOfYear
-        },
-        limit: 100
-      });
-
-      // Sum up all payments made this year
-      let actualAnnualRevenueBRL = 0;
-      for (const invoice of paidInvoices.data) {
-        actualAnnualRevenueBRL += (invoice.amount_paid || 0) / 100; // Convert cents to BRL
+      // Calculate revenue month by month for better accuracy
+      for (let month = 1; month <= currentMonth; month++) {
+        const monthStart = Math.floor(new Date(currentYear, month - 1, 1).getTime() / 1000);
+        const monthEnd = Math.floor(new Date(currentYear, month, 0, 23, 59, 59).getTime() / 1000);
+        
+        // Get paid invoices for this specific month with pagination
+        let hasMore = true;
+        let startingAfter = undefined;
+        let monthRevenue = 0;
+        
+        while (hasMore) {
+          const invoiceParams: any = {
+            status: 'paid',
+            created: {
+              gte: monthStart,
+              lte: monthEnd
+            },
+            limit: 100
+          };
+          
+          if (startingAfter) {
+            invoiceParams.starting_after = startingAfter;
+          }
+          
+          const monthlyInvoices = await stripe.invoices.list(invoiceParams);
+          
+          for (const invoice of monthlyInvoices.data) {
+            monthRevenue += (invoice.amount_paid || 0) / 100;
+          }
+          
+          hasMore = monthlyInvoices.has_more;
+          if (hasMore && monthlyInvoices.data.length > 0) {
+            startingAfter = monthlyInvoices.data[monthlyInvoices.data.length - 1].id;
+          }
+        }
+        
+        actualAnnualRevenueBRL += monthRevenue;
+        
+        logStep(`Month ${month}/${currentYear} revenue`, {
+          month,
+          monthRevenue,
+          cumulativeAnnual: actualAnnualRevenueBRL
+        });
+      }
+      
+      // If no invoices found, use monthly revenue projection
+      if (actualAnnualRevenueBRL === 0 && monthlyRevenueBRL > 0) {
+        // Assume current monthly revenue has been consistent for active months
+        actualAnnualRevenueBRL = monthlyRevenueBRL * currentMonth;
+        logStep("Using monthly revenue projection for annual calculation", {
+          monthlyRevenueBRL,
+          monthsElapsed: currentMonth,
+          projectedAnnual: actualAnnualRevenueBRL
+        });
       }
 
-      // Use actual payments instead of projected annual revenue
       annualRevenueBRL = actualAnnualRevenueBRL;
       
-      logStep("Calculated annual revenue from paid invoices", {
+      logStep("Final annual revenue calculation", {
         year: currentYear,
-        paidInvoicesCount: paidInvoices.data.length,
-        actualAnnualRevenueBRL
+        monthsProcessed: currentMonth,
+        finalAnnualRevenueBRL: actualAnnualRevenueBRL,
+        averageMonthlyFromAnnual: actualAnnualRevenueBRL / currentMonth
       });
 
     } catch (annualRevenueError) {
-      logStep("Failed to fetch annual revenue from invoices", { error: annualRevenueError });
-      // Fallback: project monthly revenue for the year
-      annualRevenueBRL = monthlyRevenueBRL * 12;
+      logStep("Failed to calculate month-by-month annual revenue", { error: annualRevenueError });
+      
+      // Enhanced fallback: try to get any paid invoices from this year
+      try {
+        const yearStart = Math.floor(new Date(currentYear, 0, 1).getTime() / 1000);
+        const now = Math.floor(Date.now() / 1000);
+        
+        const allYearInvoices = await stripe.invoices.list({
+          created: { gte: yearStart, lte: now },
+          limit: 100
+        });
+        
+        let fallbackRevenue = 0;
+        for (const invoice of allYearInvoices.data) {
+          if (invoice.status === 'paid') {
+            fallbackRevenue += (invoice.amount_paid || 0) / 100;
+          }
+        }
+        
+        if (fallbackRevenue > 0) {
+          annualRevenueBRL = fallbackRevenue;
+          logStep("Used fallback invoice search", { fallbackRevenue });
+        } else {
+          // Final fallback: monthly revenue × months elapsed
+          annualRevenueBRL = monthlyRevenueBRL * currentMonth;
+          logStep("Used final monthly projection fallback", {
+            monthlyRevenueBRL,
+            monthsElapsed: currentMonth,
+            projectedAnnual: annualRevenueBRL
+          });
+        }
+      } catch (fallbackError) {
+        logStep("Fallback also failed, using monthly projection", { error: fallbackError });
+        annualRevenueBRL = monthlyRevenueBRL * currentMonth;
+      }
     }
 
     // Get failed payments from recent invoices
