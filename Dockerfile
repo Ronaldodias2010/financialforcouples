@@ -4,6 +4,17 @@ FROM oven/bun:1-alpine AS builder
 # Definir diretório de trabalho
 WORKDIR /app
 
+# Instalar dependências do sistema necessárias para canvas e outras bibliotecas nativas
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    pixman-dev
+
 # Copiar arquivos de dependências
 COPY package*.json bun.lockb ./
 
