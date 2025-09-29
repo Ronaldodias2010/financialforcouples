@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowLeftRight, Upload, FileText, Eye, Download, Send, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeftRight, Upload, FileText, Eye, Download, Send, AlertTriangle, CheckCircle2, Users } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PremiumFeatureGuard } from '@/components/subscription/PremiumFeatureGuard';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,8 @@ import { TransactionTable } from './components/TransactionTable';
 import { BulkEditPanel } from './components/BulkEditPanel';
 import { ImportRules } from './components/ImportRules';
 import { ExportPanel } from './components/ExportPanel';
+import { ExcelPreview } from './ExcelPreview';
+import { ReconciliationPanel } from './ReconciliationPanel';
 
 export interface ImportedTransaction {
   id: string;
@@ -59,7 +61,8 @@ export interface ImportedFile {
   transactions: ImportedTransaction[];
 }
 
-type ConverterStep = 'upload' | 'preview' | 'rules' | 'export';
+// Update ConverterDashboard to use new step: "reconciliation" 
+type ConverterStep = 'upload' | 'preview' | 'reconciliation' | 'rules' | 'export';
 
 export const ConverterDashboard: React.FC = () => {
   const { t } = useLanguage();
@@ -241,7 +244,8 @@ export const ConverterDashboard: React.FC = () => {
       <div className="hidden md:flex items-center space-x-4">
         {[
           { key: 'upload', icon: Upload, label: t('converter.upload.title') },
-          { key: 'preview', icon: Eye, label: t('converter.preview.title') },
+          { key: 'preview', icon: Eye, label: 'Excel Preview' },
+          { key: 'reconciliation', icon: Users, label: 'Reconciliação' },
           { key: 'rules', icon: FileText, label: t('converter.rules.title') },
           { key: 'export', icon: Download, label: t('converter.export.title') },
         ].map(({ key, icon: Icon, label }, index) => (
@@ -258,7 +262,7 @@ export const ConverterDashboard: React.FC = () => {
             `}>
               {label}
             </span>
-            {index < 3 && (
+            {index < 4 && (
               <div className="w-8 h-px bg-muted-foreground/30 mx-4" />
             )}
           </div>
@@ -269,7 +273,8 @@ export const ConverterDashboard: React.FC = () => {
       <div className="md:hidden flex items-center space-x-2">
         {[
           { key: 'upload', icon: Upload, shortLabel: t('converter.upload.shortLabel') },
-          { key: 'preview', icon: Eye, shortLabel: t('converter.preview.shortLabel') },
+          { key: 'preview', icon: Eye, shortLabel: 'Excel' },
+          { key: 'reconciliation', icon: Users, shortLabel: 'Match' },
           { key: 'rules', icon: FileText, shortLabel: t('converter.rules.shortLabel') },
           { key: 'export', icon: Download, shortLabel: t('converter.export.shortLabel') },
         ].map(({ key, icon: Icon, shortLabel }, index) => (
@@ -286,7 +291,7 @@ export const ConverterDashboard: React.FC = () => {
             `}>
               {shortLabel}
             </span>
-            {index < 3 && (
+            {index < 4 && (
               <div className="w-3 h-px bg-muted-foreground/30 mx-1" />
             )}
           </div>
@@ -305,23 +310,39 @@ export const ConverterDashboard: React.FC = () => {
           />
         );
         
-      case 'preview':
+        case 'preview':
         return importedFile ? (
           <div className="space-y-6">
             <DocumentPreview importedFile={importedFile} />
-            <TransactionTable
+            <ExcelPreview 
               transactions={importedFile.transactions}
-              selectedTransactions={selectedTransactions}
-              onSelectionChange={setSelectedTransactions}
-            />
-            <BulkEditPanel
-              selectedTransactions={selectedTransactions}
-              onBulkUpdate={(updates) => {
-                // TODO: Implement bulk updates
-                console.log('Bulk updates:', updates);
+              detectedCurrency={importedFile.detectedCurrency}
+              fileName={importedFile.fileName}
+              onTransactionsUpdate={(updatedTransactions) => {
+                // Update imported file with modified transactions
+                setImportedFile(prev => prev ? {
+                  ...prev,
+                  transactions: updatedTransactions
+                } : null);
               }}
             />
           </div>
+        ) : null;
+        
+      case 'reconciliation':
+        return importedFile ? (
+          <ReconciliationPanel
+            importedTransactions={importedFile.transactions}
+            existingTransactions={[]} // TODO: Fetch from database
+            onReconciliationComplete={(selectedTransactions) => {
+              // Update selected transactions and move to next step
+              setImportedFile(prev => prev ? {
+                ...prev,
+                transactions: selectedTransactions
+              } : null);
+              setCurrentStep('rules');
+            }}
+          />
         ) : null;
         
       case 'rules':
@@ -391,7 +412,7 @@ export const ConverterDashboard: React.FC = () => {
           <Button
             variant="outline"
             onClick={() => {
-              const steps: ConverterStep[] = ['upload', 'preview', 'rules', 'export'];
+              const steps: ConverterStep[] = ['upload', 'preview', 'reconciliation', 'rules', 'export'];
               const currentIndex = steps.indexOf(currentStep);
               if (currentIndex > 0) {
                 setCurrentStep(steps[currentIndex - 1]);
@@ -405,18 +426,18 @@ export const ConverterDashboard: React.FC = () => {
           <div className="flex gap-2">
             {importedFile && currentStep === 'preview' && (
               <Button
-                onClick={() => setCurrentStep('export')}
+                onClick={() => setCurrentStep('reconciliation')}
                 className="gap-2"
               >
-                <Send className="h-4 w-4" />
-                {t('converter.actions.sendToTransactions')}
+                <Users className="h-4 w-4" />
+                Reconciliar
               </Button>
             )}
           </div>
           
           <Button
             onClick={() => {
-              const steps: ConverterStep[] = ['upload', 'preview', 'rules', 'export'];
+              const steps: ConverterStep[] = ['upload', 'preview', 'reconciliation', 'rules', 'export'];
               const currentIndex = steps.indexOf(currentStep);
               if (currentIndex < steps.length - 1) {
                 setCurrentStep(steps[currentIndex + 1]);
