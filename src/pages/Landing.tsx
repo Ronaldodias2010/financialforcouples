@@ -29,8 +29,8 @@ const Landing = () => {
         <AppDemoSection />
         <PricingSection />
         <WhatsAppSection />
-        <AIRecommendationsSection />
         <SmartMileageSection />
+        <AIRecommendationsSection />
         <PDFConverterSection />
         <SecuritySection />
         <div className="relative">
