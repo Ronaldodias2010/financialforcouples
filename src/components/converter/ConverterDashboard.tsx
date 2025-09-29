@@ -248,10 +248,10 @@ export const ConverterDashboard: React.FC = () => {
       <div className="hidden md:flex items-center space-x-4">
         {[
           { key: 'upload', icon: Upload, label: t('converter.upload.title') },
-          { key: 'preview', icon: Eye, label: 'Excel Preview' },
-          { key: 'reconciliation', icon: Users, label: 'Reconciliação' },
-          { key: 'rules', icon: FileText, label: t('converter.rules.title') },
-          { key: 'export', icon: Download, label: t('converter.export.title') },
+          { key: 'preview', icon: Eye, label: t('converter.preview.label') },
+          { key: 'reconciliation', icon: Users, label: t('converter.reconciliation.label') },
+          { key: 'rules', icon: FileText, label: t('converter.rules.label') },
+          { key: 'export', icon: Download, label: t('converter.export.label') },
         ].map(({ key, icon: Icon, label }, index) => (
           <div key={key} className="flex items-center">
             <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 
@@ -274,30 +274,27 @@ export const ConverterDashboard: React.FC = () => {
       </div>
       
       {/* Mobile version - simplified */}
-      <div className="md:hidden flex items-center space-x-2">
+      <div className="md:hidden flex flex-wrap items-center justify-center gap-2 px-2">
         {[
           { key: 'upload', icon: Upload, shortLabel: t('converter.upload.shortLabel') },
-          { key: 'preview', icon: Eye, shortLabel: 'Excel' },
-          { key: 'reconciliation', icon: Users, shortLabel: 'Match' },
+          { key: 'preview', icon: Eye, shortLabel: t('converter.preview.shortLabel') },
+          { key: 'reconciliation', icon: Users, shortLabel: t('converter.reconciliation.shortLabel') },
           { key: 'rules', icon: FileText, shortLabel: t('converter.rules.shortLabel') },
           { key: 'export', icon: Download, shortLabel: t('converter.export.shortLabel') },
-        ].map(({ key, icon: Icon, shortLabel }, index) => (
-          <div key={key} className="flex items-center">
-            <div className={`flex flex-col items-center justify-center w-8 h-8 rounded-full border-2 
+        ].map(({ key, icon: Icon, shortLabel }) => (
+          <div key={key} className="flex flex-col items-center gap-1">
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all
               ${currentStep === key 
-                ? 'bg-primary border-primary text-primary-foreground' 
+                ? 'bg-primary border-primary text-primary-foreground shadow-md' 
                 : 'border-muted-foreground/30 text-muted-foreground'
               }`}>
-              <Icon className="h-3 w-3" />
+              <Icon className="h-4 w-4" />
             </div>
-            <span className={`ml-1 text-xs font-medium
+            <span className={`text-[10px] font-medium text-center leading-tight max-w-[50px]
               ${currentStep === key ? 'text-foreground' : 'text-muted-foreground'}
             `}>
               {shortLabel}
             </span>
-            {index < 4 && (
-              <div className="w-3 h-px bg-muted-foreground/30 mx-1" />
-            )}
           </div>
         ))}
       </div>
@@ -429,7 +426,7 @@ export const ConverterDashboard: React.FC = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-8 pt-6 border-t gap-3">
           <Button
             variant="outline"
             onClick={() => {
@@ -440,18 +437,20 @@ export const ConverterDashboard: React.FC = () => {
               }
             }}
             disabled={currentStep === 'upload'}
+            className="w-full sm:w-auto"
           >
             {t('nav.previous')}
           </Button>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             {importedFile && currentStep === 'preview' && (
               <Button
                 onClick={() => setCurrentStep('reconciliation')}
-                className="gap-2"
+                className="gap-2 flex-1 sm:flex-initial"
               >
                 <Users className="h-4 w-4" />
-                Reconciliar
+                <span className="hidden sm:inline">{t('converter.reconciliation.label')}</span>
+                <span className="sm:hidden">{t('converter.reconciliation.shortLabel')}</span>
               </Button>
             )}
           </div>
@@ -465,6 +464,7 @@ export const ConverterDashboard: React.FC = () => {
               }
             }}
             disabled={currentStep === 'export' || (currentStep === 'upload' && !importedFile)}
+            className="w-full sm:w-auto"
           >
             {t('nav.next')}
           </Button>
