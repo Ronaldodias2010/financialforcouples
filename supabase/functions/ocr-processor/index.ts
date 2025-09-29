@@ -1,5 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -125,8 +125,13 @@ Devuelve el texto completo extraído:`
     console.log(`OCR completed in ${processingTime}ms, extracted ${ocrText.length} characters`);
 
     // Extract structured data from OCR text
-    const extractedTransactions = [];
-    const lines = ocrText.split('\n').filter(line => line.trim());
+    const extractedTransactions: Array<{
+      date: string;
+      description: string;
+      amount: string;
+      confidence: number;
+    }> = [];
+    const lines = ocrText.split('\n').filter((line: string) => line.trim());
     
     // Pattern matching for different date and amount formats
     const patterns = [
