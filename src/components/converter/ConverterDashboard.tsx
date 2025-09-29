@@ -236,31 +236,62 @@ export const ConverterDashboard: React.FC = () => {
   }, [importedFile, toast]);
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center space-x-4 mb-8">
-      {[
-        { key: 'upload', icon: Upload, label: t('converter.upload.title') },
-        { key: 'preview', icon: Eye, label: t('converter.preview.title') },
-        { key: 'rules', icon: FileText, label: t('converter.rules.title') },
-        { key: 'export', icon: Download, label: t('converter.export.title') },
-      ].map(({ key, icon: Icon, label }, index) => (
-        <div key={key} className="flex items-center">
-          <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 
-            ${currentStep === key 
-              ? 'bg-primary border-primary text-primary-foreground' 
-              : 'border-muted-foreground/30 text-muted-foreground'
-            }`}>
-            <Icon className="h-4 w-4" />
+    <div className="flex items-center justify-center mb-8">
+      {/* Desktop version */}
+      <div className="hidden md:flex items-center space-x-4">
+        {[
+          { key: 'upload', icon: Upload, label: t('converter.upload.title') },
+          { key: 'preview', icon: Eye, label: t('converter.preview.title') },
+          { key: 'rules', icon: FileText, label: t('converter.rules.title') },
+          { key: 'export', icon: Download, label: t('converter.export.title') },
+        ].map(({ key, icon: Icon, label }, index) => (
+          <div key={key} className="flex items-center">
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 
+              ${currentStep === key 
+                ? 'bg-primary border-primary text-primary-foreground' 
+                : 'border-muted-foreground/30 text-muted-foreground'
+              }`}>
+              <Icon className="h-4 w-4" />
+            </div>
+            <span className={`ml-2 text-sm font-medium
+              ${currentStep === key ? 'text-foreground' : 'text-muted-foreground'}
+            `}>
+              {label}
+            </span>
+            {index < 3 && (
+              <div className="w-8 h-px bg-muted-foreground/30 mx-4" />
+            )}
           </div>
-          <span className={`ml-2 text-sm font-medium
-            ${currentStep === key ? 'text-foreground' : 'text-muted-foreground'}
-          `}>
-            {label}
-          </span>
-          {index < 3 && (
-            <div className="w-8 h-px bg-muted-foreground/30 mx-4" />
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
+      
+      {/* Mobile version - simplified */}
+      <div className="md:hidden flex items-center space-x-2">
+        {[
+          { key: 'upload', icon: Upload, shortLabel: t('converter.upload.shortLabel') },
+          { key: 'preview', icon: Eye, shortLabel: t('converter.preview.shortLabel') },
+          { key: 'rules', icon: FileText, shortLabel: t('converter.rules.shortLabel') },
+          { key: 'export', icon: Download, shortLabel: t('converter.export.shortLabel') },
+        ].map(({ key, icon: Icon, shortLabel }, index) => (
+          <div key={key} className="flex items-center">
+            <div className={`flex flex-col items-center justify-center w-8 h-8 rounded-full border-2 
+              ${currentStep === key 
+                ? 'bg-primary border-primary text-primary-foreground' 
+                : 'border-muted-foreground/30 text-muted-foreground'
+              }`}>
+              <Icon className="h-3 w-3" />
+            </div>
+            <span className={`ml-1 text-xs font-medium
+              ${currentStep === key ? 'text-foreground' : 'text-muted-foreground'}
+            `}>
+              {shortLabel}
+            </span>
+            {index < 3 && (
+              <div className="w-3 h-px bg-muted-foreground/30 mx-1" />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 
