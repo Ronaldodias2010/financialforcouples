@@ -11,6 +11,7 @@ import { AIRecommendations } from "./AIRecommendations";
 import { InvestmentDashboard } from "./InvestmentDashboard";
 import { MileageSystem } from "./MileageSystem";
 import { SmartCardPaymentForm } from "./SmartCardPaymentForm";
+import { ConverterDashboard } from "../converter/ConverterDashboard";
 import { CardsPage } from "@/pages/CardsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
@@ -360,6 +361,8 @@ export const FinancialDashboard = () => {
         return <CategoryManager />;
       case "recurring":
         return <RecurringExpensesManager viewMode={viewMode} />;
+      case "converter":
+        return <ConverterDashboard />;
       case "aiRecommendations":
         return <AIRecommendations />;
       case "cardPayment":
