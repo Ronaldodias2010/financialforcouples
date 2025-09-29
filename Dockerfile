@@ -5,16 +5,16 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copiar arquivos de dependências
-COPY package*.json ./
+COPY package*.json yarn.lock ./
 
 # Instalar dependências (incluindo dev dependencies para o build)
-RUN npm ci
+RUN yarn install --frozen-lockfile --production=false
 
 # Copiar código fonte
 COPY . .
 
 # Build da aplicação para produção
-RUN npm run build
+RUN yarn build
 
 # Estágio de produção - usar nginx para servir arquivos estáticos
 FROM nginx:alpine AS production
