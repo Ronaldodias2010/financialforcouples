@@ -613,9 +613,9 @@ export const FinancialDashboard = () => {
             <div className="sm:hidden flex flex-col gap-1 w-full">
               <div className="flex space-x-1 justify-center">
                 {[
-                  { id: "dashboard", label: t('nav.dashboard'), shortLabel: "Início", icon: TrendingUp },
-                  { id: "transactions", label: t('nav.monthlyExpenses'), shortLabel: "Gastos", icon: Wallet },
-                  { id: "income", label: t('nav.monthlyIncome'), shortLabel: "Receitas", icon: TrendingUp }
+                  { id: "dashboard", label: t('nav.dashboard'), icon: TrendingUp },
+                  { id: "transactions", label: t('nav.monthlyExpenses'), icon: Wallet },
+                  { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -631,17 +631,17 @@ export const FinancialDashboard = () => {
                       `}
                     >
                       <Icon className="h-3 w-3 shrink-0" />
-                      <span className="text-[10px] leading-tight text-center truncate w-full">{tab.shortLabel}</span>
+                      <span className="text-[10px] leading-tight text-center truncate w-full">{t(`nav.short.${tab.id}`)}</span>
                     </button>
                   );
                 })}
               </div>
               <div className="flex space-x-1 justify-center">
                 {[
-                  { id: "categories", label: t('nav.categories'), shortLabel: "Categorias", icon: Settings },
-                  { id: "recurring", label: t('nav.recurring'), shortLabel: "Recorrentes", icon: TrendingDown },
-                  { id: "converter", label: t('nav.converter'), shortLabel: "Conversor", icon: ArrowLeftRight },
-                  { id: "aiRecommendations", label: t('nav.aiRecommendations'), shortLabel: "IA", icon: Brain }
+                  { id: "categories", label: t('nav.categories'), icon: Settings },
+                  { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                  { id: "converter", label: t('nav.converter'), icon: ArrowLeftRight },
+                  { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -657,7 +657,7 @@ export const FinancialDashboard = () => {
                       `}
                     >
                       <Icon className="h-3 w-3 shrink-0" />
-                      <span className="text-[10px] leading-tight text-center truncate w-full">{tab.shortLabel}</span>
+                      <span className="text-[10px] leading-tight text-center truncate w-full">{t(`nav.short.${tab.id}`)}</span>
                     </button>
                   );
                 })}

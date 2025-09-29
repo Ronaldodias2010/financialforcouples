@@ -174,6 +174,19 @@ const translations = {
     'nav.converter': 'Conversor',
     'nav.aiRecommendations': 'Recomendações da IA',
     
+    // Navigation Short Labels (Mobile)
+    'nav.short.dashboard': 'Início',
+    'nav.short.monthlyExpenses': 'Gastos',
+    'nav.short.monthlyIncome': 'Receitas',
+    'nav.short.categories': 'Categorias',
+    'nav.short.recurring': 'Recorrentes',
+    'nav.short.converter': 'Conversor',
+    'nav.short.aiRecommendations': 'IA',
+    
+    // Navigation Buttons
+    'nav.previous': 'Anterior',
+    'nav.next': 'Próximo',
+    
     // Converter - PDF/Statement Import System
     'converter.title': 'Conversor de Extratos',
     'converter.subtitle': 'Importe extratos bancários e faturas de cartão',
@@ -1874,6 +1887,19 @@ const translations = {
     'nav.recurring': 'Recurring Expenses',
     'nav.converter': 'Converter',
     'nav.aiRecommendations': 'AI Recommendations',
+    
+    // Navigation Short Labels (Mobile)
+    'nav.short.dashboard': 'Home',
+    'nav.short.monthlyExpenses': 'Expenses',
+    'nav.short.monthlyIncome': 'Income',
+    'nav.short.categories': 'Categories',
+    'nav.short.recurring': 'Recurring',
+    'nav.short.converter': 'Converter',
+    'nav.short.aiRecommendations': 'AI',
+    
+    // Navigation Buttons
+    'nav.previous': 'Previous',
+    'nav.next': 'Next',
     
     // Converter - PDF/Statement Import System
     'converter.title': 'Statement Converter',
@@ -3577,6 +3603,19 @@ const translations = {
     'nav.recurring': 'Gastos Recurrentes',
     'nav.converter': 'Conversor',
     'nav.aiRecommendations': 'Recomendaciones de IA',
+    
+    // Navigation Short Labels (Mobile)
+    'nav.short.dashboard': 'Inicio',
+    'nav.short.monthlyExpenses': 'Gastos',
+    'nav.short.monthlyIncome': 'Ingresos',
+    'nav.short.categories': 'Categorías',
+    'nav.short.recurring': 'Recurrentes',
+    'nav.short.converter': 'Conversor',
+    'nav.short.aiRecommendations': 'IA',
+    
+    // Navigation Buttons
+    'nav.previous': 'Anterior',
+    'nav.next': 'Siguiente',
     
     // Converter - PDF/Statement Import System
     'converter.title': 'Conversor de Estados',

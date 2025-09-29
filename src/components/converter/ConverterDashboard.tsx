@@ -368,7 +368,7 @@ export const ConverterDashboard: React.FC = () => {
             }}
             disabled={currentStep === 'upload'}
           >
-            Anterior
+            {t('nav.previous')}
           </Button>
           
           <div className="flex gap-2">
@@ -393,7 +393,7 @@ export const ConverterDashboard: React.FC = () => {
             }}
             disabled={currentStep === 'export' || (currentStep === 'upload' && !importedFile)}
           >
-            Próximo
+            {t('nav.next')}
           </Button>
         </div>
       </div>
