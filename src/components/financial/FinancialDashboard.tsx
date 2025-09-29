@@ -609,13 +609,13 @@ export const FinancialDashboard = () => {
               })}
             </div>
             
-            {/* Mobile layout - two lines */}
-            <div className="sm:hidden flex flex-col gap-2 w-full">
-              <div className="flex space-x-4 justify-center">
+            {/* Mobile layout - two lines with optimized spacing */}
+            <div className="sm:hidden flex flex-col gap-1 w-full">
+              <div className="flex space-x-1 justify-center">
                 {[
-                  { id: "dashboard", label: t('nav.dashboard'), icon: TrendingUp },
-                  { id: "transactions", label: t('nav.monthlyExpenses'), icon: Wallet },
-                  { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp }
+                  { id: "dashboard", label: t('nav.dashboard'), shortLabel: "Início", icon: TrendingUp },
+                  { id: "transactions", label: t('nav.monthlyExpenses'), shortLabel: "Gastos", icon: Wallet },
+                  { id: "income", label: t('nav.monthlyIncome'), shortLabel: "Receitas", icon: TrendingUp }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -623,25 +623,25 @@ export const FinancialDashboard = () => {
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={`
-                        flex items-center gap-1 whitespace-nowrap border-b-2 px-1 py-2 text-xs font-medium transition-colors
+                        flex flex-col items-center gap-0.5 border-b-2 px-2 py-1.5 text-xs font-medium transition-colors min-w-0 flex-1
                         ${activeTab === tab.id
                           ? "border-primary text-primary"
                           : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
                         }
                       `}
                     >
-                      <Icon className="h-3 w-3" />
-                      {tab.label}
+                      <Icon className="h-3 w-3 shrink-0" />
+                      <span className="text-[10px] leading-tight text-center truncate w-full">{tab.shortLabel}</span>
                     </button>
                   );
                 })}
               </div>
-              <div className="flex space-x-4 justify-center">
+              <div className="flex space-x-1 justify-center">
                 {[
-                  { id: "categories", label: t('nav.categories'), icon: Settings },
-                  { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
-                  { id: "converter", label: t('nav.converter'), icon: ArrowLeftRight },
-                  { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
+                  { id: "categories", label: t('nav.categories'), shortLabel: "Categorias", icon: Settings },
+                  { id: "recurring", label: t('nav.recurring'), shortLabel: "Recorrentes", icon: TrendingDown },
+                  { id: "converter", label: t('nav.converter'), shortLabel: "Conversor", icon: ArrowLeftRight },
+                  { id: "aiRecommendations", label: t('nav.aiRecommendations'), shortLabel: "IA", icon: Brain }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -649,15 +649,15 @@ export const FinancialDashboard = () => {
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={`
-                        flex items-center gap-1 whitespace-nowrap border-b-2 px-1 py-2 text-xs font-medium transition-colors
+                        flex flex-col items-center gap-0.5 border-b-2 px-2 py-1.5 text-xs font-medium transition-colors min-w-0 flex-1
                         ${activeTab === tab.id
                           ? "border-primary text-primary"
                           : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
                         }
                       `}
                     >
-                      <Icon className="h-3 w-3" />
-                      {tab.label}
+                      <Icon className="h-3 w-3 shrink-0" />
+                      <span className="text-[10px] leading-tight text-center truncate w-full">{tab.shortLabel}</span>
                     </button>
                   );
                 })}
