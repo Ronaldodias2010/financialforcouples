@@ -15,6 +15,15 @@ verify_jwt = false
 [functions.validate-temp-login]
 verify_jwt = false
 
+[functions.pdf-extractor]
+verify_jwt = true
+
+[functions.ocr-processor] 
+verify_jwt = true
+
+[functions.ai-transaction-processor]
+verify_jwt = true
+
 [functions.stripe-admin-metrics]
 verify_jwt = true
 

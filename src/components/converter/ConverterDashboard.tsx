@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { ArrowLeftRight, Upload, FileText, Eye, Download, Send, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PremiumFeatureGuard } from '@/components/subscription/PremiumFeatureGuard';
+import { supabase } from '@/integrations/supabase/client';
 import { FileUploadZone } from './components/FileUploadZone';
 import { DocumentPreview } from './components/DocumentPreview';
 import { TransactionTable } from './components/TransactionTable';
@@ -73,44 +74,115 @@ export const ConverterDashboard: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // TODO: Implement file upload and processing
       toast({
         title: t('converter.alerts.processing'),
         description: t('converter.upload.processing'),
       });
-      
-      // Simulate processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock successful processing
-      const mockFile: ImportedFile = {
+
+      // Convert file to base64
+      const fileData = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const fileType = file.type.includes('pdf') ? 'pdf' : 
+                      file.type.includes('csv') ? 'csv' : 
+                      file.type.includes('image') ? 'image' : 'csv';
+
+      // Step 1: Extract text/OCR
+      let extractResponse;
+      if (fileType === 'image') {
+        extractResponse = await supabase.functions.invoke('ocr-processor', {
+          body: { imageData: fileData, fileName: file.name }
+        });
+      } else {
+        extractResponse = await supabase.functions.invoke('pdf-extractor', {
+          body: { fileData, fileName: file.name, fileType }
+        });
+      }
+
+      if (extractResponse.error) {
+        throw new Error('Falha na extração de texto');
+      }
+
+      const { extractedText, detectedLanguage, detectedCurrency, detectedRegion, statementType: detectedStatementType } = extractResponse.data;
+
+      // Step 2: Process with AI
+      const aiResponse = await supabase.functions.invoke('ai-transaction-processor', {
+        body: {
+          extractedText,
+          detectedLanguage,
+          detectedCurrency,
+          userId: (await supabase.auth.getUser()).data.user?.id
+        }
+      });
+
+      if (aiResponse.error) {
+        throw new Error('Falha no processamento IA');
+      }
+
+      const { processedTransactions } = aiResponse.data;
+
+      // Create mock transactions with processed data
+      const mockTransactions: ImportedTransaction[] = processedTransactions.map((tx: any, index: number) => ({
+        id: `tx_${Date.now()}_${index}`,
+        originalDescription: tx.originalDescription,
+        originalDate: tx.originalDate,
+        originalAmount: tx.originalAmount,
+        originalCurrency: detectedCurrency,
+        normalizedDate: new Date(tx.normalizedDate),
+        normalizedAmount: tx.normalizedAmount,
+        normalizedCurrency: detectedCurrency,
+        transactionType: tx.transactionType,
+        suggestedCategoryId: null,
+        suggestedPaymentMethod: tx.paymentMethod,
+        confidenceScore: tx.confidenceScore,
+        isInstallment: tx.isInstallment,
+        installmentCurrent: tx.installmentInfo ? parseInt(tx.installmentInfo.split('/')[0]) : null,
+        installmentTotal: tx.installmentInfo ? parseInt(tx.installmentInfo.split('/')[1]) : null,
+        isFee: tx.isFee,
+        isTransfer: tx.isTransfer,
+        isDuplicate: tx.isDuplicate,
+        duplicateTransactionId: tx.duplicateTransactionId,
+        validationStatus: 'pending',
+        reviewNotes: null,
+        finalCategoryId: null,
+        finalAccountId: null,
+        finalCardId: null,
+        finalPaymentMethod: tx.paymentMethod,
+        finalTags: []
+      }));
+
+      const processedFile: ImportedFile = {
         id: `file_${Date.now()}`,
         fileName: file.name,
-        fileType: file.type.includes('pdf') ? 'pdf' : 'csv',
+        fileType: fileType as any,
         fileSize: file.size,
-        detectedLanguage: 'pt',
-        detectedCurrency: 'BRL',
-        detectedRegion: 'BR',
-        statementType: statementType as any,
+        detectedLanguage: detectedLanguage as any,
+        detectedCurrency,
+        detectedRegion,
+        statementType: detectedStatementType || statementType as any,
         processingStatus: 'completed',
         processingError: null,
-        totalTransactions: 5,
-        transactions: [] // Mock transactions will be added via AI processing
+        totalTransactions: mockTransactions.length,
+        transactions: mockTransactions
       };
 
-      setImportedFile(mockFile);
+      setImportedFile(processedFile);
       setCurrentStep('preview');
       
       toast({
         title: t('converter.alerts.ready'),
-        description: `${mockFile.totalTransactions} ${t('converter.detection.transactions').toLowerCase()}`,
+        description: `${processedFile.totalTransactions} ${t('converter.detection.transactions').toLowerCase()}`,
       });
       
     } catch (error) {
       console.error('File processing error:', error);
       toast({
         title: t('converter.alerts.error'),
-        description: error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error.message : 'Erro no processamento',
         variant: 'destructive',
       });
     } finally {
