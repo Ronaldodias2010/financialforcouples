@@ -1,20 +1,20 @@
 # Multi-stage build para otimizar o tamanho da imagem
-FROM node:20-alpine AS builder
+FROM oven/bun:1-alpine AS builder
 
 # Definir diretório de trabalho
 WORKDIR /app
 
 # Copiar arquivos de dependências
-COPY package*.json ./
+COPY package*.json bun.lockb ./
 
 # Instalar dependências (incluindo dev dependencies para o build)
-RUN npm ci --include=dev
+RUN bun install --frozen-lockfile
 
 # Copiar código fonte
 COPY . .
 
 # Build da aplicação para produção
-RUN npm run build
+RUN bun run build
 
 # Estágio de produção - usar nginx para servir arquivos estáticos
 FROM nginx:alpine AS production
