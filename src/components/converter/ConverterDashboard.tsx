@@ -123,6 +123,7 @@ export const ConverterDashboard: React.FC = () => {
       });
 
       if (aiResponse.error) {
+        console.error('AI processing error:', aiResponse.error);
         throw new Error('Falha no processamento IA');
       }
 

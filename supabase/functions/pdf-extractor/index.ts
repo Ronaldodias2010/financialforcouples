@@ -29,26 +29,45 @@ serve(async (req) => {
         const base64Data = fileData.split(',')[1] || fileData;
         const fileBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
         
-        // Simple text extraction simulation for now - in real implementation would use Tesseract.js
-        // This would be replaced with actual OCR processing
-        extractedText = `OCR EXTRACTED TEXT FROM ${fileType.toUpperCase()}:
-BANCO ITAÚ S.A.
-EXTRATO BANCÁRIO
-Período: 01/01/2024 a 31/01/2024
-Conta: 12345-6
-
-DATA       DESCRIÇÃO                    VALOR       SALDO
-05/01/2024 PIX RECEBIDO                 R$ 1.500,00  R$ 3.200,00
-08/01/2024 COMPRA CARTÃO DÉBITO        -R$ 250,30   R$ 2.949,70
-12/01/2024 TED ENVIADA                 -R$ 800,00   R$ 2.149,70
-15/01/2024 DEPÓSITO EM DINHEIRO         R$ 500,00   R$ 2.649,70
-20/01/2024 DÉBITO AUTOMÁTICO           -R$ 120,50   R$ 2.529,20
-25/01/2024 PIX ENVIADO                 -R$ 300,00   R$ 2.229,20`;
+        // For now, we'll extract text using basic pattern matching on the binary data
+        // This simulates OCR processing and will be improved with actual OCR in the future
+        const textDecoder = new TextDecoder('utf-8', { fatal: false });
+        let rawText = textDecoder.decode(fileBuffer);
+        
+        // Clean up extracted text and apply basic OCR simulation
+        rawText = rawText.replace(/[^\x20-\x7E\u00C0-\u017F]/g, ' ');
+        
+        // Try to extract meaningful text patterns
+        const patterns = [
+          /(\d{2}\/\d{2}\/\d{4})/g, // dates
+          /(R\$\s*[\d.,]+)/g, // Brazilian currency
+          /(\$\s*[\d.,]+)/g, // USD currency  
+          /(€\s*[\d.,]+)/g, // EUR currency
+          /([A-Z\s]{10,})/g, // uppercase text (likely headers)
+        ];
+        
+        let extractedParts: string[] = [];
+        patterns.forEach(pattern => {
+          const matches = rawText.match(pattern);
+          if (matches) extractedParts.push(...matches);
+        });
+        
+        if (extractedParts.length > 0) {
+          extractedText = extractedParts.join('\n');
+        } else {
+          // Fallback: try to find any readable text
+          extractedText = rawText.replace(/\s+/g, ' ').trim();
+          if (extractedText.length < 50) {
+            // If we can't extract meaningful text, provide a helpful placeholder
+            extractedText = `Extracted from ${fileName}:\nUnable to extract readable text from this file. Please ensure the file contains clear, readable text or try a different file format.`;
+          }
+        }
         
         console.log('OCR processing completed');
+        console.log(`Extracted text length: ${extractedText.length}`);
       } catch (error) {
         console.error('OCR processing failed:', error);
-        extractedText = "Erro na extração OCR";
+        extractedText = `Error extracting text from ${fileName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     } else if (fileType === 'csv') {
       // Handle CSV files
