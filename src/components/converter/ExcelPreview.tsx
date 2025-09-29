@@ -28,6 +28,7 @@ interface ExcelPreviewProps {
   detectedCurrency: string;
   fileName: string;
   onTransactionsUpdate?: (transactions: ImportedTransaction[]) => void;
+  isCompactMode?: boolean;
 }
 
 interface ExcelRow {
@@ -51,7 +52,8 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
   transactions,
   detectedCurrency,
   fileName,
-  onTransactionsUpdate
+  onTransactionsUpdate,
+  isCompactMode = false
 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -236,68 +238,123 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className={`space-y-6 animate-fade-in ${isCompactMode ? 'h-full flex flex-col' : ''}`}>
       {/* Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5 text-primary" />
-              <CardTitle>Preview Excel - {fileName}</CardTitle>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1">
-                <Calculator className="h-3 w-3" />
-                {filteredAndSortedRows.length} transações
-              </Badge>
+      {!isCompactMode && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="h-5 w-5 text-primary" />
+                <CardTitle>Preview Excel - {fileName}</CardTitle>
+              </div>
               
-              <Button
-                onClick={handleExportExcel}
-                disabled={isExporting}
-                className="gap-2"
-                size="sm"
-              >
-                <Download className="h-4 w-4" />
-                {isExporting ? 'Gerando...' : t('converter.export.excel')}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="gap-1">
+                  <Calculator className="h-3 w-3" />
+                  {filteredAndSortedRows.length} transações
+                </Badge>
+                
+                <Button
+                  onClick={handleExportExcel}
+                  disabled={isExporting}
+                  className="gap-2"
+                  size="sm"
+                >
+                  <Download className="h-4 w-4" />
+                  {isExporting ? 'Gerando...' : t('converter.export.excel')}
+                </Button>
+              </div>
             </div>
+          </CardHeader>
+        </Card>
+      )}
+
+      {/* Compact mode header */}
+      {isCompactMode && (
+        <div className="flex items-center justify-between p-3 border-b">
+          <div className="flex items-center gap-2">
+            <FileSpreadsheet className="h-4 w-4 text-primary" />
+            <h3 className="font-medium text-sm">Excel Gerado</h3>
           </div>
-        </CardHeader>
-      </Card>
+          
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1 text-xs">
+              <Calculator className="h-2 w-2" />
+              {filteredAndSortedRows.length}
+            </Badge>
+            
+            <Button
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              variant="outline"
+              size="sm"
+              className="h-6 px-2"
+            >
+              <Download className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Filters and Controls */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Buscar por descrição ou categoria..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
-              />
+      {!isCompactMode && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Buscar por descrição ou categoria..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="max-w-sm"
+                />
+              </div>
+              
+              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="income">Receitas</SelectItem>
+                  <SelectItem value="expense">Despesas</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            
-            <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
-              <SelectTrigger className="w-[180px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                <SelectItem value="income">Receitas</SelectItem>
-                <SelectItem value="expense">Despesas</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Compact filters */}
+      {isCompactMode && (
+        <div className="flex gap-2 px-3">
+          <Input
+            placeholder="Buscar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="text-xs h-6"
+          />
+          
+          <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+            <SelectTrigger className="w-20 h-6 text-xs">
+              <Filter className="h-2 w-2 mr-1" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              <SelectItem value="income">+</SelectItem>
+              <SelectItem value="expense">-</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Excel Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+      <Card className={isCompactMode ? 'flex-1 flex flex-col' : ''}>
+        <CardContent className="p-0 flex-1 flex flex-col">
+          <div className={`overflow-x-auto overflow-y-auto ${isCompactMode ? 'flex-1 max-h-none' : 'max-h-[600px]'}`}>
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow className="border-b-2">

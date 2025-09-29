@@ -16,6 +16,7 @@ import { ImportRules } from './components/ImportRules';
 import { ExportPanel } from './components/ExportPanel';
 import { ExcelPreview } from './ExcelPreview';
 import { ReconciliationPanel } from './ReconciliationPanel';
+import { SideBySideViewer } from './SideBySideViewer';
 
 export interface ImportedTransaction {
   id: string;
@@ -72,9 +73,11 @@ export const ConverterDashboard: React.FC = () => {
   const [importedFile, setImportedFile] = useState<ImportedFile | null>(null);
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
 
   const handleFileUpload = useCallback(async (file: File, statementType: string) => {
     setIsProcessing(true);
+    setOriginalFile(file); // Store original file for PDF viewer
     
     try {
       toast({
@@ -327,6 +330,23 @@ export const ConverterDashboard: React.FC = () => {
                 } : null);
               }}
             />
+            
+            {/* Side-by-Side Detailed View */}
+            <div className="mt-8 pt-6 border-t">
+              <SideBySideViewer
+                pdfFile={originalFile}
+                fileName={importedFile.fileName}
+                fileType={importedFile.fileType}
+                transactions={importedFile.transactions}
+                detectedCurrency={importedFile.detectedCurrency}
+                onTransactionsUpdate={(updatedTransactions) => {
+                  setImportedFile(prev => prev ? {
+                    ...prev,
+                    transactions: updatedTransactions
+                  } : null);
+                }}
+              />
+            </div>
           </div>
         ) : null;
         
