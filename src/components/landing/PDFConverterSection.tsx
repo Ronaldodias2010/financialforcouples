@@ -51,7 +51,10 @@ const PDFConverterSection = () => {
                   <span className="bg-hero-gradient bg-clip-text text-transparent font-extrabold">
                     {t('pdfConverter.title.highlight')}
                   </span>
-                  <span className="text-primary font-extrabold"> e Extratos</span>
+                  <span className="text-primary font-extrabold"> e Extratos com{" "}</span>
+                  <span className="text-cherry-red font-black text-5xl md:text-6xl uppercase tracking-wider drop-shadow-lg">
+                    OCR
+                  </span>
                 </h2>
                 <p className="text-xl text-muted-foreground">
                   {t('pdfConverter.subtitle')}
