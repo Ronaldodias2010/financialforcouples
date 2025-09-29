@@ -313,7 +313,7 @@ export const ConverterDashboard: React.FC = () => {
         
         case 'preview':
         return importedFile ? (
-          <div className="space-y-6">
+          <div className="space-y-3 sm:space-y-6">
             <DocumentPreview importedFile={importedFile} />
             <ExcelPreview 
               transactions={importedFile.transactions}

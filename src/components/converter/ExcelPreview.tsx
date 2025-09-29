@@ -242,27 +242,29 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
       {/* Header */}
       {!isCompactMode && (
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="h-5 w-5 text-primary" />
-                <CardTitle>Preview Excel - {fileName}</CardTitle>
+                <FileSpreadsheet className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <CardTitle className="text-sm sm:text-base truncate">Preview Excel - {fileName}</CardTitle>
               </div>
               
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="gap-1">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Badge variant="outline" className="gap-1 text-xs">
                   <Calculator className="h-3 w-3" />
-                  {filteredAndSortedRows.length} transações
+                  {filteredAndSortedRows.length}
                 </Badge>
                 
                 <Button
                   onClick={handleExportExcel}
                   disabled={isExporting}
-                  className="gap-2"
+                  className="gap-2 flex-1 sm:flex-none"
                   size="sm"
                 >
-                  <Download className="h-4 w-4" />
-                  {isExporting ? 'Gerando...' : t('converter.export.excel')}
+                  <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">
+                    {isExporting ? 'Gerando...' : t('converter.export.excel')}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -300,20 +302,20 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
       {/* Filters and Controls */}
       {!isCompactMode && (
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+          <CardContent className="p-3 sm:pt-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <div className="flex-1">
                 <Input
-                  placeholder="Buscar por descrição ou categoria..."
+                  placeholder="Buscar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-sm"
+                  className="w-full text-xs sm:text-sm h-8 sm:h-10"
                 />
               </div>
               
               <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
-                <SelectTrigger className="w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
+                <SelectTrigger className="w-full sm:w-[180px] h-8 sm:h-10 text-xs sm:text-sm">
+                  <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -354,118 +356,120 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
       {/* Excel Table */}
       <Card className={isCompactMode ? 'flex-1 flex flex-col' : ''}>
         <CardContent className="p-0 flex-1 flex flex-col">
-          <div className={`overflow-x-auto overflow-y-auto ${isCompactMode ? 'flex-1 max-h-none' : 'max-h-[600px]'}`}>
+          <div className={`overflow-x-auto overflow-y-auto ${isCompactMode ? 'flex-1 max-h-none' : 'max-h-[400px] sm:max-h-[600px]'}`}>
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow className="border-b-2">
                   <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 select-none min-w-[100px]"
+                    className="cursor-pointer hover:bg-muted/50 select-none min-w-[80px] text-xs sm:text-sm"
                     onClick={() => handleSort('date')}
                   >
                     <div className="flex items-center gap-1">
                       Data
-                      <ArrowUpDown className="h-3 w-3" />
+                      <ArrowUpDown className="h-2 w-2 sm:h-3 sm:w-3" />
                     </div>
                   </TableHead>
                   
                   <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 select-none min-w-[200px]"
+                    className="cursor-pointer hover:bg-muted/50 select-none min-w-[150px] text-xs sm:text-sm"
                     onClick={() => handleSort('description')}
                   >
                     <div className="flex items-center gap-1">
                       Descrição
-                      <ArrowUpDown className="h-3 w-3" />
+                      <ArrowUpDown className="h-2 w-2 sm:h-3 sm:w-3" />
                     </div>
                   </TableHead>
                   
                   <TableHead 
-                    className="text-right cursor-pointer hover:bg-muted/50 select-none min-w-[120px]"
+                    className="text-right cursor-pointer hover:bg-muted/50 select-none min-w-[90px] text-xs sm:text-sm"
                     onClick={() => handleSort('income')}
                   >
                     <div className="flex items-center justify-end gap-1">
-                      <Plus className="h-3 w-3 text-green-600" />
-                      Entradas
-                      <ArrowUpDown className="h-3 w-3" />
+                      <Plus className="h-2 w-2 sm:h-3 sm:w-3 text-green-600" />
+                      <span className="hidden sm:inline">Entradas</span>
+                      <span className="sm:hidden">+</span>
+                      <ArrowUpDown className="h-2 w-2 sm:h-3 sm:w-3" />
                     </div>
                   </TableHead>
                   
                   <TableHead 
-                    className="text-right cursor-pointer hover:bg-muted/50 select-none min-w-[120px]"
+                    className="text-right cursor-pointer hover:bg-muted/50 select-none min-w-[90px] text-xs sm:text-sm"
                     onClick={() => handleSort('expense')}
                   >
                     <div className="flex items-center justify-end gap-1">
-                      <Minus className="h-3 w-3 text-red-600" />
-                      Saídas
-                      <ArrowUpDown className="h-3 w-3" />
+                      <Minus className="h-2 w-2 sm:h-3 sm:w-3 text-red-600" />
+                      <span className="hidden sm:inline">Saídas</span>
+                      <span className="sm:hidden">-</span>
+                      <ArrowUpDown className="h-2 w-2 sm:h-3 sm:w-3" />
                     </div>
                   </TableHead>
                   
                   <TableHead 
-                    className="text-right cursor-pointer hover:bg-muted/50 select-none min-w-[120px]"
+                    className="text-right cursor-pointer hover:bg-muted/50 select-none min-w-[90px] text-xs sm:text-sm"
                     onClick={() => handleSort('balance')}
                   >
                     <div className="flex items-center justify-end gap-1">
                       Saldo
-                      <ArrowUpDown className="h-3 w-3" />
+                      <ArrowUpDown className="h-2 w-2 sm:h-3 sm:w-3" />
                     </div>
                   </TableHead>
                   
-                  <TableHead className="min-w-[100px]">Confiança</TableHead>
-                  <TableHead className="min-w-[80px]">Ações</TableHead>
+                  <TableHead className="min-w-[70px] text-xs sm:text-sm hidden sm:table-cell">Confiança</TableHead>
+                  <TableHead className="min-w-[60px] text-xs sm:text-sm">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               
               <TableBody>
                 {filteredAndSortedRows.map((row, index) => (
                   <TableRow key={row.id} className={getRowClassName(row)}>
-                    <TableCell className="font-mono text-sm">
+                    <TableCell className="font-mono text-[10px] sm:text-sm p-2 sm:p-4">
                       {row.date}
                     </TableCell>
                     
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-medium">{row.description}</div>
-                        <div className="text-xs text-muted-foreground">
+                    <TableCell className="p-2 sm:p-4">
+                      <div className="space-y-0.5 sm:space-y-1">
+                        <div className="font-medium text-xs sm:text-sm line-clamp-2">{row.description}</div>
+                        <div className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1">
                           {row.category} • {row.paymentMethod}
                         </div>
                       </div>
                     </TableCell>
                     
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-mono text-[10px] sm:text-sm p-2 sm:p-4">
                       <span className={getAmountClassName(row.income, 'income')}>
                         {row.income > 0 ? formatCurrency(row.income) : ''}
                       </span>
                     </TableCell>
                     
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-mono text-[10px] sm:text-sm p-2 sm:p-4">
                       <span className={getAmountClassName(row.expense, 'expense')}>
                         {row.expense > 0 ? formatCurrency(row.expense) : ''}
                       </span>
                     </TableCell>
                     
-                    <TableCell className="text-right font-mono font-semibold">
+                    <TableCell className="text-right font-mono font-semibold text-[10px] sm:text-sm p-2 sm:p-4">
                       <span className={row.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                         {formatCurrency(row.balance)}
                       </span>
                     </TableCell>
                     
-                    <TableCell>
+                    <TableCell className="p-2 sm:p-4 hidden sm:table-cell">
                       <Badge 
                         variant={row.confidence >= 0.8 ? 'default' : row.confidence >= 0.6 ? 'secondary' : 'destructive'}
-                        className="text-xs"
+                        className="text-[10px] sm:text-xs"
                       >
                         {Math.round(row.confidence * 100)}%
                       </Badge>
                     </TableCell>
                     
-                    <TableCell>
+                    <TableCell className="p-2 sm:p-4">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 hover-scale"
+                        className="h-5 w-5 sm:h-6 sm:w-6 p-0 hover-scale"
                         onClick={() => setEditingRow(editingRow === row.id ? null : row.id)}
                       >
-                        <Edit3 className="h-3 w-3" />
+                        <Edit3 className="h-2 w-2 sm:h-3 sm:w-3" />
                       </Button>
                     </TableCell>
                   </TableRow>
