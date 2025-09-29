@@ -842,6 +842,211 @@ export type Database = {
         }
         Relationships: []
       }
+      import_audit_log: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          id: string
+          imported_file_id: string | null
+          ip_address: string | null
+          timestamp: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          id?: string
+          imported_file_id?: string | null
+          ip_address?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          id?: string
+          imported_file_id?: string | null
+          ip_address?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_audit_log_imported_file_id_fkey"
+            columns: ["imported_file_id"]
+            isOneToOne: false
+            referencedRelation: "imported_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      imported_files: {
+        Row: {
+          created_at: string
+          detected_currency: string | null
+          detected_language: string | null
+          detected_region: string | null
+          file_hash: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          processing_error: string | null
+          processing_status: string
+          statement_type: string | null
+          total_transactions: number | null
+          updated_at: string
+          upload_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detected_currency?: string | null
+          detected_language?: string | null
+          detected_region?: string | null
+          file_hash: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          processing_error?: string | null
+          processing_status?: string
+          statement_type?: string | null
+          total_transactions?: number | null
+          updated_at?: string
+          upload_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          detected_currency?: string | null
+          detected_language?: string | null
+          detected_region?: string | null
+          file_hash?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          processing_error?: string | null
+          processing_status?: string
+          statement_type?: string | null
+          total_transactions?: number | null
+          updated_at?: string
+          upload_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      imported_transactions: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          duplicate_transaction_id: string | null
+          final_account_id: string | null
+          final_card_id: string | null
+          final_category_id: string | null
+          final_payment_method: string | null
+          final_tags: string[] | null
+          id: string
+          imported_file_id: string
+          installment_current: number | null
+          installment_total: number | null
+          is_duplicate: boolean | null
+          is_fee: boolean | null
+          is_installment: boolean | null
+          is_transfer: boolean | null
+          normalized_amount: number | null
+          normalized_currency: string
+          normalized_date: string | null
+          original_amount: string
+          original_currency: string | null
+          original_date: string
+          original_description: string
+          review_notes: string | null
+          suggested_category_id: string | null
+          suggested_payment_method: string | null
+          transaction_type: string | null
+          updated_at: string
+          user_id: string
+          validation_status: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          duplicate_transaction_id?: string | null
+          final_account_id?: string | null
+          final_card_id?: string | null
+          final_category_id?: string | null
+          final_payment_method?: string | null
+          final_tags?: string[] | null
+          id?: string
+          imported_file_id: string
+          installment_current?: number | null
+          installment_total?: number | null
+          is_duplicate?: boolean | null
+          is_fee?: boolean | null
+          is_installment?: boolean | null
+          is_transfer?: boolean | null
+          normalized_amount?: number | null
+          normalized_currency?: string
+          normalized_date?: string | null
+          original_amount: string
+          original_currency?: string | null
+          original_date: string
+          original_description: string
+          review_notes?: string | null
+          suggested_category_id?: string | null
+          suggested_payment_method?: string | null
+          transaction_type?: string | null
+          updated_at?: string
+          user_id: string
+          validation_status?: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          duplicate_transaction_id?: string | null
+          final_account_id?: string | null
+          final_card_id?: string | null
+          final_category_id?: string | null
+          final_payment_method?: string | null
+          final_tags?: string[] | null
+          id?: string
+          imported_file_id?: string
+          installment_current?: number | null
+          installment_total?: number | null
+          is_duplicate?: boolean | null
+          is_fee?: boolean | null
+          is_installment?: boolean | null
+          is_transfer?: boolean | null
+          normalized_amount?: number | null
+          normalized_currency?: string
+          normalized_date?: string | null
+          original_amount?: string
+          original_currency?: string | null
+          original_date?: string
+          original_description?: string
+          review_notes?: string | null
+          suggested_category_id?: string | null
+          suggested_payment_method?: string | null
+          transaction_type?: string | null
+          updated_at?: string
+          user_id?: string
+          validation_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imported_transactions_imported_file_id_fkey"
+            columns: ["imported_file_id"]
+            isOneToOne: false
+            referencedRelation: "imported_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_goals: {
         Row: {
           created_at: string
@@ -2199,6 +2404,60 @@ export type Database = {
           updated_at?: string
           user1_id?: string
           user2_id?: string
+        }
+        Relationships: []
+      }
+      user_import_rules: {
+        Row: {
+          amount_max: number | null
+          amount_min: number | null
+          assign_category_id: string | null
+          assign_payment_method: string | null
+          assign_tags: string[] | null
+          created_at: string
+          description_pattern: string | null
+          id: string
+          is_active: boolean | null
+          language: string
+          mark_as_transfer: boolean | null
+          rule_name: string
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          amount_max?: number | null
+          amount_min?: number | null
+          assign_category_id?: string | null
+          assign_payment_method?: string | null
+          assign_tags?: string[] | null
+          created_at?: string
+          description_pattern?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string
+          mark_as_transfer?: boolean | null
+          rule_name: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          amount_max?: number | null
+          amount_min?: number | null
+          assign_category_id?: string | null
+          assign_payment_method?: string | null
+          assign_tags?: string[] | null
+          created_at?: string
+          description_pattern?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string
+          mark_as_transfer?: boolean | null
+          rule_name?: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
         }
         Relationships: []
       }

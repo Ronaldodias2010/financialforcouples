@@ -18,7 +18,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 // TEMPORARIAMENTE REMOVIDO: import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain, MessageCircle } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain, MessageCircle, ArrowLeftRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { openWhatsApp } from "@/utils/whatsapp";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -583,6 +583,7 @@ export const FinancialDashboard = () => {
                 { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp },
                 { id: "categories", label: t('nav.categories'), icon: Settings },
                 { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                { id: "converter", label: t('nav.converter'), icon: ArrowLeftRight },
                 { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -636,6 +637,7 @@ export const FinancialDashboard = () => {
                 {[
                   { id: "categories", label: t('nav.categories'), icon: Settings },
                   { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                  { id: "converter", label: t('nav.converter'), icon: ArrowLeftRight },
                   { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
                 ].map((tab) => {
                   const Icon = tab.icon;
