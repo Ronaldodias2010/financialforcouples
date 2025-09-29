@@ -665,9 +665,27 @@ const translations = {
     'smartMileage.notification.subtitle': 'Você tem milhas suficientes',
     'smartMileage.notification.promotion': 'LATAM - São Paulo → Miami',
     'smartMileage.notification.miles': '75.000 milhas',
-    'smartMileage.notification.savings': 'Economize R$ 350',
-    
-    // TransactionForm
+     'smartMileage.notification.savings': 'Economize R$ 350',
+     
+     // PDF Converter Section
+    'pdfConverter.badge': 'Automação Inteligente',
+    'pdfConverter.title': 'Conversor Automático',
+    'pdfConverter.title.highlight': 'de PDFs',
+    'pdfConverter.subtitle': 'Transforme extratos bancários e faturas de cartão em dados organizados com IA',
+    'pdfConverter.benefit1.title': 'Extração Automática',
+    'pdfConverter.benefit1.description': 'Converta PDFs de extratos para Excel automaticamente com precisão de IA',
+    'pdfConverter.benefit2.title': 'Reconciliação Inteligente',
+    'pdfConverter.benefit2.description': 'Compare transações automaticamente e identifique divergências via IA',
+    'pdfConverter.benefit3.title': 'Configuração Flexível',
+    'pdfConverter.benefit3.description': 'Personalize regras de categorização e formatos de saída',
+    'pdfConverter.cta': 'Testar Conversor',
+    'pdfConverter.process.title': 'Processamento Automático',
+    'pdfConverter.process.subtitle': 'Agora mesmo',
+    'pdfConverter.process.step': 'Analisando Extrato Bancário',
+    'pdfConverter.process.transactions': '23 transações encontradas',
+    'pdfConverter.process.accuracy': '98% de precisão',
+     
+     // TransactionForm
     'transactionForm.title': 'Nova Transação',
     'transactionForm.income': 'Receita',
     'transactionForm.expense': 'Despesa',
@@ -3453,8 +3471,26 @@ const translations = {
     'smartMileage.notification.subtitle': 'You have enough miles',
     'smartMileage.notification.promotion': 'LATAM - São Paulo → Miami',
     'smartMileage.notification.miles': '75,000 miles',
-    'smartMileage.notification.savings': 'Save $60',
-  },
+     'smartMileage.notification.savings': 'Save $60',
+     
+     // PDF Converter Section
+    'pdfConverter.badge': 'Smart Automation',
+    'pdfConverter.title': 'Automatic PDF',
+    'pdfConverter.title.highlight': 'Converter',
+    'pdfConverter.subtitle': 'Transform bank statements and credit card bills into organized data with AI',
+    'pdfConverter.benefit1.title': 'Automatic Extraction',
+    'pdfConverter.benefit1.description': 'Convert PDF statements to Excel automatically with AI precision',
+    'pdfConverter.benefit2.title': 'Smart Reconciliation',
+    'pdfConverter.benefit2.description': 'Compare transactions automatically and identify discrepancies via AI',
+    'pdfConverter.benefit3.title': 'Flexible Configuration',
+    'pdfConverter.benefit3.description': 'Customize categorization rules and output formats',
+    'pdfConverter.cta': 'Try Converter',
+    'pdfConverter.process.title': 'Automatic Processing',
+    'pdfConverter.process.subtitle': 'Right now',
+    'pdfConverter.process.step': 'Analyzing Bank Statement',
+    'pdfConverter.process.transactions': '23 transactions found',
+    'pdfConverter.process.accuracy': '98% accuracy',
+   },
   
    es: {
      // Password Validation
@@ -5159,8 +5195,26 @@ const translations = {
     'smartMileage.notification.subtitle': 'Tienes millas suficientes',
     'smartMileage.notification.promotion': 'LATAM - São Paulo → Miami',
     'smartMileage.notification.miles': '75.000 millas',
-    'smartMileage.notification.savings': 'Ahorra $60',
-  },
+     'smartMileage.notification.savings': 'Ahorra $60',
+     
+     // PDF Converter Section
+    'pdfConverter.badge': 'Automatización Inteligente',
+    'pdfConverter.title': 'Conversor Automático',
+    'pdfConverter.title.highlight': 'de PDFs',
+    'pdfConverter.subtitle': 'Transforma extractos bancarios y facturas de tarjetas en datos organizados con IA',
+    'pdfConverter.benefit1.title': 'Extracción Automática',
+    'pdfConverter.benefit1.description': 'Convierte PDFs de extractos a Excel automáticamente con precisión de IA',
+    'pdfConverter.benefit2.title': 'Reconciliación Inteligente',
+    'pdfConverter.benefit2.description': 'Compara transacciones automáticamente e identifica discrepancias vía IA',
+    'pdfConverter.benefit3.title': 'Configuración Flexible',
+    'pdfConverter.benefit3.description': 'Personaliza reglas de categorización y formatos de salida',
+    'pdfConverter.cta': 'Probar Conversor',
+    'pdfConverter.process.title': 'Procesamiento Automático',
+    'pdfConverter.process.subtitle': 'Ahora mismo',
+    'pdfConverter.process.step': 'Analizando Extracto Bancario',
+    'pdfConverter.process.transactions': '23 transacciones encontradas',
+    'pdfConverter.process.accuracy': '98% de precisión',
+   },
 };
 
 interface LanguageProviderProps {
