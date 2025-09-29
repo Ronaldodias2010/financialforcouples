@@ -98,25 +98,45 @@ function parseTransactions(text: string, detectedLanguage: string, detectedCurre
   return transactions;
 }
 
-function convertToISODate(dateStr: string, region: string): string {
-  const parts = dateStr.split(/[\/\-]/);
-  if (parts.length !== 3) return new Date().toISOString().split('T')[0];
-  
-  let year, month, day;
-  
-  if (region === 'US') {
-    // MM/DD/YYYY
-    month = parts[0];
-    day = parts[1];
-    year = parts[2];
-  } else {
-    // DD/MM/YYYY
-    day = parts[0];
-    month = parts[1];
-    year = parts[2];
+function convertToISODate(dateStr: string, language: string): string {
+  try {
+    // Remove any extra whitespace
+    dateStr = dateStr.trim();
+    
+    // Try to parse DD/MM/YYYY or DD/MM format
+    const parts = dateStr.split(/[\/\-\.]/);
+    if (parts.length < 2) return new Date().toISOString().split('T')[0];
+    
+    let day, month, year;
+    
+    if (language === 'en') {
+      // MM/DD/YYYY format
+      month = parts[0];
+      day = parts[1];
+      year = parts[2] || new Date().getFullYear().toString();
+    } else {
+      // DD/MM/YYYY format (pt, es)
+      day = parts[0];
+      month = parts[1];
+      year = parts[2] || new Date().getFullYear().toString();
+    }
+    
+    // Pad with zeros if needed
+    day = day.padStart(2, '0');
+    month = month.padStart(2, '0');
+    
+    // Handle 2-digit years
+    if (year.length === 2) {
+      const currentYear = new Date().getFullYear();
+      const century = Math.floor(currentYear / 100) * 100;
+      year = (century + parseInt(year)).toString();
+    }
+    
+    return `${year}-${month}-${day}`;
+  } catch (e) {
+    console.error('Date parsing error:', e);
+    return new Date().toISOString().split('T')[0];
   }
-  
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
 
 serve(async (req) => {
@@ -133,15 +153,118 @@ serve(async (req) => {
       currency: detectedCurrency
     });
 
-    // Parse transactions from extracted text
-    const processedTransactions = parseTransactions(extractedText, detectedLanguage, detectedCurrency);
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Use Gemini to extract structured transactions
+    const systemPrompt = detectedLanguage === 'pt' 
+      ? `Você é um especialista em processar extratos bancários. Analise o texto e extraia transações no formato JSON.
+Para cada transação, identifique:
+- data (formato DD/MM/YYYY)
+- descrição
+- valor (número positivo)
+- tipo (income, expense ou transfer)
+- método de pagamento sugerido (pix, debit_card, credit_card, transfer, cash)`
+      : `You are an expert in processing bank statements. Analyze the text and extract transactions in JSON format.
+For each transaction, identify:
+- date (DD/MM/YYYY format)
+- description
+- amount (positive number)
+- type (income, expense or transfer)
+- suggested payment method (pix, debit_card, credit_card, transfer, cash)`;
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Extraia todas as transações deste extrato:\n\n${extractedText}` }
+        ],
+        tools: [{
+          type: 'function',
+          function: {
+            name: 'extract_transactions',
+            description: 'Extract financial transactions from bank statement text',
+            parameters: {
+              type: 'object',
+              properties: {
+                transactions: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      originalDate: { type: 'string' },
+                      originalDescription: { type: 'string' },
+                      originalAmount: { type: 'string' },
+                      normalizedAmount: { type: 'number' },
+                      transactionType: { type: 'string', enum: ['income', 'expense', 'transfer'] },
+                      paymentMethod: { type: 'string' },
+                      confidenceScore: { type: 'number' }
+                    },
+                    required: ['originalDate', 'originalDescription', 'originalAmount', 'normalizedAmount', 'transactionType']
+                  }
+                }
+              },
+              required: ['transactions'],
+              additionalProperties: false
+            }
+          }
+        }],
+        tool_choice: { type: 'function', function: { name: 'extract_transactions' } }
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error:', response.status, errorText);
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const aiResult = await response.json();
+    console.log('AI Response:', JSON.stringify(aiResult, null, 2));
+
+    // Extract transactions from tool call
+    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
+    let processedTransactions = [];
+    
+    if (toolCall?.function?.arguments) {
+      try {
+        const args = JSON.parse(toolCall.function.arguments);
+        processedTransactions = args.transactions.map((t: any) => ({
+          originalDescription: t.originalDescription,
+          originalDate: t.originalDate,
+          originalAmount: t.originalAmount,
+          normalizedDate: convertToISODate(t.originalDate, detectedLanguage),
+          normalizedAmount: t.normalizedAmount,
+          transactionType: t.transactionType,
+          suggestedCategory: 'Outros',
+          confidenceScore: t.confidenceScore || 0.85,
+          isInstallment: false,
+          installmentInfo: null,
+          isTransfer: t.transactionType === 'transfer',
+          isFee: false,
+          paymentMethod: t.paymentMethod || 'unknown',
+          isDuplicate: false,
+          duplicateTransactionId: null
+        }));
+      } catch (e) {
+        console.error('Failed to parse AI response:', e);
+      }
+    }
     
     console.log(`Processed ${processedTransactions.length} transactions`);
 
     return new Response(JSON.stringify({
       success: true,
       processedTransactions,
-      aiConfidence: processedTransactions.length > 0 ? 0.8 : 0.3,
+      aiConfidence: processedTransactions.length > 0 ? 0.85 : 0.3,
       processingTime: Date.now(),
       totalTransactions: processedTransactions.length
     }), {

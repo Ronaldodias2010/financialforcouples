@@ -44,12 +44,23 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   // Generate object URL for file
   React.useEffect(() => {
     if (file) {
+      setIsLoading(true);
+      setViewerError(null);
       const url = URL.createObjectURL(file);
       setFileUrl(url);
       
+      // For PDFs, set a timeout to clear loading state if iframe doesn't fire onLoad
+      const timeout = setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+      
       return () => {
         URL.revokeObjectURL(url);
+        clearTimeout(timeout);
       };
+    } else {
+      setFileUrl(null);
+      setIsLoading(false);
     }
   }, [file]);
 
@@ -135,14 +146,22 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
     switch (fileType) {
       case 'pdf':
         return (
-          <div className="h-96 bg-muted/20 rounded-lg overflow-hidden">
+          <div className="relative h-96 bg-muted/20 rounded-lg overflow-hidden">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
             <iframe
-              src={`${fileUrl}#zoom=${zoom}`}
+              src={`${fileUrl}#toolbar=0&navpanes=0&zoom=${zoom}`}
               className="w-full h-full border-0"
               title={fileName}
-              onLoad={() => setIsLoading(false)}
+              onLoad={() => {
+                setIsLoading(false);
+                setViewerError(null);
+              }}
               onError={() => {
-                setViewerError('Erro ao carregar PDF');
+                setViewerError('Erro ao carregar PDF. Tente fazer download do arquivo.');
                 setIsLoading(false);
               }}
             />

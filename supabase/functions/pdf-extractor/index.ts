@@ -24,47 +24,51 @@ serve(async (req) => {
     let detectedBank = null;
 
     if (fileType === 'pdf' || fileType === 'image') {
-      // Real OCR processing for PDFs and images
+      // Real OCR processing using Gemini via ocr-processor
       try {
-        const base64Data = fileData.split(',')[1] || fileData;
-        const fileBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-        
-        // For now, we'll extract text using basic pattern matching on the binary data
-        // This simulates OCR processing and will be improved with actual OCR in the future
-        const textDecoder = new TextDecoder('utf-8', { fatal: false });
-        let rawText = textDecoder.decode(fileBuffer);
-        
-        // Clean up extracted text and apply basic OCR simulation
-        rawText = rawText.replace(/[^\x20-\x7E\u00C0-\u017F]/g, ' ');
-        
-        // Try to extract meaningful text patterns
-        const patterns = [
-          /(\d{2}\/\d{2}\/\d{4})/g, // dates
-          /(R\$\s*[\d.,]+)/g, // Brazilian currency
-          /(\$\s*[\d.,]+)/g, // USD currency  
-          /(€\s*[\d.,]+)/g, // EUR currency
-          /([A-Z\s]{10,})/g, // uppercase text (likely headers)
-        ];
-        
-        let extractedParts: string[] = [];
-        patterns.forEach(pattern => {
-          const matches = rawText.match(pattern);
-          if (matches) extractedParts.push(...matches);
-        });
-        
-        if (extractedParts.length > 0) {
-          extractedText = extractedParts.join('\n');
-        } else {
-          // Fallback: try to find any readable text
-          extractedText = rawText.replace(/\s+/g, ' ').trim();
-          if (extractedText.length < 50) {
-            // If we can't extract meaningful text, provide a helpful placeholder
-            extractedText = `Extracted from ${fileName}:\nUnable to extract readable text from this file. Please ensure the file contains clear, readable text or try a different file format.`;
-          }
+        const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+        if (!LOVABLE_API_KEY) {
+          throw new Error('LOVABLE_API_KEY not configured');
         }
+
+        console.log('Calling OCR processor with Gemini...');
         
-        console.log('OCR processing completed');
-        console.log(`Extracted text length: ${extractedText.length}`);
+        // Call the ocr-processor edge function
+        const ocrResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/ocr-processor`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            imageData: fileData,
+            fileName: fileName,
+            detectedLanguage: 'pt'
+          })
+        });
+
+        if (!ocrResponse.ok) {
+          const errorText = await ocrResponse.text();
+          console.error('OCR processor error:', ocrResponse.status, errorText);
+          throw new Error(`OCR processor failed: ${ocrResponse.status}`);
+        }
+
+        const ocrResult = await ocrResponse.json();
+        console.log('OCR Result:', {
+          success: ocrResult.success,
+          textLength: ocrResult.extractedText?.length || 0,
+          transactionsFound: ocrResult.extractedTransactions?.length || 0
+        });
+
+        if (ocrResult.success && ocrResult.extractedText) {
+          extractedText = ocrResult.extractedText;
+          detectedLanguage = ocrResult.language || 'pt';
+          
+          console.log('OCR processing completed successfully');
+          console.log(`Extracted text length: ${extractedText.length}`);
+        } else {
+          throw new Error('OCR processing returned no text');
+        }
       } catch (error) {
         console.error('OCR processing failed:', error);
         extractedText = `Error extracting text from ${fileName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
