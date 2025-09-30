@@ -154,22 +154,71 @@ export const ConverterDashboard: React.FC = () => {
 
       if (aiResponse.error) {
         console.error('AI processing error:', aiResponse.error);
-        throw new Error(`Falha no processamento IA: ${aiResponse.error.message || 'Erro desconhecido'}`);
+        // Continue with empty transactions to allow navigation
+        const processedFile: ImportedFile = {
+          id: `file_${Date.now()}`,
+          fileName: file.name,
+          fileType: fileType as any,
+          fileSize: file.size,
+          detectedLanguage: detectedLanguage as any,
+          detectedCurrency,
+          detectedRegion,
+          statementType: detectedStatementType || statementType as any,
+          processingStatus: 'completed',
+          processingError: `Erro na IA: ${aiResponse.error.message}`,
+          totalTransactions: 0,
+          transactions: []
+        };
+        
+        setImportedFile(processedFile);
+        setCurrentStep('preview');
+        
+        toast({
+          title: 'Erro no processamento',
+          description: `Erro na IA: ${aiResponse.error.message}. Você pode prosseguir e adicionar transações manualmente.`,
+          variant: 'destructive',
+        });
+        
+        return;
       }
 
-      const { processedTransactions } = aiResponse.data;
+      const { processedTransactions, fallback_used, success: aiSuccess } = aiResponse.data;
       
       console.log('AI result:', {
-        transactionsFound: processedTransactions?.length || 0
+        transactionsFound: processedTransactions?.length || 0,
+        fallbackUsed: fallback_used,
+        aiSuccess
       });
       
       if (!processedTransactions || processedTransactions.length === 0) {
         console.warn('⚠️ No transactions found by AI');
+        
+        // Create file with empty transactions but allow navigation
+        const processedFile: ImportedFile = {
+          id: `file_${Date.now()}`,
+          fileName: file.name,
+          fileType: fileType as any,
+          fileSize: file.size,
+          detectedLanguage: detectedLanguage as any,
+          detectedCurrency,
+          detectedRegion,
+          statementType: detectedStatementType || statementType as any,
+          processingStatus: 'completed',
+          processingError: null,
+          totalTransactions: 0,
+          transactions: []
+        };
+        
+        setImportedFile(processedFile);
+        setCurrentStep('preview');
+        
         toast({
           title: 'Atenção',
-          description: 'Nenhuma transação foi encontrada no documento. Verifique se o arquivo contém transações financeiras válidas.',
+          description: 'Nenhuma transação foi encontrada automaticamente. Você pode adicionar transações manualmente na próxima etapa.',
           variant: 'destructive',
         });
+        
+        return;
       }
 
       setProcessingProgress(90);
@@ -225,16 +274,40 @@ export const ConverterDashboard: React.FC = () => {
       setProcessingProgress(100);
       setProcessingStep('Concluído!');
       
+      const successMessage = fallback_used 
+        ? `${processedFile.totalTransactions} transações encontradas usando método alternativo.`
+        : `${processedFile.totalTransactions} ${t('converter.detection.transactions').toLowerCase()}`;
+      
       toast({
         title: t('converter.alerts.ready'),
-        description: `${processedFile.totalTransactions} ${t('converter.detection.transactions').toLowerCase()}`,
+        description: successMessage,
       });
       
     } catch (error) {
       console.error('File processing error:', error);
+      
+      // Even on error, create a basic file object to allow navigation
+      const errorFile: ImportedFile = {
+        id: `file_${Date.now()}`,
+        fileName: file.name,
+        fileType: 'pdf' as any,
+        fileSize: file.size,
+        detectedLanguage: 'pt' as any,
+        detectedCurrency: 'BRL',
+        detectedRegion: 'BR',
+        statementType: statementType as any,
+        processingStatus: 'error',
+        processingError: error instanceof Error ? error.message : 'Erro desconhecido',
+        totalTransactions: 0,
+        transactions: []
+      };
+      
+      setImportedFile(errorFile);
+      setCurrentStep('preview');
+      
       toast({
         title: t('converter.alerts.error'),
-        description: error instanceof Error ? error.message : 'Erro no processamento',
+        description: error instanceof Error ? error.message + '. Você pode tentar novamente ou adicionar transações manualmente.' : 'Erro no processamento',
         variant: 'destructive',
       });
     } finally {

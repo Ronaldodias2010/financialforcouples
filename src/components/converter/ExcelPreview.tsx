@@ -161,14 +161,9 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
     setIsExporting(true);
     
     try {
-      // Validate data before export
+      // Allow export even with empty transactions - create a template
       if (!filteredAndSortedRows || filteredAndSortedRows.length === 0) {
-        toast({
-          title: 'Sem dados',
-          description: 'Não há transações para exportar',
-          variant: 'destructive',
-        });
-        return;
+        console.warn('No transactions to export, creating empty template');
       }
 
       console.log('Starting Excel export...', {

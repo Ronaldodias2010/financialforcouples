@@ -138,7 +138,25 @@ Devuelve el texto completo extraído:`
     
     if (ocrText.length === 0) {
       console.error('⚠️ OCR returned empty text - image may be unreadable or invalid');
-      throw new Error('OCR extracted no text from image');
+      // Don't throw error - return minimal response to allow navigation
+      return new Response(JSON.stringify({
+        success: false,
+        ocrText: '',
+        extractedTransactions: [],
+        confidence: 0,
+        language: detectedLanguage,
+        processingTime,
+        extractedText: '',
+        error: 'OCR extracted no text from image'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 // Return 200 to allow frontend to handle gracefully
+      });
+    }
+    
+    if (ocrText.length < 50) {
+      console.warn('⚠️ OCR returned very short text - may indicate processing failure');
+      console.log('Full extracted text:', ocrText);
     }
 
     // Extract structured data from OCR text

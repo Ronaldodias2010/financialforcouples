@@ -148,10 +148,43 @@ serve(async (req) => {
     const { extractedText, detectedLanguage, detectedCurrency, userId } = await req.json();
     
     console.log('Processing transactions with AI...', {
-      textLength: extractedText.length,
+      textLength: extractedText?.length || 0,
       language: detectedLanguage,
       currency: detectedCurrency
     });
+
+    // Check if text is too short to be meaningful
+    if (!extractedText || extractedText.trim().length < 50) {
+      console.warn('⚠️ Text too short for AI processing, trying regex fallback...');
+      
+      // Try regex fallback
+      const regexTransactions = parseTransactions(extractedText || '', detectedLanguage || 'pt', detectedCurrency || 'BRL');
+      
+      if (regexTransactions.length === 0) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Texto insuficiente para processamento. Verifique se o arquivo foi processado corretamente.',
+          processedTransactions: [],
+          fallback_used: 'regex',
+          extracted_text_preview: extractedText?.substring(0, 200) || ''
+        }), {
+          status: 200, // Use 200 to allow frontend navigation
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      console.log(`✅ Regex fallback found ${regexTransactions.length} transactions`);
+      return new Response(JSON.stringify({
+        success: true,
+        processedTransactions: regexTransactions,
+        fallback_used: 'regex',
+        aiConfidence: 0.7,
+        processingTime: Date.now(),
+        totalTransactions: regexTransactions.length
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -224,7 +257,23 @@ For each transaction, identify:
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Gemini API error:', response.status, errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      
+      // Try regex fallback when AI fails
+      console.log('AI failed, trying regex fallback...');
+      const regexTransactions = parseTransactions(extractedText, detectedLanguage || 'pt', detectedCurrency || 'BRL');
+      
+      return new Response(JSON.stringify({
+        success: regexTransactions.length > 0,
+        processedTransactions: regexTransactions,
+        fallback_used: 'regex',
+        ai_error: `AI API error: ${response.status}`,
+        aiConfidence: regexTransactions.length > 0 ? 0.6 : 0.3,
+        processingTime: Date.now(),
+        totalTransactions: regexTransactions.length
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      });
     }
 
     const aiResult = await response.json();
@@ -267,6 +316,17 @@ For each transaction, identify:
       if (fallbackTransactions.length > 0) {
         processedTransactions = fallbackTransactions;
         console.log(`✅ Fallback parsing found ${processedTransactions.length} transactions`);
+      }
+    }
+    
+    // If AI didn't find transactions, try regex fallback
+    if (processedTransactions.length === 0) {
+      console.log('AI found no transactions, trying regex fallback...');
+      const regexTransactions = parseTransactions(extractedText, detectedLanguage || 'pt', detectedCurrency || 'BRL');
+      
+      if (regexTransactions.length > 0) {
+        processedTransactions = regexTransactions;
+        console.log(`✅ Regex fallback found ${processedTransactions.length} transactions`);
       }
     }
     
