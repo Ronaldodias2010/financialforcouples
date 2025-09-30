@@ -6,77 +6,101 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Simple Excel generator using CSV format with proper headers
-// In production, you would use a proper Excel library like xlsx
-function generateExcelCSV(data: any): string {
+// Generate a proper Excel file using SheetJS (XLSX) format
+async function generateExcelFile(data: any): Promise<Uint8Array> {
   const { transactions, totals, currency, metadata } = data;
   
-  let csv = '';
+  console.log('Generating Excel with transactions:', transactions.length);
   
-  // Add title and metadata
-  csv += `EXTRATO CONVERTIDO\n`;
-  csv += `Arquivo: ${data.fileName}\n`;
-  csv += `Data de Exportação: ${new Date(metadata.exportDate).toLocaleDateString('pt-BR')}\n`;
-  csv += `Total de Transações: ${metadata.totalTransactions}\n`;
-  csv += `Moeda: ${currency}\n`;
-  csv += `\n`;
+  // Import XLSX library from CDN
+  const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.1/package/xlsx.mjs');
   
-  // Add headers
-  csv += `Data,Descrição,Entradas,Saídas,Saldo,Categoria,Método Pagamento,Confiança\n`;
+  // Create workbook
+  const wb = XLSX.utils.book_new();
   
-  // Add transactions
+  // Sheet 1: Transactions
+  const transactionData = [
+    // Header with metadata
+    ['EXTRATO CONVERTIDO'],
+    [`Arquivo: ${data.fileName}`],
+    [`Data de Exportação: ${new Date(metadata.exportDate).toLocaleDateString('pt-BR')}`],
+    [`Total de Transações: ${metadata.totalTransactions}`],
+    [`Moeda: ${currency}`],
+    [],
+    // Table headers
+    ['Data', 'Descrição', 'Entradas', 'Saídas', 'Saldo', 'Categoria', 'Método Pagamento', 'Confiança']
+  ];
+  
+  // Add transaction rows
   for (const transaction of transactions) {
-    const date = transaction.date;
-    const description = `"${transaction.description.replace(/"/g, '""')}"`;
-    const income = transaction.income > 0 ? transaction.income.toFixed(2) : '';
-    const expense = transaction.expense > 0 ? transaction.expense.toFixed(2) : '';
-    const balance = transaction.balance.toFixed(2);
-    const category = `"${transaction.category}"`;
-    const paymentMethod = transaction.paymentMethod;
-    const confidence = `${Math.round(transaction.confidence * 100)}%`;
-    
-    csv += `${date},${description},${income},${expense},${balance},${category},${paymentMethod},${confidence}\n`;
+    transactionData.push([
+      transaction.date,
+      transaction.description,
+      transaction.income > 0 ? transaction.income : '',
+      transaction.expense > 0 ? transaction.expense : '',
+      transaction.balance,
+      transaction.category || 'Sem categoria',
+      transaction.paymentMethod || 'cash',
+      `${Math.round(transaction.confidence * 100)}%`
+    ]);
   }
   
-  // Add totals
-  csv += `\n`;
-  csv += `RESUMO\n`;
-  csv += `Total Receitas,${totals.totalIncome.toFixed(2)}\n`;
-  csv += `Total Despesas,${totals.totalExpense.toFixed(2)}\n`;
-  csv += `Saldo Final,${totals.finalBalance.toFixed(2)}\n`;
+  // Add summary section
+  transactionData.push(
+    [],
+    ['RESUMO'],
+    ['Total Receitas', totals.totalIncome],
+    ['Total Despesas', totals.totalExpense],
+    ['Saldo Final', totals.finalBalance]
+  );
   
-  // Add analysis
-  csv += `\n`;
-  csv += `ANÁLISE\n`;
-  csv += `Transações de Receita,${transactions.filter((t: any) => t.income > 0).length}\n`;
-  csv += `Transações de Despesa,${transactions.filter((t: any) => t.expense > 0).length}\n`;
-  csv += `Maior Receita,"${Math.max(...transactions.map((t: any) => t.income)).toFixed(2)}"\n`;
-  csv += `Maior Despesa,"${Math.max(...transactions.map((t: any) => t.expense)).toFixed(2)}"\n`;
+  // Add analysis section
+  const incomeTransactions = transactions.filter((t: any) => t.income > 0);
+  const expenseTransactions = transactions.filter((t: any) => t.expense > 0);
   
-  // Add monthly summary if data spans multiple months
-  const monthlyData = new Map();
-  for (const transaction of transactions) {
-    const month = transaction.date.substring(3); // MM/YYYY
-    if (!monthlyData.has(month)) {
-      monthlyData.set(month, { income: 0, expense: 0 });
-    }
-    const monthData = monthlyData.get(month);
-    monthData.income += transaction.income;
-    monthData.expense += transaction.expense;
+  transactionData.push(
+    [],
+    ['ANÁLISE'],
+    ['Transações de Receita', incomeTransactions.length],
+    ['Transações de Despesa', expenseTransactions.length]
+  );
+  
+  if (incomeTransactions.length > 0) {
+    const maxIncome = Math.max(...incomeTransactions.map((t: any) => t.income));
+    transactionData.push(['Maior Receita', maxIncome]);
   }
   
-  if (monthlyData.size > 1) {
-    csv += `\n`;
-    csv += `RESUMO MENSAL\n`;
-    csv += `Mês,Receitas,Despesas,Saldo\n`;
-    
-    for (const [month, data] of monthlyData.entries()) {
-      const balance = data.income - data.expense;
-      csv += `${month},${data.income.toFixed(2)},${data.expense.toFixed(2)},${balance.toFixed(2)}\n`;
-    }
+  if (expenseTransactions.length > 0) {
+    const maxExpense = Math.max(...expenseTransactions.map((t: any) => t.expense));
+    transactionData.push(['Maior Despesa', maxExpense]);
   }
   
-  return csv;
+  // Create worksheet from data
+  const ws = XLSX.utils.aoa_to_sheet(transactionData);
+  
+  // Set column widths
+  ws['!cols'] = [
+    { wch: 12 },  // Data
+    { wch: 40 },  // Descrição
+    { wch: 12 },  // Entradas
+    { wch: 12 },  // Saídas
+    { wch: 12 },  // Saldo
+    { wch: 20 },  // Categoria
+    { wch: 18 },  // Método Pagamento
+    { wch: 10 }   // Confiança
+  ];
+  
+  // Add worksheet to workbook
+  XLSX.utils.book_append_sheet(wb, ws, 'Transações');
+  
+  // Generate Excel file buffer
+  const excelBuffer = XLSX.write(wb, { 
+    type: 'buffer', 
+    bookType: 'xlsx',
+    compression: true
+  });
+  
+  return new Uint8Array(excelBuffer);
 }
 
 serve(async (req) => {
@@ -93,31 +117,37 @@ serve(async (req) => {
       currency: requestData.currency
     });
 
-    // Generate CSV content (Excel-compatible)
-    const csvContent = generateExcelCSV(requestData);
+    // Validate input data
+    if (!requestData.transactions || requestData.transactions.length === 0) {
+      console.warn('No transactions provided, generating empty Excel');
+    }
+
+    // Generate real XLSX file
+    const excelBuffer = await generateExcelFile(requestData);
     
-    // Convert to proper encoding for Excel
-    const bom = '\uFEFF'; // UTF-8 BOM for Excel compatibility
-    const content = bom + csvContent;
+    console.log('Excel file generated successfully', {
+      bufferSize: excelBuffer.length,
+      fileName: requestData.fileName
+    });
     
-    // Create response with proper headers for Excel file
+    // Create response with proper XLSX headers
     const headers = {
       ...corsHeaders,
-      'Content-Type': 'application/vnd.ms-excel',
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${requestData.fileName}"`,
-      'Content-Length': new TextEncoder().encode(content).length.toString(),
+      'Content-Length': excelBuffer.length.toString(),
     };
-
-    console.log('Excel file generated successfully');
     
-    return new Response(content, { headers });
+    return new Response(excelBuffer, { headers });
 
   } catch (error) {
     console.error('Excel generation error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? error.stack : undefined
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

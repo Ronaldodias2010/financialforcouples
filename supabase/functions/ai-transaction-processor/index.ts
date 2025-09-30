@@ -254,12 +254,23 @@ For each transaction, identify:
           isDuplicate: false,
           duplicateTransactionId: null
         }));
+        console.log(`✅ Successfully parsed ${processedTransactions.length} transactions from AI`);
       } catch (e) {
-        console.error('Failed to parse AI response:', e);
+        console.error('❌ Failed to parse AI tool call response:', e);
+        console.log('Tool call arguments:', toolCall.function.arguments);
+      }
+    } else {
+      console.warn('⚠️ No tool call in AI response, attempting fallback regex parsing');
+      
+      // Fallback: use regex parsing if AI tool calling failed
+      const fallbackTransactions = parseTransactions(extractedText, detectedLanguage, detectedCurrency);
+      if (fallbackTransactions.length > 0) {
+        processedTransactions = fallbackTransactions;
+        console.log(`✅ Fallback parsing found ${processedTransactions.length} transactions`);
       }
     }
     
-    console.log(`Processed ${processedTransactions.length} transactions`);
+    console.log(`📊 Final result: ${processedTransactions.length} transactions processed`);
 
     return new Response(JSON.stringify({
       success: true,

@@ -121,10 +121,21 @@ export const ConverterDashboard: React.FC = () => {
       setProcessingProgress(50);
 
       if (extractResponse.error) {
-        throw new Error('Falha na extração de texto');
+        console.error('Extraction error:', extractResponse.error);
+        throw new Error(`Falha na extração de texto: ${extractResponse.error.message || 'Erro desconhecido'}`);
       }
 
       const { extractedText, detectedLanguage, detectedCurrency, detectedRegion, statementType: detectedStatementType } = extractResponse.data;
+      
+      console.log('Extraction result:', {
+        textLength: extractedText?.length || 0,
+        language: detectedLanguage,
+        currency: detectedCurrency
+      });
+      
+      if (!extractedText || extractedText.length === 0) {
+        throw new Error('OCR não conseguiu extrair texto do documento. Verifique se o arquivo é legível.');
+      }
 
       setProcessingProgress(60);
       setProcessingStep('Analisando transações com IA...');
@@ -143,10 +154,23 @@ export const ConverterDashboard: React.FC = () => {
 
       if (aiResponse.error) {
         console.error('AI processing error:', aiResponse.error);
-        throw new Error('Falha no processamento IA');
+        throw new Error(`Falha no processamento IA: ${aiResponse.error.message || 'Erro desconhecido'}`);
       }
 
       const { processedTransactions } = aiResponse.data;
+      
+      console.log('AI result:', {
+        transactionsFound: processedTransactions?.length || 0
+      });
+      
+      if (!processedTransactions || processedTransactions.length === 0) {
+        console.warn('⚠️ No transactions found by AI');
+        toast({
+          title: 'Atenção',
+          description: 'Nenhuma transação foi encontrada no documento. Verifique se o arquivo contém transações financeiras válidas.',
+          variant: 'destructive',
+        });
+      }
 
       setProcessingProgress(90);
       setProcessingStep('Finalizando...');

@@ -161,6 +161,21 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
     setIsExporting(true);
     
     try {
+      // Validate data before export
+      if (!filteredAndSortedRows || filteredAndSortedRows.length === 0) {
+        toast({
+          title: 'Sem dados',
+          description: 'Não há transações para exportar',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      console.log('Starting Excel export...', {
+        transactionCount: filteredAndSortedRows.length,
+        fileName: fileName
+      });
+
       const exportData = {
         transactions: filteredAndSortedRows,
         totals,
@@ -177,13 +192,30 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
         body: exportData
       });
 
+      console.log('Excel generator response:', {
+        hasError: !!response.error,
+        hasData: !!response.data,
+        dataType: typeof response.data
+      });
+
       if (response.error) {
-        throw new Error('Falha na geração do Excel');
+        console.error('Excel generation error:', response.error);
+        throw new Error(`Falha na geração do Excel: ${response.error.message || 'Erro desconhecido'}`);
+      }
+
+      if (!response.data) {
+        throw new Error('Nenhum dado retornado pelo gerador de Excel');
       }
 
       // Download the generated file
+      // The response.data is already a Uint8Array from the edge function
       const blob = new Blob([response.data], { 
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      console.log('Creating download blob:', {
+        blobSize: blob.size,
+        blobType: blob.type
       });
       
       const url = window.URL.createObjectURL(blob);
@@ -195,16 +227,18 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
+      console.log('✅ Excel file downloaded successfully');
+
       toast({
-        title: t('converter.export.excel'),
-        description: `${filteredAndSortedRows.length} transações exportadas`,
+        title: 'Sucesso!',
+        description: `${filteredAndSortedRows.length} transações exportadas para Excel`,
       });
 
     } catch (error) {
-      console.error('Export error:', error);
+      console.error('❌ Export error:', error);
       toast({
         title: 'Erro na exportação',
-        description: 'Falha ao gerar arquivo Excel',
+        description: error instanceof Error ? error.message : 'Falha ao gerar arquivo Excel',
         variant: 'destructive',
       });
     } finally {

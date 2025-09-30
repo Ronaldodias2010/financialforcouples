@@ -132,7 +132,14 @@ Devuelve el texto completo extraído:`
     const ocrText = aiResult.choices[0]?.message?.content || '';
     const processingTime = Date.now() - startTime;
 
-    console.log(`OCR completed in ${processingTime}ms, extracted ${ocrText.length} characters`);
+    console.log(`✅ OCR completed in ${processingTime}ms`);
+    console.log(`📄 Extracted text length: ${ocrText.length} characters`);
+    console.log(`📝 First 200 chars: ${ocrText.substring(0, 200)}...`);
+    
+    if (ocrText.length === 0) {
+      console.error('⚠️ OCR returned empty text - image may be unreadable or invalid');
+      throw new Error('OCR extracted no text from image');
+    }
 
     // Extract structured data from OCR text
     const extractedTransactions: Array<{
@@ -176,7 +183,11 @@ Devuelve el texto completo extraído:`
       }
     }
 
-    console.log(`Extracted ${extractedTransactions.length} transactions`);
+    console.log(`🔍 Pattern matching found ${extractedTransactions.length} transactions`);
+    
+    if (extractedTransactions.length === 0) {
+      console.warn('⚠️ No transactions extracted via pattern matching - AI processor will attempt extraction');
+    }
 
     return new Response(JSON.stringify({
       success: true,
