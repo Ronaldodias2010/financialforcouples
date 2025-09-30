@@ -16,10 +16,10 @@ RUN apk add --no-cache \
     pixman-dev
 
 # Copiar arquivos de dependências
-COPY package*.json bun.lockb ./
+COPY package*.json ./
 
 # Instalar dependências (incluindo dev dependencies para o build)
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copiar código fonte
 COPY . .
