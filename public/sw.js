@@ -1,6 +1,6 @@
-const CACHE_NAME = 'couples-financials-v12';
-const STATIC_CACHE_NAME = 'couples-financials-static-v12';
-const API_CACHE_NAME = 'couples-financials-api-v12';
+const CACHE_NAME = 'couples-financials-v13';
+const STATIC_CACHE_NAME = 'couples-financials-static-v13';
+const API_CACHE_NAME = 'couples-financials-api-v13';
 
 const urlsToCache = [
   '/',
@@ -9,15 +9,15 @@ const urlsToCache = [
   '/sobre-nos',
   '/privacy',
   '/terms',
-  '/icons/icon-512x512.png?v=12',
-  '/icons/icon-384x384.png?v=12',
-  '/icons/icon-256x256.png?v=12',
-  '/icons/icon-192x192.png?v=12',
-  '/icons/icon-144x144.png?v=12',
-  '/icons/icon-96x96.png?v=12',
-  '/icons/icon-48x48.png?v=12',
-  '/icons/favicon-32x32.png?v=12',
-  '/icons/favicon-16x16.png?v=12',
+  '/icons/icon-512x512.png?v=13',
+  '/icons/icon-384x384.png?v=13',
+  '/icons/icon-256x256.png?v=13',
+  '/icons/icon-192x192.png?v=13',
+  '/icons/icon-144x144.png?v=13',
+  '/icons/icon-96x96.png?v=13',
+  '/icons/icon-48x48.png?v=13',
+  '/icons/favicon-32x32.png?v=13',
+  '/icons/favicon-16x16.png?v=13',
   '/lovable-uploads/7334c1f2-b2ea-42c6-8031-74d75d699133.png',
   '/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png',
   '/src/assets/hero-couple.jpg',

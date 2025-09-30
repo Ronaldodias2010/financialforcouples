@@ -18,9 +18,10 @@ const sanitizeText = (input: string): string => {
 
 export const downloadTutorialPDF = async (language: Language = 'pt') => {
   try {
-    // Use language-specific tutorial file for complete content
-    const tutorialUrl = `/tutorial-couples-financials-${language}.html`;
-    const response = await fetch(tutorialUrl);
+    // Use language-specific tutorial file for complete content - add cache bust
+    const cacheBust = `?v=${Date.now()}`;
+    const tutorialUrl = `/tutorial-couples-financials-${language}.html${cacheBust}`;
+    const response = await fetch(tutorialUrl, { cache: 'no-cache' });
     if (!response.ok) {
       throw new Error(`Failed to fetch tutorial: ${response.status}`);
     }
@@ -148,7 +149,9 @@ export const openTutorialHTML = (language: Language = 'pt') => {
   const hostname = window.location.hostname;
   const isProd = hostname === 'couplesfinancials.com' || hostname === 'www.couplesfinancials.com';
   const baseUrl = isProd ? window.location.origin : 'https://couplesfinancials.com';
-  const tutorialUrl = `${baseUrl}/tutorial-couples-financials-${language}.html`;
+  // Add cache bust to force fresh load
+  const cacheBust = `?v=${Date.now()}`;
+  const tutorialUrl = `${baseUrl}/tutorial-couples-financials-${language}.html${cacheBust}`;
   
   console.log('[Tutorial] Attempting to open:', tutorialUrl);
   
