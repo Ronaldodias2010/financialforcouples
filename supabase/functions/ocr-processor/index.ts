@@ -23,9 +23,19 @@ serve(async (req) => {
 
     // Extract base64 data from data URL if needed
     let base64Image = imageData;
+    let mimeType = 'image/jpeg';
+    
     if (imageData.includes('base64,')) {
-      base64Image = imageData.split('base64,')[1];
+      const parts = imageData.split('base64,');
+      base64Image = parts[1];
+      // Extract mime type from data URL (e.g., data:image/png;base64,...)
+      const mimeMatch = parts[0].match(/data:([^;]+)/);
+      if (mimeMatch) {
+        mimeType = mimeMatch[1];
+      }
     }
+
+    console.log(`Image format: ${mimeType}, Base64 length: ${base64Image.length}`);
 
     // Prepare prompt based on language
     const prompts: Record<string, string> = {
@@ -102,7 +112,7 @@ Devuelve el texto completo extraído:`
               {
                 type: 'image_url',
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
+                  url: `data:${mimeType};base64,${base64Image}`
                 }
               }
             ]

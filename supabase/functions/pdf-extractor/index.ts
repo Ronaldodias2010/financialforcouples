@@ -33,6 +33,19 @@ serve(async (req) => {
 
         console.log('Calling OCR processor with Gemini...');
         
+        // Ensure proper base64 format for files
+        let processedFileData = fileData;
+        if (fileType === 'pdf' && !fileData.startsWith('data:')) {
+          // Extract base64 if it has data URL prefix, otherwise add it
+          const base64Data = fileData.includes('base64,') ? fileData.split('base64,')[1] : fileData;
+          processedFileData = `data:application/pdf;base64,${base64Data}`;
+        } else if (fileType === 'image' && !fileData.startsWith('data:')) {
+          const base64Data = fileData.includes('base64,') ? fileData.split('base64,')[1] : fileData;
+          processedFileData = `data:image/jpeg;base64,${base64Data}`;
+        }
+        
+        console.log(`Sending ${fileType} to OCR processor, data format: ${processedFileData.substring(0, 30)}...`);
+        
         // Call the ocr-processor edge function
         const ocrResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/ocr-processor`, {
           method: 'POST',
@@ -41,7 +54,7 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            imageData: fileData,
+            imageData: processedFileData,
             fileName: fileName,
             detectedLanguage: 'pt'
           })

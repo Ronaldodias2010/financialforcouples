@@ -1,25 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { 
-  ZoomIn, 
-  ZoomOut, 
-  Download, 
-  ExternalLink,
-  FileText,
-  Image,
-  AlertTriangle,
-  Loader2,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-import { useLanguage } from '@/hooks/useLanguage';
-import { useToast } from '@/components/ui/use-toast';
+import { ZoomIn, ZoomOut, Download, ExternalLink, ChevronLeft, ChevronRight, FileText, AlertCircle, Loader2, Image as ImageIcon } from 'lucide-react';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFViewerProps {
-  file?: File;
+  file: File | null;
   fileName: string;
   fileType: 'pdf' | 'image' | 'csv' | 'ofx';
   isCompactMode?: boolean;
@@ -31,286 +22,249 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   fileType,
   isCompactMode = false
 }) => {
-  const { t } = useLanguage();
-  const { toast } = useToast();
-  
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(1.0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages] = useState(1); // For now, assume 1 page
-  const [isLoading, setIsLoading] = useState(false);
-  const [viewerError, setViewerError] = useState<string | null>(null);
-  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Generate object URL for file
-  React.useEffect(() => {
-    if (file) {
-      setIsLoading(true);
-      setViewerError(null);
-      const url = URL.createObjectURL(file);
-      setFileUrl(url);
-      
-      // For PDFs, set a timeout to clear loading state if iframe doesn't fire onLoad
-      const timeout = setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
-      
-      return () => {
-        URL.revokeObjectURL(url);
-        clearTimeout(timeout);
-      };
-    } else {
-      setFileUrl(null);
-      setIsLoading(false);
-    }
-  }, [file]);
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    setIsLoading(false);
+    setError(null);
+  };
+
+  const onDocumentLoadError = (error: Error) => {
+    console.error('PDF load error:', error);
+    setError('Erro ao carregar PDF. Tente novamente.');
+    setIsLoading(false);
+  };
 
   const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 25, 200));
+    setZoom((prev) => Math.min(prev + 0.25, 2.5));
   };
 
   const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 25, 50));
+    setZoom((prev) => Math.max(prev - 0.25, 0.5));
   };
 
-  const handleDownload = useCallback(() => {
+  const goToPrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, numPages || 1));
+  };
+
+  const handleDownload = () => {
     if (!file) return;
-    
     const url = URL.createObjectURL(file);
     const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
 
-    toast({
-      title: 'Download iniciado',
-      description: `Baixando ${fileName}`,
-    });
-  }, [file, fileName, toast]);
-
-  const handleOpenExternal = useCallback(() => {
-    if (!fileUrl) return;
-    
-    window.open(fileUrl, '_blank');
-  }, [fileUrl]);
+  const handleOpenExternal = () => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  };
 
   const renderPDFViewer = () => {
-    if (!fileUrl) {
+    if (!file) {
       return (
-        <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg">
-          <div className="text-center space-y-2">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
-            <p className="text-muted-foreground">Nenhum arquivo selecionado</p>
-          </div>
+        <div className="flex flex-col items-center justify-center h-[600px] bg-muted/20 rounded-lg border-2 border-dashed">
+          <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">Nenhum arquivo carregado</p>
         </div>
       );
     }
 
-    if (isLoading) {
+    if (error) {
       return (
-        <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg">
-          <div className="text-center space-y-2">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-sm text-muted-foreground">Carregando documento...</p>
-          </div>
+        <div className="flex flex-col items-center justify-center h-[600px] bg-muted/20 rounded-lg border-2 border-dashed">
+          <AlertCircle className="h-16 w-16 text-destructive mb-4" />
+          <p className="text-destructive font-medium mb-2">{error}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Tente fazer upload do arquivo novamente
+          </p>
+          <Button onClick={handleDownload} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Baixar Arquivo
+          </Button>
         </div>
       );
     }
 
-    if (viewerError) {
-      return (
-        <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg">
-          <div className="text-center space-y-4">
-            <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto" />
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Não foi possível visualizar o documento</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" size="sm" onClick={handleDownload}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleOpenExternal}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Abrir externamente
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Render different viewers based on file type
     switch (fileType) {
       case 'pdf':
         return (
-          <div className="relative h-96 bg-muted/20 rounded-lg overflow-hidden">
+          <div className="flex flex-col items-center bg-muted/20 rounded-lg p-4">
             {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="flex items-center justify-center h-[600px]">
+                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                <p className="ml-4 text-muted-foreground">Carregando PDF...</p>
               </div>
             )}
-            <iframe
-              src={`${fileUrl}#toolbar=0&navpanes=0&zoom=${zoom}`}
-              className="w-full h-full border-0"
-              title={fileName}
-              onLoad={() => {
-                setIsLoading(false);
-                setViewerError(null);
-              }}
-              onError={() => {
-                setViewerError('Erro ao carregar PDF. Tente fazer download do arquivo.');
-                setIsLoading(false);
-              }}
-            />
+            <Document
+              file={file}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+              loading={
+                <div className="flex items-center justify-center h-[600px]">
+                  <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                </div>
+              }
+            >
+              <Page
+                pageNumber={currentPage}
+                scale={zoom}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+                className="shadow-lg"
+              />
+            </Document>
+            {numPages && (
+              <div className="mt-4 flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToPrevPage}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Página {currentPage} de {numPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToNextPage}
+                  disabled={currentPage === numPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         );
-        
+
       case 'image':
         return (
-          <div className="flex items-center justify-center p-4 bg-muted/20 rounded-lg overflow-hidden">
+          <div className="relative bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '600px' }}>
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+              </div>
+            )}
             <img
-              src={fileUrl}
+              src={URL.createObjectURL(file)}
               alt={fileName}
-              className="max-w-full max-h-80 object-contain rounded-lg shadow-sm"
-              style={{ transform: `scale(${zoom / 100})` }}
+              className="max-w-full max-h-full object-contain"
+              style={{
+                transform: `scale(${zoom})`,
+              }}
               onLoad={() => setIsLoading(false)}
               onError={() => {
-                setViewerError('Erro ao carregar imagem');
+                setError('Erro ao carregar imagem');
                 setIsLoading(false);
               }}
             />
           </div>
         );
-        
+
       case 'csv':
       case 'ofx':
         return (
-          <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg">
-            <div className="text-center space-y-4">
-              <FileText className="h-12 w-12 text-primary mx-auto" />
-              <div>
-                <p className="font-medium mb-2">Arquivo de Dados</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {fileType.toUpperCase()} - {fileName}
-                </p>
-                <div className="flex gap-2 justify-center">
-                  <Button variant="outline" size="sm" onClick={handleDownload}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-            </div>
+          <div className="flex flex-col items-center justify-center h-[400px] bg-muted/20 rounded-lg border-2 border-dashed">
+            <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground mb-4">
+              Arquivo {fileType.toUpperCase()} carregado
+            </p>
+            <Button onClick={handleDownload} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Baixar Arquivo
+            </Button>
           </div>
         );
-        
+
       default:
-        return (
-          <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg">
-            <div className="text-center space-y-2">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
-              <p className="text-muted-foreground">Tipo de arquivo não suportado</p>
-            </div>
-          </div>
-        );
+        return null;
     }
   };
 
-  const renderControls = () => (
-    <div className="flex items-center justify-between gap-2 p-3 border-t">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleZoomOut}
-          disabled={zoom <= 50 || fileType === 'csv' || fileType === 'ofx'}
-        >
-          <ZoomOut className="h-3 w-3" />
-        </Button>
-        
-        <Badge variant="secondary" className="min-w-[60px] text-xs">
-          {zoom}%
-        </Badge>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleZoomIn}
-          disabled={zoom >= 200 || fileType === 'csv' || fileType === 'ofx'}
-        >
-          <ZoomIn className="h-3 w-3" />
-        </Button>
-      </div>
+  const renderControls = () => {
+    if (!file || fileType === 'csv' || fileType === 'ofx') return null;
 
-      {fileType === 'pdf' && totalPages > 1 && (
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-2 p-4 bg-muted/50 rounded-lg">
+        {/* Zoom controls */}
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage <= 1}
+            onClick={handleZoomOut}
+            disabled={zoom <= 0.5}
+            className="h-8"
           >
-            <ChevronLeft className="h-3 w-3" />
+            <ZoomOut className="h-4 w-4" />
           </Button>
-          
-          <Badge variant="outline" className="text-xs">
-            {currentPage}/{totalPages}
-          </Badge>
-          
+          <span className="text-sm font-medium min-w-[60px] text-center">
+            {Math.round(zoom * 100)}%
+          </span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage >= totalPages}
+            onClick={handleZoomIn}
+            disabled={zoom >= 2.5}
+            className="h-8"
           >
-            <ChevronRight className="h-3 w-3" />
+            <ZoomIn className="h-4 w-4" />
           </Button>
         </div>
-      )}
 
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDownload}
-          disabled={!file}
-        >
-          <Download className="h-3 w-3" />
-        </Button>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleOpenExternal}
-          disabled={!fileUrl || fileType === 'csv' || fileType === 'ofx'}
-        >
-          <ExternalLink className="h-3 w-3" />
-        </Button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownload}
+            className="h-8"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Baixar</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleOpenExternal}
+            className="h-8"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Abrir</span>
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Card className={`${isCompactMode ? 'h-full' : ''} flex flex-col`}>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          {fileType === 'image' ? <Image className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+          {fileType === 'image' ? <ImageIcon className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
           <CardTitle className={isCompactMode ? 'text-sm' : 'text-base'}>
-            PDF Original
+            {fileType === 'pdf' ? 'PDF Original' : 'Arquivo'}
           </CardTitle>
-          <Badge variant="outline" className="text-xs">
-            {fileType.toUpperCase()}
-          </Badge>
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-0">
-        <div className="flex-1">
-          {renderPDFViewer()}
-        </div>
+      <CardContent className="flex-1 flex flex-col p-4 space-y-4">
+        {renderPDFViewer()}
         {renderControls()}
       </CardContent>
     </Card>

@@ -74,16 +74,22 @@ export const ConverterDashboard: React.FC = () => {
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [processingStep, setProcessingStep] = useState<string>('');
+  const [processingProgress, setProcessingProgress] = useState(0);
 
   const handleFileUpload = useCallback(async (file: File, statementType: string) => {
     setIsProcessing(true);
-    setOriginalFile(file); // Store original file for PDF viewer
+    setOriginalFile(file);
+    setProcessingProgress(0);
+    setProcessingStep('Preparando arquivo...');
     
     try {
       toast({
         title: t('converter.alerts.processing'),
         description: t('converter.upload.processing'),
       });
+
+      setProcessingProgress(10);
 
       // Convert file to base64
       const fileData = await new Promise<string>((resolve, reject) => {
@@ -97,6 +103,9 @@ export const ConverterDashboard: React.FC = () => {
                       file.type.includes('csv') ? 'csv' : 
                       file.type.includes('image') ? 'image' : 'csv';
 
+      setProcessingProgress(20);
+      setProcessingStep(fileType === 'pdf' ? 'Extraindo texto do PDF...' : 'Processando OCR...');
+
       // Step 1: Extract text/OCR
       let extractResponse;
       if (fileType === 'image') {
@@ -109,11 +118,16 @@ export const ConverterDashboard: React.FC = () => {
         });
       }
 
+      setProcessingProgress(50);
+
       if (extractResponse.error) {
         throw new Error('Falha na extração de texto');
       }
 
       const { extractedText, detectedLanguage, detectedCurrency, detectedRegion, statementType: detectedStatementType } = extractResponse.data;
+
+      setProcessingProgress(60);
+      setProcessingStep('Analisando transações com IA...');
 
       // Step 2: Process with AI
       const aiResponse = await supabase.functions.invoke('ai-transaction-processor', {
@@ -125,12 +139,17 @@ export const ConverterDashboard: React.FC = () => {
         }
       });
 
+      setProcessingProgress(80);
+
       if (aiResponse.error) {
         console.error('AI processing error:', aiResponse.error);
         throw new Error('Falha no processamento IA');
       }
 
       const { processedTransactions } = aiResponse.data;
+
+      setProcessingProgress(90);
+      setProcessingStep('Finalizando...');
 
       // Create mock transactions with processed data
       const mockTransactions: ImportedTransaction[] = processedTransactions.map((tx: any, index: number) => ({
@@ -179,6 +198,8 @@ export const ConverterDashboard: React.FC = () => {
 
       setImportedFile(processedFile);
       setCurrentStep('preview');
+      setProcessingProgress(100);
+      setProcessingStep('Concluído!');
       
       toast({
         title: t('converter.alerts.ready'),
@@ -194,6 +215,8 @@ export const ConverterDashboard: React.FC = () => {
       });
     } finally {
       setIsProcessing(false);
+      setProcessingStep('');
+      setProcessingProgress(0);
     }
   }, [t, toast]);
 
@@ -305,10 +328,30 @@ export const ConverterDashboard: React.FC = () => {
     switch (currentStep) {
       case 'upload':
         return (
-          <FileUploadZone
-            onFileUpload={handleFileUpload}
-            isProcessing={isProcessing}
-          />
+          <div className="space-y-4">
+            <FileUploadZone
+              onFileUpload={handleFileUpload}
+              isProcessing={isProcessing}
+            />
+            {isProcessing && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{processingStep}</span>
+                      <span className="font-medium">{processingProgress}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary transition-all duration-300"
+                        style={{ width: `${processingProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         );
         
         case 'preview':
