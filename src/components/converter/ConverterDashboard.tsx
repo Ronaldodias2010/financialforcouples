@@ -122,7 +122,25 @@ export const ConverterDashboard: React.FC = () => {
 
       if (extractResponse.error) {
         console.error('Extraction error:', extractResponse.error);
-        throw new Error(`Falha na extração de texto: ${extractResponse.error.message || 'Erro desconhecido'}`);
+        
+        // Check if error has suggestions
+        const errorData = extractResponse.error as any;
+        const suggestions = errorData?.suggestions?.join('\n• ') || '';
+        
+        toast({
+          title: 'Erro na extração',
+          description: errorData?.message || extractResponse.error.message,
+          variant: 'destructive',
+        });
+        
+        if (suggestions) {
+          toast({
+            title: 'Sugestões para resolver',
+            description: `• ${suggestions}`,
+          });
+        }
+        
+        throw new Error(`Falha na extração: ${extractResponse.error.message || 'Erro desconhecido'}`);
       }
 
       const { extractedText, detectedLanguage, detectedCurrency, detectedRegion, statementType: detectedStatementType } = extractResponse.data;

@@ -6,6 +6,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to extract text from PDF using native text (for text-based PDFs)
+async function extractTextFromPDF(base64Data: string): Promise<string> {
+  try {
+    // Convert base64 to Uint8Array
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Simple text extraction from PDF (looking for text streams)
+    const pdfText = new TextDecoder().decode(bytes);
+    
+    // Extract text between stream markers
+    const textMatches = pdfText.match(/\(([^)]+)\)/g);
+    if (textMatches && textMatches.length > 0) {
+      const extractedText = textMatches
+        .map(match => match.slice(1, -1))
+        .join(' ')
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '')
+        .trim();
+      
+      if (extractedText.length > 100) {
+        console.log('✅ Successfully extracted text from PDF natively');
+        return extractedText;
+      }
+    }
+    
+    return '';
+  } catch (error) {
+    console.error('Native PDF text extraction failed:', error);
+    return '';
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -14,7 +50,7 @@ serve(async (req) => {
   try {
     const { imageData, fileName, detectedLanguage = 'pt' } = await req.json();
 
-    console.log(`Processing OCR with Gemini for image: ${fileName} in language: ${detectedLanguage}`);
+    console.log(`🔍 Processing file: ${fileName} in language: ${detectedLanguage}`);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -24,6 +60,7 @@ serve(async (req) => {
     // Extract base64 data from data URL if needed
     let base64Image = imageData;
     let mimeType = 'image/jpeg';
+    let isPDF = false;
     
     if (imageData.includes('base64,')) {
       const parts = imageData.split('base64,');
@@ -32,10 +69,43 @@ serve(async (req) => {
       const mimeMatch = parts[0].match(/data:([^;]+)/);
       if (mimeMatch) {
         mimeType = mimeMatch[1];
+        isPDF = mimeType === 'application/pdf';
+      }
+    } else {
+      // Detect from filename if no data URL
+      if (fileName.toLowerCase().endsWith('.pdf')) {
+        mimeType = 'application/pdf';
+        isPDF = true;
       }
     }
 
-    console.log(`Image format: ${mimeType}, Base64 length: ${base64Image.length}`);
+    console.log(`📄 File info: type=${mimeType}, isPDF=${isPDF}, size=${base64Image.length} chars`);
+    
+    // Strategy 1: For PDFs, try native text extraction first
+    if (isPDF) {
+      console.log('🔧 Attempting native PDF text extraction...');
+      const nativeText = await extractTextFromPDF(base64Image);
+      
+      if (nativeText.length > 100) {
+        console.log(`✅ Native PDF extraction successful: ${nativeText.length} characters`);
+        
+        // Return early with native extraction
+        return new Response(JSON.stringify({
+          success: true,
+          ocrText: nativeText,
+          extractedTransactions: [],
+          confidence: 0.95,
+          language: detectedLanguage,
+          processingTime: 0,
+          extractedText: nativeText,
+          method: 'native_pdf'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      console.log('⚠️ Native PDF extraction failed or insufficient text, will try OCR');
+    }
 
     // Prepare prompt based on language
     const prompts: Record<string, string> = {
@@ -91,8 +161,15 @@ Devuelve el texto completo extraído:`
 
     const prompt = prompts[detectedLanguage] || prompts['pt'];
 
-    // Call Gemini via Lovable AI Gateway
+    // Strategy 2: Try Gemini OCR (works better for images than PDFs)
     const startTime = Date.now();
+    
+    // For PDFs, we need to inform the user that Gemini has limitations
+    if (isPDF) {
+      console.log('⚠️ PDF detected - Gemini may have difficulty processing. Consider using image formats.');
+    }
+    
+    console.log('📡 Calling Gemini Vision API...');
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -112,33 +189,51 @@ Devuelve el texto completo extraído:`
               {
                 type: 'image_url',
                 image_url: {
-                  url: `data:${mimeType};base64,${base64Image}`
+                  url: isPDF ? `data:image/jpeg;base64,${base64Image}` : `data:${mimeType};base64,${base64Image}`
                 }
               }
             ]
           }
         ],
-        max_tokens: 4000,
+        max_completion_tokens: 4000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      console.error('❌ Gemini API error:', response.status, errorText);
+      
+      // Return graceful error for frontend to handle
+      return new Response(JSON.stringify({
+        success: false,
+        ocrText: '',
+        extractedTransactions: [],
+        confidence: 0,
+        language: detectedLanguage,
+        processingTime: Date.now() - startTime,
+        extractedText: '',
+        error: `Gemini OCR failed: ${response.status}. ${isPDF ? 'Considere converter o PDF para imagem ou usar um PDF com texto selecionável.' : 'Tente com uma imagem de melhor qualidade.'}`,
+        method: 'gemini_failed'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      });
     }
 
     const aiResult = await response.json();
     const ocrText = aiResult.choices[0]?.message?.content || '';
     const processingTime = Date.now() - startTime;
 
-    console.log(`✅ OCR completed in ${processingTime}ms`);
+    console.log(`✅ Gemini OCR completed in ${processingTime}ms`);
     console.log(`📄 Extracted text length: ${ocrText.length} characters`);
-    console.log(`📝 First 200 chars: ${ocrText.substring(0, 200)}...`);
+    
+    if (ocrText.length > 0) {
+      console.log(`📝 First 200 chars: ${ocrText.substring(0, 200)}...`);
+    }
     
     if (ocrText.length === 0) {
-      console.error('⚠️ OCR returned empty text - image may be unreadable or invalid');
-      // Don't throw error - return minimal response to allow navigation
+      console.error('⚠️ Gemini OCR returned empty text');
+      
       return new Response(JSON.stringify({
         success: false,
         ocrText: '',
@@ -147,10 +242,16 @@ Devuelve el texto completo extraído:`
         language: detectedLanguage,
         processingTime,
         extractedText: '',
-        error: 'OCR extracted no text from image'
+        error: isPDF 
+          ? 'Não foi possível extrair texto do PDF. Recomendação: converta o PDF para imagem (PNG/JPG) ou use um PDF com texto selecionável.' 
+          : 'Não foi possível extrair texto da imagem. Tente com uma imagem de melhor qualidade.',
+        method: 'gemini_empty',
+        suggestions: isPDF 
+          ? ['Converter PDF para imagem', 'Usar PDF com texto selecionável', 'Tirar screenshot do PDF']
+          : ['Melhorar qualidade da imagem', 'Garantir boa iluminação', 'Evitar reflexos']
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 // Return 200 to allow frontend to handle gracefully
+        status: 200
       });
     }
     
@@ -214,19 +315,31 @@ Devuelve el texto completo extraído:`
       confidence: 0.85,
       language: detectedLanguage,
       processingTime,
-      extractedText: ocrText
+      extractedText: ocrText,
+      method: 'gemini_vision',
+      fileType: isPDF ? 'pdf' : 'image'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('OCR processing error:', error);
+    console.error('❌ OCR processing error:', error);
+    
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      details: error instanceof Error ? error.stack : undefined
+      error: error instanceof Error ? error.message : 'Erro desconhecido no processamento',
+      details: error instanceof Error ? error.stack : undefined,
+      ocrText: '',
+      extractedTransactions: [],
+      extractedText: '',
+      suggestions: [
+        'Verifique se o arquivo não está corrompido',
+        'Para PDFs: tente converter para imagem primeiro',
+        'Para imagens: verifique a qualidade e formato (PNG ou JPG)',
+        'Certifique-se de que o documento está legível'
+      ]
     }), {
-      status: 500,
+      status: 200, // Return 200 to allow graceful handling
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
