@@ -1,30 +1,43 @@
-# Configuração para deploy do Couples Financials
+# Exemplo de configuração para deploy com múltiplos domínios
 # Copie este arquivo para terraform.tfvars e ajuste os valores
 
-# Configurações da AWS
+# Região AWS
 aws_region = "us-east-1"
+
+# Ambiente
 environment = "prod"
 
-# Configurações da aplicação
+# Nome da aplicação
 app_name = "couples-financials"
-domain_name = ""  # Opcional: seu domínio personalizado (ex: "app.seudominio.com")
+
+# Domínio principal
+domain_name = "couplesfinancials.com"
+
+# Domínio secundário (opcional)
+secondary_domain_name = "couplesfin.com"
 
 # Configurações do Supabase
 supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
-supabase_anon_key = "sua_chave_anonima_aqui"
-supabase_service_role_key = "sua_chave_service_role_aqui"
+supabase_anon_key = "sua-chave-anonima-aqui"
+supabase_service_role_key = "sua-service-role-key-aqui"
 
-# CloudFront (para performance global)
+# Imagem Docker (será preenchida pelo script de deploy)
+container_image = "123456789.dkr.ecr.us-east-1.amazonaws.com/couples-financials:latest"
+
+# CloudFront
 enable_cloudfront = true
-cloudfront_oac_id = ""  # Deixe vazio para criar automaticamente
-cloudfront_create_spa_function = false  # Desabilitado por padrão para evitar limite de funções
 
-# Configurações do container (ajuste conforme necessário)
-container_image = "couples-financials:latest"
-container_port = 80
+# CloudFront OAC (deixe vazio para reutilizar existente)
+cloudfront_oac_id = ""
+cloudfront_create_oac = false
+
+# Função CloudFront SPA (desabilitado por padrão devido a limites)
+cloudfront_create_spa_function = false
+
+# Auto-invalidar CloudFront após deploy
+auto_invalidate_cloudfront = true
+
+# Configurações de recursos
 desired_count = 2
 cpu = 256
 memory = 512
-
-# Logs
-cloudwatch_log_retention_days = 7

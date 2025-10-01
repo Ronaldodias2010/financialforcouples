@@ -113,11 +113,15 @@ resource "aws_lb_listener" "app_https" {
 }
 
 # Certificado SSL via ACM (apenas se domínio estiver configurado)
+# Suporta múltiplos domínios através de SANs (Subject Alternative Names)
 resource "aws_acm_certificate" "app" {
   count = var.domain_name != "" ? 1 : 0
   
   domain_name       = var.domain_name
   validation_method = "DNS"
+  
+  # Adicionar domínio secundário como SAN se configurado
+  subject_alternative_names = var.secondary_domain_name != "" ? [var.secondary_domain_name] : []
 
   lifecycle {
     create_before_destroy = true
@@ -125,6 +129,7 @@ resource "aws_acm_certificate" "app" {
 
   tags = {
     Name = "${var.app_name}-certificate"
+    Domains = var.secondary_domain_name != "" ? "${var.domain_name},${var.secondary_domain_name}" : var.domain_name
   }
 }
 
@@ -136,19 +141,30 @@ resource "aws_acm_certificate_validation" "app" {
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
-# Zona Route53 (apenas se domínio estiver configurado)
+# Zona Route53 para domínio principal (apenas se domínio estiver configurado)
 data "aws_route53_zone" "app" {
   count = var.domain_name != "" ? 1 : 0
   name  = var.domain_name
 }
 
-# Registros DNS para validação do certificado
+# Zona Route53 para domínio secundário (apenas se configurado)
+data "aws_route53_zone" "app_secondary" {
+  count = var.secondary_domain_name != "" ? 1 : 0
+  name  = var.secondary_domain_name
+}
+
+# Registros DNS para validação do certificado (ambos domínios)
 resource "aws_route53_record" "cert_validation" {
   for_each = var.domain_name != "" ? {
     for dvo in aws_acm_certificate.app[0].domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
+      name    = dvo.resource_record_name
+      record  = dvo.resource_record_value
+      type    = dvo.resource_record_type
+      zone_id = dvo.domain_name == var.domain_name ? data.aws_route53_zone.app[0].zone_id : (
+        var.secondary_domain_name != "" && dvo.domain_name == var.secondary_domain_name ? 
+        data.aws_route53_zone.app_secondary[0].zone_id : 
+        data.aws_route53_zone.app[0].zone_id
+      )
     }
   } : {}
 
@@ -157,15 +173,30 @@ resource "aws_route53_record" "cert_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.aws_route53_zone.app[0].zone_id
+  zone_id         = each.value.zone_id
 }
 
-# Registro DNS principal
+# Registro DNS principal para domínio primário
 resource "aws_route53_record" "app" {
   count = var.domain_name != "" ? 1 : 0
   
   zone_id = data.aws_route53_zone.app[0].zone_id
   name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.app.dns_name
+    zone_id                = aws_lb.app.zone_id
+    evaluate_target_health = true
+  }
+}
+
+# Registro DNS principal para domínio secundário
+resource "aws_route53_record" "app_secondary" {
+  count = var.secondary_domain_name != "" ? 1 : 0
+  
+  zone_id = data.aws_route53_zone.app_secondary[0].zone_id
+  name    = var.secondary_domain_name
   type    = "A"
 
   alias {

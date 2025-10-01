@@ -77,6 +77,20 @@ output "ssl_certificate_arn" {
   value       = var.domain_name != "" ? aws_acm_certificate.app[0].arn : null
 }
 
+output "secondary_domain_configured" {
+  description = "Se o domínio secundário está configurado"
+  value       = var.secondary_domain_name != ""
+}
+
+output "all_domains" {
+  description = "Todos os domínios configurados"
+  value = var.domain_name != "" ? (
+    var.secondary_domain_name != "" ? 
+    "${var.domain_name}, ${var.secondary_domain_name}" : 
+    var.domain_name
+  ) : "nenhum"
+}
+
 # Outputs para debugging e monitoramento
 output "vpc_id" {
   description = "ID da VPC utilizada"
