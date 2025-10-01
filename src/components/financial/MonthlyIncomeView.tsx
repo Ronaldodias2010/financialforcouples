@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +14,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { formatLocalDate, getLocaleForLanguage, getMonthDateRange } from "@/utils/date";
 import { ExportUtils } from "@/components/financial/ExportUtils";
+import { TransfersBetweenAccounts } from './TransfersBetweenAccounts';
 
 
 interface Transaction {
@@ -279,8 +281,15 @@ if (selectedCategory !== "all") {
 
   return (
     <div className="space-y-6">
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">{t('nav.monthlyIncome')}</h3>
+      <Tabs defaultValue="income" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="income">{t('monthlyIncome.incomeTab')}</TabsTrigger>
+          <TabsTrigger value="transfers">{t('monthlyIncome.transfersTab')}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="income">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">{t('nav.monthlyIncome')}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
@@ -430,6 +439,12 @@ if (selectedCategory !== "all") {
           </div>
         )}
       </Card>
+        </TabsContent>
+
+        <TabsContent value="transfers">
+          <TransfersBetweenAccounts viewMode={viewMode} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

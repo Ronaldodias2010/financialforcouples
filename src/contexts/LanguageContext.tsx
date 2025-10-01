@@ -543,7 +543,7 @@ const translations = {
     // Monthly Expenses
     'monthlyExpenses.currentExpenses': 'Gastos Atuais',
     'monthlyExpenses.futureExpenses': 'Gastos Futuros',
-    'monthlyExpenses.transfers': 'Transferências',
+    'monthlyExpenses.overdueExpenses': 'Despesas Atrasadas',
     'monthlyExpenses.title': 'Gastos Mensais',
     'monthlyExpenses.month': 'Mês',
     'monthlyExpenses.selectMonth': 'Selecione o mês',
@@ -612,6 +612,18 @@ const translations = {
     'monthlyExpenses.pdfPaymentMethod': 'Forma de Pagamento',
     'monthlyExpenses.description': 'Descrição',
     'monthlyExpenses.amount': 'Valor',
+
+    // Overdue Expenses
+    'overdueExpenses.title': 'Despesas Atrasadas',
+    'overdueExpenses.totalOverdue': 'Total de Despesas Atrasadas',
+    'overdueExpenses.expensesCount': 'despesas atrasadas',
+    'overdueExpenses.noOverdueExpenses': 'Nenhuma despesa atrasada encontrada',
+    'overdueExpenses.daysOverdue': 'dias de atraso',
+    'overdueExpenses.days': 'dias',
+    'overdueExpenses.source': 'Origem',
+    'overdueExpenses.manualExpense': 'Despesa Manual',
+    'overdueExpenses.recurringExpense': 'Despesa Recorrente',
+    'overdueExpenses.pdfTitle': 'Relatório de Despesas Atrasadas',
 
     // Transfers
     'transfers.betweenAccounts': 'Transferências entre Contas',
@@ -1741,6 +1753,9 @@ const translations = {
     'aiBeta.emails': 'Nossos contatos:',
     
     // Monthly Income translations
+    'monthlyIncome.title': 'Receitas Mensais',
+    'monthlyIncome.incomeTab': 'Receitas',
+    'monthlyIncome.transfersTab': 'Transferências',
     'monthlyIncome.monthLabel': 'Mês',
     'monthlyIncome.selectMonth': 'Selecionar mês',
     'monthlyIncome.categoryLabel': 'Categoria',
@@ -2284,7 +2299,7 @@ const translations = {
     // Monthly Expenses
     'monthlyExpenses.currentExpenses': 'Current Expenses',
     'monthlyExpenses.futureExpenses': 'Future Expenses',
-    'monthlyExpenses.transfers': 'Transfers',
+    'monthlyExpenses.overdueExpenses': 'Overdue Expenses',
     'monthlyExpenses.title': 'Monthly Expenses',
     'monthlyExpenses.month': 'Month',
     'monthlyExpenses.selectMonth': 'Select month',
@@ -2334,6 +2349,18 @@ const translations = {
     'monthlyExpenses.pdfPaymentMethod': 'Payment Method',
     'monthlyExpenses.description': 'Description',
     'monthlyExpenses.amount': 'Amount',
+
+    // Overdue Expenses
+    'overdueExpenses.title': 'Overdue Expenses',
+    'overdueExpenses.totalOverdue': 'Total Overdue Expenses',
+    'overdueExpenses.expensesCount': 'overdue expenses',
+    'overdueExpenses.noOverdueExpenses': 'No overdue expenses found',
+    'overdueExpenses.daysOverdue': 'days overdue',
+    'overdueExpenses.days': 'days',
+    'overdueExpenses.source': 'Source',
+    'overdueExpenses.manualExpense': 'Manual Expense',
+    'overdueExpenses.recurringExpense': 'Recurring Expense',
+    'overdueExpenses.pdfTitle': 'Overdue Expenses Report',
 
     // Transfers
     'transfers.betweenAccounts': 'Account Transfers',
@@ -3449,6 +3476,9 @@ const translations = {
     'transfers.transferType': 'Type',
 
     // Monthly Income translations
+    'monthlyIncome.title': 'Monthly Income',
+    'monthlyIncome.incomeTab': 'Income',
+    'monthlyIncome.transfersTab': 'Transfers',
     'monthlyIncome.monthLabel': 'Month',
     'monthlyIncome.selectMonth': 'Select month',
     'monthlyIncome.categoryLabel': 'Category',
@@ -4016,6 +4046,11 @@ const translations = {
     // Currency Display
     'currency.updatesInfo': 'Cotizaciones actualizadas 3x al día',
     
+    // Monthly Expenses
+    'monthlyExpenses.currentExpenses': 'Gastos Actuales',
+    'monthlyExpenses.futureExpenses': 'Gastos Futuros',
+    'monthlyExpenses.overdueExpenses': 'Gastos Atrasados',
+    
     // Export functionality
     'export.selectFormat': 'Formato',
     'export.export': 'Exportar',
@@ -4036,6 +4071,9 @@ const translations = {
     'transfers.transferType': 'Tipo',
     
     // Monthly Income translations
+    'monthlyIncome.title': 'Ingresos Mensuales',
+    'monthlyIncome.incomeTab': 'Ingresos',
+    'monthlyIncome.transfersTab': 'Transferencias',
     'monthlyIncome.monthLabel': 'Mes',
     'monthlyIncome.selectMonth': 'Seleccionar mes',
     'monthlyIncome.categoryLabel': 'Categoría',
@@ -4053,9 +4091,7 @@ const translations = {
     'monthlyIncome.pdfTitle': 'Informe de Ingresos Mensuales',
     'monthlyIncome.pdfPeriod': 'Período',
     'monthlyIncome.pdfTotalIncome': 'Total de Ingresos',
-    'monthlyExpenses.currentExpenses': 'Gastos Actuales',
-    'monthlyExpenses.futureExpenses': 'Gastos Futuros',
-    'monthlyExpenses.transfers': 'Transferencias',
+    
     'monthlyExpenses.title': 'Gastos Mensuales',
     'monthlyExpenses.month': 'Mes',
     'monthlyExpenses.selectMonth': 'Seleccionar mes',
@@ -4084,6 +4120,26 @@ const translations = {
     'monthlyExpenses.cardPayment': 'Pago de Tarjeta',
     'monthlyExpenses.payModal.title': 'Pagar Gasto Futuro',
     'monthlyExpenses.payModal.button': 'Pagar Gasto',
+    'monthlyExpenses.pdfTitle': 'Informe de Gastos Mensuales',
+    'monthlyExpenses.pdfPeriod': 'Período',
+    'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
+    'monthlyExpenses.pdfUser': 'Usuario',
+    'monthlyExpenses.pdfPaymentMethod': 'Forma de Pago',
+    'monthlyExpenses.description': 'Descripción',
+    'monthlyExpenses.amount': 'Cantidad',
+
+    // Overdue Expenses
+    'overdueExpenses.title': 'Gastos Atrasados',
+    'overdueExpenses.totalOverdue': 'Total de Gastos Atrasados',
+    'overdueExpenses.expensesCount': 'gastos atrasados',
+    'overdueExpenses.noOverdueExpenses': 'No se encontraron gastos atrasados',
+    'overdueExpenses.daysOverdue': 'días de atraso',
+    'overdueExpenses.days': 'días',
+    'overdueExpenses.source': 'Origen',
+    'overdueExpenses.manualExpense': 'Gasto Manual',
+    'overdueExpenses.recurringExpense': 'Gasto Recurrente',
+    'overdueExpenses.pdfTitle': 'Informe de Gastos Atrasados',
+
     
     // Future Expenses PDF/CSV Export
     'futureExpenses.description': 'Descripción',
@@ -4103,9 +4159,7 @@ const translations = {
     'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
     'monthlyExpenses.pdfUser': 'Usuario',
     'monthlyExpenses.pdfPaymentMethod': 'Método de Pago',
-    'monthlyExpenses.description': 'Descripción',
-    'monthlyExpenses.amount': 'Valor',
-
+    
     // Transfers
     'transfers.betweenAccounts': 'Transferencias entre Cuentas',
     'transfers.toInvestment': 'Transferencia a Inversión',
