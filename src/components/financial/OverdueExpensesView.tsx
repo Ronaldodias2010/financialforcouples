@@ -70,23 +70,54 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
       // Fetch overdue manual future expenses
       const { data: manualData, error: manualError } = await supabase
         .from('manual_future_expenses')
-        .select('*, categories(name)')
+        .select(`
+          id,
+          user_id,
+          description,
+          amount,
+          due_date,
+          category_id,
+          is_paid,
+          owner_user,
+          categories:category_id (
+            name
+          )
+        `)
         .in('user_id', userIds)
         .lt('due_date', todayStr)
         .eq('is_paid', false);
 
-      if (manualError) throw manualError;
+      if (manualError) {
+        console.error('Error fetching manual overdue expenses:', manualError);
+        throw manualError;
+      }
 
       // Fetch overdue recurring expenses
       const { data: recurringData, error: recurringError } = await supabase
         .from('recurring_expenses')
-        .select('*, categories(name)')
+        .select(`
+          id,
+          user_id,
+          name,
+          amount,
+          next_due_date,
+          category_id,
+          is_active,
+          is_completed,
+          owner_user,
+          categories:category_id (
+            name
+          )
+        `)
         .in('user_id', userIds)
         .lt('next_due_date', todayStr)
         .eq('is_active', true)
         .eq('is_completed', false);
 
-      if (recurringError) throw recurringError;
+      if (recurringError) {
+        console.error('Error fetching recurring overdue expenses:', recurringError);
+        throw recurringError;
+      }
 
       // Combine and format data
       const expenses: OverdueExpense[] = [];
@@ -98,13 +129,13 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         
         expenses.push({
           id: item.id,
-          description: item.description,
-          amount: item.amount,
+          description: item.description || 'Sem descrição',
+          amount: item.amount || 0,
           currency: 'BRL',
           dueDate: item.due_date,
           categoryId: item.category_id,
-          categoryName: item.categories?.name,
-          ownerUser: item.owner_user,
+          categoryName: item.categories?.name || '',
+          ownerUser: item.owner_user || 'user1',
           sourceType: 'manual',
           sourceId: item.id,
           daysOverdue,
@@ -118,13 +149,13 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         
         expenses.push({
           id: `recurring_${item.id}`,
-          description: item.name,
-          amount: item.amount,
+          description: item.name || 'Sem descrição',
+          amount: item.amount || 0,
           currency: 'BRL',
           dueDate: item.next_due_date,
           categoryId: item.category_id,
-          categoryName: item.categories?.name,
-          ownerUser: item.owner_user,
+          categoryName: item.categories?.name || '',
+          ownerUser: item.owner_user || 'user1',
           sourceType: 'recurring',
           sourceId: item.id,
           daysOverdue,

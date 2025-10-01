@@ -40,7 +40,7 @@ const translations = {
     'hero.title': 'Couples Financials',
     'hero.subtitle': 'Controle suas finanças de forma inteligente',
     'hero.description': 'Idealizado para casais, mas recomendamos para todos. Planeje, economize e invista com ajuda da IA.',
-    'hero.mainDescription': 'A primeira plataforma criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. Aplicativo para controle financeiro com orçamento familiar, investimentos, controle de milhagem, IA e muito mais.',
+    'hero.mainDescription': 'A primeira plataforma criada especialmente para casais organizarem suas finanças, compartilharem despesas e realizarem sonhos juntos. Aplicativo para controle financeiro com orçamento familiar, investimentos, controle de milhagem, IA e muito mais.',
     'hero.cta.free': 'Baixe Gratuitamente (PWA)',
     'hero.cta.access': 'Acesse gratuitamente',
     'hero.cta.premium': 'Experimente a versão com IA',
@@ -58,13 +58,13 @@ const translations = {
     'benefits.shared.title': 'Gestão financeira compartilhada ou individual',
     'benefits.shared.description': 'Controle suas finanças sozinho ou compartilhe com seu parceiro',
     'benefits.multicurrency.title': 'Controle em múltiplas moedas',
-    'benefits.multicurrency.description': 'Gerencie gastos em diferentes moedas com conversão automática',
+    'benefits.multicurrency.description': 'Gerencie despesas em diferentes moedas com conversão automática',
     'benefits.ai.title': 'Planejamento inteligente com IA',
     'benefits.ai.description': 'Saiba quanto poupar e onde investir com recomendações personalizadas',
     'benefits.miles.title': 'Ferramenta de milhas inteligente',
     'benefits.miles.description': 'Veja promoções e use suas milhas com inteligência',
     'benefits.voice.title': 'Input por voz via WhatsApp',
-    'benefits.voice.description': 'Fale com o robô e registre seus gastos sem digitar',
+    'benefits.voice.description': 'Fale com o robô e registre suas despesas sem digitar',
     'benefits.security.title': 'Segurança e privacidade garantidas',
     'benefits.security.description': 'Seus dados financeiros protegidos com criptografia avançada',
     
@@ -102,7 +102,7 @@ const translations = {
 'dashboard.balance': 'Saldo de Movimentação Mensal',
     'dashboard.income': 'Receitas',
     'dashboard.expenses': 'Despesas',
-    'dashboard.expensesByCategory': 'Gastos por Categoria',
+    'dashboard.expensesByCategory': 'Despesas por Categoria',
     'dashboard.total': 'Total',
     'dashboard.noExpensesFound': 'Nenhuma despesa encontrada',
     'dashboard.forSelectedPeriod': 'para o período selecionado',
@@ -140,7 +140,7 @@ const translations = {
     // Onboarding
     'onboarding.manualTitle': 'Primeiros Passos - Guia Rápido',
     'onboarding.step1': 'Primeiro, configure suas contas bancárias clicando no botão "Contas" que está piscando. Isso permitirá que você gerencie seus saldos.',
-    'onboarding.step2': 'Agora configure seus cartões de crédito clicando no botão "Cartões" que está piscando. Isso permitirá rastrear seus gastos.',
+    'onboarding.step2': 'Agora configure seus cartões de crédito clicando no botão "Cartões" que está piscando. Isso permitirá rastrear suas despesas.',
     'onboarding.skip': 'Pular',
     'onboarding.next': 'Próximo',
     'onboarding.finish': 'Finalizar',
@@ -176,7 +176,7 @@ const translations = {
     
     // Navigation Short Labels (Mobile)
     'nav.short.dashboard': 'Início',
-    'nav.short.transactions': 'Gastos',
+    'nav.short.transactions': 'Despesas',
     'nav.short.income': 'Receitas',
     'nav.short.categories': 'Categorias',
     'nav.short.recurring': 'Recorrentes',
@@ -293,7 +293,7 @@ const translations = {
     'aiRecommendations.export': 'Exportar',
     'aiRecommendations.cashflow': 'Fluxo de Caixa',
     'aiRecommendations.cashflowDesc': 'Extração completa do fluxo de caixa consolidado',
-    'aiRecommendations.expensesConsolidated': 'Gastos Consolidados',
+    'aiRecommendations.expensesConsolidated': 'Despesas Consolidadas',
     'aiRecommendations.expensesDesc': 'Relatório detalhado de todas as despesas',
     'aiRecommendations.incomeConsolidated': 'Receitas Consolidadas',
     'aiRecommendations.incomeDesc': 'Compilado de todas as receitas do período',
@@ -326,8 +326,8 @@ const translations = {
     'aiRecommendations.investmentsDesc': 'Guia completo para iniciantes em investimentos e diversificação.',
     'aiRecommendations.emergency': 'Reserva de Emergência',
     'aiRecommendations.emergencyDesc': 'Como construir e manter uma reserva de emergência sólida.',
-    'aiRecommendations.analysis': 'Análise de Gastos',
-    'aiRecommendations.analysisDesc': 'Técnicas para identificar e otimizar seus padrões de gastos.',
+    'aiRecommendations.analysis': 'Análise de Despesas',
+    'aiRecommendations.analysisDesc': 'Técnicas para identificar e otimizar seus padrões de despesas.',
     'aiRecommendations.premiumTitle': '🤖 IA Premium Disponível',
     'aiRecommendations.premiumMessage': 'Desbloqueie o poder da IA financeira! Análises avançadas, relatórios personalizados e consultoria inteligente esperam por você.',
     'aiRecommendations.upgradeButton': 'Ativar IA Premium',
@@ -361,7 +361,7 @@ const translations = {
     'futureExpenses.paid': 'Pago',
     'futureExpenses.cardExpense': 'Gasto do Cartão',
     'futureExpenses.expensesSingular': 'gasto',
-    'futureExpenses.expensesPlural': 'gastos',
+    'futureExpenses.expensesPlural': 'despesas',
 
     // Pay Future Expense Modal
     'payFutureExpense.title': 'Pagar Gasto Futuro',
@@ -541,15 +541,15 @@ const translations = {
     'currency.updatesInfo': 'Cotações atualizadas 3x ao dia',
     
     // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Gastos Atuais',
-    'monthlyExpenses.futureExpenses': 'Gastos Futuros',
+    'monthlyExpenses.currentExpenses': 'Despesas Atuais',
+    'monthlyExpenses.futureExpenses': 'Despesas Futuras',
     'monthlyExpenses.overdueExpenses': 'Despesas Atrasadas',
-    'monthlyExpenses.title': 'Gastos Mensais',
+    'monthlyExpenses.title': 'Despesas Mensais',
     'monthlyExpenses.month': 'Mês',
     'monthlyExpenses.selectMonth': 'Selecione o mês',
     'monthlyExpenses.category': 'Categoria',
     'monthlyExpenses.allCategories': 'Todas as categorias',
-    'monthlyExpenses.totalExpenses': 'Total de Gastos',
+    'monthlyExpenses.totalExpenses': 'Total de Despesas',
     'monthlyExpenses.periodTransactions': 'Transações do Período',
     'monthlyExpenses.noTransactions': 'Nenhuma transação encontrada para o período selecionado.',
     'monthlyExpenses.performedBy': 'Realizado por',
@@ -562,7 +562,7 @@ const translations = {
     'monthlyExpenses.noFutureExpenses': 'Nenhum gasto futuro encontrado',
     'monthlyExpenses.dueDate': 'Vencimento',
     'monthlyExpenses.purchaseDate': 'Data da Compra',
-    'monthlyExpenses.loading': 'Carregando gastos futuros...',
+    'monthlyExpenses.loading': 'Carregando despesas futuras...',
     'monthlyExpenses.card': 'Cartão',
     'monthlyExpenses.cardOwner': 'Proprietário do Cartão',
     'monthlyExpenses.bankAccount': 'Conta Bancária',
@@ -601,13 +601,13 @@ const translations = {
     'futureExpenses.owner': 'Responsável',
     'futureExpenses.cardName': 'Cartão',
     'futureExpenses.installmentInfo': 'Parcela',
-    'futureExpenses.pdfTitle': 'Relatório de Gastos Futuros',
-    'futureExpenses.total': 'Total de Gastos Futuros',
+    'futureExpenses.pdfTitle': 'Relatório de Despesas Futuras',
+    'futureExpenses.total': 'Total de Despesas Futuras',
     
     // Monthly Expenses PDF translations
-    'monthlyExpenses.pdfTitle': 'Relatório de Gastos Mensais',
+    'monthlyExpenses.pdfTitle': 'Relatório de Despesas Mensais',
     'monthlyExpenses.pdfPeriod': 'Período',
-    'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
+    'monthlyExpenses.pdfTotalExpenses': 'Total de Despesas',
     'monthlyExpenses.pdfUser': 'Usuário',
     'monthlyExpenses.pdfPaymentMethod': 'Forma de Pagamento',
     'monthlyExpenses.description': 'Descrição',
@@ -775,7 +775,7 @@ const translations = {
     'transactionForm.selectCardForPayment': 'Selecione o cartão para pagamento',
     'transactionForm.paymentPreview': 'Preview do Pagamento',
     'transactionForm.amountToPay': 'Valor a pagar',
-    'transactionForm.autoDetectFutureExpenses': 'Sistema detectará automaticamente gastos futuros relacionados',
+    'transactionForm.autoDetectFutureExpenses': 'Sistema detectará automaticamente despesas futuras relacionadas',
     'transactionForm.cardStatusUpdate': 'Status do cartão será atualizado baseado no pagamento mínimo',
     'transactionForm.selectAccountError': 'Selecione uma conta para pagamento',
     'transactionForm.limitExceeded': 'Limite excedido',
@@ -959,7 +959,7 @@ const translations = {
     // Charts
     'charts.userAnalysisTitle': 'Análise Financeira por Usuário',
     'charts.userComparison': 'Comparativo entre Usuários',
-    'charts.expenses': 'Gastos',
+    'charts.expenses': 'Despesas',
     'charts.income': 'Receitas',
     'charts.currentMonth': 'Mês Atual',
     'charts.last3Months': '3 Meses',
@@ -1126,7 +1126,7 @@ const translations = {
     'demo.transactions.title': 'Receitas e Despesas',
     'demo.transactions.description': 'Acompanhe todas as movimentações financeiras do casal',
     'demo.analysis.title': 'Análise por Usuário',
-    'demo.analysis.description': 'Relatórios detalhados dos gastos de cada pessoa',
+    'demo.analysis.description': 'Relatórios detalhados das despesas de cada pessoa',
     'demo.growth': '+15% este mês',
     
     // Pricing Section
@@ -1162,7 +1162,7 @@ const translations = {
     
     // WhatsApp Section
     'whatsapp.title': 'Controle por Voz via WhatsApp',
-    'whatsapp.subtitle': 'Registre seus gastos sem digitar - apenas fale e nossa IA faz o resto',
+    'whatsapp.subtitle': 'Registre suas despesas sem digitar - apenas fale e nossa IA faz o resto',
     'whatsapp.howItWorks': 'Como funciona o input por voz',
     'whatsapp.step1.title': 'Mande uma mensagem de voz',
     'whatsapp.step1.example': '"Gastei R$ 45 no almoço hoje"',
@@ -1178,9 +1178,9 @@ const translations = {
      'whatsapp.recording': 'Gravando...',
      'whatsapp.cta': 'Experimentar no WhatsApp',
      'whatsapp.imageAlt': 'Chat do WhatsApp com assistente financeiro',
-     'whatsapp.defaultMessage': 'Olá! Gostaria de saber mais sobre o Couples Financials e como posso registrar meus gastos por voz.',
+     'whatsapp.defaultMessage': 'Olá! Gostaria de saber mais sobre o Couples Financials e como posso registrar minhas despesas por voz.',
      'whatsapp.welcomeFooter': '👋 Olá! Vi que você está interessado no Couples Financials. Como posso te ajudar a começar a gerenciar suas finanças de forma inteligente?',
-     'whatsapp.welcomeButton': '🎉 Oi! Quero experimentar o controle por voz do Couples Financials. Como funciona para registrar meus gastos falando?',
+     'whatsapp.welcomeButton': '🎉 Oi! Quero experimentar o controle por voz do Couples Financials. Como funciona para registrar minhas despesas falando?',
     
     // AI Section for Landing Page
     'aiSection.badge': 'Nova Funcionalidade',
@@ -1194,7 +1194,7 @@ const translations = {
     'aiSection.step3.title': 'Conteúdo educacional',
     'aiSection.step3.description': 'Acesse materiais educativos sobre finanças pessoais e investimentos',
     'aiSection.benefitsTitle': 'Principais benefícios:',
-    'aiSection.feature1': 'Análise preditiva de gastos',
+    'aiSection.feature1': 'Análise preditiva de despesas',
     'aiSection.feature2': 'Estratégias de investimento personalizadas',
     'aiSection.feature3': 'Metas financeiras inteligentes',
     'aiSection.educationalContent': 'Biblioteca de conteúdo educacional',
@@ -1242,7 +1242,7 @@ const translations = {
     
     // Premium Reminder Card
     'premiumReminder.title': 'Upgrade para Premium',
-    'premiumReminder.description': 'Altere seu Status para Premium e libere funcionalidades de IA, Milhagem conectadas às principais Cia. Aéreas e WhatsApp Inteligente, que lhe manterá informado das suas movimentações e receberá seus gastos via áudio, texto ou imagem.',
+    'premiumReminder.description': 'Altere seu Status para Premium e libere funcionalidades de IA, Milhagem conectadas às principais Cia. Aéreas e WhatsApp Inteligente, que lhe manterá informado das suas movimentações e receberá suas despesas via áudio, texto ou imagem.',
     'premiumReminder.mileage': 'Milhagem',
     
     // Mileage
@@ -1276,7 +1276,7 @@ const translations = {
     'mileage.milesPerAmount': 'Milhas por Valor',
     'mileage.milesPlaceholder': 'Ex: 1 (1 milha)',
     'mileage.amountThreshold': 'A cada',
-    'mileage.thresholdPlaceholder': 'Ex: 3 (R$ 3,00 gastos)',
+    'mileage.thresholdPlaceholder': 'Ex: 3 (R$ 3,00 em despesas)',
     'mileage.createRule': 'Criar Regra',
     'mileage.active': 'Ativo',
     'mileage.inactive': 'Inativo',
@@ -1430,7 +1430,7 @@ const translations = {
     'admin.content.categories.planning': 'Planejamento Financeiro',
     'admin.content.categories.investments': 'Investimentos Básicos',
     'admin.content.categories.emergency': 'Reserva de Emergência',
-    'admin.content.categories.analysis': 'Análise de Gastos',
+    'admin.content.categories.analysis': 'Análise de Despesas',
     'admin.content.types.pdf': 'PDF',
     'admin.content.types.video': 'Vídeo',
     'admin.content.types.article': 'Artigo',
@@ -1446,7 +1446,7 @@ const translations = {
     
     // Educational Content Section
     'educational.exclusiveContent': 'Conteúdo educacional exclusivo para usuários premium',
-    'educational.accessMaterials': 'Acesse materiais educativos sobre planejamento financeiro, investimentos, reserva de emergência e análise de gastos.',
+    'educational.accessMaterials': 'Acesse materiais educativos sobre planejamento financeiro, investimentos, reserva de emergência e análise de despesas.',
     'educational.upgradeToPremium': 'Fazer Upgrade para Premium',
     'educational.loading': 'Carregando conteúdo educacional...',
     'educational.materialsDescription': 'Materiais educativos para aprimorar seu conhecimento financeiro',
@@ -1468,7 +1468,7 @@ const translations = {
     'educational.categories.planningDesc': 'Aprenda a criar um orçamento eficiente e alcançar suas metas financeiras.',
     'educational.categories.investmentsDesc': 'Guia completo para iniciantes em investimentos e diversificação.',
     'educational.categories.emergencyDesc': 'Como construir e manter uma reserva de emergência sólida.',
-    'educational.categories.analysisDesc': 'Técnicas para analisar e otimizar seus gastos mensais.',
+    'educational.categories.analysisDesc': 'Técnicas para analisar e otimizar suas despesas mensais.',
     
     // Subscription
     'subscription.title': 'Planos e Assinaturas',
@@ -1510,7 +1510,7 @@ const translations = {
     'subscription.maybeLater': 'Talvez Depois',
     
     // Recurring Expenses
-    'recurring.title': 'Gastos Recorrentes',
+    'recurring.title': 'Despesas Recorrentes',
     'recurring.addNew': 'Novo Gasto Recorrente',
     'recurring.editTitle': 'Editar Gasto Recorrente',
     'recurring.newTitle': 'Novo Gasto Recorrente',
@@ -1552,7 +1552,7 @@ const translations = {
     'recurring.deleted': 'Gasto recorrente excluído!',
     'recurring.activated': 'Gasto recorrente ativado!',
     'recurring.deactivated': 'Gasto recorrente desativado!',
-    'recurring.loadError': 'Não foi possível carregar gastos recorrentes',
+    'recurring.loadError': 'Não foi possível carregar despesas recorrentes',
     'recurring.saveError': 'Erro ao salvar gasto recorrente',
     'recurring.deleteError': 'Erro ao excluir gasto recorrente',
     'recurring.statusError': 'Erro ao alterar status',
@@ -1676,7 +1676,7 @@ const translations = {
     'userAnalysis.period.last6': 'Últimos 6 Meses',
     'userAnalysis.income': 'Receitas',
     'userAnalysis.expenses': 'Despesas',
-    'userAnalysis.monthlySpendingTrend': 'Tendência de Gastos Mensais',
+    'userAnalysis.monthlySpendingTrend': 'Tendência de Despesas Mensais',
     'userAnalysis.noData': 'Nenhum dado financeiro encontrado para este período',
     'userAnalysis.user': 'Usuário',
     
