@@ -11,7 +11,10 @@ export const RouteSEO = () => {
     // Não tocar nas landings para evitar interferência
     if (path === "/" || path === "/landing-new") return;
 
-    const base = "https://couplesfinancials.com";
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : 'couplesfinancials.com';
+    const base = hostname === 'couplesfin.com' || hostname === 'www.couplesfin.com' 
+      ? "https://couplesfin.com" 
+      : "https://couplesfinancials.com";
 
     const map: Record<string, { title: string; description: string; canonical?: string }> = {
       "/auth": {

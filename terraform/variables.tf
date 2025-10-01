@@ -24,6 +24,12 @@ variable "domain_name" {
   default     = ""
 }
 
+variable "secondary_domain_name" {
+  description = "Nome do domínio secundário para a aplicação"
+  type        = string
+  default     = ""
+}
+
 variable "supabase_url" {
   description = "URL do Supabase"
   type        = string

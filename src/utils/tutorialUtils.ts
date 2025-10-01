@@ -147,7 +147,8 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
 export const openTutorialHTML = (language: Language = 'pt') => {
   // Always use production domain on previews to avoid 404s
   const hostname = window.location.hostname;
-  const isProd = hostname === 'couplesfinancials.com' || hostname === 'www.couplesfinancials.com';
+  const isProd = hostname === 'couplesfinancials.com' || hostname === 'www.couplesfinancials.com' || 
+                 hostname === 'couplesfin.com' || hostname === 'www.couplesfin.com';
   const baseUrl = isProd ? window.location.origin : 'https://couplesfinancials.com';
   // Add cache bust to force fresh load
   const cacheBust = `?v=${Date.now()}`;

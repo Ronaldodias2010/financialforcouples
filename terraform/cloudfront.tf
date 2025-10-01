@@ -43,8 +43,8 @@ resource "aws_cloudfront_distribution" "app" {
   default_root_object = "index.html"
   comment             = "CloudFront distribution for ${var.app_name}"
 
-  # Aliases (domínios personalizados)
-  aliases = var.domain_name != "" ? [var.domain_name] : []
+  # Aliases (domínios personalizados) - suporta múltiplos domínios
+  aliases = var.domain_name != "" ? (var.secondary_domain_name != "" ? [var.domain_name, var.secondary_domain_name] : [var.domain_name]) : []
 
   # Comportamento padrão - redirecionar para ALB
   default_cache_behavior {
