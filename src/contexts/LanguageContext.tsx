@@ -4153,13 +4153,6 @@ const translations = {
     'futureExpenses.pdfTitle': 'Informe de Gastos Futuros',
     'futureExpenses.total': 'Total de Gastos Futuros',
     
-    // Monthly Expenses PDF translations
-    'monthlyExpenses.pdfTitle': 'Informe de Gastos Mensuales',
-    'monthlyExpenses.pdfPeriod': 'Período',
-    'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
-    'monthlyExpenses.pdfUser': 'Usuario',
-    'monthlyExpenses.pdfPaymentMethod': 'Método de Pago',
-    
     // Transfers
     'transfers.betweenAccounts': 'Transferencias entre Cuentas',
     'transfers.toInvestment': 'Transferencia a Inversión',
