@@ -15,6 +15,7 @@ interface Transaction {
   owner_user: string;
   user_id: string;
   category_id: string;
+  card_transaction_type?: string;
   categories?: { name: string };
   cards?: { name: string };
 }
@@ -275,6 +276,11 @@ export const useFinancialData = () => {
         return;
       }
 
+      // Skip future expenses - only show realized transactions
+      if (transaction.card_transaction_type === 'future_expense') {
+        return;
+      }
+
       const amountInUserCurrency = convertCurrency(
         transaction.amount,
         transaction.currency,
@@ -374,6 +380,11 @@ export const useFinancialData = () => {
           return;
         }
 
+        // Skip future expenses - only show realized transactions
+        if (transaction.card_transaction_type === 'future_expense') {
+          return;
+        }
+
         const amountInUserCurrency = convertCurrency(
           transaction.amount,
           transaction.currency,
@@ -394,6 +405,11 @@ export const useFinancialData = () => {
       (currentTransactions || []).forEach((transaction) => {
         // Skip account transfers to prevent double counting
         if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
+          return;
+        }
+
+        // Skip future expenses - only show realized transactions
+        if (transaction.card_transaction_type === 'future_expense') {
           return;
         }
 
@@ -473,14 +489,16 @@ export const useFinancialData = () => {
     const user1Expenses = allTransactions
       .filter(t => t.type === 'expense' && 
         t.payment_method !== 'account_transfer' && 
-        t.payment_method !== 'account_investment' && 
+        t.payment_method !== 'account_investment' &&
+        t.card_transaction_type !== 'future_expense' && 
         (!coupleIds || t.user_id === coupleIds.user1_id))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
     
     const user2Expenses = allTransactions
       .filter(t => t.type === 'expense' && 
         t.payment_method !== 'account_transfer' && 
-        t.payment_method !== 'account_investment' && 
+        t.payment_method !== 'account_investment' &&
+        t.card_transaction_type !== 'future_expense' && 
         (coupleIds ? t.user_id === coupleIds.user2_id : false))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
 
@@ -540,16 +558,17 @@ export const useFinancialData = () => {
     return total;
   };
 
-  // Returns the sum of transaction-based expenses only (no accounts, no transfers)
+  // Returns the sum of transaction-based expenses only (no accounts, no transfers, no future expenses)
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     const expenseOnly = filteredTransactions.filter(t => t.type === 'expense' && 
       t.payment_method !== 'account_transfer' && 
-      t.payment_method !== 'account_investment');
+      t.payment_method !== 'account_investment' &&
+      t.card_transaction_type !== 'future_expense');
     const total = expenseOnly.reduce((sum, t) => {
       return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
     }, 0);
-    console.log('💸 Expense calculation excluding transfers:', { total, expenseTransactions: expenseOnly.length, viewMode });
+    console.log('💸 Expense calculation excluding transfers and future expenses:', { total, expenseTransactions: expenseOnly.length, viewMode });
     return total;
   };
 
