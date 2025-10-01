@@ -167,10 +167,10 @@ const translations = {
     
     // Navigation
     'nav.dashboard': 'Dashboard',
-    'nav.monthlyExpenses': 'Gastos Mensais',
+    'nav.monthlyExpenses': 'Despesas Mensais',
     'nav.monthlyIncome': 'Receitas Mensais',
     'nav.categories': 'Categorias',
-    'nav.recurring': 'Gastos Recorrentes',
+    'nav.recurring': 'Despesas Recorrentes',
     'nav.converter': 'Conversor',
     'nav.aiRecommendations': 'Recomendações da IA',
     
