@@ -16,6 +16,15 @@ import { cn } from "@/lib/utils";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName } from "@/utils/categoryTranslation";
+import { parseLocalDate } from "@/utils/date";
+
+// Helper to format date for DB without timezone issues
+const formatDateForDB = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 // Component to show installment progress and future expense status
 const InstallmentProgress = ({ total, remaining, nextDueDate }: { 
@@ -139,7 +148,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
 
       let allExpenses = (data || []).map(expense => ({
         ...expense,
-        next_due_date: new Date(expense.next_due_date)
+        next_due_date: parseLocalDate(expense.next_due_date)
       }));
 
       // Filter by viewMode
@@ -248,7 +257,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             category_id: categoryId || null,
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
-            next_due_date: nextDueDate.toISOString().split('T')[0],
+            next_due_date: formatDateForDB(nextDueDate),
             contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
             total_installments: totalInstallments,
             remaining_installments: totalInstallments
@@ -286,7 +295,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             category_id: categoryId || null,
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
-            next_due_date: nextDueDate.toISOString().split('T')[0],
+            next_due_date: formatDateForDB(nextDueDate),
             owner_user: ownerUser,
             user_id: user.id,
             contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
@@ -322,7 +331,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
     setCategoryId(expense.category_id || "");
     setCardId(expense.card_id || "");
     setFrequencyDays(expense.frequency_days.toString());
-    setNextDueDate(new Date(expense.next_due_date));
+    setNextDueDate(parseLocalDate(expense.next_due_date.toString()));
     setContractDuration(expense.contract_duration_months?.toString() || "");
     setIsDialogOpen(true);
   };
