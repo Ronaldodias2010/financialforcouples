@@ -319,10 +319,10 @@ if (selectedCategory !== "all") {
 
   return (
     <Tabs defaultValue="current" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="current">{t('monthlyExpenses.currentExpenses')}</TabsTrigger>
-          <TabsTrigger value="future">{t('monthlyExpenses.futureExpenses')}</TabsTrigger>
-          <TabsTrigger value="overdue">{t('monthlyExpenses.overdueExpenses')}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 gap-2">
+          <TabsTrigger value="current" className="text-sm">{t('monthlyExpenses.currentExpenses')}</TabsTrigger>
+          <TabsTrigger value="future" className="text-sm">{t('monthlyExpenses.futureExpenses')}</TabsTrigger>
+          <TabsTrigger value="overdue" className="text-sm">{t('monthlyExpenses.overdueExpenses')}</TabsTrigger>
         </TabsList>
 
       <TabsContent value="current">
