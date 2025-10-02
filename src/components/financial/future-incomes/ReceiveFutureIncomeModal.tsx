@@ -152,11 +152,11 @@ export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cash">{t('paymentMethods.cash')}</SelectItem>
-                <SelectItem value="bank_transfer">{t('paymentMethods.bankTransfer')}</SelectItem>
-                <SelectItem value="check">{t('paymentMethods.check')}</SelectItem>
-                <SelectItem value="pix">{t('paymentMethods.pix')}</SelectItem>
-                <SelectItem value="other">{t('paymentMethods.other')}</SelectItem>
+                <SelectItem value="cash">{t('transactionForm.cash')}</SelectItem>
+                <SelectItem value="deposit">{t('transactionForm.deposit')}</SelectItem>
+                <SelectItem value="transfer">{t('transactionForm.receivedTransfer')}</SelectItem>
+                <SelectItem value="pix">PIX</SelectItem>
+                <SelectItem value="check">{t('converter.paymentMethods.check')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
