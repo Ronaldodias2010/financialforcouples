@@ -35,6 +35,12 @@ export const useFutureExpensePayments = () => {
     setIsProcessing(true);
     
     try {
+      // Calculate days overdue if due date is in the past
+      const today = new Date();
+      const dueDate = new Date(params.originalDueDate);
+      const daysOverdue = dueDate < today ? Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+      const isPaidLate = daysOverdue > 0;
+
       const { data, error } = await supabase.rpc('process_future_expense_payment', {
         p_user_id: user.id,
         p_original_due_date: params.originalDueDate,
@@ -60,9 +66,31 @@ export const useFutureExpensePayments = () => {
         return null;
       }
 
+      // Update payment record with overdue information if applicable
+      if (isPaidLate && data) {
+        await supabase
+          .from('future_expense_payments')
+          .update({
+            paid_late: true,
+            days_overdue: daysOverdue,
+            original_due_date_tracking: params.originalDueDate
+          })
+          .eq('id', data);
+      }
+
+      // Mark recurring expense as no longer overdue if it was
+      if (params.recurringExpenseId) {
+        await supabase
+          .from('recurring_expenses')
+          .update({ is_overdue: false })
+          .eq('id', params.recurringExpenseId);
+      }
+
       toast({
         title: "Pagamento processado",
-        description: "Gasto futuro foi quitado e adicionado aos gastos mensais",
+        description: isPaidLate 
+          ? `Despesa paga com ${daysOverdue} dia(s) de atraso`
+          : "Despesa futura foi quitada e adicionada às despesas mensais",
         variant: "default",
       });
 

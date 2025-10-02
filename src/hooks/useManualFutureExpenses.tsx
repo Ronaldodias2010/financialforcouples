@@ -129,7 +129,7 @@ export const useManualFutureExpenses = () => {
         console.error('Error fetching expense:', expenseError);
         toast({
           title: "Erro",
-          description: "Gasto futuro não encontrado",
+          description: "Despesa futura não encontrada",
           variant: "destructive",
         });
         return null;
@@ -138,11 +138,17 @@ export const useManualFutureExpenses = () => {
       if (expense.is_paid) {
         toast({
           title: "Erro",
-          description: "Este gasto já foi pago",
+          description: "Esta despesa já foi paga",
           variant: "destructive",
         });
         return null;
       }
+
+      // Calculate if payment is late
+      const today = new Date();
+      const dueDate = new Date(expense.due_date);
+      const daysOverdue = dueDate < today ? Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+      const isPaidLate = daysOverdue > 0;
 
       // Create transaction
       const { data: transaction, error: transactionError } = await supabase
@@ -172,11 +178,12 @@ export const useManualFutureExpenses = () => {
         return null;
       }
 
-      // Mark expense as paid
+      // Mark expense as paid and no longer overdue
       const { error: updateError } = await supabase
         .from('manual_future_expenses')
         .update({
           is_paid: true,
+          is_overdue: false,
           paid_at: new Date().toISOString(),
           transaction_id: transaction.id
         })
@@ -186,13 +193,13 @@ export const useManualFutureExpenses = () => {
         console.error('Error updating expense:', updateError);
         toast({
           title: "Erro",
-          description: "Erro ao marcar gasto como pago",
+          description: "Erro ao marcar despesa como paga",
           variant: "destructive",
         });
         return null;
       }
 
-      // Create future expense payment record for consistency
+      // Create future expense payment record with overdue information
       await supabase
         .from('future_expense_payments')
         .insert({
@@ -207,6 +214,9 @@ export const useManualFutureExpenses = () => {
           card_id: params.cardId,
           transaction_id: transaction.id,
           owner_user: expense.owner_user,
+          paid_late: isPaidLate,
+          days_overdue: daysOverdue,
+          original_due_date_tracking: expense.due_date,
           expense_source_type: 'manual_future',
           card_payment_info: {
             manualFutureExpenseId: expense.id,
@@ -216,7 +226,9 @@ export const useManualFutureExpenses = () => {
 
       toast({
         title: "Pagamento processado",
-        description: "Gasto futuro foi pago e adicionado às despesas mensais",
+        description: isPaidLate 
+          ? `Despesa "${expense.description}" foi paga com ${daysOverdue} dia(s) de atraso e adicionada às despesas mensais.`
+          : "Despesa futura foi paga e adicionada às despesas mensais",
         variant: "default",
       });
 

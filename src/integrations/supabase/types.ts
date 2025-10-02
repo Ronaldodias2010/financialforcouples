@@ -787,12 +787,15 @@ export type Database = {
           card_payment_info: Json | null
           category_id: string | null
           created_at: string
+          days_overdue: number | null
           description: string
           expense_source_type: string | null
           id: string
           installment_transaction_id: string | null
           original_due_date: string
+          original_due_date_tracking: string | null
           owner_user: string
+          paid_late: boolean | null
           payment_date: string
           payment_method: string
           recurring_expense_id: string | null
@@ -807,12 +810,15 @@ export type Database = {
           card_payment_info?: Json | null
           category_id?: string | null
           created_at?: string
+          days_overdue?: number | null
           description?: string
           expense_source_type?: string | null
           id?: string
           installment_transaction_id?: string | null
           original_due_date: string
+          original_due_date_tracking?: string | null
           owner_user?: string
+          paid_late?: boolean | null
           payment_date?: string
           payment_method?: string
           recurring_expense_id?: string | null
@@ -827,12 +833,15 @@ export type Database = {
           card_payment_info?: Json | null
           category_id?: string | null
           created_at?: string
+          days_overdue?: number | null
           description?: string
           expense_source_type?: string | null
           id?: string
           installment_transaction_id?: string | null
           original_due_date?: string
+          original_due_date_tracking?: string | null
           owner_user?: string
+          paid_late?: boolean | null
           payment_date?: string
           payment_method?: string
           recurring_expense_id?: string | null
@@ -1230,6 +1239,7 @@ export type Database = {
           description: string
           due_date: string
           id: string
+          is_overdue: boolean | null
           is_paid: boolean
           notes: string | null
           owner_user: string
@@ -1246,6 +1256,7 @@ export type Database = {
           description: string
           due_date: string
           id?: string
+          is_overdue?: boolean | null
           is_paid?: boolean
           notes?: string | null
           owner_user?: string
@@ -1262,6 +1273,7 @@ export type Database = {
           description?: string
           due_date?: string
           id?: string
+          is_overdue?: boolean | null
           is_paid?: boolean
           notes?: string | null
           owner_user?: string
@@ -1860,6 +1872,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_completed: boolean | null
+          is_overdue: boolean | null
           name: string
           next_due_date: string
           owner_user: string | null
@@ -1880,6 +1893,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_completed?: boolean | null
+          is_overdue?: boolean | null
           name: string
           next_due_date: string
           owner_user?: string | null
@@ -1900,6 +1914,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_completed?: boolean | null
+          is_overdue?: boolean | null
           name?: string
           next_due_date?: string
           owner_user?: string | null

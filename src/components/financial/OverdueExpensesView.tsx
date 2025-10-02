@@ -67,12 +67,12 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         userIds = [couple.user2_id];
       }
 
-      // Fetch overdue manual future expenses
+      // Fetch overdue manual future expenses - now filtering by is_overdue flag
       const { data: manualData, error: manualError } = await supabase
         .from('manual_future_expenses')
         .select('*')
         .in('user_id', userIds)
-        .lt('due_date', todayStr)
+        .eq('is_overdue', true)
         .eq('is_paid', false);
 
       if (manualError) {
@@ -80,12 +80,12 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         throw manualError;
       }
 
-      // Fetch overdue recurring expenses
+      // Fetch overdue recurring expenses - now filtering by is_overdue flag
       const { data: recurringData, error: recurringError } = await supabase
         .from('recurring_expenses')
         .select('*')
         .in('user_id', userIds)
-        .lt('next_due_date', todayStr)
+        .eq('is_overdue', true)
         .eq('is_active', true)
         .eq('is_completed', false);
 
