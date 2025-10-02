@@ -53,7 +53,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const AppRoutes = () => {
+const AppContent = () => {
   const navigate = useNavigate();
   
   const handleNavBack = () => {
@@ -67,76 +67,76 @@ const AppRoutes = () => {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <GlobalErrorBoundary>
-          <AuthProvider>
-            <LanguageProvider>
-              <ClientOnly>
-                <SafeTooltipProvider>
-                  <SubscriptionProvider>
-                    <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
-                      <Routes>
-                        <Route path="/" element={<Landing />} />
-                        <Route path="/checkout-direto" element={<DirectCheckout />} />
-                        <Route path="/checkout-email-confirmation" element={<CheckoutEmailConfirmation />} />
-                        <Route path="/landing-simple" element={<LandingSimple />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/login" element={<Auth />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/email-confirmation" element={<EmailConfirmation />} />
-                        <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
-                        <Route path="/email-test" element={<EmailTest />} />
-                        <Route path="/privacy" element={<PrivacyPolicy />} />
-                        <Route path="/terms" element={<TermsOfUse />} />
-                        <Route path="/sobre-nos" element={<AboutUs />} />
-                        <Route path="/about-us" element={<AboutUs />} />
-                        <Route path="/parceria" element={<Partnership />} />
-                        <Route path="/partnership" element={<Partnership />} />
-                        <Route path="/asociacion" element={<Partnership />} />
-                        
-                        {/* Protected Routes */}
-                        <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
-                        <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={handleNavBack} /></ProtectedRoute>} />
-                        <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={handleNavBack} /></ProtectedRoute>} />
-                        <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={handleNavBack} /></ProtectedRoute>} />
-                        <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={handleNavBack} /></ProtectedRoute>} />
-                        <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={handleNavBack} /></ProtectedRoute>} />
-                        <Route path="/subscription-success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
-                        <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-                        <Route path="/cleanup-pastel" element={<ProtectedRoute><CleanupPastel /></ProtectedRoute>} />
-                        <Route path="/test-emails" element={<TestPartnerEmails />} />
-                        
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                   </SubscriptionProvider>
-                </SafeTooltipProvider>
-              </ClientOnly>
-            </LanguageProvider>
-          </AuthProvider>
-          <Toaster />
-          <Sonner />
-          <GlobalErrorLogger />
-          <PerformanceMonitor />
-          <RouteSEO />
-        </GlobalErrorBoundary>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/checkout-direto" element={<DirectCheckout />} />
+        <Route path="/checkout-email-confirmation" element={<CheckoutEmailConfirmation />} />
+        <Route path="/landing-simple" element={<LandingSimple />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/login" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/email-confirmation" element={<EmailConfirmation />} />
+        <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
+        <Route path="/email-test" element={<EmailTest />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/sobre-nos" element={<AboutUs />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/parceria" element={<Partnership />} />
+        <Route path="/partnership" element={<Partnership />} />
+        <Route path="/asociacion" element={<Partnership />} />
+        
+        {/* Protected Routes */}
+        <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
+        <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/subscription-success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+        <Route path="/cleanup-pastel" element={<ProtectedRoute><CleanupPastel /></ProtectedRoute>} />
+        <Route path="/test-emails" element={<TestPartnerEmails />} />
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
 const App = () => {
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <GlobalErrorBoundary>
+            <AuthProvider>
+              <LanguageProvider>
+                <ClientOnly>
+                  <SafeTooltipProvider>
+                    <SubscriptionProvider>
+                      <AppContent />
+                    </SubscriptionProvider>
+                  </SafeTooltipProvider>
+                </ClientOnly>
+              </LanguageProvider>
+            </AuthProvider>
+            <Toaster />
+            <Sonner />
+            <GlobalErrorLogger />
+            <PerformanceMonitor />
+            <RouteSEO />
+          </GlobalErrorBoundary>
+        </ThemeProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 };
