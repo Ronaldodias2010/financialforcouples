@@ -15,6 +15,9 @@ import { translateCategoryName as translateCategoryUtil } from "@/utils/category
 import { formatLocalDate, getLocaleForLanguage, getMonthDateRange } from "@/utils/date";
 import { ExportUtils } from "@/components/financial/ExportUtils";
 import { TransfersBetweenAccounts } from './TransfersBetweenAccounts';
+import { FutureIncomesView } from './future-incomes/FutureIncomesView';
+import { OverdueIncomesView } from './future-incomes/OverdueIncomesView';
+import { Calendar, Clock, AlertCircle } from 'lucide-react';
 
 
 interface Transaction {
@@ -281,13 +284,36 @@ if (selectedCategory !== "all") {
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="income" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="income">{t('monthlyIncome.incomeTab')}</TabsTrigger>
-          <TabsTrigger value="transfers">{t('monthlyIncome.transfersTab')}</TabsTrigger>
-        </TabsList>
+      <Card className="p-4 bg-gradient-to-r from-primary/5 to-primary/10">
+        <Tabs defaultValue="current" className="w-full">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-2 h-auto p-2 bg-background/80 backdrop-blur">
+            <TabsTrigger 
+              value="current" 
+              className="flex items-center gap-2 py-3 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('futureIncomes.currentIncomes')}</span>
+              <span className="sm:hidden">Atuais</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="future" 
+              className="flex items-center gap-2 py-3 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('futureIncomes.futureIncomes')}</span>
+              <span className="sm:hidden">Futuras</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="overdue" 
+              className="flex items-center gap-2 py-3 text-xs sm:text-sm font-medium data-[state=active]:bg-green-600 data-[state=active]:text-white"
+            >
+              <AlertCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('futureIncomes.overdueIncomes')}</span>
+              <span className="sm:hidden">Atrasadas</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="income">
+          <TabsContent value="current" className="mt-6">
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">{t('nav.monthlyIncome')}</h3>
         
@@ -441,10 +467,15 @@ if (selectedCategory !== "all") {
       </Card>
         </TabsContent>
 
-        <TabsContent value="transfers">
-          <TransfersBetweenAccounts viewMode={viewMode} />
+        <TabsContent value="future">
+          <FutureIncomesView viewMode={viewMode === 'both' ? 'couple' : 'individual'} />
+        </TabsContent>
+
+        <TabsContent value="overdue">
+          <OverdueIncomesView viewMode={viewMode === 'both' ? 'couple' : 'individual'} />
         </TabsContent>
       </Tabs>
+    </Card>
     </div>
   );
 };

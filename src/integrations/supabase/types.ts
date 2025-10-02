@@ -1285,6 +1285,69 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_future_incomes: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category_id: string | null
+          created_at: string
+          days_overdue: number | null
+          description: string
+          due_date: string
+          id: string
+          is_overdue: boolean
+          is_received: boolean
+          notes: string | null
+          owner_user: string
+          payment_method: string
+          received_at: string | null
+          received_late: boolean | null
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          days_overdue?: number | null
+          description: string
+          due_date: string
+          id?: string
+          is_overdue?: boolean
+          is_received?: boolean
+          notes?: string | null
+          owner_user?: string
+          payment_method?: string
+          received_at?: string | null
+          received_late?: boolean | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          days_overdue?: number | null
+          description?: string
+          due_date?: string
+          id?: string
+          is_overdue?: boolean
+          is_received?: boolean
+          notes?: string | null
+          owner_user?: string
+          payment_method?: string
+          received_at?: string | null
+          received_late?: boolean | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       manual_premium_access: {
         Row: {
           approval_date: string | null
@@ -2822,6 +2885,16 @@ export type Database = {
           p_payment_date?: string
           p_payment_method?: string
           p_recurring_expense_id?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      process_future_income_receipt: {
+        Args: {
+          p_account_id?: string
+          p_income_id: string
+          p_payment_method?: string
+          p_receipt_date?: string
           p_user_id: string
         }
         Returns: string
