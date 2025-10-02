@@ -1816,6 +1816,7 @@ const translations = {
     'futureIncomes.currentIncomes': 'Receitas Atuais',
     'futureIncomes.futureIncomes': 'Receitas Futuras',
     'futureIncomes.overdueIncomes': 'Receitas Atrasadas',
+    'futureIncomes.transfers': 'Transferências',
   },
   
    en: {
@@ -3582,6 +3583,7 @@ const translations = {
     'futureIncomes.currentIncomes': 'Current Incomes',
     'futureIncomes.futureIncomes': 'Future Incomes',
     'futureIncomes.overdueIncomes': 'Overdue Incomes',
+    'futureIncomes.transfers': 'Transfers',
 
 
     // Smart Mileage Section
@@ -4221,6 +4223,7 @@ const translations = {
     'futureIncomes.currentIncomes': 'Ingresos Actuales',
     'futureIncomes.futureIncomes': 'Ingresos Futuros',
     'futureIncomes.overdueIncomes': 'Ingresos Atrasados',
+    'futureIncomes.transfers': 'Transferencias',
     
     'monthlyExpenses.title': 'Gastos Mensuales',
     'monthlyExpenses.month': 'Mes',
