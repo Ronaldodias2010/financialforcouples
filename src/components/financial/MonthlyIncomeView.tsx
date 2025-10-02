@@ -16,8 +16,7 @@ import { formatLocalDate, getLocaleForLanguage, getMonthDateRange } from "@/util
 import { ExportUtils } from "@/components/financial/ExportUtils";
 import { TransfersBetweenAccounts } from './TransfersBetweenAccounts';
 import { FutureIncomesView } from './future-incomes/FutureIncomesView';
-import { OverdueIncomesView } from './future-incomes/OverdueIncomesView';
-import { Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 
 
 interface Transaction {
@@ -286,7 +285,7 @@ if (selectedCategory !== "all") {
     <div className="space-y-6">
       <Card className="p-4 bg-gradient-to-r from-primary/5 to-primary/10">
         <Tabs defaultValue="current" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-2 h-auto p-2 bg-background/80 backdrop-blur">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 gap-2 h-auto p-2 bg-background/80 backdrop-blur">
             <TabsTrigger 
               value="current" 
               className="flex items-center gap-2 py-3 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -302,14 +301,6 @@ if (selectedCategory !== "all") {
               <Clock className="h-4 w-4" />
               <span className="hidden sm:inline">{t('futureIncomes.futureIncomes')}</span>
               <span className="sm:hidden">Futuras</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="overdue" 
-              className="flex items-center gap-2 py-3 text-xs sm:text-sm font-medium data-[state=active]:bg-green-600 data-[state=active]:text-white"
-            >
-              <AlertCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('futureIncomes.overdueIncomes')}</span>
-              <span className="sm:hidden">Atrasadas</span>
             </TabsTrigger>
           </TabsList>
 
@@ -467,12 +458,8 @@ if (selectedCategory !== "all") {
       </Card>
         </TabsContent>
 
-        <TabsContent value="future">
+          <TabsContent value="future">
           <FutureIncomesView viewMode={viewMode === 'both' ? 'couple' : 'individual'} />
-        </TabsContent>
-
-        <TabsContent value="overdue">
-          <OverdueIncomesView viewMode={viewMode === 'both' ? 'couple' : 'individual'} />
         </TabsContent>
       </Tabs>
     </Card>
