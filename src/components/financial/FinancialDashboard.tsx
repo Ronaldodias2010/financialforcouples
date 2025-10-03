@@ -238,6 +238,8 @@ export const FinancialDashboard = () => {
   }
 
   const renderTabContent = () => {
+    console.log('🔍 [DEBUG] Active Tab:', activeTab);
+    
     switch (activeTab) {
       case "dashboard":
         return (
@@ -360,6 +362,7 @@ export const FinancialDashboard = () => {
       case "categories":
         return <CategoryManager />;
       case "recurring":
+        console.log('✅ [DEBUG] Rendering RecurringExpensesManager with viewMode:', viewMode);
         return <RecurringExpensesManager viewMode={viewMode} />;
       case "converter":
         return <ConverterDashboard />;
@@ -583,7 +586,10 @@ export const FinancialDashboard = () => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      console.log('🖱️ [DEBUG] Clicking tab:', tab.id);
+                      setActiveTab(tab.id);
+                    }}
                     className={`
                       flex items-center gap-2 whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors
                       ${activeTab === tab.id
@@ -637,7 +643,10 @@ export const FinancialDashboard = () => {
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => {
+                        console.log('🖱️ [DEBUG] Clicking mobile tab:', tab.id);
+                        setActiveTab(tab.id);
+                      }}
                       className={`
                         flex flex-col items-center gap-0.5 border-b-2 px-2 py-1.5 text-xs font-medium transition-colors min-w-0 flex-1
                         ${activeTab === tab.id

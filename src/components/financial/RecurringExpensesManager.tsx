@@ -112,6 +112,8 @@ interface RecurringExpensesManagerProps {
 }
 
 export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerProps) => {
+  console.log('📊 [DEBUG] RecurringExpensesManager mounted with viewMode:', viewMode);
+  
   const [expenses, setExpenses] = useState<RecurringExpense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
