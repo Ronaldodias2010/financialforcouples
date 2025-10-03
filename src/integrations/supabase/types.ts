@@ -2288,6 +2288,7 @@ export type Database = {
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
           description: string
+          due_date: string | null
           expense_source_type: string | null
           id: string
           installment_number: number | null
@@ -2295,6 +2296,7 @@ export type Database = {
           owner_user: string | null
           payment_method: string | null
           purchase_date: string
+          status: string
           subcategory: string | null
           tag_id: string | null
           total_installments: number | null
@@ -2312,6 +2314,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           description: string
+          due_date?: string | null
           expense_source_type?: string | null
           id?: string
           installment_number?: number | null
@@ -2319,6 +2322,7 @@ export type Database = {
           owner_user?: string | null
           payment_method?: string | null
           purchase_date?: string
+          status?: string
           subcategory?: string | null
           tag_id?: string | null
           total_installments?: number | null
@@ -2336,6 +2340,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           description?: string
+          due_date?: string | null
           expense_source_type?: string | null
           id?: string
           installment_number?: number | null
@@ -2343,6 +2348,7 @@ export type Database = {
           owner_user?: string | null
           payment_method?: string | null
           purchase_date?: string
+          status?: string
           subcategory?: string | null
           tag_id?: string | null
           total_installments?: number | null
