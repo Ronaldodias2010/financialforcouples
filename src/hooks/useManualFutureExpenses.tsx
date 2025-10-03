@@ -55,37 +55,42 @@ export const useManualFutureExpenses = () => {
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      // Fetch expenses for the user and partner if applicable
-      const { data: expensesData, error: expensesError } = await supabase
-        .from('manual_future_expenses')
-        .select('*')
+      // Fetch pending transactions (new unified approach)
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          category:categories(id, name, color)
+        `)
         .in('user_id', userIds)
-        .eq('is_paid', false)
+        .eq('status', 'pending')
+        .eq('type', 'expense')
         .order('due_date', { ascending: true });
 
-      if (expensesError) {
-        console.error('Error fetching manual future expenses:', expensesError);
+      if (transactionsError) {
+        console.error('Error fetching pending transactions:', transactionsError);
         return [];
       }
 
-      // Fetch categories for both users
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select('id, name, color')
-        .in('user_id', userIds);
-
-      if (categoriesError) {
-        console.error('Error fetching categories:', categoriesError);
-      }
-
-      // Combine data
-      const categoryMap = new Map(
-        (categoriesData || []).map(cat => [cat.id, cat])
-      );
-
-      let expenses = (expensesData || []).map(expense => ({
-        ...expense,
-        category: expense.category_id ? categoryMap.get(expense.category_id) : undefined
+      // Map to ManualFutureExpense interface for backward compatibility
+      let expenses = (transactionsData || []).map(transaction => ({
+        id: transaction.id,
+        user_id: transaction.user_id,
+        description: transaction.description,
+        amount: transaction.amount,
+        due_date: transaction.due_date || transaction.transaction_date,
+        category_id: transaction.category_id,
+        payment_method: transaction.payment_method,
+        notes: '',
+        is_paid: false,
+        owner_user: transaction.owner_user,
+        created_at: transaction.created_at,
+        updated_at: transaction.updated_at,
+        category: transaction.category ? {
+          id: transaction.category.id,
+          name: transaction.category.name,
+          color: transaction.category.color
+        } : undefined
       }));
 
       // Apply viewMode filter
@@ -117,16 +122,17 @@ export const useManualFutureExpenses = () => {
     setIsLoading(true);
     
     try {
-      // First, get the expense details
-      const { data: expense, error: expenseError } = await supabase
-        .from('manual_future_expenses')
+      // Get the pending transaction
+      const { data: transaction, error: transactionError } = await supabase
+        .from('transactions')
         .select('*')
         .eq('id', params.expenseId)
         .eq('user_id', user.id)
+        .eq('status', 'pending')
         .single();
 
-      if (expenseError || !expense) {
-        console.error('Error fetching expense:', expenseError);
+      if (transactionError || !transaction) {
+        console.error('Error fetching transaction:', transactionError);
         toast({
           title: "Erro",
           description: "Despesa futura não encontrada",
@@ -135,104 +141,46 @@ export const useManualFutureExpenses = () => {
         return null;
       }
 
-      if (expense.is_paid) {
-        toast({
-          title: "Erro",
-          description: "Esta despesa já foi paga",
-          variant: "destructive",
-        });
-        return null;
-      }
-
       // Calculate if payment is late
       const today = new Date();
-      const dueDate = new Date(expense.due_date);
+      const dueDate = new Date(transaction.due_date || transaction.transaction_date);
       const daysOverdue = dueDate < today ? Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
       const isPaidLate = daysOverdue > 0;
 
-      // Create transaction
-      const { data: transaction, error: transactionError } = await supabase
+      // Simply update the transaction status to 'completed'
+      const { data: updatedTransaction, error: updateError } = await supabase
         .from('transactions')
-        .insert({
-          user_id: user.id,
-          type: 'expense',
-          amount: expense.amount,
-          description: expense.description,
+        .update({
+          status: 'completed',
           transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
-          category_id: expense.category_id,
-          account_id: params.accountId,
-          card_id: params.cardId,
-          payment_method: params.paymentMethod || expense.payment_method,
-          owner_user: expense.owner_user
+          account_id: params.accountId || transaction.account_id,
+          card_id: params.cardId || transaction.card_id,
+          payment_method: params.paymentMethod || transaction.payment_method,
+          updated_at: new Date().toISOString()
         })
+        .eq('id', params.expenseId)
         .select()
         .single();
 
-      if (transactionError) {
-        console.error('Error creating transaction:', transactionError);
-        toast({
-          title: "Erro",
-          description: "Erro ao criar transação",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      // Mark expense as paid and no longer overdue
-      const { error: updateError } = await supabase
-        .from('manual_future_expenses')
-        .update({
-          is_paid: true,
-          is_overdue: false,
-          paid_at: new Date().toISOString(),
-          transaction_id: transaction.id
-        })
-        .eq('id', params.expenseId);
-
       if (updateError) {
-        console.error('Error updating expense:', updateError);
+        console.error('Error updating transaction:', updateError);
         toast({
           title: "Erro",
-          description: "Erro ao marcar despesa como paga",
+          description: "Erro ao processar pagamento",
           variant: "destructive",
         });
         return null;
       }
-
-      // Create future expense payment record with overdue information
-      await supabase
-        .from('future_expense_payments')
-        .insert({
-          user_id: user.id,
-          original_due_date: expense.due_date,
-          payment_date: params.paymentDate || new Date().toISOString().split('T')[0],
-          amount: expense.amount,
-          description: expense.description,
-          category_id: expense.category_id,
-          payment_method: params.paymentMethod || expense.payment_method,
-          account_id: params.accountId,
-          card_id: params.cardId,
-          transaction_id: transaction.id,
-          owner_user: expense.owner_user,
-          paid_late: isPaidLate,
-          days_overdue: daysOverdue,
-          original_due_date_tracking: expense.due_date,
-          expense_source_type: 'manual_future',
-          card_payment_info: {
-            manualFutureExpenseId: expense.id,
-            expenseDescription: expense.description
-          }
-        });
 
       toast({
         title: "Pagamento processado",
         description: isPaidLate 
-          ? `Despesa "${expense.description}" foi paga com ${daysOverdue} dia(s) de atraso e adicionada às despesas mensais.`
+          ? `Despesa "${transaction.description}" foi paga com ${daysOverdue} dia(s) de atraso.`
           : "Despesa futura foi paga e adicionada às despesas mensais",
         variant: "default",
       });
 
-      return transaction;
+      return updatedTransaction;
     } catch (error) {
       console.error('Error paying manual expense:', error);
       toast({
@@ -257,11 +205,13 @@ export const useManualFutureExpenses = () => {
     }
 
     try {
+      // Delete from unified transactions table
       const { error } = await supabase
-        .from('manual_future_expenses')
+        .from('transactions')
         .delete()
         .eq('id', expenseId)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
 
       if (error) {
         console.error('Error deleting expense:', error);

@@ -20,6 +20,8 @@ interface Transaction {
   card_transaction_type?: string;
   categories?: { name: string };
   cards?: { name: string };
+  status?: 'pending' | 'completed' | 'cancelled';
+  due_date?: string;
 }
 
 interface Account {
@@ -321,10 +323,17 @@ export const useFinancialData = () => {
     const expenseValues: number[] = [];
 
     filteredTransactions.forEach((transaction) => {
+      // Skip internal transfers and investments
       if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
         return;
       }
 
+      // Skip pending transactions (future expenses not yet due)
+      if (transaction.status === 'pending') {
+        return;
+      }
+
+      // Skip legacy future expenses
       if (transaction.card_transaction_type === 'future_expense') {
         return;
       }
@@ -402,6 +411,11 @@ export const useFinancialData = () => {
           return;
         }
 
+        // Skip pending transactions
+        if (transaction.status === 'pending') {
+          return;
+        }
+
         if (transaction.card_transaction_type === 'future_expense') {
           return;
         }
@@ -427,6 +441,11 @@ export const useFinancialData = () => {
 
       (currentTransactions || []).forEach((transaction) => {
         if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
+          return;
+        }
+
+        // Skip pending transactions
+        if (transaction.status === 'pending') {
           return;
         }
 
@@ -486,6 +505,7 @@ export const useFinancialData = () => {
       .filter(t => t.type === 'expense' && 
         t.payment_method !== 'account_transfer' && 
         t.payment_method !== 'account_investment' &&
+        t.status !== 'pending' &&
         t.card_transaction_type !== 'future_expense' && 
         (!coupleIds || t.user_id === coupleIds.user1_id))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
@@ -494,6 +514,7 @@ export const useFinancialData = () => {
       .filter(t => t.type === 'expense' && 
         t.payment_method !== 'account_transfer' && 
         t.payment_method !== 'account_investment' &&
+        t.status !== 'pending' &&
         t.card_transaction_type !== 'future_expense' && 
         (coupleIds ? t.user_id === coupleIds.user2_id : false))
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
@@ -546,6 +567,7 @@ export const useFinancialData = () => {
     const expenseOnly = filteredTransactions.filter(t => t.type === 'expense' && 
       t.payment_method !== 'account_transfer' && 
       t.payment_method !== 'account_investment' &&
+      t.status !== 'pending' &&
       t.card_transaction_type !== 'future_expense');
     
     const expenseValues = expenseOnly.map(t => convertCurrency(t.amount, t.currency, userPreferredCurrency));
