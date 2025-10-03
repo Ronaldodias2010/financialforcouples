@@ -26,6 +26,29 @@ const formatDateForDB = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+// Helper to safely convert to Date object
+const toSafeDate = (dateValue: Date | string): Date => {
+  if (dateValue instanceof Date) {
+    return dateValue;
+  }
+  const parsed = parseLocalDate(dateValue);
+  return parsed;
+};
+
+// Helper to format date safely for display
+const formatSafeDate = (dateValue: Date | string): string => {
+  try {
+    const date = toSafeDate(dateValue);
+    if (isNaN(date.getTime())) {
+      return 'Data inválida';
+    }
+    return format(date, "dd/MM/yyyy");
+  } catch (error) {
+    console.error('Error formatting date:', error, dateValue);
+    return 'Data inválida';
+  }
+};
+
 // Component to show installment progress and future expense status
 const InstallmentProgress = ({ total, remaining, nextDueDate }: { 
   total: number, 
@@ -332,6 +355,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
   };
 
   const handleEdit = (expense: RecurringExpense) => {
+    console.log('✏️ [DEBUG] Editing expense:', expense);
     setEditingExpense(expense);
     setName(expense.name);
     setAmount(expense.amount.toString());
@@ -344,7 +368,10 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
       expense.frequency_type || 
       (monthlyOptions.includes(expense.frequency_days.toString()) ? 'months' : 'days')
     );
-    setNextDueDate(parseLocalDate(expense.next_due_date.toString()));
+    // ⭐ FIX: Usar toSafeDate para garantir conversão correta
+    const safeDate = toSafeDate(expense.next_due_date);
+    console.log('📅 [DEBUG] Setting next due date:', safeDate);
+    setNextDueDate(safeDate);
     setContractDuration(expense.contract_duration_months?.toString() || "");
     setIsDialogOpen(true);
   };
@@ -604,7 +631,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                     </p>
                   ) : (
                     <p className="text-xs text-muted-foreground">
-                      {t('recurring.next')}: {format(new Date(expense.next_due_date), "dd/MM/yyyy")}
+                      {t('recurring.next')}: {formatSafeDate(expense.next_due_date)}
                     </p>
                   )}
                   {expense.remaining_installments !== null && expense.total_installments ? (
