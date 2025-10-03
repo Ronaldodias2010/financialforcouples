@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useInvalidateFinancialData } from '@/hooks/useInvalidateFinancialData';
+import { useToast } from '@/hooks/use-toast';
 
 interface AddFutureIncomeModalProps {
   open: boolean;
@@ -18,6 +20,8 @@ interface AddFutureIncomeModalProps {
 export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureIncomeModalProps) => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { invalidateAll } = useInvalidateFinancialData();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -87,6 +91,15 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
         owner_user: ownerUser,
       });
 
+      // Invalidate all queries to update dashboard immediately
+      await invalidateAll();
+      
+      toast({
+        title: "✓ " + t('success'),
+        description: t('futureIncomes.addSuccess') || "Receita futura adicionada com sucesso",
+        duration: 3000,
+      });
+
       setFormData({
         description: '',
         amount: '',
@@ -99,6 +112,11 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
       onOpenChange(false);
     } catch (error) {
       console.error('Error adding future income:', error);
+      toast({
+        title: t('error'),
+        description: t('futureIncomes.addError') || "Erro ao adicionar receita futura",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

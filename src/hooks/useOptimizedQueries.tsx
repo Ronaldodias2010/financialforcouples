@@ -222,7 +222,7 @@ export const useOptimizedRealTimeUpdates = () => {
     () => debounce((queryKey: string[]) => {
       queryClient.invalidateQueries({ queryKey });
       logger.debug('Query invalidated', { queryKey });
-    }, 500),
+    }, 100), // Reduced from 500ms to 100ms
     [queryClient]
   );
 
@@ -230,29 +230,45 @@ export const useOptimizedRealTimeUpdates = () => {
     () => throttle((queryKey: string[]) => {
       queryClient.refetchQueries({ queryKey });
       logger.debug('Query refetched', { queryKey });
-    }, 2000),
+    }, 500), // Reduced from 2000ms to 500ms
     [queryClient]
   );
 
-  const invalidateTransactions = useCallback(() => {
+  const invalidateTransactions = useCallback((immediate = false) => {
     if (user?.id) {
-      debouncedInvalidation(queryKeys.transactions(user.id));
-      debouncedInvalidation(queryKeys.financialSummary(user.id, 'both'));
+      if (immediate) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions(user.id) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.financialSummary(user.id, 'both') });
+      } else {
+        debouncedInvalidation(queryKeys.transactions(user.id));
+        debouncedInvalidation(queryKeys.financialSummary(user.id, 'both'));
+      }
     }
-  }, [user?.id, debouncedInvalidation]);
+  }, [user?.id, debouncedInvalidation, queryClient]);
 
-  const invalidateAccounts = useCallback(() => {
+  const invalidateAccounts = useCallback((immediate = false) => {
     if (user?.id) {
-      debouncedInvalidation(queryKeys.accounts(user.id));
-      debouncedInvalidation(queryKeys.financialSummary(user.id, 'both'));
+      if (immediate) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts(user.id) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.financialSummary(user.id, 'both') });
+      } else {
+        debouncedInvalidation(queryKeys.accounts(user.id));
+        debouncedInvalidation(queryKeys.financialSummary(user.id, 'both'));
+      }
     }
-  }, [user?.id, debouncedInvalidation]);
+  }, [user?.id, debouncedInvalidation, queryClient]);
 
-  const refreshAll = useCallback(() => {
+  const refreshAll = useCallback((immediate = false) => {
     if (user?.id) {
-      throttledRefresh(['transactions', 'accounts', 'financial-summary']);
+      if (immediate) {
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
+      } else {
+        throttledRefresh(['transactions', 'accounts', 'financial-summary']);
+      }
     }
-  }, [user?.id, throttledRefresh]);
+  }, [user?.id, throttledRefresh, queryClient]);
 
   return {
     invalidateTransactions,

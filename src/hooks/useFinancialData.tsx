@@ -98,8 +98,8 @@ export const useFinancialData = () => {
       },
       (payload) => {
         console.log('Real-time transaction change detected:', payload);
-        // Refresh transactions when any change occurs to ensure couples see each other's data
-        setTimeout(fetchTransactions, 100); // Small delay to ensure database consistency
+        // Refresh transactions immediately when any change occurs
+        fetchTransactions();
       }
     )
     .subscribe();
@@ -116,7 +116,7 @@ export const useFinancialData = () => {
       },
       (payload) => {
         console.log('Real-time account change detected:', payload);
-        setTimeout(fetchAccounts, 100);
+        fetchAccounts();
       }
     )
     .subscribe();
@@ -136,10 +136,8 @@ export const useFinancialData = () => {
         const data = payload.new || payload.old;
         if (data && typeof data === 'object' && 'user1_id' in data && 'user2_id' in data) {
           if (data.user1_id === user.id || data.user2_id === user.id) {
-            setTimeout(() => {
-              fetchTransactions();
-              fetchAccounts();
-            }, 100);
+            fetchTransactions();
+            fetchAccounts();
           }
         }
       }

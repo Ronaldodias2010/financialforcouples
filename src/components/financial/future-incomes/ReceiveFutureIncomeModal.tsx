@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { ManualFutureIncome } from '@/hooks/useManualFutureIncomes';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle } from 'lucide-react';
+import { useInvalidateFinancialData } from '@/hooks/useInvalidateFinancialData';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReceiveFutureIncomeModalProps {
   open: boolean;
@@ -21,6 +23,8 @@ interface ReceiveFutureIncomeModalProps {
 export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive }: ReceiveFutureIncomeModalProps) => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { invalidateAll } = useInvalidateFinancialData();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [receiptDate, setReceiptDate] = useState('');
@@ -61,9 +65,24 @@ export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive
     setLoading(true);
     try {
       await onReceive(income.id, receiptDate, accountId || undefined, paymentMethod);
+      
+      // Invalidate all queries to update dashboard immediately
+      await invalidateAll();
+      
+      toast({
+        title: "✓ " + t('success'),
+        description: t('futureIncomes.receiveSuccess') || "Receita confirmada com sucesso",
+        duration: 3000,
+      });
+      
       onOpenChange(false);
     } catch (error) {
       console.error('Error receiving income:', error);
+      toast({
+        title: t('error'),
+        description: t('futureIncomes.receiveError') || "Erro ao confirmar receita",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
