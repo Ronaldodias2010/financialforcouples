@@ -817,73 +817,41 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           const total = Math.round(transactionAmount * 100);
           const per = Math.floor(total / totalInstallments);
 
-          // Primeira parcela vai para gastos mensais (current)
-          const firstInstallmentDate = makeDueDate(purchaseDate, firstOffset);
-          const firstInstallmentAmount = per / 100;
-          
-          const firstInstallment = {
-            user_id: user.id,
-            owner_user: ownerUser,
-            type: "expense" as const,
-            amount: firstInstallmentAmount,
-            currency,
-            description: `${description} (1/${totalInstallments})`,
-            category_id: categoryId,
-            subcategory: subcategory || null,
-            transaction_date: format(firstInstallmentDate, 'yyyy-MM-dd'),
-            purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
-            payment_method: "credit_card" as const,
-            card_id: cardId,
-            account_id: null,
-            is_installment: true,
-            total_installments: totalInstallments,
-            installment_number: 1,
-            expense_source_type: 'installment_current'
-          };
-
-          // Inserir primeira parcela em transactions (gastos mensais)
-          const { data: firstInstallmentData, error: firstInstallmentErr } = await supabase
-            .from("transactions")
-            .insert(firstInstallment)
-            .select()
-            .single();
-          
-          if (firstInstallmentErr) throw firstInstallmentErr;
-
-          // Demais parcelas vão para gastos futuros
-          const futureInstallments = Array.from({ length: totalInstallments - 1 }, (_, i) => {
-            const installmentNumber = i + 2; // Começa da segunda parcela
+          // Criar TODAS as parcelas na tabela transactions de uma só vez
+          const allInstallments = Array.from({ length: totalInstallments }, (_, i) => {
+            const installmentNumber = i + 1;
             const isLast = installmentNumber === totalInstallments;
             const amountCents = isLast ? total - per * (totalInstallments - 1) : per;
-            const dueDate = makeDueDate(purchaseDate, firstOffset + installmentNumber - 1);
+            const dueDate = makeDueDate(purchaseDate, firstOffset + i);
             
             return {
               user_id: user.id,
-              recurring_expense_id: null,
-              installment_transaction_id: firstInstallmentData.id,
-              card_payment_info: null,
-              original_due_date: format(dueDate, 'yyyy-MM-dd'),
-              payment_date: format(dueDate, 'yyyy-MM-dd'),
+              owner_user: ownerUser,
+              type: "expense" as const,
+              status: installmentNumber === 1 ? "completed" as const : "pending" as const, // Primeira parcela = completed, demais = pending
               amount: amountCents / 100,
+              currency,
               description: `${description} (${installmentNumber}/${totalInstallments})`,
               category_id: categoryId,
-              payment_method: 'credit_card',
-              account_id: null,
+              subcategory: subcategory || null,
+              transaction_date: installmentNumber === 1 ? format(dueDate, 'yyyy-MM-dd') : null, // Apenas primeira parcela tem data
+              due_date: format(dueDate, 'yyyy-MM-dd'), // TODAS têm due_date
+              purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
+              payment_method: "credit_card" as const,
               card_id: cardId,
-              transaction_id: null,
-              owner_user: ownerUser,
-              expense_source_type: 'installment'
+              account_id: null,
+              is_installment: true,
+              total_installments: totalInstallments,
+              installment_number: installmentNumber,
             };
           });
 
-          // Inserir parcelas futuras em future_expense_payments
-          if (futureInstallments.length > 0) {
-            const { error: futureInstallmentsErr } = await supabase
-              .from("future_expense_payments")
-              .insert(futureInstallments);
-            
-            if (futureInstallmentsErr) throw futureInstallmentsErr;
-          }
+          // Inserir todas as parcelas de uma vez
+          const { error: installmentsErr } = await supabase
+            .from("transactions")
+            .insert(allInstallments);
+          
+          if (installmentsErr) throw installmentsErr;
         } else {
         // À vista => 1/1 respeitando corte
         const dueDate = makeDueDate(purchaseDate, firstOffset);

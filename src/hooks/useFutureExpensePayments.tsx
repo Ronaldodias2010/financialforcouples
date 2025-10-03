@@ -165,7 +165,7 @@ export const useFutureExpensePayments = () => {
     }
   };
 
-  const processInstallmentAutomatically = async (futurePaymentId: string) => {
+  const processInstallmentAutomatically = async (transactionId: string) => {
     if (!user) {
       toast({
         title: "Erro",
@@ -178,9 +178,17 @@ export const useFutureExpensePayments = () => {
     setIsProcessing(true);
     
     try {
-      const { data, error } = await supabase.rpc('process_installment_payment', {
-        p_future_payment_id: futurePaymentId
-      });
+      // Atualizar status da transação de 'pending' para 'completed'
+      const { data, error } = await supabase
+        .from('transactions')
+        .update({
+          status: 'completed',
+          transaction_date: new Date().toISOString().split('T')[0],
+        })
+        .eq('id', transactionId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
 
       if (error) {
         console.error('Error processing installment:', error);

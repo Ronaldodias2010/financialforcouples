@@ -117,11 +117,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      // Buscar parcelas futuras da tabela future_expense_payments
+      // Buscar parcelas futuras da tabela future_expense_payments (apenas gastos recorrentes e manuais antigos)
       const { data: futurePayments, error: futurePaymentsError } = await supabase
         .from("future_expense_payments")
         .select("*")
         .in("user_id", userIds)
+        .neq("expense_source_type", "installment") // Excluir parcelas (agora vêm de transactions)
         .gte("original_due_date", format(now, 'yyyy-MM-dd'))
         .lte("original_due_date", format(futureDate, 'yyyy-MM-dd'))
         .order("original_due_date", { ascending: true });
@@ -130,8 +131,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         console.error("Error fetching future payments:", futurePaymentsError);
       }
 
-      // Buscar parcelas futuras da tabela transactions (parcelas já criadas)
-      const { data: installments, error: installmentsError } = await supabase
+      // Buscar TODAS as parcelas pendentes (status = 'pending') da tabela transactions
+      const { data: pendingInstallments, error: pendingInstallmentsError } = await supabase
         .from("transactions")
         .select(`
           *,
@@ -139,10 +140,16 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           cards(name, owner_user)
         `)
         .in("user_id", userIds)
+        .eq("status", "pending") // Apenas parcelas pendentes
+        .eq("payment_method", "credit_card")
         .eq("is_installment", true)
-        .gte("transaction_date", format(now, 'yyyy-MM-dd'))
-        .lte("transaction_date", format(futureDate, 'yyyy-MM-dd'))
-        .order("transaction_date", { ascending: true });
+        .gte("due_date", format(now, 'yyyy-MM-dd'))
+        .lte("due_date", format(futureDate, 'yyyy-MM-dd'))
+        .order("due_date", { ascending: true });
+
+      if (pendingInstallmentsError) {
+        console.error("Error fetching pending installments:", pendingInstallmentsError);
+      }
 
       // Buscar TODOS os gastos recorrentes ativos (sem filtro de data para calcular todas as parcelas)
       const { data: recurring, error: recurringError } = await supabase
@@ -182,7 +189,6 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .lte("transaction_date", format(futureDate, 'yyyy-MM-dd'))
         .order("transaction_date", { ascending: true });
 
-      if (installmentsError) throw installmentsError;
       if (recurringError) throw recurringError;
       if (cardsError) throw cardsError;
       if (cardTransactionsError) throw cardTransactionsError;
@@ -263,8 +269,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Adicionar parcelas, mas excluir a 1ª parcela do mês atual (ela é Gasto Atual)
-      for (const installment of installments || []) {
+      // Adicionar parcelas pendentes (status = 'pending') da tabela transactions
+      for (const installment of pendingInstallments || []) {
         // Filtrar por viewMode se necessário
         const ownerUser = installment.cards?.owner_user || installment.owner_user;
         const shouldInclude = viewMode === "both" || 
@@ -273,34 +279,17 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           
         if (!shouldInclude) continue;
 
-        const isPaid = await isExpensePaid(undefined, installment.id, installment.transaction_date);
-        
-        // Skip paid installments
-        if (isPaid) continue;
-        
-        const transactionMonth = format(new Date(installment.transaction_date), 'yyyy-MM');
-        const isCurrentMonth = transactionMonth === currentMonth;
         const installmentNumber = installment.installment_number || 1;
         const totalInstallments = installment.total_installments || 1;
 
-        // Excluir compras com parcela única (1/1) de Gastos Futuros
-        if (totalInstallments === 1) {
-          continue;
-        }
-
-        // Se for a primeira parcela e for no mês atual, não aparece em Gastos Futuros
-        if (installmentNumber === 1 && isCurrentMonth) {
-          continue;
-        }
-        
-        // Parcelas de cartão de crédito NÃO devem ter botão de pagamento
-        const allowsPayment = installment.payment_method !== 'credit_card';
+        // Parcelas de cartão de crédito NÃO devem ter botão de pagamento (são processadas automaticamente)
+        const allowsPayment = false;
         
         expenses.push({
           id: installment.id,
           description: installment.description,
           amount: installment.amount,
-          due_date: installment.transaction_date,
+          due_date: installment.due_date, // Usar due_date ao invés de transaction_date
           type: 'installment',
           category: installment.categories?.name || t('common.noCategory'),
           card_name: installment.cards?.name,
@@ -309,6 +298,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           installmentTransactionId: installment.id,
           isPaid: false,
           allowsPayment, // Parcelas de cartão de crédito não podem ser pagas individualmente
+          currency: installment.currency as CurrencyCode,
         });
       }
 
