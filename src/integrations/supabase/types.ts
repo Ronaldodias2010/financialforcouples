@@ -2874,6 +2874,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      regenerate_future_expenses: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       suggest_category_and_tag: {
         Args:
           | { description: string; language?: string }
