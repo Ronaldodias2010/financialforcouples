@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, CalendarIcon, RotateCcw, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Edit, CalendarIcon, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -448,18 +448,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">{t('recurring.title')}</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => {
-            fetchRecurringExpenses();
-            toast({
-              title: "Atualizado",
-              description: "Dados recarregados com sucesso",
-            });
-          }}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Atualizar
-          </Button>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
           }}>
@@ -605,7 +594,6 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             </form>
           </DialogContent>
         </Dialog>
-        </div>
       </div>
 
       <div className="grid gap-4">
@@ -619,22 +607,22 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
         ) : (
           expenses.map((expense) => (
             <Card key={expense.id} className={cn(
-              "p-4", 
+              "p-3 sm:p-4", 
               !expense.is_active && "opacity-50",
               expense.is_completed && "border-green-200 bg-green-50"
             )}>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{expense.name}</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-sm sm:text-base break-words">{expense.name}</h3>
                     <span className={cn(
-                      "text-xs px-2 py-1 rounded-full",
+                      "text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0",
                       expense.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
                     )}>
                       {expense.is_active ? t('recurring.active') : t('recurring.inactive')}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)} • {getOwnerName(expense.owner_user)}
                   </p>
                   {expense.is_completed ? (
@@ -671,11 +659,12 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto sm:flex-shrink-0">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => toggleActive(expense)}
+                    className="flex-1 sm:flex-initial text-xs sm:text-sm"
                   >
                     {expense.is_active ? t('recurring.deactivate') : t('recurring.activate')}
                   </Button>
@@ -683,16 +672,17 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(expense)}
+                    className="flex-1 sm:flex-initial"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDelete(expense.id)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-red-600 hover:text-red-700 flex-1 sm:flex-initial"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               </div>
