@@ -56,6 +56,7 @@ export const useManualFutureExpenses = () => {
       }
 
       // Fetch pending transactions (new unified approach)
+      // EXCLUIR parcelas de cartão - elas são exibidas separadamente como card_transaction
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('transactions')
         .select(`
@@ -65,6 +66,7 @@ export const useManualFutureExpenses = () => {
         .in('user_id', userIds)
         .eq('status', 'pending')
         .eq('type', 'expense')
+        .is('card_id', null) // ⭐ Filtrar apenas despesas manuais (sem cartão)
         .order('due_date', { ascending: true });
 
       if (transactionsError) {
