@@ -834,8 +834,8 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               description: `${description} (${installmentNumber}/${totalInstallments})`,
               category_id: categoryId,
               subcategory: subcategory || null,
-              // Primeira parcela: transaction_date = data da compra (hoje), demais = data de vencimento
-              transaction_date: installmentNumber === 1 ? format(purchaseDate, 'yyyy-MM-dd') : format(dueDate, 'yyyy-MM-dd'),
+              // Todas as parcelas usam a data de vencimento como transaction_date
+              transaction_date: format(dueDate, 'yyyy-MM-dd'),
               due_date: format(dueDate, 'yyyy-MM-dd'),
               purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
               payment_method: "credit_card" as const,
