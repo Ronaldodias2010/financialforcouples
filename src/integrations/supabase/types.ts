@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      _backup_future_expense_payments_installments: {
+        Row: {
+          account_id: string | null
+          amount: number | null
+          card_id: string | null
+          card_payment_info: Json | null
+          category_id: string | null
+          created_at: string | null
+          days_overdue: number | null
+          description: string | null
+          expense_source_type: string | null
+          id: string | null
+          installment_transaction_id: string | null
+          original_due_date: string | null
+          original_due_date_tracking: string | null
+          owner_user: string | null
+          paid_late: boolean | null
+          payment_date: string | null
+          payment_method: string | null
+          recurring_expense_id: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number | null
+          card_id?: string | null
+          card_payment_info?: Json | null
+          category_id?: string | null
+          created_at?: string | null
+          days_overdue?: number | null
+          description?: string | null
+          expense_source_type?: string | null
+          id?: string | null
+          installment_transaction_id?: string | null
+          original_due_date?: string | null
+          original_due_date_tracking?: string | null
+          owner_user?: string | null
+          paid_late?: boolean | null
+          payment_date?: string | null
+          payment_method?: string | null
+          recurring_expense_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number | null
+          card_id?: string | null
+          card_payment_info?: Json | null
+          category_id?: string | null
+          created_at?: string | null
+          days_overdue?: number | null
+          description?: string | null
+          expense_source_type?: string | null
+          id?: string | null
+          installment_transaction_id?: string | null
+          original_due_date?: string | null
+          original_due_date_tracking?: string | null
+          owner_user?: string | null
+          paid_late?: boolean | null
+          payment_date?: string | null
+          payment_method?: string | null
+          recurring_expense_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       accounts: {
         Row: {
           account_model: string | null
