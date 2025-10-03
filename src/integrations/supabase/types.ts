@@ -1173,6 +1173,7 @@ export type Database = {
           owner_user: string
           paid_at: string | null
           payment_method: string | null
+          recurring_expense_id: string | null
           transaction_id: string | null
           updated_at: string
           user_id: string
@@ -1190,6 +1191,7 @@ export type Database = {
           owner_user?: string
           paid_at?: string | null
           payment_method?: string | null
+          recurring_expense_id?: string | null
           transaction_id?: string | null
           updated_at?: string
           user_id: string
@@ -1207,11 +1209,20 @@ export type Database = {
           owner_user?: string
           paid_at?: string | null
           payment_method?: string | null
+          recurring_expense_id?: string | null
           transaction_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "manual_future_expenses_recurring_expense_id_fkey"
+            columns: ["recurring_expense_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_expenses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manual_future_incomes: {
         Row: {
