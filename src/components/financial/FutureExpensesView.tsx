@@ -175,28 +175,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .eq("card_type", "credit")
         .not("due_date", "is", null);
 
-      // Buscar APENAS transações pending (parcelas futuras) para exibição em Despesas Futuras
-      // Transações completed já aparecem em Despesas Atuais
-      const currentMonth = format(now, 'yyyy-MM');
-      const { data: cardTransactions, error: cardTransactionsError } = await supabase
-        .from("transactions")
-        .select(`
-          *,
-          categories(name),
-          cards(name, owner_user, card_type)
-        `)
-        .in("user_id", userIds)
-        .eq("type", "expense")
-        .eq("status", "pending") // Apenas parcelas PENDING
-        .not("card_id", "is", null)
-        .eq('cards.card_type', 'credit')
-        .gte("transaction_date", format(now, 'yyyy-MM-dd'))
-        .lte("transaction_date", format(futureDate, 'yyyy-MM-dd'))
-        .order("transaction_date", { ascending: true });
+      // Não buscar transações de cartão individuais para exibição
+      // As parcelas aparecem no saldo do cartão e são pagas via fatura
+      const cardTransactions: any[] = [];
 
       if (recurringError) throw recurringError;
       if (cardsError) throw cardsError;
-      if (cardTransactionsError) throw cardTransactionsError;
 
       const expenses: FutureExpense[] = [];
 
@@ -324,40 +308,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Processar transações de cartão de crédito PENDING (parcelas futuras)
-      // Como agora buscamos apenas transações pending, todas devem ser incluídas
-      for (const cardTransaction of cardTransactions || []) {
-        const isInstallment = cardTransaction.is_installment;
-        const installmentNumber = cardTransaction.installment_number || 1;
-        const isCreditCard = cardTransaction.cards?.card_type === 'credit';
-        
-        // Ignorar cartões de débito
-        if (!isCreditCard || cardTransaction.payment_method === 'debit_card') {
-          continue;
-        }
-        
-        // Filtrar por viewMode
-        const ownerUser = cardTransaction.cards?.owner_user || cardTransaction.owner_user;
-        const shouldIncludeViewMode = viewMode === "both" || 
-          (viewMode === "user1" && ownerUser === 'user1') ||
-          (viewMode === "user2" && ownerUser === 'user2');
-          
-        if (shouldIncludeViewMode) {
-          const dueStatus = getDueStatus(cardTransaction.transaction_date);
-          expenses.push({
-            id: `transaction-${cardTransaction.id}`,
-            description: cardTransaction.description,
-            amount: cardTransaction.amount,
-            due_date: cardTransaction.transaction_date,
-            type: 'card_transaction',
-            category: cardTransaction.categories?.name || t('common.noCategory'),
-            card_name: cardTransaction.cards?.name,
-            owner_user: ownerUser,
-            allowsPayment: false,
-            dueStatus,
-          });
-        }
-      }
+      // Parcelas de cartão NÃO aparecem individualmente em Despesas Futuras
+      // Elas fazem parte do saldo do cartão e são pagas através da fatura mensal
+      // Apenas o "Pagamento de Cartão de Crédito" aparece no vencimento do cartão
 
       // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento (COM botão de pagar)
       for (const card of cards || []) {
