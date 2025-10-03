@@ -7,12 +7,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 
 import { AuthProvider } from "@/hooks/useAuth";
 import { SafeTooltipProvider } from "./components/system/SafeTooltipProvider";
-import { GlobalErrorBoundary } from "./components/system/GlobalErrorBoundary";
-import { ClientOnly } from "./components/system/ClientOnly";
-import { GlobalErrorLogger } from "./components/system/GlobalErrorLogger";
-import { PerformanceMonitor } from "./components/system/PerformanceMonitor";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
-import { RouteSEO } from "./components/seo/RouteSEO";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 import LandingSimple from "./pages/LandingSimple";
@@ -42,7 +37,6 @@ const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
 const CleanupPastel = lazy(() => import("./pages/CleanupPastel"));
 const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m => ({ default: m.TestPartnerEmails })));
 import { ProtectedRoute } from "./components/ProtectedRoute";
-// PWAPrompt temporarily disabled to stabilize app
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,18 +47,9 @@ const queryClient = new QueryClient({
   },
 });
 
-const AppContent = () => {
+const AppRoutes = () => {
   const navigate = useNavigate();
-  
-  const handleNavBack = () => {
-    // Use React Router navigation instead of window.history.back()
-    // This prevents the black screen issue in Chrome SPAs
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate('/app'); // Fallback to dashboard
-    }
-  };
+  const handleNavBack = () => navigate(-1);
 
   return (
     <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
@@ -88,7 +73,6 @@ const AppContent = () => {
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/asociacion" element={<Partnership />} />
         
-        {/* Protected Routes */}
         <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
         <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={handleNavBack} /></ProtectedRoute>} />
         <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={handleNavBack} /></ProtectedRoute>} />
@@ -110,33 +94,21 @@ const AppContent = () => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <GlobalErrorBoundary>
-          <BrowserRouter>
-            <AuthProvider>
-              <LanguageProvider>
-                <ClientOnly>
-                  <SafeTooltipProvider>
-                    <SubscriptionProvider>
-                      <AppContent />
-                    </SubscriptionProvider>
-                  </SafeTooltipProvider>
-                </ClientOnly>
-              </LanguageProvider>
-            </AuthProvider>
-            <Toaster />
-            <Sonner />
-            <GlobalErrorLogger />
-            <PerformanceMonitor />
-            <RouteSEO />
-          </BrowserRouter>
-        </GlobalErrorBoundary>
-      </ThemeProvider>
+      <BrowserRouter>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <LanguageProvider>
+              <SafeTooltipProvider>
+                <SubscriptionProvider>
+                  <AppRoutes />
+                  <Toaster />
+                  <Sonner />
+                </SubscriptionProvider>
+              </SafeTooltipProvider>
+            </LanguageProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };
