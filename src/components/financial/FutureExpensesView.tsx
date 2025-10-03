@@ -671,17 +671,17 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         {/* Total Geral - Destacado */}
         {filteredMonthlyGroups.length > 0 && (
           <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-primary/10 rounded-full">
-                    <DollarSign className="h-6 w-6 text-primary" />
+                  <div className="p-2 sm:p-3 bg-primary/10 rounded-full flex-shrink-0">
+                    <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-muted-foreground">
                       {t('monthlyExpenses.totalFuture')}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground truncate">
                       {selectedCategory === "all" 
                         ? t('monthlyExpenses.allFilter')
                         : translateCategory(selectedCategory)
@@ -689,11 +689,11 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-primary">
+                <div className="text-left sm:text-right">
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary break-words">
                     {formatCurrency(totalAmount)}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {filteredMonthlyGroups.reduce((sum, g) => sum + g.expenses.length, 0)} {t('futureExpenses.expensesPlural')}
                   </p>
                 </div>
