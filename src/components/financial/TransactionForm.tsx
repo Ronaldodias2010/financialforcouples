@@ -828,7 +828,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               user_id: user.id,
               owner_user: ownerUser,
               type: "expense" as const,
-              status: installmentNumber === 1 ? "completed" as const : "pending" as const,
+              status: "pending" as const,
               amount: amountCents / 100,
               currency,
               description: `${description} (${installmentNumber}/${totalInstallments})`,
