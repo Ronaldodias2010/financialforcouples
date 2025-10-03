@@ -135,6 +135,7 @@ const useTransactionsQuery = (coupleIds: CoupleData | null) => {
           cards(name)
         `)
         .in('user_id', userIds)
+        .eq('status', 'completed') // Apenas transações completadas
         .gte('transaction_date', format(startOfMonth, 'yyyy-MM-dd'))
         .lte('transaction_date', format(endOfMonth, 'yyyy-MM-dd'))
         .order('transaction_date', { ascending: false });
