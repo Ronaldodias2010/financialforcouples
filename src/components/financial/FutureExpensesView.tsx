@@ -563,83 +563,88 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   return (
     <Card className="p-6">
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">{t('monthlyExpenses.futureExpenses')}</h3>
-          </div>
-          
-          <div className="flex gap-3 items-center">
-            <FutureExpensesCalendar 
-              expenses={allFutureExpenses} 
-              getOwnerName={getOwnerName}
-            />
+        <div className="flex flex-col gap-4">
+          {/* Linha 1: Título e Ações principais */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold">{t('monthlyExpenses.futureExpenses')}</h3>
+            </div>
             
-            {allFilteredExpenses.length > 0 && (
-              <ExportUtils
-                data={allFilteredExpenses.map(expense => ({
-                  id: expense.id,
-                  description: expense.description,
-                  amount: expense.amount,
-                  transaction_date: expense.due_date,
-                  type: expense.type as any,
-                  category_id: '',
-                  payment_method: '',
-                  user_id: '',
-                  owner_user: expense.owner_user,
-                  categories: { name: expense.category },
-                  cards: expense.card_name ? { name: expense.card_name } : undefined,
-                  accounts: undefined
-                }))}
-                filename={getExportTitle()}
-                headers={[
-                  t('futureExpenses.description'),
-                  t('futureExpenses.amount'),
-                  t('futureExpenses.dueDate'),
-                  t('futureExpenses.category'),
-                  t('futureExpenses.type'),
-                  t('futureExpenses.owner')
-                ]}
-                title={t('futureExpenses.pdfTitle')}
-                additionalInfo={[
-                  { 
-                    label: t('futureExpenses.category'), 
-                    value: selectedCategory === "all" ? t('monthlyExpenses.allFilter') : translateCategory(selectedCategory) 
-                  },
-                  { label: t('futureExpenses.total'), value: formatCurrency(totalAmount) }
-                ]}
-                formatRowForCSV={(item) => {
-                  const mappedExpense = allFilteredExpenses.find(exp => exp.id === item.id);
-                  return [
-                    item.description,
-                    formatCurrency(item.amount),
-                    formatDate(item.transaction_date),
-                    translateCategory(mappedExpense?.category || ''),
-                    getTypeLabel(mappedExpense?.type || 'other'),
-                    item.owner_user ? getOwnerName(item.owner_user) : ''
-                  ];
-                }}
-                formatRowForPDF={(item) => {
-                  const mappedExpense = allFilteredExpenses.find(exp => exp.id === item.id);
-                  return [
-                    item.description,
-                    formatCurrency(item.amount),
-                    formatDate(item.transaction_date),
-                    translateCategory(mappedExpense?.category || ''),
-                    getTypeLabel(mappedExpense?.type || 'other'),
-                    item.owner_user ? getOwnerName(item.owner_user) : ''
-                  ];
-                }}
+            <div className="flex flex-wrap gap-2">
+              <FutureExpensesCalendar 
+                expenses={allFutureExpenses} 
+                getOwnerName={getOwnerName}
               />
-            )}
-            
-            <Button 
-              onClick={() => setAddExpenseModal(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              {t('futureExpenses.addFutureExpense')}
-            </Button>
+              
+              {allFilteredExpenses.length > 0 && (
+                <ExportUtils
+                  data={allFilteredExpenses.map(expense => ({
+                    id: expense.id,
+                    description: expense.description,
+                    amount: expense.amount,
+                    transaction_date: expense.due_date,
+                    type: expense.type as any,
+                    category_id: '',
+                    payment_method: '',
+                    user_id: '',
+                    owner_user: expense.owner_user,
+                    categories: { name: expense.category },
+                    cards: expense.card_name ? { name: expense.card_name } : undefined,
+                    accounts: undefined
+                  }))}
+                  filename={getExportTitle()}
+                  headers={[
+                    t('futureExpenses.description'),
+                    t('futureExpenses.amount'),
+                    t('futureExpenses.dueDate'),
+                    t('futureExpenses.category'),
+                    t('futureExpenses.type'),
+                    t('futureExpenses.owner')
+                  ]}
+                  title={t('futureExpenses.pdfTitle')}
+                  additionalInfo={[
+                    { 
+                      label: t('futureExpenses.category'), 
+                      value: selectedCategory === "all" ? t('monthlyExpenses.allFilter') : translateCategory(selectedCategory) 
+                    },
+                    { label: t('futureExpenses.total'), value: formatCurrency(totalAmount) }
+                  ]}
+                  formatRowForCSV={(item) => {
+                    const mappedExpense = allFilteredExpenses.find(exp => exp.id === item.id);
+                    return [
+                      item.description,
+                      formatCurrency(item.amount),
+                      formatDate(item.transaction_date),
+                      translateCategory(mappedExpense?.category || ''),
+                      getTypeLabel(mappedExpense?.type || 'other'),
+                      item.owner_user ? getOwnerName(item.owner_user) : ''
+                    ];
+                  }}
+                  formatRowForPDF={(item) => {
+                    const mappedExpense = allFilteredExpenses.find(exp => exp.id === item.id);
+                    return [
+                      item.description,
+                      formatCurrency(item.amount),
+                      formatDate(item.transaction_date),
+                      translateCategory(mappedExpense?.category || ''),
+                      getTypeLabel(mappedExpense?.type || 'other'),
+                      item.owner_user ? getOwnerName(item.owner_user) : ''
+                    ];
+                  }}
+                />
+              )}
+              
+              <Button 
+                onClick={() => setAddExpenseModal(true)}
+                className="flex items-center gap-2"
+                size="sm"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('futureExpenses.addFutureExpense')}</span>
+                <span className="sm:hidden">Adicionar</span>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -772,13 +777,17 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
 
                     return (
                       <Card key={expense.id} className={getCardClassName(expense)}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            {getTypeIcon(expense.type)}
-                            {getStatusIcon(expense)}
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-medium">{expense.description}</h4>
+                        {/* Layout Mobile-First: Coluna em mobile, linha em desktop */}
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                          {/* Seção de Informações */}
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className="flex gap-2 mt-1">
+                              {getTypeIcon(expense.type)}
+                              {getStatusIcon(expense)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-2">
+                                <h4 className="font-medium text-sm sm:text-base">{expense.description}</h4>
                                 {getStatusBadge(expense)}
                                 
                                 {/* Indicador de parcela - Traduzido */}
@@ -792,42 +801,49 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                                   {getTypeLabel(expense.type)}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-xs sm:text-sm text-muted-foreground">
                                 {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
                               </p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-xs sm:text-sm text-muted-foreground">
                                 {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <p className="font-semibold text-lg text-destructive">
+                          
+                          {/* Seção de Valor e Ação */}
+                          <div className="flex items-center justify-between gap-3 lg:flex-col lg:items-end lg:gap-2">
+                            <div className="text-left lg:text-right">
+                              <p className="font-semibold text-lg sm:text-xl text-destructive">
                                 {formatCurrency(expense.amount, expense.currency)}
                               </p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-shrink-0">
                               {expense.isPaid ? (
-                                <Badge variant="default" className="bg-success text-success-foreground">
+                                <Badge variant="default" className="bg-success text-success-foreground whitespace-nowrap">
                                   <CheckCircle className="h-3 w-3 mr-1" />
-                                  {t('futureExpenses.paid')}
+                                  <span className="hidden sm:inline">{t('futureExpenses.paid')}</span>
+                                  <span className="sm:hidden">✓</span>
                                 </Badge>
                               ) : expense.allowsPayment === false ? (
                                 // Transações do cartão - apenas informativo, SEM botão
-                                <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300">
+                                <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 whitespace-nowrap text-xs">
                                   <Receipt className="h-3 w-3 mr-1" />
-                                  {t('futureExpenses.cardExpense')}
+                                  <span className="hidden sm:inline">{t('futureExpenses.cardExpense')}</span>
+                                  <span className="sm:hidden">Cartão</span>
                                 </Badge>
                               ) : (
                                 // Cartões de crédito, gastos recorrentes e parcelas - COM botão
                                 <Button
                                   size="sm"
                                   onClick={() => handlePayExpense(expense)}
-                                  className="flex items-center gap-2"
+                                  className="flex items-center gap-1 whitespace-nowrap"
                                   variant={expense.dueStatus === 'overdue' ? 'default' : 'default'}
                                 >
-                                  <Receipt className="h-4 w-4" />
-                                  {expense.dueStatus === 'overdue' ? t('futureExpenses.payUrgentButton') : t('futureExpenses.payButton')}
+                                  <Receipt className="h-3 w-3 sm:h-4 sm:w-4" />
+                                  <span className="hidden sm:inline">
+                                    {expense.dueStatus === 'overdue' ? t('futureExpenses.payUrgentButton') : t('futureExpenses.payButton')}
+                                  </span>
+                                  <span className="sm:hidden">Pagar</span>
                                 </Button>
                               )}
                             </div>
