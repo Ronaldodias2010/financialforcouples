@@ -10,6 +10,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCouple } from "@/hooks/useCouple";
 import { useLanguage } from "@/hooks/useLanguage";
 import { format } from 'date-fns';
+import { parseLocalDate } from "@/utils/date";
 import { FutureExpensesCalendar } from "./FutureExpensesCalendar";
 import { translateCategoryName } from '@/utils/categoryTranslation';
 import { ExportUtils } from "@/components/financial/ExportUtils";
@@ -314,7 +315,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         if (!shouldInclude) continue;
 
         // Calcular todas as ocorrências futuras para os próximos 12 meses
-        let currentDueDate = new Date(recur.next_due_date);
+        let currentDueDate = parseLocalDate(recur.next_due_date);
         let installmentCount = 0;
         const maxInstallments = recur.contract_duration_months || 120; // Default para 10 anos se não houver duração
         
@@ -343,8 +344,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           }
           
           // Calcular próxima data de vencimento
-          currentDueDate = new Date(currentDueDate);
-          currentDueDate.setDate(currentDueDate.getDate() + recur.frequency_days);
+          const nextDate = new Date(currentDueDate);
+          nextDate.setDate(nextDate.getDate() + recur.frequency_days);
+          currentDueDate = nextDate;
           installmentCount++;
         }
       }
