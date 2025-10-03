@@ -874,12 +874,17 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h4 className="font-medium">{expense.description}</h4>
                                 {getStatusBadge(expense)}
+                                
+                                {/* Indicador de parcela - Fase 6 */}
+                                {expense.installment_info && (
+                                  <Badge variant="outline" className="text-xs whitespace-nowrap bg-primary/10 text-primary border-primary/20">
+                                    Parcela {expense.installment_info}
+                                  </Badge>
+                                )}
+                                
                                 <Badge className={getTypeColor(expense.type)}>
                                   {getTypeLabel(expense.type)}
                                 </Badge>
-                                {expense.installment_info && (
-                                  <Badge variant="outline">{expense.installment_info}</Badge>
-                                )}
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
