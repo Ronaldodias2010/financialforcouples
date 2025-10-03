@@ -140,18 +140,7 @@ export const useFutureExpensePayments = () => {
         console.error('Error fetching installment payments:', installmentsError);
       }
 
-      // Get legacy future_expense_payments
-      const { data: legacy, error: legacyError } = await supabase
-        .from('future_expense_payments')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('payment_date', { ascending: false });
-
-      if (legacyError) {
-        console.error('Error fetching legacy payments:', legacyError);
-      }
-
-      return [...(installments || []), ...(legacy || [])];
+      return installments || [];
     } catch (error) {
       console.error('Error fetching payments:', error);
       return [];
@@ -179,19 +168,10 @@ export const useFutureExpensePayments = () => {
         return data?.status === 'completed';
       }
 
-      // Check legacy future_expense_payments for recurring expenses
+      // Only check transactions table for recurring expenses
       if (recurringExpenseId) {
-        let query = supabase
-          .from('future_expense_payments')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('recurring_expense_id', recurringExpenseId);
-
-        if (originalDueDate) {
-          query = query.eq('original_due_date', originalDueDate);
-        }
-
-        const { data, error } = await query.limit(1);
+        // Recurring expenses are no longer tracked in future_expense_payments
+        return false;
 
         if (error) {
           console.error('Error checking recurring payment status:', error);

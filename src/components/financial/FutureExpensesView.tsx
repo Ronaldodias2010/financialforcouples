@@ -118,23 +118,6 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      // Buscar apenas gastos recorrentes antigos da tabela future_expense_payments
-      // EXCLUIR TODOS os gastos de parcelas (installment) - agora vêm de transactions
-      const { data: futurePayments, error: futurePaymentsError } = await supabase
-        .from("future_expense_payments")
-        .select("*")
-        .in("user_id", userIds)
-        .is("installment_transaction_id", null) // Excluir parcelas (installments têm transaction_id)
-        .not("expense_source_type", "in", '("installment")') // Excluir por tipo também
-        .gte("original_due_date", format(now, 'yyyy-MM-dd'))
-        .lte("original_due_date", format(futureDate, 'yyyy-MM-dd'))
-        .order("original_due_date", { ascending: true });
-
-      if (futurePaymentsError) {
-        console.error("Error fetching future payments:", futurePaymentsError);
-      }
-
-
       // Buscar TODOS os gastos recorrentes ativos (sem filtro de data para calcular todas as parcelas)
       const { data: recurring, error: recurringError } = await supabase
         .from("recurring_expenses")
@@ -199,58 +182,6 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           allowsPayment: true,
           dueStatus,
         });
-      }
-
-      // Processar pagamentos futuros da nova tabela (apenas gastos recorrentes legados)
-      if (futurePayments) {
-        for (const payment of futurePayments) {
-          // Garantir que não processamos parcelas de cartão (double check)
-          if (payment.installment_transaction_id || payment.expense_source_type === 'installment') {
-            continue;
-          }
-          
-          // Ignorar pagamentos de cartão (gerenciados separadamente)
-          if (payment.expense_source_type === 'card_payment') {
-            continue;
-          }
-          
-          // Filtrar por viewMode
-          const shouldInclude = viewMode === "both" || 
-            (viewMode === "user1" && payment.owner_user === 'user1') ||
-            (viewMode === "user2" && payment.owner_user === 'user2');
-            
-          if (!shouldInclude) continue;
-          
-          const isPaid = await isExpensePaid(payment.recurring_expense_id, null, payment.original_due_date);
-          
-          if (isPaid) continue;
-          
-          // Buscar nome da categoria
-          let categoryName = t('common.noCategory');
-          if (payment.category_id) {
-            const { data: categoryData } = await supabase
-              .from('categories')
-              .select('name')
-              .eq('id', payment.category_id)
-              .maybeSingle();
-            if (categoryData) {
-              categoryName = categoryData.name;
-            }
-          }
-          
-          expenses.push({
-            id: `legacy-${payment.id}`, // Prefixo para evitar conflito de IDs
-            description: payment.description,
-            amount: payment.amount,
-            due_date: payment.original_due_date,
-            type: 'recurring',
-            category: categoryName,
-            owner_user: payment.owner_user,
-            recurringExpenseId: payment.recurring_expense_id,
-            isPaid: false,
-            allowsPayment: true,
-          });
-        }
       }
 
       // REMOVIDO: Parcelas individuais não devem aparecer em Despesas Futuras
