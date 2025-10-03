@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -29,11 +28,7 @@ console.log("✅ Elemento root encontrado:", root);
     
     console.log("🔄 Renderizando aplicação completa...");
     
-    reactRoot.render(
-      <StrictMode>
-        <App />
-      </StrictMode>
-    );
+    reactRoot.render(<App />);
     
     console.log("✅ SUCESSO! Aplicação completa renderizada!");
     
@@ -41,17 +36,15 @@ console.log("✅ Elemento root encontrado:", root);
     console.error("❌ ERRO ao renderizar aplicação:", error);
     console.error("Stack trace:", error.stack);
     
-    // Limpar e tentar novamente sem StrictMode
+    // Tentar renderização alternativa
     try {
-      console.log("🔄 Tentando renderização sem StrictMode...");
+      console.log("🔄 Tentando renderização alternativa...");
       root.innerHTML = '';
       const reactRoot = createRoot(root);
       
-      reactRoot.render(
-        <App />
-      );
+      reactRoot.render(<App />);
       
-      console.log("✅ Renderização sem StrictMode funcionou!");
+      console.log("✅ Renderização alternativa funcionou!");
     } catch (secondError) {
       console.error("❌ Segundo erro:", secondError);
       
