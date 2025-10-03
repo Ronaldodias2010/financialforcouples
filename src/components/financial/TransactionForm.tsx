@@ -23,7 +23,6 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCashBalance } from "@/hooks/useCashBalance";
 import { useInvalidateFinancialData } from "@/hooks/useInvalidateFinancialData";
-import { useFinancialData } from "@/hooks/useFinancialData";
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
 }
@@ -111,7 +110,6 @@ const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
 
 export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const { invalidateAll } = useInvalidateFinancialData();
-  const { refreshData } = useFinancialData();
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -988,9 +986,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             // Invalidate all financial data to update the UI immediately
             try {
               await invalidateAll(true);
-              console.log('✅ Financial data invalidated successfully');
-              await refreshData();
-              console.log('✅ Financial summary refreshed');
+              console.log('✅ Financial data invalidated - React Query will auto-refresh');
             } catch (invalidateError) {
               console.error('❌ Error invalidating financial data:', invalidateError);
             }
@@ -1205,9 +1201,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
       // Invalidate all financial data to update the UI immediately
       try {
         await invalidateAll(true);
-        console.log('✅ Financial data invalidated successfully');
-        await refreshData();
-        console.log('✅ Financial summary refreshed');
+        console.log('✅ Financial data invalidated - React Query will auto-refresh');
       } catch (invalidateError) {
         console.error('❌ Error invalidating financial data:', invalidateError);
       }

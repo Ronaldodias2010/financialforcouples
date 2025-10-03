@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
@@ -39,139 +40,77 @@ interface FinancialSummary {
   currency: CurrencyCode;
 }
 
-export const useFinancialData = () => {
+interface CoupleData {
+  user1_id: string;
+  user2_id: string;
+}
+
+// ============= QUERY KEYS =============
+export const financialQueryKeys = {
+  userCurrency: (userId: string | undefined) => ['user-currency', userId] as const,
+  coupleData: (userId: string | undefined) => ['couple-data', userId] as const,
+  transactions: (userId: string | undefined, coupleIds: CoupleData | null) => 
+    ['transactions', userId, coupleIds] as const,
+  accounts: (userId: string | undefined, coupleIds: CoupleData | null) => 
+    ['accounts', userId, coupleIds] as const,
+};
+
+// ============= INDIVIDUAL QUERIES =============
+
+// Fetch user preferred currency
+const useCurrencyQuery = () => {
   const { user } = useAuth();
-  const { convertCurrency } = useCurrencyConverter();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [userPreferredCurrency, setUserPreferredCurrency] = useState<CurrencyCode>('BRL');
-  const [loading, setLoading] = useState(true);
-  const [coupleIds, setCoupleIds] = useState<{ user1_id: string; user2_id: string } | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchUserPreferredCurrency();
-      fetchTransactions();
-      fetchAccounts();
-    }
-  }, [user]);
-
-  // Re-fetch data when preferred currency changes
-  useEffect(() => {
-    if (user && userPreferredCurrency) {
-      fetchTransactions();
-    }
-  }, [userPreferredCurrency]);
-
-  // Listen for profile changes and real-time transaction updates
-  useEffect(() => {
-    if (!user) return;
-
-    const profileChannel = supabase
-      .channel('profile_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('Profile updated:', payload);
-          if (payload.new && payload.new.preferred_currency) {
-            console.log('New currency:', payload.new.preferred_currency);
-            setUserPreferredCurrency(payload.new.preferred_currency as CurrencyCode);
-          }
-        }
-      )
-      .subscribe();
-
-  // Listen for real-time transaction changes for unified dashboard
-  const transactionChannel = supabase
-    .channel('transaction_changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'transactions'
-      },
-      (payload) => {
-        console.log('Real-time transaction change detected:', payload);
-        // Refresh transactions immediately when any change occurs
-        fetchTransactions();
-      }
-    )
-    .subscribe();
-
-  // Listen for real-time account changes to reflect balances immediately
-  const accountChannel = supabase
-    .channel('account_changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'accounts'
-      },
-      (payload) => {
-        console.log('Real-time account change detected:', payload);
-        fetchAccounts();
-      }
-    )
-    .subscribe();
-
-  // Also listen for couple relationship changes
-  const coupleChannel = supabase
-    .channel('couple_changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'user_couples'
-      },
-      (payload) => {
-        console.log('Couple relationship changed:', payload);
-        const data = payload.new || payload.old;
-        if (data && typeof data === 'object' && 'user1_id' in data && 'user2_id' in data) {
-          if (data.user1_id === user.id || data.user2_id === user.id) {
-            fetchTransactions();
-            fetchAccounts();
-          }
-        }
-      }
-    )
-    .subscribe();
-
-    return () => {
-      supabase.removeChannel(profileChannel);
-      supabase.removeChannel(transactionChannel);
-      supabase.removeChannel(accountChannel);
-      supabase.removeChannel(coupleChannel);
-    };
-  }, [user]);
-
-  const fetchUserPreferredCurrency = async () => {
-    try {
+  
+  return useQuery({
+    queryKey: financialQueryKeys.userCurrency(user?.id),
+    queryFn: async () => {
+      if (!user?.id) throw new Error('No user');
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('preferred_currency')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .single();
 
-      if (data && data.preferred_currency) {
-        setUserPreferredCurrency(data.preferred_currency as CurrencyCode);
-      }
-    } catch (error) {
-      console.error('Error fetching user preferred currency:', error);
-    }
-  };
+      if (error) throw error;
+      return (data?.preferred_currency || 'BRL') as CurrencyCode;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes - currency doesn't change often
+  });
+};
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
+// Fetch couple data
+const useCoupleDataQuery = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: financialQueryKeys.coupleData(user?.id),
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      return data as CoupleData | null;
+    },
+    enabled: !!user?.id,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+};
+
+// Fetch transactions
+const useTransactionsQuery = (coupleIds: CoupleData | null) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: financialQueryKeys.transactions(user?.id, coupleIds),
+    queryFn: async () => {
+      if (!user?.id) return [];
       
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
@@ -182,29 +121,10 @@ export const useFinancialData = () => {
       endOfMonth.setDate(0);
       endOfMonth.setHours(23, 59, 59, 999);
 
-      // Check if user is part of a couple to include partner's transactions
-      const { data: coupleData } = await supabase
-        .from("user_couples")
-        .select("user1_id, user2_id")
-        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
-        .eq("status", "active")
-        .maybeSingle();
+      const userIds = coupleIds 
+        ? [coupleIds.user1_id, coupleIds.user2_id]
+        : [user.id];
 
-      let userIds = [user?.id];
-      let isPartOfCouple = false;
-      
-      if (coupleData) {
-        // Include both users' transactions for shared dashboard
-        userIds = [coupleData.user1_id, coupleData.user2_id];
-        isPartOfCouple = true;
-        setCoupleIds({ user1_id: coupleData.user1_id, user2_id: coupleData.user2_id });
-        console.log('✅ User is part of a couple - fetching transactions for both users:', userIds);
-      } else {
-        setCoupleIds(null);
-        console.log('❌ User is not part of a couple - fetching only own transactions');
-      }
-
-      // FIXED: Simplified query to include ALL transactions in the month by transaction_date
       const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -219,36 +139,27 @@ export const useFinancialData = () => {
 
       if (error) throw error;
       
-      console.log(`Transactions fetched for ${isPartOfCouple ? 'couple' : 'individual'}:`, data?.length || 0, 'transactions');
-      console.log('Transaction details:', data?.map(t => ({ 
-        description: t.description, 
-        amount: t.amount, 
-        owner: t.owner_user, 
-        user_id: t.user_id,
-        type: t.type 
-      })));
-      setTransactions(data || []);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      console.log('✅ Transactions fetched via React Query:', data?.length || 0);
+      return data as Transaction[] || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 0, // Always fresh
+    refetchOnMount: true,
+  });
+};
 
-  const fetchAccounts = async () => {
-    try {
-      // Determine if in a couple to fetch both users' accounts
-      const { data: coupleData } = await supabase
-        .from('user_couples')
-        .select('user1_id, user2_id')
-        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
-        .eq('status', 'active')
-        .maybeSingle();
-
-      let userIds = [user?.id];
-      if (coupleData) {
-        userIds = [coupleData.user1_id, coupleData.user2_id];
-      }
+// Fetch accounts
+const useAccountsQuery = (coupleIds: CoupleData | null) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: financialQueryKeys.accounts(user?.id, coupleIds),
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const userIds = coupleIds 
+        ? [coupleIds.user1_id, coupleIds.user2_id]
+        : [user.id];
 
       const { data, error } = await supabase
         .from('accounts')
@@ -257,27 +168,163 @@ export const useFinancialData = () => {
         .eq('is_active', true);
 
       if (error) throw error;
-      setAccounts(data || []);
-      console.log('Accounts fetched:', data?.length || 0);
-    } catch (error) {
-      console.error('Error fetching accounts:', error);
+      
+      console.log('✅ Accounts fetched via React Query:', data?.length || 0);
+      return data as Account[] || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 0, // Always fresh
+    refetchOnMount: true,
+  });
+};
+
+// ============= REAL-TIME SUBSCRIPTIONS =============
+
+const useFinancialRealtime = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    console.log('🔄 Setting up real-time subscriptions for React Query');
+    
+    // Profile changes - invalidate currency
+    const profileChannel = supabase
+      .channel('rq-profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          console.log('📡 Profile updated - invalidating currency');
+          queryClient.invalidateQueries({ queryKey: financialQueryKeys.userCurrency(user.id) });
+        }
+      )
+      .subscribe();
+
+    // Transaction changes - invalidate transactions
+    const transactionChannel = supabase
+      .channel('rq-transaction-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions'
+        },
+        () => {
+          console.log('📡 Transaction changed - invalidating all financial data');
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        }
+      )
+      .subscribe();
+
+    // Account changes - invalidate accounts
+    const accountChannel = supabase
+      .channel('rq-account-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'accounts'
+        },
+        () => {
+          console.log('📡 Account changed - invalidating accounts');
+          queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        }
+      )
+      .subscribe();
+
+    // Couple changes - invalidate couple data and refresh everything
+    const coupleChannel = supabase
+      .channel('rq-couple-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_couples'
+        },
+        (payload) => {
+          const data = payload.new || payload.old;
+          if (data && 'user1_id' in data && 'user2_id' in data &&
+              (data.user1_id === user.id || data.user2_id === user.id)) {
+            console.log('📡 Couple changed - invalidating all data');
+            queryClient.invalidateQueries({ queryKey: financialQueryKeys.coupleData(user.id) });
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔌 Cleaning up real-time subscriptions');
+      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(transactionChannel);
+      supabase.removeChannel(accountChannel);
+      supabase.removeChannel(coupleChannel);
+    };
+  }, [user?.id, queryClient]);
+};
+
+// ============= MAIN HOOK WITH DERIVED DATA =============
+
+export const useFinancialData = () => {
+  const { convertCurrency } = useCurrencyConverter();
+  const { user } = useAuth();
+  
+  // Setup real-time subscriptions
+  useFinancialRealtime();
+  
+  // Fetch base data
+  const { data: userPreferredCurrency = 'BRL' } = useCurrencyQuery();
+  const { data: coupleIds } = useCoupleDataQuery();
+  const { data: transactions = [], isLoading: transactionsLoading } = useTransactionsQuery(coupleIds || null);
+  const { data: accounts = [], isLoading: accountsLoading } = useAccountsQuery(coupleIds || null);
+  
+  const loading = transactionsLoading || accountsLoading;
+
+  // ============= HELPER FUNCTIONS (same logic as original) =============
+
+  const getAccountsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
+    if (viewMode === 'both') return accounts;
+    return accounts.filter((acc) => (acc.owner_user || 'user1') === viewMode);
+  };
+
+  const getTransactionsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
+    if (viewMode === 'both') {
+      return transactions;
     }
+    
+    return transactions.filter(transaction => {
+      if (!coupleIds) {
+        return true;
+      }
+      const ownerUser: 'user1' | 'user2' = transaction.user_id === coupleIds.user1_id ? 'user1'
+        : transaction.user_id === coupleIds.user2_id ? 'user2'
+        : 'user1';
+      return ownerUser === viewMode;
+    });
   };
 
   const getFinancialSummary = (viewMode: 'both' | 'user1' | 'user2' = 'both'): FinancialSummary => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
-    // Collect values in separate arrays for precise summation
     const incomeValues: number[] = [];
     const expenseValues: number[] = [];
 
     filteredTransactions.forEach((transaction) => {
-      // Skip account transfers to prevent double counting
       if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
         return;
       }
 
-      // Skip future expenses - only show realized transactions
       if (transaction.card_transaction_type === 'future_expense') {
         return;
       }
@@ -295,17 +342,9 @@ export const useFinancialData = () => {
       }
     });
 
-    // Use precise monetary sum to avoid floating point errors
     const totalIncome = sumMonetaryArray(incomeValues);
     const totalExpenses = sumMonetaryArray(expenseValues);
 
-    console.log('Financial Summary (MOVIMENTAÇÃO - sem saldos de contas):', {
-      totalIncome,
-      totalExpenses,
-      transactionsCount: filteredTransactions.length,
-      viewMode,
-    });
-    
     return {
       totalIncome,
       totalExpenses,
@@ -316,43 +355,27 @@ export const useFinancialData = () => {
 
   const getFinancialComparison = async () => {
     try {
-      // Get current date for accurate month calculation
       const today = new Date();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth();
       
-      // Calculate previous month accurately, handling year transitions
       let prevYear = currentYear;
       let prevMonth = currentMonth - 1;
       
       if (prevMonth < 0) {
-        prevMonth = 11; // December
+        prevMonth = 11;
         prevYear = currentYear - 1;
       }
       
-      // Create precise date ranges for previous month
       const startOfPrevMonth = new Date(prevYear, prevMonth, 1, 0, 0, 0, 0);
       const endOfPrevMonth = new Date(prevYear, prevMonth + 1, 0, 23, 59, 59, 999);
-      
-      // Create precise date ranges for current month
       const startOfCurrentMonth = new Date(currentYear, currentMonth, 1, 0, 0, 0, 0);
       const endOfCurrentMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
 
-      // Check if user is part of a couple to include partner's transactions
-      const { data: coupleData } = await supabase
-        .from("user_couples")
-        .select("user1_id, user2_id")
-        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
-        .eq("status", "active")
-        .maybeSingle();
+      const userIds = coupleIds 
+        ? [coupleIds.user1_id, coupleIds.user2_id]
+        : [user?.id];
 
-      let userIds = [user?.id];
-      if (coupleData) {
-        // Include both users' transactions
-        userIds = [coupleData.user1_id, coupleData.user2_id];
-      }
-
-      // Fetch previous month transactions
       const { data: prevTransactions, error: prevError } = await supabase
         .from('transactions')
         .select('*')
@@ -362,7 +385,6 @@ export const useFinancialData = () => {
 
       if (prevError) throw prevError;
 
-      // Fetch current month transactions (for more accurate comparison)
       const { data: currentTransactions, error: currentError } = await supabase
         .from('transactions')
         .select('*')
@@ -372,17 +394,14 @@ export const useFinancialData = () => {
 
       if (currentError) throw currentError;
 
-      // Calculate previous month totals using precise arithmetic
       const prevIncomeValues: number[] = [];
       const prevExpenseValues: number[] = [];
 
       (prevTransactions || []).forEach((transaction) => {
-        // Skip account transfers to prevent double counting
         if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
           return;
         }
 
-        // Skip future expenses - only show realized transactions
         if (transaction.card_transaction_type === 'future_expense') {
           return;
         }
@@ -403,17 +422,14 @@ export const useFinancialData = () => {
       const prevTotalIncome = sumMonetaryArray(prevIncomeValues);
       const prevTotalExpenses = sumMonetaryArray(prevExpenseValues);
 
-      // Calculate current month totals using precise arithmetic
       const currentIncomeValues: number[] = [];
       const currentExpenseValues: number[] = [];
 
       (currentTransactions || []).forEach((transaction) => {
-        // Skip account transfers to prevent double counting
         if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
           return;
         }
 
-        // Skip future expenses - only show realized transactions
         if (transaction.card_transaction_type === 'future_expense') {
           return;
         }
@@ -437,10 +453,9 @@ export const useFinancialData = () => {
       const prevBalance = subtractMonetaryValues(prevTotalIncome, prevTotalExpenses);
       const currentBalance = subtractMonetaryValues(currentTotalIncome, currentTotalExpenses);
 
-      // Calculate percentage changes with improved logic
       const calculatePercentageChange = (current: number, previous: number): number => {
         if (previous === 0) {
-          return current > 0 ? 100 : 0; // 100% increase if we had nothing before and now have something
+          return current > 0 ? 100 : 0;
         }
         return ((current - previous) / Math.abs(previous)) * 100;
       };
@@ -448,11 +463,6 @@ export const useFinancialData = () => {
       const incomeChange = calculatePercentageChange(currentTotalIncome, prevTotalIncome);
       const expenseChange = calculatePercentageChange(currentTotalExpenses, prevTotalExpenses);
       const balanceChange = calculatePercentageChange(currentBalance, prevBalance);
-
-      console.log(`📊 Comparação mensal calculada:
-        - Receitas: ${currentTotalIncome.toFixed(2)} vs ${prevTotalIncome.toFixed(2)} (${incomeChange.toFixed(1)}%)
-        - Despesas: ${currentTotalExpenses.toFixed(2)} vs ${prevTotalExpenses.toFixed(2)} (${expenseChange.toFixed(1)}%)
-        - Saldo: ${currentBalance.toFixed(2)} vs ${prevBalance.toFixed(2)} (${balanceChange.toFixed(1)}%)`);
 
       return {
         incomeChange: Number(incomeChange.toFixed(1)),
@@ -467,28 +477,6 @@ export const useFinancialData = () => {
         balanceChange: 0
       };
     }
-  };
-
-  const getAccountsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
-    if (viewMode === 'both') return accounts;
-    return accounts.filter((acc) => (acc.owner_user || 'user1') === viewMode);
-  };
-
-  const getTransactionsByUser = (viewMode: 'both' | 'user1' | 'user2') => {
-    if (viewMode === 'both') {
-      return transactions;
-    }
-    
-    return transactions.filter(transaction => {
-      // Prefer classifying by user_id vs couple membership to avoid stale owner_user
-      if (!coupleIds) {
-        return true; // single user context
-      }
-      const ownerUser: 'user1' | 'user2' = transaction.user_id === coupleIds.user1_id ? 'user1'
-        : transaction.user_id === coupleIds.user2_id ? 'user2'
-        : 'user1';
-      return ownerUser === viewMode;
-    });
   };
 
   const getExpensesByUser = (viewMode: 'both' | 'user1' | 'user2') => {
@@ -513,25 +501,11 @@ export const useFinancialData = () => {
     return { user1Expenses, user2Expenses };
   };
 
-  const refreshData = async () => {
-    if (user) {
-      console.log('🔄 Refreshing financial data...');
-      setLoading(true);
-      await fetchUserPreferredCurrency();
-      await fetchTransactions();
-      await fetchAccounts();
-      setLoading(false);
-      console.log('✅ Financial data refreshed');
-    }
-  };
-
-  // Returns the sum of balances from personal accounts + cash accounts (SALDO REAL - não é receita)
   const getAccountsBalance = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredAccounts = getAccountsByUser(viewMode).filter(
       (acc) => (acc.account_model || 'personal') === 'personal'
     );
     
-    // Collect all balance values for precise summation
     const balanceValues: number[] = [];
     
     filteredAccounts.forEach((acc) => {
@@ -543,7 +517,6 @@ export const useFinancialData = () => {
       balanceValues.push(balanceInUserCurrency);
     });
     
-    // Incluir saldo da conta de dinheiro no valor disponível/real
     const cashAccounts = accounts.filter(acc => acc.is_cash_account && acc.is_active);
     cashAccounts.forEach((acc) => {
       const userOwnsAccount = viewMode === 'both' || (acc.owner_user || 'user1') === viewMode;
@@ -560,20 +533,14 @@ export const useFinancialData = () => {
     return sumMonetaryArray(balanceValues);
   };
 
-  // Returns the sum of transaction-based incomes only (no accounts, no transfers)
   const getTransactionsIncome = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     const incomeOnly = filteredTransactions.filter(t => t.type === 'income' && t.payment_method !== 'account_transfer');
     
-    // Use precise monetary sum
     const incomeValues = incomeOnly.map(t => convertCurrency(t.amount, t.currency, userPreferredCurrency));
-    const total = sumMonetaryArray(incomeValues);
-    
-    console.log('💰 Income calculation excluding transfers:', { total, incomeTransactions: incomeOnly.length, viewMode });
-    return total;
+    return sumMonetaryArray(incomeValues);
   };
 
-  // Returns the sum of transaction-based expenses only (no accounts, no transfers, no future expenses)
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     const expenseOnly = filteredTransactions.filter(t => t.type === 'expense' && 
@@ -581,12 +548,13 @@ export const useFinancialData = () => {
       t.payment_method !== 'account_investment' &&
       t.card_transaction_type !== 'future_expense');
     
-    // Use precise monetary sum
     const expenseValues = expenseOnly.map(t => convertCurrency(t.amount, t.currency, userPreferredCurrency));
-    const total = sumMonetaryArray(expenseValues);
-    
-    console.log('💸 Expense calculation excluding transfers and future expenses:', { total, expenseTransactions: expenseOnly.length, viewMode });
-    return total;
+    return sumMonetaryArray(expenseValues);
+  };
+
+  // No need for refreshData - React Query handles it automatically!
+  const refreshData = async () => {
+    console.log('🔄 Manual refresh called (React Query will auto-invalidate)');
   };
 
   return {
@@ -597,7 +565,7 @@ export const useFinancialData = () => {
     getFinancialComparison,
     getTransactionsByUser,
     getExpensesByUser,
-    getAccountsBalance, // Corrigido: usando getAccountsBalance em vez de getAccountsIncome
+    getAccountsBalance,
     getTransactionsIncome,
     getTransactionsExpenses,
     refreshData

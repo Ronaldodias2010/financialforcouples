@@ -421,16 +421,6 @@ export const FinancialDashboard = () => {
             </div>
             <div className="flex gap-2">
               {/* TEMPORARIAMENTE REMOVIDO: <ThemeSwitcher /> */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.location.reload()}
-                className="gap-1 px-2 sm:px-3"
-                title={t('common.refresh')}
-              >
-                <RotateCcw className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('common.refresh')}</span>
-              </Button>
               <LanguageSwitcher />
             </div>
           </div>
