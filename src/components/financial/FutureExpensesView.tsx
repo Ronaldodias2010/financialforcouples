@@ -117,12 +117,14 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      // Buscar parcelas futuras da tabela future_expense_payments (apenas gastos recorrentes e manuais antigos)
+      // Buscar apenas gastos recorrentes antigos da tabela future_expense_payments
+      // EXCLUIR TODOS os gastos de parcelas (installment) - agora vêm de transactions
       const { data: futurePayments, error: futurePaymentsError } = await supabase
         .from("future_expense_payments")
         .select("*")
         .in("user_id", userIds)
-        .neq("expense_source_type", "installment") // Excluir parcelas (agora vêm de transactions)
+        .is("installment_transaction_id", null) // Excluir parcelas (installments têm transaction_id)
+        .not("expense_source_type", "in", '("installment")') // Excluir por tipo também
         .gte("original_due_date", format(now, 'yyyy-MM-dd'))
         .lte("original_due_date", format(futureDate, 'yyyy-MM-dd'))
         .order("original_due_date", { ascending: true });
@@ -217,55 +219,55 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         });
       }
 
-      // Processar pagamentos futuros da nova tabela
+      // Processar pagamentos futuros da nova tabela (apenas gastos recorrentes legados)
       if (futurePayments) {
         for (const payment of futurePayments) {
-          // Ignorar completamente pagamentos de cartão de crédito da tabela future_expense_payments
-          // pois eles são gerenciados separadamente na seção de vencimentos de cartões
+          // Garantir que não processamos parcelas de cartão (double check)
+          if (payment.installment_transaction_id || payment.expense_source_type === 'installment') {
+            continue;
+          }
+          
+          // Ignorar pagamentos de cartão (gerenciados separadamente)
           if (payment.expense_source_type === 'card_payment') {
             continue;
           }
           
-          // Filtrar por viewMode se necessário
+          // Filtrar por viewMode
           const shouldInclude = viewMode === "both" || 
             (viewMode === "user1" && payment.owner_user === 'user1') ||
             (viewMode === "user2" && payment.owner_user === 'user2');
             
           if (!shouldInclude) continue;
           
-          const isPaid = await isExpensePaid(payment.recurring_expense_id, payment.installment_transaction_id, payment.original_due_date);
+          const isPaid = await isExpensePaid(payment.recurring_expense_id, null, payment.original_due_date);
           
-          // Skip paid future payments
           if (isPaid) continue;
           
-          // Buscar nome da categoria se tiver category_id
+          // Buscar nome da categoria
           let categoryName = t('common.noCategory');
           if (payment.category_id) {
             const { data: categoryData } = await supabase
               .from('categories')
               .select('name')
               .eq('id', payment.category_id)
-              .single();
+              .maybeSingle();
             if (categoryData) {
               categoryName = categoryData.name;
             }
           }
           
-           expenses.push({
-             id: payment.id,
-             description: payment.description,
-             amount: payment.amount,
-             due_date: payment.original_due_date,
-             type: payment.expense_source_type === 'installment' ? 'installment' : 
-                   payment.expense_source_type === 'recurring' ? 'recurring' : 'installment',
-             category: categoryName,
-             owner_user: payment.owner_user,
-             recurringExpenseId: payment.recurring_expense_id,
-             installmentTransactionId: payment.installment_transaction_id,
-             cardPaymentInfo: payment.card_payment_info,
-             isPaid: false,
-             allowsPayment: true, // Pagamentos futuros PODEM ser pagos
-           });
+          expenses.push({
+            id: `legacy-${payment.id}`, // Prefixo para evitar conflito de IDs
+            description: payment.description,
+            amount: payment.amount,
+            due_date: payment.original_due_date,
+            type: 'recurring',
+            category: categoryName,
+            owner_user: payment.owner_user,
+            recurringExpenseId: payment.recurring_expense_id,
+            isPaid: false,
+            allowsPayment: true,
+          });
         }
       }
 
