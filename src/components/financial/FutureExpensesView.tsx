@@ -39,6 +39,7 @@ interface FutureExpense {
   allowsPayment?: boolean; // Define se mostra o botão de pagar
   dueStatus?: 'future' | 'today' | 'overdue'; // Status de vencimento
   currency?: CurrencyCode; // Currency of the expense
+  purchase_date?: string; // Data da compra para parcelas
 }
 
 interface MonthlyExpenseGroup {
@@ -285,6 +286,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             dueStatus,
             currency: cardTransaction.currency || 'BRL',
             installmentTransactionId: cardTransaction.id, // Manter referência
+            purchase_date: cardTransaction.purchase_date, // Data da compra
           });
           
           console.log(`[FUTURE EXPENSES] Parcela adicionada: ${cardTransaction.description} (${installmentInfo}) - ${cardTransaction.id}`);
@@ -804,9 +806,16 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                               <p className="text-xs sm:text-sm text-muted-foreground">
                                 {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
                               </p>
-                              <p className="text-xs sm:text-sm text-muted-foreground">
-                                {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
-                              </p>
+                              <div className="space-y-0.5">
+                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                  {t('monthlyExpenses.dueDate')}: {formatDate(expense.due_date)}
+                                </p>
+                                {expense.installment_info && expense.purchase_date && (
+                                  <p className="text-xs text-muted-foreground/80">
+                                    Compra: {formatDate(expense.purchase_date)}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                           
