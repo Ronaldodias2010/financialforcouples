@@ -272,38 +272,9 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Adicionar parcelas pendentes (status = 'pending') da tabela transactions
-      for (const installment of pendingInstallments || []) {
-        // Filtrar por viewMode se necessário
-        const ownerUser = installment.cards?.owner_user || installment.owner_user;
-        const shouldInclude = viewMode === "both" || 
-          (viewMode === "user1" && ownerUser === 'user1') ||
-          (viewMode === "user2" && ownerUser === 'user2');
-          
-        if (!shouldInclude) continue;
-
-        const installmentNumber = installment.installment_number || 1;
-        const totalInstallments = installment.total_installments || 1;
-
-        // Parcelas de cartão de crédito NÃO devem ter botão de pagamento (são processadas automaticamente)
-        const allowsPayment = false;
-        
-        expenses.push({
-          id: installment.id,
-          description: installment.description,
-          amount: installment.amount,
-          due_date: installment.due_date, // Usar due_date ao invés de transaction_date
-          type: 'installment',
-          category: installment.categories?.name || t('common.noCategory'),
-          card_name: installment.cards?.name,
-          installment_info: `${installment.installment_number}/${installment.total_installments}`,
-          owner_user: ownerUser,
-          installmentTransactionId: installment.id,
-          isPaid: false,
-          allowsPayment, // Parcelas de cartão de crédito não podem ser pagas individualmente
-          currency: installment.currency as CurrencyCode,
-        });
-      }
+      // REMOVIDO: Parcelas individuais não devem aparecer em Despesas Futuras
+      // As parcelas de cartão de crédito são agrupadas no vencimento do cartão (ver linhas ~414-447)
+      // O valor total das parcelas + compras à vista é calculado em calculateCardPaymentAmount
 
       // Adicionar gastos recorrentes - CALCULAR TODAS AS PARCELAS FUTURAS
       for (const recur of recurring || []) {
