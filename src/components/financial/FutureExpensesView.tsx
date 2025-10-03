@@ -235,7 +235,15 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       }
 
       // Adicionar parcelas de cartão de crédito PENDING (apenas informativo, SEM botão de pagar)
+      const addedTransactionIds = new Set<string>(); // Evitar duplicatas
+      
       for (const cardTransaction of cardTransactions || []) {
+        // Evitar duplicatas - verificar se já adicionamos esta transação
+        if (addedTransactionIds.has(cardTransaction.id)) {
+          console.log(`[FUTURE EXPENSES] Transação duplicada ignorada: ${cardTransaction.id}`);
+          continue;
+        }
+        
         const isInstallment = cardTransaction.is_installment;
         const installmentNumber = cardTransaction.installment_number || 1;
         const totalInstallments = cardTransaction.total_installments || 1;
@@ -260,8 +268,11 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             ? `${installmentNumber}/${totalInstallments}`
             : undefined;
           
+          // Marcar como adicionada
+          addedTransactionIds.add(cardTransaction.id);
+          
           expenses.push({
-            id: `card-installment-${cardTransaction.id}`,
+            id: cardTransaction.id, // Usar ID real da transação ao invés de prefixo
             description: cardTransaction.description,
             amount: cardTransaction.amount,
             due_date: cardTransaction.due_date,
@@ -270,10 +281,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             card_name: cardTransaction.cards?.name,
             owner_user: ownerUser,
             installment_info: installmentInfo,
-            allowsPayment: false,
+            allowsPayment: false, // NUNCA permite pagamento direto
             dueStatus,
             currency: cardTransaction.currency || 'BRL',
+            installmentTransactionId: cardTransaction.id, // Manter referência
           });
+          
+          console.log(`[FUTURE EXPENSES] Parcela adicionada: ${cardTransaction.description} (${installmentInfo}) - ${cardTransaction.id}`);
         }
       }
 
