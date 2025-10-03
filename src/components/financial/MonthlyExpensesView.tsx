@@ -221,6 +221,7 @@ const fetchCategories = async () => {
         `)
         .in('user_id', userIds)
         .eq('type', 'expense')
+        .eq('status', 'completed')
         .not('payment_method', 'in', '(account_transfer,account_investment)')
         .or(`and(payment_method.neq.credit_card,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(payment_method.eq.credit_card,purchase_date.gte.${startDate},purchase_date.lte.${endDate})`)
         .order('purchase_date', { ascending: false });
