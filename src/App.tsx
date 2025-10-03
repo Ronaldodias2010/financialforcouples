@@ -109,15 +109,15 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <GlobalErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <GlobalErrorBoundary>
+          <BrowserRouter>
             <AuthProvider>
               <LanguageProvider>
                 <ClientOnly>
@@ -134,10 +134,10 @@ const App = () => {
             <GlobalErrorLogger />
             <PerformanceMonitor />
             <RouteSEO />
-          </GlobalErrorBoundary>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+          </BrowserRouter>
+        </GlobalErrorBoundary>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 
