@@ -83,6 +83,7 @@ interface RecurringExpense {
   category_id?: string;
   card_id?: string;
   frequency_days: number;
+  frequency_type?: 'days' | 'months'; // ⭐ NOVO
   next_due_date: Date;
   is_active: boolean;
   owner_user?: string;
@@ -123,6 +124,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [categoryId, setCategoryId] = useState("");
   const [cardId, setCardId] = useState("");
   const [frequencyDays, setFrequencyDays] = useState("30");
+  const [frequencyType, setFrequencyType] = useState<'days' | 'months'>('months'); // ⭐ NOVO
   const [nextDueDate, setNextDueDate] = useState<Date>(new Date());
   const [contractDuration, setContractDuration] = useState("");
   
@@ -148,7 +150,8 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
 
       let allExpenses = (data || []).map(expense => ({
         ...expense,
-        next_due_date: parseLocalDate(expense.next_due_date)
+        next_due_date: parseLocalDate(expense.next_due_date),
+        frequency_type: (expense.frequency_type || 'days') as 'days' | 'months' // ⭐ Cast correto do tipo
       }));
 
       // Filter by viewMode
@@ -257,6 +260,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             category_id: categoryId || null,
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
+            frequency_type: frequencyType, // ⭐ NOVO
             next_due_date: formatDateForDB(nextDueDate),
             contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
             total_installments: totalInstallments,
@@ -295,6 +299,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             category_id: categoryId || null,
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
+            frequency_type: frequencyType, // ⭐ NOVO
             next_due_date: formatDateForDB(nextDueDate),
             owner_user: ownerUser,
             user_id: user.id,
@@ -331,6 +336,12 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
     setCategoryId(expense.category_id || "");
     setCardId(expense.card_id || "");
     setFrequencyDays(expense.frequency_days.toString());
+    // ⭐ NOVO: Carregar frequency_type ao editar
+    const monthlyOptions = ['30', '90', '365'];
+    setFrequencyType(
+      expense.frequency_type || 
+      (monthlyOptions.includes(expense.frequency_days.toString()) ? 'months' : 'days')
+    );
     setNextDueDate(parseLocalDate(expense.next_due_date.toString()));
     setContractDuration(expense.contract_duration_months?.toString() || "");
     setIsDialogOpen(true);
@@ -390,6 +401,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
     setCategoryId("");
     setCardId("");
     setFrequencyDays("30");
+    setFrequencyType('months'); // ⭐ NOVO
     setNextDueDate(new Date());
     setContractDuration("");
     setEditingExpense(null);
@@ -482,7 +494,12 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
 
               <div>
                 <Label>{t('recurring.frequency')}</Label>
-                <Select value={frequencyDays} onValueChange={setFrequencyDays}>
+                <Select value={frequencyDays} onValueChange={(value) => {
+                  setFrequencyDays(value);
+                  // ⭐ Automaticamente definir frequency_type baseado na seleção
+                  const monthlyOptions = ['30', '90', '365'];
+                  setFrequencyType(monthlyOptions.includes(value) ? 'months' : 'days');
+                }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

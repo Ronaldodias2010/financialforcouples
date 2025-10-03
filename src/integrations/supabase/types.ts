@@ -1860,6 +1860,7 @@ export type Database = {
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
           frequency_days: number
+          frequency_type: string | null
           id: string
           is_active: boolean | null
           is_completed: boolean | null
@@ -1881,6 +1882,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           frequency_days?: number
+          frequency_type?: string | null
           id?: string
           is_active?: boolean | null
           is_completed?: boolean | null
@@ -1902,6 +1904,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           frequency_days?: number
+          frequency_type?: string | null
           id?: string
           is_active?: boolean | null
           is_completed?: boolean | null
