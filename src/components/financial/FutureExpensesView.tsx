@@ -99,10 +99,10 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       const futureDate = new Date();
       futureDate.setMonth(futureDate.getMonth() + 12); // 12 meses no futuro para o calendário
       
-      // Data limite para a lista de gastos futuros (final do próximo mês)
+      // Data limite para a lista de gastos futuros (3 meses no futuro)
       const listLimitDate = new Date();
-      listLimitDate.setMonth(listLimitDate.getMonth() + 1);
-      listLimitDate.setDate(new Date(listLimitDate.getFullYear(), listLimitDate.getMonth() + 1, 0).getDate()); // Último dia do próximo mês
+      listLimitDate.setMonth(listLimitDate.getMonth() + 3);
+      listLimitDate.setDate(new Date(listLimitDate.getFullYear(), listLimitDate.getMonth() + 1, 0).getDate()); // Último dia do 3º mês
 
       // Check if user is part of a couple to include partner's transactions
       const { data: coupleData } = await supabase
@@ -134,25 +134,6 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         console.error("Error fetching future payments:", futurePaymentsError);
       }
 
-      // Buscar TODAS as parcelas pendentes (status = 'pending') da tabela transactions
-      const { data: pendingInstallments, error: pendingInstallmentsError } = await supabase
-        .from("transactions")
-        .select(`
-          *,
-          categories(name),
-          cards(name, owner_user)
-        `)
-        .in("user_id", userIds)
-        .eq("status", "pending") // Apenas parcelas pendentes
-        .eq("payment_method", "credit_card")
-        .eq("is_installment", true)
-        .gte("due_date", format(now, 'yyyy-MM-dd'))
-        .lte("due_date", format(futureDate, 'yyyy-MM-dd'))
-        .order("due_date", { ascending: true });
-
-      if (pendingInstallmentsError) {
-        console.error("Error fetching pending installments:", pendingInstallmentsError);
-      }
 
       // Buscar TODOS os gastos recorrentes ativos (sem filtro de data para calcular todas as parcelas)
       const { data: recurring, error: recurringError } = await supabase
@@ -176,11 +157,6 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .not("due_date", "is", null);
 
       // Buscar parcelas de cartão PENDING para exibição informativa (SEM botão de pagar)
-      // Filtrar apenas parcelas futuras (próximo mês em diante) para evitar duplicação
-      const nextMonth = new Date(now);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      nextMonth.setDate(1);
-      
       const { data: cardTransactions, error: cardTransactionsError } = await supabase
         .from("transactions")
         .select(`
@@ -193,7 +169,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .eq("status", "pending")
         .not("card_id", "is", null)
         .eq('cards.card_type', 'credit')
-        .gte("due_date", format(nextMonth, 'yyyy-MM-dd'))
+        .gte("due_date", format(now, 'yyyy-MM-dd'))
         .lte("due_date", format(futureDate, 'yyyy-MM-dd'))
         .order("due_date", { ascending: true });
 
