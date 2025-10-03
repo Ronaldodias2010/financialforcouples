@@ -114,24 +114,29 @@ data.forEach((row) => {
   ): number => {
     if (fromCurrency === toCurrency) return amount;
     
-    // Convert to BRL first (base currency)
-    let amountInBRL: number;
+    // Work with cents (integers) to avoid floating point errors
+    const amountCents = Math.round(amount * 100);
+    
+    // Convert to BRL first (base currency) using cents
+    let amountInBRLCents: number;
     if (fromCurrency === 'BRL') {
-      amountInBRL = amount;
+      amountInBRLCents = amountCents;
     } else {
-      amountInBRL = amount / exchangeRates[fromCurrency];
+      // Divide by rate to get BRL, round to nearest cent
+      amountInBRLCents = Math.round(amountCents / exchangeRates[fromCurrency]);
     }
     
-    // Convert from BRL to target currency
-    let result: number;
+    // Convert from BRL to target currency using cents
+    let resultCents: number;
     if (toCurrency === 'BRL') {
-      result = amountInBRL;
+      resultCents = amountInBRLCents;
     } else {
-      result = amountInBRL * exchangeRates[toCurrency];
+      // Multiply by rate to get target currency, round to nearest cent
+      resultCents = Math.round(amountInBRLCents * exchangeRates[toCurrency]);
     }
     
-    // Apply more precise rounding to avoid floating point issues
-    return Math.round((result + Number.EPSILON) * 100) / 100;
+    // Convert back to decimal with precision
+    return resultCents / 100;
   };
 
   const formatCurrency = (amount: number, currency: CurrencyCode): string => {

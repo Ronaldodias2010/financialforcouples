@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName as translateCategoryUtil } from "@/utils/categoryTranslation";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
-import { parseMonetaryValue, formatMonetaryValue } from "@/utils/monetary";
+import { parseMonetaryValue, formatMonetaryValue, divideMonetaryValue } from "@/utils/monetary";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCashBalance } from "@/hooks/useCashBalance";
@@ -156,7 +156,7 @@ const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const [paymentPlan, setPaymentPlan] = useState<"avista" | "parcelado">("avista");
   const [totalInstallments, setTotalInstallments] = useState<number>(2);
   const installmentValue = paymentPlan === "parcelado" && amount && Number(totalInstallments) > 0
-    ? parseFloat(amount) / Number(totalInstallments)
+    ? divideMonetaryValue(parseFloat(amount), Number(totalInstallments))
     : 0;
   const { toast } = useToast();
   const { t, language } = useLanguage();

@@ -28,3 +28,52 @@ export const roundMonetaryValue = (value: number): number => {
 export const formatMonetaryValue = (value: number): number => {
   return roundMonetaryValue(parseMonetaryValue(value));
 };
+
+/**
+ * Adds two monetary values with precision
+ * Works with cents (integers) to avoid floating point errors
+ */
+export const addMonetaryValues = (a: number, b: number): number => {
+  const aCents = Math.round(a * 100);
+  const bCents = Math.round(b * 100);
+  return (aCents + bCents) / 100;
+};
+
+/**
+ * Subtracts two monetary values with precision
+ */
+export const subtractMonetaryValues = (a: number, b: number): number => {
+  const aCents = Math.round(a * 100);
+  const bCents = Math.round(b * 100);
+  return (aCents - bCents) / 100;
+};
+
+/**
+ * Multiplies a monetary value by a multiplier with precision
+ */
+export const multiplyMonetaryValue = (value: number, multiplier: number): number => {
+  const valueCents = Math.round(value * 100);
+  const result = Math.round(valueCents * multiplier);
+  return result / 100;
+};
+
+/**
+ * Divides a monetary value by a divisor with precision
+ */
+export const divideMonetaryValue = (value: number, divisor: number): number => {
+  if (divisor === 0) return 0;
+  const valueCents = Math.round(value * 100);
+  const result = Math.round(valueCents / divisor);
+  return result / 100;
+};
+
+/**
+ * Sums an array of monetary values with precision
+ * Avoids accumulation of floating point errors
+ */
+export const sumMonetaryArray = (values: number[]): number => {
+  const totalCents = values.reduce((sum, value) => {
+    return sum + Math.round(value * 100);
+  }, 0);
+  return totalCents / 100;
+};

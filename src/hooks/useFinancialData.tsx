@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
 import { format } from 'date-fns';
+import { sumMonetaryArray, subtractMonetaryValues } from '@/utils/monetary';
 
 interface Transaction {
   id: string;
@@ -265,8 +266,10 @@ export const useFinancialData = () => {
 
   const getFinancialSummary = (viewMode: 'both' | 'user1' | 'user2' = 'both'): FinancialSummary => {
     const filteredTransactions = getTransactionsByUser(viewMode);
-    let totalIncome = 0;
-    let totalExpenses = 0;
+    
+    // Collect values in separate arrays for precise summation
+    const incomeValues: number[] = [];
+    const expenseValues: number[] = [];
 
     filteredTransactions.forEach((transaction) => {
       // Skip account transfers to prevent double counting
@@ -286,14 +289,15 @@ export const useFinancialData = () => {
       );
 
       if (transaction.type === 'income') {
-        totalIncome += amountInUserCurrency;
+        incomeValues.push(amountInUserCurrency);
       } else {
-        totalExpenses += amountInUserCurrency;
+        expenseValues.push(amountInUserCurrency);
       }
     });
 
-    // CORREÇÃO: NÃO incluir saldos de contas como receita na movimentação
-    // Saldo das contas deve ser tratado separadamente do fluxo de receitas/despesas
+    // Use precise monetary sum to avoid floating point errors
+    const totalIncome = sumMonetaryArray(incomeValues);
+    const totalExpenses = sumMonetaryArray(expenseValues);
 
     console.log('Financial Summary (MOVIMENTAÇÃO - sem saldos de contas):', {
       totalIncome,
@@ -305,7 +309,7 @@ export const useFinancialData = () => {
     return {
       totalIncome,
       totalExpenses,
-      balance: totalIncome - totalExpenses,
+      balance: subtractMonetaryValues(totalIncome, totalExpenses),
       currency: userPreferredCurrency,
     };
   };
@@ -368,9 +372,9 @@ export const useFinancialData = () => {
 
       if (currentError) throw currentError;
 
-      // Calculate previous month totals
-      let prevTotalIncome = 0;
-      let prevTotalExpenses = 0;
+      // Calculate previous month totals using precise arithmetic
+      const prevIncomeValues: number[] = [];
+      const prevExpenseValues: number[] = [];
 
       (prevTransactions || []).forEach((transaction) => {
         // Skip account transfers to prevent double counting
@@ -390,15 +394,18 @@ export const useFinancialData = () => {
         );
 
         if (transaction.type === 'income') {
-          prevTotalIncome += amountInUserCurrency;
+          prevIncomeValues.push(amountInUserCurrency);
         } else if (transaction.type === 'expense') {
-          prevTotalExpenses += amountInUserCurrency;
+          prevExpenseValues.push(amountInUserCurrency);
         }
       });
 
-      // Calculate current month totals from fresh data
-      let currentTotalIncome = 0;
-      let currentTotalExpenses = 0;
+      const prevTotalIncome = sumMonetaryArray(prevIncomeValues);
+      const prevTotalExpenses = sumMonetaryArray(prevExpenseValues);
+
+      // Calculate current month totals using precise arithmetic
+      const currentIncomeValues: number[] = [];
+      const currentExpenseValues: number[] = [];
 
       (currentTransactions || []).forEach((transaction) => {
         // Skip account transfers to prevent double counting
@@ -418,14 +425,17 @@ export const useFinancialData = () => {
         );
 
         if (transaction.type === 'income') {
-          currentTotalIncome += amountInUserCurrency;
+          currentIncomeValues.push(amountInUserCurrency);
         } else if (transaction.type === 'expense') {
-          currentTotalExpenses += amountInUserCurrency;
+          currentExpenseValues.push(amountInUserCurrency);
         }
       });
 
-      const prevBalance = prevTotalIncome - prevTotalExpenses;
-      const currentBalance = currentTotalIncome - currentTotalExpenses;
+      const currentTotalIncome = sumMonetaryArray(currentIncomeValues);
+      const currentTotalExpenses = sumMonetaryArray(currentExpenseValues);
+
+      const prevBalance = subtractMonetaryValues(prevTotalIncome, prevTotalExpenses);
+      const currentBalance = subtractMonetaryValues(currentTotalIncome, currentTotalExpenses);
 
       // Calculate percentage changes with improved logic
       const calculatePercentageChange = (current: number, previous: number): number => {
@@ -520,38 +530,45 @@ export const useFinancialData = () => {
     const filteredAccounts = getAccountsByUser(viewMode).filter(
       (acc) => (acc.account_model || 'personal') === 'personal'
     );
-    const accountsBalance = filteredAccounts.reduce((sum, acc) => {
-      return sum + convertCurrency(
+    
+    // Collect all balance values for precise summation
+    const balanceValues: number[] = [];
+    
+    filteredAccounts.forEach((acc) => {
+      const balanceInUserCurrency = convertCurrency(
         acc.balance || 0,
         acc.currency as CurrencyCode,
         userPreferredCurrency
       );
-    }, 0);
+      balanceValues.push(balanceInUserCurrency);
+    });
     
     // Incluir saldo da conta de dinheiro no valor disponível/real
     const cashAccounts = accounts.filter(acc => acc.is_cash_account && acc.is_active);
-    const cashBalance = cashAccounts.reduce((sum, acc) => {
+    cashAccounts.forEach((acc) => {
       const userOwnsAccount = viewMode === 'both' || (acc.owner_user || 'user1') === viewMode;
       if (userOwnsAccount) {
-        return sum + convertCurrency(
+        const cashBalanceInUserCurrency = convertCurrency(
           acc.balance || 0,
           acc.currency as CurrencyCode,
           userPreferredCurrency
         );
+        balanceValues.push(cashBalanceInUserCurrency);
       }
-      return sum;
-    }, 0);
+    });
     
-    return accountsBalance + cashBalance;
+    return sumMonetaryArray(balanceValues);
   };
 
   // Returns the sum of transaction-based incomes only (no accounts, no transfers)
   const getTransactionsIncome = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     const incomeOnly = filteredTransactions.filter(t => t.type === 'income' && t.payment_method !== 'account_transfer');
-    const total = incomeOnly.reduce((sum, t) => {
-      return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
-    }, 0);
+    
+    // Use precise monetary sum
+    const incomeValues = incomeOnly.map(t => convertCurrency(t.amount, t.currency, userPreferredCurrency));
+    const total = sumMonetaryArray(incomeValues);
+    
     console.log('💰 Income calculation excluding transfers:', { total, incomeTransactions: incomeOnly.length, viewMode });
     return total;
   };
@@ -563,9 +580,11 @@ export const useFinancialData = () => {
       t.payment_method !== 'account_transfer' && 
       t.payment_method !== 'account_investment' &&
       t.card_transaction_type !== 'future_expense');
-    const total = expenseOnly.reduce((sum, t) => {
-      return sum + convertCurrency(t.amount, t.currency, userPreferredCurrency);
-    }, 0);
+    
+    // Use precise monetary sum
+    const expenseValues = expenseOnly.map(t => convertCurrency(t.amount, t.currency, userPreferredCurrency));
+    const total = sumMonetaryArray(expenseValues);
+    
     console.log('💸 Expense calculation excluding transfers and future expenses:', { total, expenseTransactions: expenseOnly.length, viewMode });
     return total;
   };
