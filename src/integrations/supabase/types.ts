@@ -2730,6 +2730,10 @@ export type Database = {
       }
     }
     Functions: {
+      auto_complete_pending_transactions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       auto_translate_category_name: {
         Args: { from_lang?: string; input_name: string }
         Returns: {
