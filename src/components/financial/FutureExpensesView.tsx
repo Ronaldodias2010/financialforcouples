@@ -175,12 +175,31 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .eq("card_type", "credit")
         .not("due_date", "is", null);
 
-      // Não buscar transações de cartão individuais para exibição
-      // As parcelas aparecem no saldo do cartão e são pagas via fatura
-      const cardTransactions: any[] = [];
+      // Buscar parcelas de cartão PENDING para exibição informativa (SEM botão de pagar)
+      // Filtrar apenas parcelas futuras (próximo mês em diante) para evitar duplicação
+      const nextMonth = new Date(now);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      nextMonth.setDate(1);
+      
+      const { data: cardTransactions, error: cardTransactionsError } = await supabase
+        .from("transactions")
+        .select(`
+          *,
+          categories(name),
+          cards(name, owner_user, card_type)
+        `)
+        .in("user_id", userIds)
+        .eq("type", "expense")
+        .eq("status", "pending")
+        .not("card_id", "is", null)
+        .eq('cards.card_type', 'credit')
+        .gte("due_date", format(nextMonth, 'yyyy-MM-dd'))
+        .lte("due_date", format(futureDate, 'yyyy-MM-dd'))
+        .order("due_date", { ascending: true });
 
       if (recurringError) throw recurringError;
       if (cardsError) throw cardsError;
+      if (cardTransactionsError) throw cardTransactionsError;
 
       const expenses: FutureExpense[] = [];
 
@@ -308,9 +327,48 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         }
       }
 
-      // Parcelas de cartão NÃO aparecem individualmente em Despesas Futuras
-      // Elas fazem parte do saldo do cartão e são pagas através da fatura mensal
-      // Apenas o "Pagamento de Cartão de Crédito" aparece no vencimento do cartão
+      // Adicionar parcelas de cartão de crédito PENDING (apenas informativo, SEM botão de pagar)
+      for (const cardTransaction of cardTransactions || []) {
+        const isInstallment = cardTransaction.is_installment;
+        const installmentNumber = cardTransaction.installment_number || 1;
+        const totalInstallments = cardTransaction.total_installments || 1;
+        const isCreditCard = cardTransaction.cards?.card_type === 'credit';
+        
+        // Ignorar cartões de débito
+        if (!isCreditCard || cardTransaction.payment_method === 'debit_card') {
+          continue;
+        }
+        
+        // Filtrar por viewMode
+        const ownerUser = cardTransaction.cards?.owner_user || cardTransaction.owner_user;
+        const shouldIncludeViewMode = viewMode === "both" || 
+          (viewMode === "user1" && ownerUser === 'user1') ||
+          (viewMode === "user2" && ownerUser === 'user2');
+          
+        if (shouldIncludeViewMode) {
+          const dueStatus = getDueStatus(cardTransaction.due_date);
+          
+          // Criar string de informação de parcela
+          const installmentInfo = isInstallment 
+            ? `${installmentNumber}/${totalInstallments}`
+            : undefined;
+          
+          expenses.push({
+            id: `card-installment-${cardTransaction.id}`,
+            description: cardTransaction.description,
+            amount: cardTransaction.amount,
+            due_date: cardTransaction.due_date,
+            type: 'card_transaction',
+            category: cardTransaction.categories?.name || t('common.noCategory'),
+            card_name: cardTransaction.cards?.name,
+            owner_user: ownerUser,
+            installment_info: installmentInfo,
+            allowsPayment: false,
+            dueStatus,
+            currency: cardTransaction.currency || 'BRL',
+          });
+        }
+      }
 
       // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento (COM botão de pagar)
       for (const card of cards || []) {
