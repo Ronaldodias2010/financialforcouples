@@ -329,7 +329,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       // Filtrar gastos para lista (apenas até final do próximo mês)
       // Separar gastos para lista e para calendário
       const expensesForList = expenses.filter(expense => 
-        new Date(expense.due_date) <= listLimitDate
+        parseLocalDate(expense.due_date) <= listLimitDate
       );
       
       const expensesForCalendar = expenses; // Todos os gastos para o calendário
@@ -345,7 +345,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         if (b.dueStatus === 'today' && a.dueStatus === 'future') return 1;
         
         // Por último, ordenar por data
-        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+        return parseLocalDate(a.due_date).getTime() - parseLocalDate(b.due_date).getTime();
       });
 
       // Agrupar gastos por mês
@@ -367,7 +367,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     const groups: { [key: string]: FutureExpense[] } = {};
     
     expenses.forEach(expense => {
-      const date = new Date(expense.due_date);
+      const date = parseLocalDate(expense.due_date);
       const monthKey = format(date, 'yyyy-MM');
       
       if (!groups[monthKey]) {

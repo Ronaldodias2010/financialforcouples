@@ -11,6 +11,7 @@ import { ExportUtils } from './ExportUtils';
 import { AlertCircle } from 'lucide-react';
 import { PayFutureExpenseModal } from './PayFutureExpenseModal';
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { parseLocalDate } from '@/utils/date';
 
 interface OverdueExpense {
   id: string;
@@ -121,7 +122,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
 
       // Add manual expenses
       manualData?.forEach((item: any) => {
-        const dueDate = new Date(item.due_date);
+        const dueDate = parseLocalDate(item.due_date);
         const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
         
         expenses.push({

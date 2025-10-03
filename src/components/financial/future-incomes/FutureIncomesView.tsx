@@ -7,6 +7,7 @@ import { useManualFutureIncomes } from '@/hooks/useManualFutureIncomes';
 import { AddFutureIncomeModal } from './AddFutureIncomeModal';
 import { ReceiveFutureIncomeModal } from './ReceiveFutureIncomeModal';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { parseLocalDate, formatLocalDate } from '@/utils/date';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,7 +60,7 @@ export const FutureIncomesView = ({ viewMode }: FutureIncomesViewProps) => {
 
   // Group incomes by month
   const groupedIncomes = futureIncomes.reduce((acc, income) => {
-    const monthYear = new Date(income.due_date).toLocaleDateString('pt-BR', { 
+    const monthYear = parseLocalDate(income.due_date).toLocaleDateString('pt-BR', { 
       year: 'numeric', 
       month: 'long' 
     });
@@ -148,7 +149,7 @@ export const FutureIncomesView = ({ viewMode }: FutureIncomesViewProps) => {
                             <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {new Date(income.due_date).toLocaleDateString()}
+                                {formatLocalDate(income.due_date, 'dd/MM/yyyy')}
                               </span>
                               {income.category && (
                                 <Badge variant="outline" style={{ 

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle } from 'lucide-react';
 import { useInvalidateFinancialData } from '@/hooks/useInvalidateFinancialData';
 import { useToast } from '@/hooks/use-toast';
+import { parseLocalDate, formatLocalDate } from '@/utils/date';
 
 interface ReceiveFutureIncomeModalProps {
   open: boolean;
@@ -91,7 +92,7 @@ export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive
   if (!income) return null;
 
   const isLate = receiptDate > income.due_date;
-  const daysLate = isLate ? Math.floor((new Date(receiptDate).getTime() - new Date(income.due_date).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  const daysLate = isLate ? Math.floor((parseLocalDate(receiptDate).getTime() - parseLocalDate(income.due_date).getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,7 +106,7 @@ export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive
               <div>
                 <Label className="text-base font-semibold">{income.description}</Label>
                 <p className="text-sm text-muted-foreground">
-                  {t('futureIncomes.dueDate')}: {new Date(income.due_date).toLocaleDateString()}
+                  {t('futureIncomes.dueDate')}: {formatLocalDate(income.due_date, 'dd/MM/yyyy')}
                 </p>
               </div>
               <div className="text-right">

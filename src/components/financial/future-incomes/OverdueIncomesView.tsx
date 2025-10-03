@@ -6,6 +6,7 @@ import { AlertCircle, Calendar, CheckCircle, Trash2 } from 'lucide-react';
 import { useManualFutureIncomes } from '@/hooks/useManualFutureIncomes';
 import { ReceiveFutureIncomeModal } from './ReceiveFutureIncomeModal';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { parseLocalDate, formatLocalDate } from '@/utils/date';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -95,7 +96,7 @@ export const OverdueIncomesView = ({ viewMode }: OverdueIncomesViewProps) => {
           <div className="space-y-3">
             {overdueIncomes.map((income) => {
               const daysOverdue = Math.floor(
-                (new Date().getTime() - new Date(income.due_date).getTime()) / (1000 * 60 * 60 * 24)
+                (new Date().getTime() - parseLocalDate(income.due_date).getTime()) / (1000 * 60 * 60 * 24)
               );
               
               return (
@@ -111,7 +112,7 @@ export const OverdueIncomesView = ({ viewMode }: OverdueIncomesViewProps) => {
                       <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {t('futureIncomes.dueDate')}: {new Date(income.due_date).toLocaleDateString()}
+                          {t('futureIncomes.dueDate')}: {formatLocalDate(income.due_date, 'dd/MM/yyyy')}
                         </span>
                         {income.category && (
                           <Badge variant="outline" style={{ 
