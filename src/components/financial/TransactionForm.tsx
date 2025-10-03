@@ -975,6 +975,8 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           }
 
           if (data && typeof data === 'object' && 'success' in data && data.success) {
+            console.log('💳 Card payment processed successfully, invalidating queries...');
+            
             toast({
               title: "Sucesso",
               description: "Pagamento de cartão processado com sucesso",
@@ -982,7 +984,12 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             });
             
             // Invalidate all financial data to update the UI immediately
-            await invalidateAll();
+            try {
+              await invalidateAll(true);
+              console.log('✅ Financial data invalidated successfully');
+            } catch (invalidateError) {
+              console.error('❌ Error invalidating financial data:', invalidateError);
+            }
             
             // Return transaction data for onSubmit callback
             const transactionData = {
@@ -1184,13 +1191,20 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         }
       }
 
+      console.log('💾 Transaction saved successfully, invalidating queries...');
+      
       toast({
         title: t('transactionForm.success'),
         description: t('transactionForm.successMessage'),
       });
 
       // Invalidate all financial data to update the UI immediately
-      await invalidateAll();
+      try {
+        await invalidateAll(true);
+        console.log('✅ Financial data invalidated successfully');
+      } catch (invalidateError) {
+        console.error('❌ Error invalidating financial data:', invalidateError);
+      }
 
       // Reset form
       setAmount("");
