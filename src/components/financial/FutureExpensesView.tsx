@@ -875,10 +875,10 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                                 <h4 className="font-medium">{expense.description}</h4>
                                 {getStatusBadge(expense)}
                                 
-                                {/* Indicador de parcela - Fase 6 */}
+                                {/* Indicador de parcela - Traduzido */}
                                 {expense.installment_info && (
                                   <Badge variant="outline" className="text-xs whitespace-nowrap bg-primary/10 text-primary border-primary/20">
-                                    Parcela {expense.installment_info}
+                                    {t('installment')} {expense.installment_info}
                                   </Badge>
                                 )}
                                 

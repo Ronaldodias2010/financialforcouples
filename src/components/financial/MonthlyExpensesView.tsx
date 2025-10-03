@@ -488,7 +488,7 @@ if (selectedCategory !== "all") {
                         <span className="font-medium">{transaction.description}</span>
                         {transaction.is_installment && transaction.installment_number && transaction.total_installments ? (
                           <Badge variant="outline" className="text-xs whitespace-nowrap bg-primary/10 text-primary border-primary/20">
-                            Parcela {transaction.installment_number}/{transaction.total_installments}
+                            {t('installment')} {transaction.installment_number}/{transaction.total_installments}
                           </Badge>
                         ) : null}
                       </div>

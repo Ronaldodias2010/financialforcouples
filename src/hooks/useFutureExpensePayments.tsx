@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface ProcessPaymentParams {
   recurringExpenseId?: string;
@@ -21,12 +22,13 @@ export const useFutureExpensePayments = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const processPayment = async (params: ProcessPaymentParams) => {
     if (!user) {
       toast({
-        title: "Erro",
-        description: "Usuário não autenticado",
+        title: t('common.error'),
+        description: t('common.userNotAuthenticated'),
         variant: "destructive",
       });
       return null;
@@ -51,7 +53,7 @@ export const useFutureExpensePayments = () => {
         if (error) {
           console.error('Error processing installment payment:', error);
           toast({
-            title: "Erro ao processar pagamento",
+            title: t('futureExpenses.paymentError'),
             description: error.message,
             variant: "destructive",
           });
@@ -59,8 +61,8 @@ export const useFutureExpensePayments = () => {
         }
 
         toast({
-          title: "Pagamento processado",
-          description: "Parcela foi quitada e adicionada às despesas mensais",
+          title: t('futureExpenses.paymentProcessed'),
+          description: t('futureExpenses.installmentPaid'),
           variant: "default",
         });
 
@@ -86,7 +88,7 @@ export const useFutureExpensePayments = () => {
       if (error) {
         console.error('Error processing payment:', error);
         toast({
-          title: "Erro ao processar pagamento",
+          title: t('futureExpenses.paymentError'),
           description: error.message,
           variant: "destructive",
         });
@@ -102,8 +104,8 @@ export const useFutureExpensePayments = () => {
       }
 
       toast({
-        title: "Pagamento processado",
-        description: "Despesa futura foi quitada e adicionada às despesas mensais",
+        title: t('futureExpenses.paymentProcessed'),
+        description: t('futureExpenses.expensePaid'),
         variant: "default",
       });
 
@@ -111,8 +113,8 @@ export const useFutureExpensePayments = () => {
     } catch (error) {
       console.error('Error processing payment:', error);
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao processar pagamento",
+        title: t('common.error'),
+        description: t('futureExpenses.paymentError'),
         variant: "destructive",
       });
       return null;
@@ -209,8 +211,8 @@ export const useFutureExpensePayments = () => {
   const processInstallmentAutomatically = async (transactionId: string) => {
     if (!user) {
       toast({
-        title: "Erro",
-        description: "Usuário não autenticado",
+        title: t('common.error'),
+        description: t('common.userNotAuthenticated'),
         variant: "destructive",
       });
       return null;
@@ -234,7 +236,7 @@ export const useFutureExpensePayments = () => {
       if (error) {
         console.error('Error processing installment:', error);
         toast({
-          title: "Erro ao processar parcela",
+          title: t('futureExpenses.paymentError'),
           description: error.message,
           variant: "destructive",
         });
@@ -242,8 +244,8 @@ export const useFutureExpensePayments = () => {
       }
 
       toast({
-        title: "Parcela processada",
-        description: "A parcela foi movida para as despesas do mês",
+        title: t('futureExpenses.installmentProcessed'),
+        description: t('futureExpenses.installmentMoved'),
         variant: "default",
       });
 
@@ -251,8 +253,8 @@ export const useFutureExpensePayments = () => {
     } catch (error) {
       console.error('Error processing installment:', error);
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao processar parcela",
+        title: t('common.error'),
+        description: t('futureExpenses.paymentError'),
         variant: "destructive",
       });
       return null;

@@ -603,6 +603,12 @@ const translations = {
     'futureExpenses.installmentInfo': 'Parcela',
     'futureExpenses.pdfTitle': 'Relatório de Despesas Futuras',
     'futureExpenses.total': 'Total de Despesas Futuras',
+    'futureExpenses.paymentProcessed': 'Pagamento processado',
+    'futureExpenses.installmentPaid': 'Parcela foi quitada e adicionada às despesas mensais',
+    'futureExpenses.expensePaid': 'Despesa futura foi quitada e adicionada às despesas mensais',
+    'futureExpenses.paymentError': 'Erro ao processar pagamento',
+    'futureExpenses.installmentMoved': 'A parcela foi movida para as despesas do mês',
+    'futureExpenses.installmentProcessed': 'Parcela processada',
     
     // Monthly Expenses PDF translations
     'monthlyExpenses.pdfTitle': 'Relatório de Despesas Mensais',
@@ -2384,6 +2390,12 @@ const translations = {
     'futureExpenses.installmentInfo': 'Installment',
     'futureExpenses.pdfTitle': 'Future Expenses Report',
     'futureExpenses.total': 'Total Future Expenses',
+    'futureExpenses.paymentProcessed': 'Payment processed',
+    'futureExpenses.installmentPaid': 'Installment paid and added to monthly expenses',
+    'futureExpenses.expensePaid': 'Future expense paid and added to monthly expenses',
+    'futureExpenses.paymentError': 'Error processing payment',
+    'futureExpenses.installmentMoved': 'Installment moved to monthly expenses',
+    'futureExpenses.installmentProcessed': 'Installment processed',
     
     // Monthly Expenses PDF translations
     'monthlyExpenses.pdfTitle': 'Monthly Expenses Report',
@@ -4285,6 +4297,12 @@ const translations = {
     'futureExpenses.installmentInfo': 'Cuota',
     'futureExpenses.pdfTitle': 'Informe de Gastos Futuros',
     'futureExpenses.total': 'Total de Gastos Futuros',
+    'futureExpenses.paymentProcessed': 'Pago procesado',
+    'futureExpenses.installmentPaid': 'Cuota pagada y añadida a los gastos mensuales',
+    'futureExpenses.expensePaid': 'Gasto futuro pagado y añadido a los gastos mensuales',
+    'futureExpenses.paymentError': 'Error al procesar el pago',
+    'futureExpenses.installmentMoved': 'La cuota fue movida a los gastos del mes',
+    'futureExpenses.installmentProcessed': 'Cuota procesada',
     
     // Transfers
     'transfers.betweenAccounts': 'Transferencias entre Cuentas',
