@@ -22,6 +22,7 @@ import { parseMonetaryValue, formatMonetaryValue, divideMonetaryValue } from "@/
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCashBalance } from "@/hooks/useCashBalance";
+import { useInvalidateFinancialData } from "@/hooks/useInvalidateFinancialData";
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
 }
@@ -108,6 +109,7 @@ const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
 };
 
 export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
+  const { invalidateAll } = useInvalidateFinancialData();
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -979,6 +981,9 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               variant: "default",
             });
             
+            // Invalidate all financial data to update the UI immediately
+            await invalidateAll();
+            
             // Return transaction data for onSubmit callback
             const transactionData = {
               id: (data as any).transaction_id,
@@ -1183,6 +1188,9 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         title: t('transactionForm.success'),
         description: t('transactionForm.successMessage'),
       });
+
+      // Invalidate all financial data to update the UI immediately
+      await invalidateAll();
 
       // Reset form
       setAmount("");
