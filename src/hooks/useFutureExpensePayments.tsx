@@ -172,13 +172,6 @@ export const useFutureExpensePayments = () => {
       if (recurringExpenseId) {
         // Recurring expenses are no longer tracked in future_expense_payments
         return false;
-
-        if (error) {
-          console.error('Error checking recurring payment status:', error);
-          return false;
-        }
-
-        return (data && data.length > 0);
       }
 
       return false;
