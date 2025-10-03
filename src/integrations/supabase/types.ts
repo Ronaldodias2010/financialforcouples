@@ -2899,6 +2899,10 @@ export type Database = {
         }
         Returns: string
       }
+      process_installment_payment: {
+        Args: { p_future_payment_id: string }
+        Returns: string
+      }
       process_recurring_expenses_daily: {
         Args: Record<PropertyKey, never>
         Returns: undefined

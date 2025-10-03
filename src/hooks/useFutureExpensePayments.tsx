@@ -165,10 +165,58 @@ export const useFutureExpensePayments = () => {
     }
   };
 
+  const processInstallmentAutomatically = async (futurePaymentId: string) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    setIsProcessing(true);
+    
+    try {
+      const { data, error } = await supabase.rpc('process_installment_payment', {
+        p_future_payment_id: futurePaymentId
+      });
+
+      if (error) {
+        console.error('Error processing installment:', error);
+        toast({
+          title: "Erro ao processar parcela",
+          description: error.message,
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      toast({
+        title: "Parcela processada",
+        description: "A parcela foi movida para as despesas do mês",
+        variant: "default",
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error processing installment:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao processar parcela",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return {
     processPayment,
     getFutureExpensePayments,
     isExpensePaid,
+    processInstallmentAutomatically,
     isProcessing,
   };
 };

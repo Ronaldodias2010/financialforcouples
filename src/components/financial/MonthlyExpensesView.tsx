@@ -479,16 +479,16 @@ if (selectedCategory !== "all") {
             ) : (
               <div className="space-y-4">
                 {transactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className={`inline-block w-2 h-2 rounded-full ${
                           transaction.type === 'income' ? 'bg-green-500' : 'bg-red-500'
                         }`} />
                         <span className="font-medium">{transaction.description}</span>
                         {transaction.is_installment && transaction.installment_number && transaction.total_installments ? (
-                          <Badge variant="outline" className="ml-2">
-                            {transaction.installment_number}/{transaction.total_installments}
+                          <Badge variant="outline" className="text-xs whitespace-nowrap bg-primary/10 text-primary border-primary/20">
+                            Parcela {transaction.installment_number}/{transaction.total_installments}
                           </Badge>
                         ) : null}
                       </div>
