@@ -569,17 +569,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             <h3 className="text-lg font-semibold">{t('monthlyExpenses.futureExpenses')}</h3>
           </div>
           
-          <Button 
-            onClick={() => setAddExpenseModal(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            {t('futureExpenses.addFutureExpense')}
-          </Button>
-          
-          {/* Actions - Responsive layout */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {/* Export Utils */}
+          <div className="flex gap-3 items-center">
+            <FutureExpensesCalendar 
+              expenses={allFutureExpenses} 
+              getOwnerName={getOwnerName}
+            />
+            
             {allFilteredExpenses.length > 0 && (
               <ExportUtils
                 data={allFilteredExpenses.map(expense => ({
@@ -638,18 +633,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               />
             )}
             
-            {/* Calendar and total */}
-            <div className="flex items-center gap-3 justify-between sm:justify-start">
-            <FutureExpensesCalendar 
-              expenses={allFutureExpenses} 
-              getOwnerName={getOwnerName}
-            />
-              <Badge variant="outline" className="text-sm sm:text-lg px-2 py-1 sm:px-3 truncate max-w-[200px] sm:max-w-none">
-                <span className="hidden sm:inline">{t('monthlyExpenses.totalFuture')}: </span>
-                <span className="sm:hidden">{t('monthlyExpenses.total')}: </span>
-                {formatCurrency(totalAmount)}
-              </Badge>
-            </div>
+            <Button 
+              onClick={() => setAddExpenseModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              {t('futureExpenses.addFutureExpense')}
+            </Button>
           </div>
         </div>
 
@@ -672,6 +662,40 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             </Button>
           ))}
         </div>
+
+        {/* Total Geral - Destacado */}
+        {filteredMonthlyGroups.length > 0 && (
+          <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-primary/10 rounded-full">
+                    <DollarSign className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">
+                      {t('monthlyExpenses.totalFuture')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedCategory === "all" 
+                        ? t('monthlyExpenses.allFilter')
+                        : translateCategory(selectedCategory)
+                      }
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-primary">
+                    {formatCurrency(totalAmount)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {filteredMonthlyGroups.reduce((sum, g) => sum + g.expenses.length, 0)} {t('futureExpenses.expensesPlural')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {filteredMonthlyGroups.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
