@@ -132,23 +132,43 @@ chmod +x scripts/setup-gcp.sh
 
 O script é bash, então você tem 2 opções:
 
-**Opção 1: Usar Git Bash (Recomendado)**
-1. Clique com botão direito na pasta do projeto
-2. Selecione "Git Bash Here"
-3. Execute:
+**Opção 1: Usar Git Bash (Recomendado - Mais Simples)**
+
+Git Bash vem junto quando você instala o Git no Windows!
+
+1. Abra o **Explorador de Arquivos** (Windows Explorer)
+2. Navegue até a pasta do projeto (exemplo: `C:\Users\SeuUsuario\Documents\couples-financials`)
+3. **Clique com botão direito** dentro da pasta (em um espaço vazio)
+4. Selecione **"Git Bash Here"** no menu
+5. Uma janela preta vai abrir (terminal Git Bash)
+6. Execute o comando:
 ```bash
 ./scripts/setup-gcp.sh
 ```
 
 **Opção 2: Usar WSL (Windows Subsystem for Linux)**
+
+Para usuários mais avançados que querem um ambiente Linux completo:
+
 ```bash
-# Instalar WSL se não tiver
+# 1. Abrir PowerShell como Administrador
+# (Clique direito no menu Iniciar > Windows PowerShell (Admin))
+
+# 2. Instalar WSL
 wsl --install
 
-# Depois, no WSL:
-cd /mnt/c/Users/SeuUsuario/caminho/para/projeto
+# 3. Reiniciar o computador quando pedido
+
+# 4. Após reiniciar, abrir Ubuntu (vai aparecer no menu Iniciar)
+
+# 5. Navegar até a pasta do projeto
+cd /mnt/c/Users/SeuUsuario/Documents/couples-financials
+
+# 6. Executar o script
 ./scripts/setup-gcp.sh
 ```
+
+**⚠️ Recomendação: Use a Opção 1 (Git Bash) - é mais simples!**
 
 ---
 

@@ -31,12 +31,36 @@ sudo mv terraform /usr/local/bin/
 # macOS
 brew install docker
 
-# Ou baixe em: https://docs.docker.com/get-docker/
+# Windows
+# Baixe Docker Desktop em: https://docs.docker.com/desktop/install/windows-install/
+
+# Linux
+# Siga: https://docs.docker.com/engine/install/
 ```
 
 ---
 
 ## 📋 OPÇÃO 1: Executar o Script Completo (Recomendado)
+
+### **Para Windows (Git Bash):**
+
+### Passo 1: Baixar o projeto
+Siga as instruções do arquivo `COMO-BAIXAR-PROJETO.md` para clonar o repositório.
+
+### Passo 2: Abrir Git Bash na pasta do projeto
+1. Abra o **Explorador de Arquivos**
+2. Navegue até a pasta do projeto (exemplo: `C:\Users\SeuUsuario\Documents\couples-financials`)
+3. **Clique com botão direito** dentro da pasta
+4. Selecione **"Git Bash Here"**
+
+### Passo 3: Executar o script
+```bash
+./scripts/setup-gcp.sh
+```
+
+---
+
+### **Para macOS/Linux:**
 
 ### Passo 1: Abrir Terminal no diretório do projeto
 ```bash
