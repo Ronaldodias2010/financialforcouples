@@ -136,9 +136,7 @@ const useTransactionsQuery = (coupleIds: CoupleData | null) => {
           cards(name)
         `)
         .in('user_id', userIds)
-        .eq('status', 'completed') // Apenas transações completadas
-        .gte('transaction_date', format(startOfMonth, 'yyyy-MM-dd'))
-        .lte('transaction_date', format(endOfMonth, 'yyyy-MM-dd'))
+        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},transaction_date.lte.${format(endOfMonth, 'yyyy-MM-dd')}),and(is_installment.is.true,status.eq.pending,due_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},due_date.lte.${format(endOfMonth, 'yyyy-MM-dd')})`)
         .order('transaction_date', { ascending: false });
 
       if (error) throw error;
