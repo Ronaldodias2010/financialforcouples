@@ -54,18 +54,18 @@ gcloud config set project $PROJECT_ID
 echo -e "${GREEN}✅ Projeto configurado: $PROJECT_ID${NC}"
 echo ""
 
-# 3. Verificar billing
-echo "💳 Verificando billing..."
-BILLING_ENABLED=$(gcloud beta billing projects describe $PROJECT_ID --format="value(billingEnabled)" 2>/dev/null || echo "false")
+## 3. Verificar billing
+#echo "💳 Verificando billing..."
+#BILLING_ENABLED=$(gcloud beta billing projects describe $PROJECT_ID --format="value(billingEnabled)" 2>/dev/null || echo "false")
 
-if [ "$BILLING_ENABLED" != "True" ]; then
-    echo -e "${YELLOW}⚠️  Billing não habilitado!${NC}"
-    echo "Por favor, habilite billing em: https://console.cloud.google.com/billing/linkedaccount?project=$PROJECT_ID"
-    read -p "Pressione ENTER após habilitar o billing..."
-fi
+#if [ "$BILLING_ENABLED" != "True" ]; then
+   # echo -e "${YELLOW}⚠️  Billing não habilitado!${NC}"
+   # echo "Por favor, habilite billing em: https://console.cloud.google.com/billing/linkedaccount?project=$PROJECT_ID"
+   # read -p "Pressione ENTER após habilitar o billing..."
+#fi
 
-echo -e "${GREEN}✅ Billing verificado${NC}"
-echo ""
+#echo -e "${GREEN}✅ Billing verificado${NC}"
+#echo ""
 
 # 4. Habilitar APIs necessárias
 echo "🔌 Habilitando APIs necessárias..."
