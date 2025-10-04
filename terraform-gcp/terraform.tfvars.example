@@ -1,0 +1,46 @@
+# Exemplo de configuração para deploy no GCP
+# Copie este arquivo para terraform.tfvars e ajuste os valores
+
+# Projeto GCP (OBRIGATÓRIO - criar em console.cloud.google.com)
+gcp_project_id = "seu-projeto-gcp-id"
+
+# Região GCP
+gcp_region = "us-central1"
+
+# Ambiente
+environment = "prod"
+
+# Nome da aplicação
+app_name = "couples-financials"
+
+# Domínio principal (deixe vazio se não tiver domínio ainda)
+domain_name = "couplesfinancials.com"
+
+# Domínio secundário (opcional)
+secondary_domain_name = "couplesfin.com"
+
+# Configurações do Supabase
+supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
+supabase_anon_key = "sua-chave-anonima-aqui"
+supabase_service_role_key = "sua-service-role-key-aqui"
+
+# Imagem Docker (será preenchida pelo script de deploy)
+container_image = "us-central1-docker.pkg.dev/seu-projeto-gcp-id/couples-financials/app:latest"
+
+# Configurações de escala do Cloud Run
+min_instances = 0  # 0 = escala para zero quando não há tráfego
+max_instances = 10
+
+# Recursos por instância
+cpu = "1"      # 1, 2 ou 4 vCPUs
+memory = "512Mi"  # 512Mi, 1Gi, 2Gi, 4Gi
+
+# Concorrência
+max_requests_per_container = 80
+
+# Cloud CDN
+enable_cdn = true
+cdn_cache_max_age = 3600  # 1 hora em segundos
+
+# Artifact Registry
+artifact_registry_location = "us-central1"
