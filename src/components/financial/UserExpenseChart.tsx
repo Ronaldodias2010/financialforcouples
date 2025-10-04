@@ -131,13 +131,12 @@ export const UserExpenseChart = () => {
       // Fetch expenses - excluir cartão de crédito para evitar dupla contagem
       const { data: expenseTransactions, error: expenseError } = await supabase
         .from('transactions')
-        .select('user_id, owner_user, amount, transaction_date, created_at, payment_method')
+        .select('user_id, owner_user, amount, transaction_date, due_date, is_installment, created_at, payment_method')
         .in('user_id', userIds)
         .eq('type', 'expense')
         .eq('status', 'completed')
         .not('payment_method', 'in', '(account_transfer,account_investment,credit_card)')
-        .gte('transaction_date', startStr)
-        .lte('transaction_date', endStr);
+        .or(`and(is_installment.is.false,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,due_date.gte.${startStr},due_date.lte.${endStr})`);
 
       if (expenseError) throw expenseError;
 
@@ -247,7 +246,8 @@ export const UserExpenseChart = () => {
 
         // Process expenses by month (excluindo cartão)
         expenseTransactions?.forEach(transaction => {
-          const month = new Date(transaction.transaction_date).toLocaleDateString('pt-BR', { 
+          const dateForGrouping = transaction.is_installment ? transaction.due_date : transaction.transaction_date;
+          const month = new Date(dateForGrouping).toLocaleDateString('pt-BR', { 
             month: 'short', 
             year: '2-digit' 
           });

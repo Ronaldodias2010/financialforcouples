@@ -226,8 +226,8 @@ const fetchCategories = async () => {
         .not('categories.name', 'ilike', '%pagamento%cartão%')
         .not('categories.name', 'ilike', '%pagamento%cartao%')
         .not('categories.name', 'ilike', '%credit card payment%')
-        .or(`and(payment_method.neq.credit_card,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(payment_method.eq.credit_card,purchase_date.gte.${startDate},purchase_date.lte.${endDate})`)
-        .order('purchase_date', { ascending: false });
+        .or(`and(is_installment.is.false,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(is_installment.is.true,due_date.gte.${startDate},due_date.lte.${endDate})`)
+        .order('transaction_date', { ascending: false });
 
 if (selectedCategory !== "all") {
         const opt = categoryOptions.find(o => o.key === selectedCategory);

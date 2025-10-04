@@ -56,6 +56,8 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
           payment_method,
           purchase_date,
           transaction_date,
+          due_date,
+          is_installment,
           created_at,
           categories!inner(name, color)
         `)
@@ -64,7 +66,7 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         .not('categories.name', 'ilike', '%pagamento%cartão%')
         .not('categories.name', 'ilike', '%pagamento%cartao%')
         .not('categories.name', 'ilike', '%credit card payment%')
-        .or(`and(payment_method.neq.credit_card,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(payment_method.eq.credit_card,due_date.gte.${startDate},due_date.lte.${endDate})`);
+        .or(`and(is_installment.is.false,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(is_installment.is.true,due_date.gte.${startDate},due_date.lte.${endDate})`);
 
       // Apply couple or individual user filter first
       if (coupleData?.status === 'active') {
