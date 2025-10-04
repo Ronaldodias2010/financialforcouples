@@ -8,11 +8,11 @@ terraform {
     }
   }
 
-  # Backend para armazenar o estado do Terraform (opcional)
-  # backend "gcs" {
-  #   bucket = "your-terraform-state-bucket"
-  #   prefix = "couples-financials/terraform.tfstate"
-  # }
+  # Backend GCS para armazenar o estado do Terraform
+  backend "gcs" {
+    bucket = "couplesfinancials-terraform-state"
+    prefix = "terraform/state"
+  }
 }
 
 # Configuração do provedor Google Cloud

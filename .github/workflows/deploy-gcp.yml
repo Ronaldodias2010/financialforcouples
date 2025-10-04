@@ -1,9 +1,12 @@
-name: Deploy to Google Cloud Platform
+name: Deploy Application to GCP
 
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'terraform-gcp/**'
+      - '.github/workflows/terraform-*.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -22,7 +25,18 @@ env:
   ARTIFACT_REGISTRY: us-central1-docker.pkg.dev
 
 jobs:
+  # Skip se foi triggered por terraform workflow que falhou
+  check-terraform:
+    name: Check Terraform Status
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Terraform workflow succeeded or not from workflow_run
+        run: echo "Terraform OK or manual trigger"
+  
   test:
+    needs: [check-terraform]
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     name: Run Tests
     runs-on: ubuntu-latest
     steps:
@@ -44,9 +58,9 @@ jobs:
         run: bun run type-check || npx tsc --noEmit || echo "Type check completed"
 
   build-and-deploy:
-    name: Build and Deploy to GCP
+    name: Build and Deploy to Cloud Run
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test]
     permissions:
       contents: read
       id-token: write
