@@ -34,12 +34,16 @@ gcloud config set project couplesfinancials
 
 # 4. Executar script de inicialização (EXECUTAR APENAS UMA VEZ)
 ./scripts/init-terraform-backend.sh
+
+# 5. IMPORTANTE: Após o primeiro terraform apply, execute:
+./scripts/fix-service-account-permissions.sh
 ```
 
 **Resultado esperado:**
 ```
 ✅ Backend do Terraform inicializado!
 Bucket: gs://couplesfinancials-terraform-state
+✅ Permissões corrigidas!
 ```
 
 ---
@@ -203,6 +207,20 @@ terraform output load_balancer_ip
 
 ## 🐛 Se algo der errado
 
+### ❌ Erro: Permission 'iam.serviceaccounts.actAs' denied
+```bash
+# Execute o script de correção
+./scripts/fix-service-account-permissions.sh
+
+# Ou manualmente:
+gcloud iam service-accounts add-iam-policy-binding \
+  couples-financials-run-sa@couplesfinancials.iam.gserviceaccount.com \
+  --member="serviceAccount:github-actions-sa@couplesfinancials.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+
+# Depois re-execute o workflow no GitHub Actions
+```
+
 ### Workflow falhou?
 ```bash
 # Ver logs no GitHub Actions
@@ -228,7 +246,8 @@ gcloud compute ssl-certificates describe couples-financials-cert --global
 ```
 
 ### Mais ajuda?
-Consulte: `docs/DEPLOY-TERRAFORM-GITHUB.md`
+- 🔧 Troubleshooting completo: `docs/TROUBLESHOOTING-GCP.md`
+- 📚 Documentação: `docs/DEPLOY-TERRAFORM-GITHUB.md`
 
 ---
 

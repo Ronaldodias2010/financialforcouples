@@ -117,7 +117,7 @@ if ! gcloud iam service-accounts describe $SA_EMAIL &>/dev/null; then
         --display-name="GitHub Actions Service Account" \
         --description="Service account for CI/CD with GitHub Actions"
     
-    # Dar permissões necessárias
+    # Dar permissões necessárias a nível de projeto
     ROLES=(
         "roles/run.admin"
         "roles/artifactregistry.writer"
@@ -131,6 +131,25 @@ if ! gcloud iam service-accounts describe $SA_EMAIL &>/dev/null; then
             --role="$role" \
             --quiet
     done
+    
+    # IMPORTANTE: Dar permissão específica na Cloud Run Service Account
+    # Isso é necessário para permitir que o GitHub Actions faça deploy
+    echo -e "${YELLOW}Concedendo permissão actAs na Cloud Run Service Account...${NC}"
+    CLOUDRUN_SA="couples-financials-run-sa@${PROJECT_ID}.iam.gserviceaccount.com"
+    
+    # Aguardar a SA do Cloud Run ser criada pelo Terraform
+    echo -e "${YELLOW}Nota: Se a SA couples-financials-run-sa ainda não existe,${NC}"
+    echo -e "${YELLOW}      execute este comando após o primeiro 'terraform apply':${NC}"
+    echo -e "${YELLOW}      gcloud iam service-accounts add-iam-policy-binding ${CLOUDRUN_SA} \\${NC}"
+    echo -e "${YELLOW}        --member=\"serviceAccount:${SA_EMAIL}\" \\${NC}"
+    echo -e "${YELLOW}        --role=\"roles/iam.serviceAccountUser\"${NC}"
+    
+    # Tentar conceder (pode falhar se a SA ainda não existir)
+    gcloud iam service-accounts add-iam-policy-binding ${CLOUDRUN_SA} \
+        --member="serviceAccount:${SA_EMAIL}" \
+        --role="roles/iam.serviceAccountUser" \
+        --quiet 2>/dev/null || \
+        echo -e "${YELLOW}⚠️  Cloud Run SA ainda não existe. Execute o comando acima após terraform apply.${NC}"
     
     echo -e "${GREEN}✅ Service Account criada!${NC}"
 else
