@@ -140,7 +140,13 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .eq("card_type", "credit")
         .not("due_date", "is", null);
 
+      // Calcular início do PRÓXIMO mês (excluir parcelas do mês atual)
+      const nextMonth = new Date();
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      nextMonth.setDate(1);
+
       // Buscar parcelas de cartão PENDING para exibição informativa (SEM botão de pagar)
+      // APENAS do PRÓXIMO mês em diante (não duplicar com Gastos Atuais)
       const { data: cardTransactions, error: cardTransactionsError } = await supabase
         .from("transactions")
         .select(`
@@ -153,7 +159,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .eq("status", "pending")
         .not("card_id", "is", null)
         .eq('cards.card_type', 'credit')
-        .gte("due_date", format(now, 'yyyy-MM-dd'))
+        .gte("due_date", format(nextMonth, 'yyyy-MM-dd'))
         .lte("due_date", format(futureDate, 'yyyy-MM-dd'))
         .order("due_date", { ascending: true });
 
