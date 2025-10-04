@@ -71,4 +71,15 @@ resource "google_service_account_iam_member" "github_actions_can_use_cloudrun_sa
   service_account_id = google_service_account.cloud_run.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:github-actions-sa@${var.gcp_project_id}.iam.gserviceaccount.com"
+  
+  depends_on = [
+    google_service_account.cloud_run
+  ]
+}
+
+# Dar permissão adicional ao GitHub Actions SA para impersonar
+resource "google_project_iam_member" "github_actions_sa_user" {
+  project = var.gcp_project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:github-actions-sa@${var.gcp_project_id}.iam.gserviceaccount.com"
 }

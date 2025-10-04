@@ -98,19 +98,41 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image=${{ env.ARTIFACT_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }} \
-            --region=${{ env.GCP_REGION }} \
-            --platform=managed \
-            --allow-unauthenticated \
-            --min-instances=0 \
-            --max-instances=10 \
-            --cpu=1 \
-            --memory=512Mi \
-            --timeout=300 \
-            --set-env-vars="NODE_ENV=production,SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
-            --set-secrets="SUPABASE_ANON_KEY=supabase-anon-key:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest" \
-            --service-account=${{ env.SERVICE_NAME }}-run-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          # Verificar se a service account existe
+          SA_EXISTS=$(gcloud iam service-accounts list \
+            --filter="email:${{ env.SERVICE_NAME }}-run-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+            --format="value(email)" || echo "")
+          
+          if [ -n "$SA_EXISTS" ]; then
+            echo "✅ Service account existe, usando: $SA_EXISTS"
+            gcloud run deploy ${{ env.SERVICE_NAME }} \
+              --image=${{ env.ARTIFACT_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }} \
+              --region=${{ env.GCP_REGION }} \
+              --platform=managed \
+              --allow-unauthenticated \
+              --min-instances=0 \
+              --max-instances=10 \
+              --cpu=1 \
+              --memory=512Mi \
+              --timeout=300 \
+              --set-env-vars="NODE_ENV=production,SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
+              --set-secrets="SUPABASE_ANON_KEY=supabase-anon-key:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest" \
+              --service-account=${{ env.SERVICE_NAME }}-run-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          else
+            echo "⚠️  Service account não existe, usando compute default"
+            gcloud run deploy ${{ env.SERVICE_NAME }} \
+              --image=${{ env.ARTIFACT_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }} \
+              --region=${{ env.GCP_REGION }} \
+              --platform=managed \
+              --allow-unauthenticated \
+              --min-instances=0 \
+              --max-instances=10 \
+              --cpu=1 \
+              --memory=512Mi \
+              --timeout=300 \
+              --set-env-vars="NODE_ENV=production,SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
+              --set-secrets="SUPABASE_ANON_KEY=supabase-anon-key:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest"
+          fi
 
       - name: Get Cloud Run URL
         id: get-url
