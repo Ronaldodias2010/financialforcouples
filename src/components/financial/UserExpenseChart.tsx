@@ -131,12 +131,11 @@ export const UserExpenseChart = () => {
       // Fetch expenses - excluir cartão de crédito para evitar dupla contagem
       const { data: expenseTransactions, error: expenseError } = await supabase
         .from('transactions')
-        .select('user_id, owner_user, amount, transaction_date, due_date, is_installment, created_at, payment_method')
+        .select('user_id, owner_user, amount, transaction_date, due_date, is_installment, created_at, payment_method, status')
         .in('user_id', userIds)
         .eq('type', 'expense')
-        .eq('status', 'completed')
         .not('payment_method', 'in', '(account_transfer,account_investment,credit_card)')
-        .or(`and(is_installment.is.false,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,due_date.gte.${startStr},due_date.lte.${endStr})`);
+        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,status.eq.pending,due_date.gte.${startStr},due_date.lte.${endStr})`);
 
       if (expenseError) throw expenseError;
 
