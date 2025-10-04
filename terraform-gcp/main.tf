@@ -64,3 +64,11 @@ resource "google_project_iam_member" "log_writer" {
   role    = "roles/logging.logWriter"
   member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
+
+# Permitir que a Service Account do GitHub Actions use a Cloud Run SA
+# Isso resolve o erro: Permission 'iam.serviceaccounts.actAs' denied
+resource "google_service_account_iam_member" "github_actions_can_use_cloudrun_sa" {
+  service_account_id = google_service_account.cloud_run.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:github-actions-sa@${var.gcp_project_id}.iam.gserviceaccount.com"
+}
