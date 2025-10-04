@@ -1,8 +1,8 @@
 # Exemplo de configuração para deploy no GCP
 # Copie este arquivo para terraform.tfvars e ajuste os valores
 
-# Projeto GCP (OBRIGATÓRIO - criar em console.cloud.google.com)
-gcp_project_id = "seu-projeto-gcp-id"
+# Projeto GCP (já configurado)
+gcp_project_id = "couplesfinancials"
 
 # Região GCP
 gcp_region = "us-central1"
@@ -24,8 +24,8 @@ supabase_url = "https://elxttabdtddlavhseipz.supabase.co"
 supabase_anon_key = "sua-chave-anonima-aqui"
 supabase_service_role_key = "sua-service-role-key-aqui"
 
-# Imagem Docker (será preenchida pelo script de deploy)
-container_image = "us-central1-docker.pkg.dev/seu-projeto-gcp-id/couples-financials/app:latest"
+# Imagem Docker (será preenchida automaticamente pelo GitHub Actions)
+container_image = "us-central1-docker.pkg.dev/couplesfinancials/couples-financials/app:latest"
 
 # Configurações de escala do Cloud Run
 min_instances = 0  # 0 = escala para zero quando não há tráfego
