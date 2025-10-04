@@ -22,6 +22,7 @@ interface Transaction {
   cards?: { name: string };
   status?: 'pending' | 'completed' | 'cancelled';
   due_date?: string;
+  is_installment?: boolean;
 }
 
 interface Account {
@@ -320,6 +321,11 @@ export const useFinancialData = () => {
   const getFinancialSummary = (viewMode: 'both' | 'user1' | 'user2' = 'both'): FinancialSummary => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
+    // Get current month range
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+    
     const incomeValues: number[] = [];
     const expenseValues: number[] = [];
 
@@ -329,14 +335,24 @@ export const useFinancialData = () => {
         return;
       }
 
-      // Skip pending transactions (future expenses not yet due)
-      if (transaction.status === 'pending') {
-        return;
-      }
-
       // Skip legacy future expenses
       if (transaction.card_transaction_type === 'future_expense') {
         return;
+      }
+
+      // For installments, include only if due_date is in current month
+      if (transaction.is_installment && transaction.due_date) {
+        const dueDate = new Date(transaction.due_date);
+        const isCurrentMonth = dueDate >= startOfMonth && dueDate <= endOfMonth;
+        
+        if (!isCurrentMonth) {
+          return;
+        }
+      } else {
+        // For non-installments, skip pending transactions
+        if (transaction.status === 'pending') {
+          return;
+        }
       }
 
       const amountInUserCurrency = convertCurrency(
@@ -502,22 +518,52 @@ export const useFinancialData = () => {
   const getExpensesByUser = (viewMode: 'both' | 'user1' | 'user2') => {
     const allTransactions = viewMode === 'both' ? transactions : getTransactionsByUser(viewMode);
     
+    // Get current month range
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+    
     const user1Expenses = allTransactions
-      .filter(t => t.type === 'expense' && 
-        t.payment_method !== 'account_transfer' && 
-        t.payment_method !== 'account_investment' &&
-        t.status !== 'pending' &&
-        t.card_transaction_type !== 'future_expense' && 
-        (!coupleIds || t.user_id === coupleIds.user1_id))
+      .filter(t => {
+        if (t.type !== 'expense' || 
+            t.payment_method === 'account_transfer' || 
+            t.payment_method === 'account_investment' ||
+            t.card_transaction_type === 'future_expense' ||
+            (coupleIds && t.user_id !== coupleIds.user1_id)) {
+          return false;
+        }
+        
+        // For installments, include if due_date is in current month
+        if (t.is_installment && t.due_date) {
+          const dueDate = new Date(t.due_date);
+          return dueDate >= startOfMonth && dueDate <= endOfMonth;
+        }
+        
+        // For non-installments, exclude pending
+        return t.status !== 'pending';
+      })
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
     
     const user2Expenses = allTransactions
-      .filter(t => t.type === 'expense' && 
-        t.payment_method !== 'account_transfer' && 
-        t.payment_method !== 'account_investment' &&
-        t.status !== 'pending' &&
-        t.card_transaction_type !== 'future_expense' && 
-        (coupleIds ? t.user_id === coupleIds.user2_id : false))
+      .filter(t => {
+        if (t.type !== 'expense' || 
+            t.payment_method === 'account_transfer' || 
+            t.payment_method === 'account_investment' ||
+            t.card_transaction_type === 'future_expense' ||
+            !coupleIds ||
+            t.user_id !== coupleIds.user2_id) {
+          return false;
+        }
+        
+        // For installments, include if due_date is in current month
+        if (t.is_installment && t.due_date) {
+          const dueDate = new Date(t.due_date);
+          return dueDate >= startOfMonth && dueDate <= endOfMonth;
+        }
+        
+        // For non-installments, exclude pending
+        return t.status !== 'pending';
+      })
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
 
     return { user1Expenses, user2Expenses };
@@ -565,11 +611,30 @@ export const useFinancialData = () => {
 
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
-    const expenseOnly = filteredTransactions.filter(t => t.type === 'expense' && 
-      t.payment_method !== 'account_transfer' && 
-      t.payment_method !== 'account_investment' &&
-      t.status !== 'pending' &&
-      t.card_transaction_type !== 'future_expense');
+    
+    // Get current month range
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+    
+    const expenseOnly = filteredTransactions.filter(t => {
+      // Skip transfers and investments
+      if (t.type !== 'expense' || 
+          t.payment_method === 'account_transfer' || 
+          t.payment_method === 'account_investment' ||
+          t.card_transaction_type === 'future_expense') {
+        return false;
+      }
+      
+      // For installments, include if due_date is in current month (regardless of status)
+      if (t.is_installment && t.due_date) {
+        const dueDate = new Date(t.due_date);
+        return dueDate >= startOfMonth && dueDate <= endOfMonth;
+      }
+      
+      // For non-installments, exclude pending transactions
+      return t.status !== 'pending';
+    });
     
     const expenseValues = expenseOnly.map(t => convertCurrency(t.amount, t.currency, userPreferredCurrency));
     return sumMonetaryArray(expenseValues);
