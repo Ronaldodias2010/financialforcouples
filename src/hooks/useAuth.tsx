@@ -16,11 +16,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   console.log('🔄 AuthProvider renderizando...');
   
   // Versão simplificada para debug
-  const [user, setUser] = React.useState<User | null>(null);
-  const [session, setSession] = React.useState<Session | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     console.log('🔄 AuthProvider useEffect iniciando...');
     let mounted = true;
     
