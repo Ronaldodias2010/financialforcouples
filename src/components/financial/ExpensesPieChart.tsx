@@ -61,6 +61,9 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
         `)
         .eq('type', 'expense')
         .not('payment_method', 'in', '(account_transfer,account_investment)')
+        .not('categories.name', 'ilike', '%pagamento%cartão%')
+        .not('categories.name', 'ilike', '%pagamento%cartao%')
+        .not('categories.name', 'ilike', '%credit card payment%')
         .or(`and(payment_method.neq.credit_card,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(payment_method.eq.credit_card,due_date.gte.${startDate},due_date.lte.${endDate})`);
 
       // Apply couple or individual user filter first
