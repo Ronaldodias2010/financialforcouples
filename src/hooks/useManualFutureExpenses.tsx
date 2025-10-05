@@ -152,6 +152,8 @@ export const useManualFutureExpenses = () => {
       const isPaidLate = daysOverdue > 0;
 
       // Create a completed transaction
+      // transaction_date = data do pagamento (quando foi pago de fato)
+      // purchase_date = data original do vencimento (para manter histórico)
       const { data: newTransaction, error: createError } = await supabase
         .from('transactions')
         .insert({
@@ -159,8 +161,9 @@ export const useManualFutureExpenses = () => {
           type: 'expense',
           amount: manualExpense.amount,
           description: manualExpense.description,
-          transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
-          due_date: manualExpense.due_date,
+          transaction_date: params.paymentDate || new Date().toISOString().split('T')[0], // Data do pagamento efetivo
+          purchase_date: manualExpense.due_date, // Data original do vencimento
+          due_date: manualExpense.due_date, // Manter também due_date para referência
           status: 'completed',
           category_id: manualExpense.category_id,
           account_id: params.accountId,

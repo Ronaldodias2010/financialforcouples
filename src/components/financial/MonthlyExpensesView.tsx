@@ -236,6 +236,9 @@ const fetchCategories = async () => {
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
+      // Query considerando purchase_date para ordenação e filtro
+      // Para compras de cartão: usar purchase_date (data da compra)
+      // Para outras despesas: usar transaction_date (data do pagamento)
       let query = supabase
         .from('transactions')
         .select(`
@@ -245,12 +248,13 @@ const fetchCategories = async () => {
           accounts(name)
         `)
         .in('user_id', userIds)
-      .eq('type', 'expense')
+        .eq('type', 'expense')
         .not('payment_method', 'in', '(account_transfer,account_investment)')
         .not('categories.name', 'ilike', '%pagamento%cartão%')
         .not('categories.name', 'ilike', '%pagamento%cartao%')
         .not('categories.name', 'ilike', '%credit card payment%')
-        .or(`and(is_installment.is.false,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(is_installment.is.true,due_date.gte.${startDate},due_date.lte.${endDate})`)
+        .or(`and(purchase_date.gte.${startDate},purchase_date.lte.${endDate}),and(purchase_date.is.null,transaction_date.gte.${startDate},transaction_date.lte.${endDate})`)
+        .order('purchase_date', { ascending: false, nullsFirst: false })
         .order('transaction_date', { ascending: false });
 
 if (selectedCategory !== "all") {
@@ -550,9 +554,25 @@ if (selectedCategory !== "all") {
                         {transaction.cards?.owner_user && (
                           <p>{t('monthlyExpenses.cardOwner')}: {getCardOwnerName(transaction.cards.owner_user)}</p>
                         )}
+                        
+                        {/* Data de compra/input */}
                         <p>{t('monthlyExpenses.purchaseDate')}: {formatDate(transaction.purchase_date || transaction.transaction_date)}</p>
-                        {transaction.payment_method === 'credit_card' && (
-                          <p>{t('monthlyExpenses.dueDate')}: {formatDate(transaction.transaction_date)}</p>
+                        
+                        {/* Data de pagamento (se diferente da compra) */}
+                        {transaction.purchase_date && transaction.transaction_date && 
+                         transaction.purchase_date !== transaction.transaction_date && (
+                          <p className="text-green-600 dark:text-green-400">
+                            💰 Data do Pagamento: {formatDate(transaction.transaction_date)}
+                          </p>
+                        )}
+                        
+                        {/* Vencimento original (para despesas atrasadas pagas) */}
+                        {(transaction as any).due_date && 
+                         (transaction as any).due_date !== transaction.transaction_date &&
+                         (transaction as any).due_date !== transaction.purchase_date && (
+                          <p className="text-orange-600 dark:text-orange-400">
+                            ⚠️ Vencimento Original: {formatDate((transaction as any).due_date)}
+                          </p>
                         )}
                       </div>
                     </div>
