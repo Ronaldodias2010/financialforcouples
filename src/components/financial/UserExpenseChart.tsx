@@ -121,10 +121,13 @@ export const UserExpenseChart = () => {
       // Fetch expenses - incluir despesas parceladas do cartão filtradas por due_date
       const { data: expenseTransactions, error: expenseError } = await supabase
         .from('transactions')
-        .select('user_id, owner_user, amount, transaction_date, due_date, is_installment, created_at, payment_method, status')
+        .select('user_id, owner_user, amount, transaction_date, due_date, is_installment, created_at, payment_method, status, categories(name)')
         .in('user_id', userIds)
         .eq('type', 'expense')
         .not('payment_method', 'in', '(account_transfer,account_investment)')
+        .not('categories.name', 'ilike', '%pagamento%cartão%')
+        .not('categories.name', 'ilike', '%pagamento%cartao%')
+        .not('categories.name', 'ilike', '%credit card payment%')
         .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,due_date.gte.${startStr},due_date.lte.${endStr})`);
 
       if (expenseError) throw expenseError;

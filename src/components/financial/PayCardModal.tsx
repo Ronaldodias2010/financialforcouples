@@ -30,6 +30,7 @@ interface Account {
   id: string;
   name: string;
   balance: number;
+  currency: import('@/hooks/useCurrencyConverter').CurrencyCode;
 }
 
 export const PayCardModal: React.FC<PayCardModalProps> = ({
@@ -86,7 +87,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
     try {
       const { data: accountsData, error: accountsError } = await supabase
         .from('accounts')
-        .select('id, name, balance')
+        .select('id, name, balance, currency')
         .eq('user_id', user.id)
         .eq('is_active', true);
 
@@ -168,6 +169,10 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
     }
     
     return { main: mainValue, converted: null };
+  };
+
+  const formatAccountBalance = (account: Account) => {
+    return formatCurrencyWithConverter(account.balance, account.currency);
   };
 
   const formatDate = (dateString: string) => {
@@ -355,7 +360,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
                   <SelectContent className="bg-background border shadow-md z-50">
                     {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
-                        {account.name} - {formatCurrency(account.balance)}
+                        {account.name} - {formatAccountBalance(account)}
                       </SelectItem>
                     ))}
                   </SelectContent>
