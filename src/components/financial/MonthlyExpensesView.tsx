@@ -137,6 +137,29 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
     }
   }, [selectedMonth]);
 
+  // Listen to changes in manual_future_expenses to refresh current expenses
+  useEffect(() => {
+    const channel = supabase
+      .channel('manual-future-expenses-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'manual_future_expenses'
+        },
+        () => {
+          console.log('📊 Manual future expense changed, refreshing transactions...');
+          fetchTransactions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedMonth, selectedCategory, viewMode]);
+
 const fetchCategories = async () => {
     try {
       // Scope categories to the current user and partner (if any)
@@ -194,6 +217,8 @@ const fetchCategories = async () => {
     // Clear current transactions to prevent stale data
     setTransactions([]);
     
+    console.log('🔍 [MonthlyExpensesView] Fetching transactions for:', selectedMonth);
+    
     try {
       const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
@@ -239,6 +264,14 @@ if (selectedCategory !== "all") {
 
       if (error) throw error;
       
+      console.log('📊 [MonthlyExpensesView] Transactions fetched:', data?.length || 0);
+      console.log('📊 [MonthlyExpensesView] Sample transactions:', data?.slice(0, 3).map(t => ({
+        desc: t.description,
+        date: t.transaction_date,
+        amount: t.amount,
+        status: (t as any).status
+      })));
+      
       let filteredData = data || [];
       
       // Apply user filter based on viewMode using user_id mapping to couple
@@ -251,6 +284,7 @@ if (selectedCategory !== "all") {
         });
       }
       
+      console.log('✅ [MonthlyExpensesView] Final transactions to display:', filteredData.length);
       setTransactions(filteredData);
     } catch (error) {
       console.error("Error loading transactions:", error);

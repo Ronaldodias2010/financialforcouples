@@ -6,10 +6,19 @@ export const useInvalidateFinancialData = () => {
   const { toast } = useToast();
 
   const invalidateTransactions = async (showToast = false) => {
+    console.log('🔄 [InvalidateFinancialData] Invalidating transactions cache...');
     await queryClient.invalidateQueries({ 
       queryKey: ['transactions'],
-      refetchType: 'active'
+      refetchType: 'all'
     });
+    
+    // Force refetch all active queries
+    await queryClient.refetchQueries({
+      queryKey: ['transactions'],
+      type: 'active'
+    });
+    
+    console.log('✅ [InvalidateFinancialData] Transactions cache invalidated');
     
     if (showToast) {
       toast({
