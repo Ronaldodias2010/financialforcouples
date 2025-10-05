@@ -39,8 +39,8 @@ COPY public/503.html /usr/share/nginx/html/503.html
 # Copiar arquivos buildados do estágio anterior
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expor porta 80
-EXPOSE 80
+# Expor porta 8080 (padrão Cloud Run)
+EXPOSE 8080
 
 # Comando para iniciar nginx
 CMD ["nginx", "-g", "daemon off;"]
