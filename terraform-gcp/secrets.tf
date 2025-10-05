@@ -1,5 +1,16 @@
 # Secret Manager para credenciais sensíveis
 
+# Import existing secrets if they exist
+import {
+  to = google_secret_manager_secret.supabase_anon_key
+  id = "projects/${var.gcp_project_id}/secrets/supabase-anon-key"
+}
+
+import {
+  to = google_secret_manager_secret.supabase_service_role_key
+  id = "projects/${var.gcp_project_id}/secrets/supabase-service-role-key"
+}
+
 # Secret: Supabase Anon Key
 resource "google_secret_manager_secret" "supabase_anon_key" {
   secret_id = "supabase-anon-key"
