@@ -27,7 +27,7 @@ resource "google_cloud_run_v2_service" "app" {
 
       # Porta do container
       ports {
-        container_port = 80
+        container_port = 8080
       }
 
       # Variáveis de ambiente
@@ -64,20 +64,22 @@ resource "google_cloud_run_v2_service" "app" {
 
       # Health check
       startup_probe {
-        initial_delay_seconds = 0
-        timeout_seconds       = 1
-        period_seconds        = 3
-        failure_threshold     = 3
+        initial_delay_seconds = 5
+        timeout_seconds       = 3
+        period_seconds        = 5
+        failure_threshold     = 5
         http_get {
-          path = "/"
+          path = "/startup"
+          port = 8080
         }
       }
 
       liveness_probe {
         http_get {
-          path = "/"
+          path = "/health"
+          port = 8080
         }
-        initial_delay_seconds = 10
+        initial_delay_seconds = 15
         period_seconds        = 10
         timeout_seconds       = 5
         failure_threshold     = 3
