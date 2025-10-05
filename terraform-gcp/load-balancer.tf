@@ -33,9 +33,6 @@ resource "google_compute_backend_service" "default" {
         include_protocol     = true
         include_query_string = false
       }
-
-      # Configuração de compressão
-      compression_mode = "AUTOMATIC"
     }
   }
 

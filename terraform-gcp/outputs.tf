@@ -40,9 +40,9 @@ output "artifact_registry_repository" {
   value       = "${var.artifact_registry_location}-docker.pkg.dev/${var.gcp_project_id}/${var.app_name}"
 }
 
-output "ssl_certificate_status" {
-  description = "Status do certificado SSL gerenciado"
-  value       = var.domain_name != "" ? google_compute_managed_ssl_certificate.default[0].managed[0].status : "N/A - No domain configured"
+output "ssl_certificate_id" {
+  description = "ID do certificado SSL gerenciado"
+  value       = var.domain_name != "" ? google_compute_managed_ssl_certificate.default[0].id : "N/A - No domain configured"
 }
 
 # Outputs para DNS
