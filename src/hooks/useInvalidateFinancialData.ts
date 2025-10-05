@@ -91,6 +91,20 @@ export const useInvalidateFinancialData = () => {
     });
   };
 
+  const invalidateTodayIncomes = async (showToast = false) => {
+    await queryClient.invalidateQueries({ 
+      queryKey: ['today-incomes'],
+      refetchType: 'active'
+    });
+    
+    if (showToast) {
+      toast({
+        title: "✓ Receitas de hoje atualizadas",
+        duration: 2000,
+      });
+    }
+  };
+
   const invalidateAll = async (showToast = false) => {
     // Invalidate all financial data queries in parallel
     await Promise.all([
@@ -101,6 +115,7 @@ export const useInvalidateFinancialData = () => {
       queryClient.invalidateQueries({ queryKey: ['future-expenses'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['financial-summary'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['investments'], refetchType: 'active' }),
+      queryClient.invalidateQueries({ queryKey: ['today-incomes'], refetchType: 'active' }),
     ]);
 
     if (showToast) {
@@ -118,6 +133,7 @@ export const useInvalidateFinancialData = () => {
     invalidateFutureIncomes,
     invalidateFutureExpenses,
     invalidateFinancialSummary,
+    invalidateTodayIncomes,
     invalidateAll,
   };
 };

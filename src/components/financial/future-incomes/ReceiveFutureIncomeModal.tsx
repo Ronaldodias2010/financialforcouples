@@ -19,9 +19,10 @@ interface ReceiveFutureIncomeModalProps {
   onOpenChange: (open: boolean) => void;
   income: ManualFutureIncome | null;
   onReceive: (incomeId: string, receiptDate: string, accountId?: string, paymentMethod?: string) => Promise<void>;
+  onSuccess?: () => void;
 }
 
-export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive }: ReceiveFutureIncomeModalProps) => {
+export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive, onSuccess }: ReceiveFutureIncomeModalProps) => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { invalidateAll } = useInvalidateFinancialData();
@@ -77,6 +78,9 @@ export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive
       });
       
       onOpenChange(false);
+      
+      // Trigger refresh of today incomes alert
+      onSuccess?.();
     } catch (error) {
       console.error('Error receiving income:', error);
       toast({

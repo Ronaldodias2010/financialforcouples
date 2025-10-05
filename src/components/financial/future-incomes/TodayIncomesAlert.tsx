@@ -14,7 +14,7 @@ interface TodayIncomesAlertProps {
 
 export const TodayIncomesAlert = ({ viewMode }: TodayIncomesAlertProps) => {
   const { t } = useLanguage();
-  const { todayIncomes, count, totalAmount, loading } = useTodayFutureIncomes();
+  const { todayIncomes, count, totalAmount, loading, refresh } = useTodayFutureIncomes();
   const { receiveFutureIncome } = useManualFutureIncomes(viewMode);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [selectedIncome, setSelectedIncome] = useState<any>(null);
@@ -98,6 +98,7 @@ export const TodayIncomesAlert = ({ viewMode }: TodayIncomesAlertProps) => {
           onOpenChange={setReceiveModalOpen}
           income={selectedIncome}
           onReceive={receiveFutureIncome}
+          onSuccess={refresh}
         />
       )}
     </>
