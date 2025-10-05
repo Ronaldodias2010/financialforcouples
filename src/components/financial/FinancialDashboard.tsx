@@ -34,6 +34,7 @@ import { UserInviteCard } from "@/components/ui/user-invite-card";
 import { PremiumReminderCard } from "@/components/ui/premium-reminder-card";
 import { usePremiumReminder } from "@/hooks/usePremiumReminder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTodayFutureIncomes } from "@/hooks/useTodayFutureIncomes";
 
 interface Transaction {
   id: string;
@@ -57,6 +58,7 @@ export const FinancialDashboard = () => {
   const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
   const { shouldShow: shouldShowPremiumReminder, dismissReminder } = usePremiumReminder();
   const { isInstalled } = usePWA();
+  const { count: todayIncomesCount } = useTodayFutureIncomes();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
@@ -583,6 +585,7 @@ export const FinancialDashboard = () => {
                 { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
               ].map((tab) => {
                 const Icon = tab.icon;
+                const showBadge = tab.id === "income" && todayIncomesCount > 0;
                 return (
                   <button
                     key={tab.id}
@@ -600,6 +603,11 @@ export const FinancialDashboard = () => {
                   >
                     <Icon className="h-4 w-4" />
                     {tab.label}
+                    {showBadge && (
+                      <Badge variant="destructive" className="ml-1 animate-pulse">
+                        {todayIncomesCount}
+                      </Badge>
+                    )}
                   </button>
                 );
               })}
@@ -614,12 +622,13 @@ export const FinancialDashboard = () => {
                   { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp }
                 ].map((tab) => {
                   const Icon = tab.icon;
+                  const showBadge = tab.id === "income" && todayIncomesCount > 0;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={`
-                        flex flex-col items-center gap-0.5 border-b-2 px-2 py-1.5 text-xs font-medium transition-colors min-w-0 flex-1
+                        relative flex flex-col items-center gap-0.5 border-b-2 px-2 py-1.5 text-xs font-medium transition-colors min-w-0 flex-1
                         ${activeTab === tab.id
                           ? "border-primary text-primary"
                           : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-gray-700"
@@ -628,6 +637,11 @@ export const FinancialDashboard = () => {
                     >
                       <Icon className="h-3 w-3 shrink-0" />
                       <span className="text-[10px] leading-tight text-center truncate w-full">{t(`nav.short.${tab.id}`)}</span>
+                      {showBadge && (
+                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[8px] animate-pulse">
+                          {todayIncomesCount}
+                        </Badge>
+                      )}
                     </button>
                   );
                 })}

@@ -8,6 +8,7 @@ import { AddFutureIncomeModal } from './AddFutureIncomeModal';
 import { ReceiveFutureIncomeModal } from './ReceiveFutureIncomeModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { parseLocalDate, formatLocalDate } from '@/utils/date';
+import { TodayIncomesAlert } from './TodayIncomesAlert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,6 +86,9 @@ export const FutureIncomesView = ({ viewMode }: FutureIncomesViewProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Today's Incomes Alert */}
+      <TodayIncomesAlert viewMode={viewMode} />
+      
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>

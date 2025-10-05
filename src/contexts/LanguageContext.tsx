@@ -341,6 +341,13 @@ const translations = {
     'aiRecommendations.exportFormat': 'Formato de Exportação',
     'nav.cards': 'Cartões',
     'nav.accounts': 'Contas',
+    
+    // Future Incomes Today Alert
+    'futureIncomes.todayAlert.title': 'Receitas com Vencimento Hoje!',
+    'futureIncomes.todayAlert.description': 'Você tem receitas com vencimento hoje. Confirme o recebimento para atualizar seu saldo.',
+    'futureIncomes.todayAlert.totalExpected': 'Total Esperado',
+    'futureIncomes.todayAlert.confirmButton': 'Confirmar',
+    'futureIncomes.todayAlert.badge': 'Hoje',
     'nav.profile': 'Perfil',
     'nav.investments': 'Investimentos',
     'nav.mileage': 'Milhagem',
@@ -2154,6 +2161,13 @@ const translations = {
     'aiRecommendations.exportFormat': 'Export Format',
     'nav.cards': 'Cards',
     'nav.accounts': 'Accounts',
+    
+    // Future Incomes Today Alert
+    'futureIncomes.todayAlert.title': 'Incomes Due Today!',
+    'futureIncomes.todayAlert.description': 'You have incomes due today. Confirm receipt to update your balance.',
+    'futureIncomes.todayAlert.totalExpected': 'Total Expected',
+    'futureIncomes.todayAlert.confirmButton': 'Confirm',
+    'futureIncomes.todayAlert.badge': 'Today',
     'nav.profile': 'Profile',
     'nav.investments': 'Investments',
     'nav.mileage': 'Mileage',
@@ -3971,6 +3985,13 @@ const translations = {
     'aiRecommendations.exportFormat': 'Formato de Exportación',
     'nav.cards': 'Tarjetas',
     'nav.accounts': 'Cuentas',
+    
+    // Future Incomes Today Alert
+    'futureIncomes.todayAlert.title': '¡Ingresos con Vencimiento Hoy!',
+    'futureIncomes.todayAlert.description': 'Tienes ingresos con vencimiento hoy. Confirma la recepción para actualizar tu saldo.',
+    'futureIncomes.todayAlert.totalExpected': 'Total Esperado',
+    'futureIncomes.todayAlert.confirmButton': 'Confirmar',
+    'futureIncomes.todayAlert.badge': 'Hoy',
     'nav.profile': 'Perfil',
     'nav.investments': 'Inversiones',
     'nav.mileage': 'Millaje',
