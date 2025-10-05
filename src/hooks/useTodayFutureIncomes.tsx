@@ -27,6 +27,7 @@ export const useTodayFutureIncomes = () => {
     try {
       setLoading(true);
       const today = new Date().toISOString().split('T')[0];
+      console.log('🔄 [TodayIncomes] Fetching today incomes for date:', today);
 
       let query = supabase
         .from('manual_future_incomes')
@@ -47,9 +48,10 @@ export const useTodayFutureIncomes = () => {
 
       if (error) throw error;
 
+      console.log('✅ [TodayIncomes] Found', data?.length || 0, 'unreceived incomes for today');
       setTodayIncomes(data || []);
     } catch (error) {
-      console.error('Error fetching today incomes:', error);
+      console.error('❌ [TodayIncomes] Error fetching today incomes:', error);
       setTodayIncomes([]);
     } finally {
       setLoading(false);
@@ -69,7 +71,8 @@ export const useTodayFutureIncomes = () => {
           schema: 'public',
           table: 'manual_future_incomes',
         },
-        () => {
+        (payload) => {
+          console.log('🔔 [TodayIncomes] Realtime update received:', payload.eventType);
           fetchTodayIncomes();
         }
       )

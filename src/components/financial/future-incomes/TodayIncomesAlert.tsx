@@ -33,6 +33,13 @@ export const TodayIncomesAlert = ({ viewMode }: TodayIncomesAlertProps) => {
     setReceiveModalOpen(true);
   };
 
+  const handleModalClose = () => {
+    setReceiveModalOpen(false);
+    setSelectedIncome(null);
+    // Force immediate refresh when modal closes
+    refresh();
+  };
+
   return (
     <>
       <Card className="border-primary/50 bg-primary/5 shadow-lg">
@@ -95,7 +102,7 @@ export const TodayIncomesAlert = ({ viewMode }: TodayIncomesAlertProps) => {
       {selectedIncome && (
         <ReceiveFutureIncomeModal
           open={receiveModalOpen}
-          onOpenChange={setReceiveModalOpen}
+          onOpenChange={handleModalClose}
           income={selectedIncome}
           onReceive={receiveFutureIncome}
           onSuccess={refresh}
