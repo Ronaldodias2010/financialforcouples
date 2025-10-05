@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useCardPayments } from '@/hooks/useCardPayments';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { useCurrencyConverter, CURRENCY_INFO, type CurrencyCode } from '@/hooks/useCurrencyConverter';
 
 interface PayCardModalProps {
   isOpen: boolean;
@@ -51,6 +51,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
   const [notes, setNotes] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [paymentType, setPaymentType] = useState<'full' | 'minimum' | 'custom'>('full');
+  const [paymentCurrency, setPaymentCurrency] = useState<CurrencyCode>(language === 'pt' ? 'BRL' : 'USD');
 
   useEffect(() => {
     if (isOpen && user) {
@@ -58,8 +59,12 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
       // Reset form when modal opens
       setPaymentAmount(cardInfo.totalAmount.toString());
       setPaymentType('full');
+      
+      // Define moeda padrão baseada no idioma
+      const defaultCurrency = language === 'pt' ? 'BRL' : 'USD';
+      setPaymentCurrency(defaultCurrency);
     }
-  }, [isOpen, user, cardInfo.totalAmount]);
+  }, [isOpen, user, cardInfo.totalAmount, language]);
 
   useEffect(() => {
     // Update payment amount based on selected type
@@ -107,20 +112,27 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
     if (!user) return;
 
     const amount = parseFloat(paymentAmount);
-    if (amount <= 0 || amount > cardInfo.totalAmount) {
+    
+    // Converter valor da moeda de pagamento para moeda do cartão
+    const cardCurrency = cardInfo.currency || 'BRL';
+    const amountInCardCurrency = paymentCurrency === cardCurrency 
+      ? amount 
+      : convertCurrency(amount, paymentCurrency, cardCurrency);
+    
+    // Validações usando o valor convertido
+    if (amountInCardCurrency <= 0 || amountInCardCurrency > cardInfo.totalAmount) {
       alert('Valor inválido para pagamento');
       return;
     }
 
     const minPayment = cardInfo.minimumPayment || cardInfo.totalAmount * 0.15;
-    // Apenas valida valor mínimo quando o tipo é 'minimum'
-    if (paymentType === 'minimum' && amount < minPayment) {
+    
+    if (paymentType === 'minimum' && amountInCardCurrency < minPayment) {
       alert(`Valor mínimo de pagamento: ${formatCurrency(minPayment)}`);
       return;
     }
 
-    // Para pagamento personalizado, aceita qualquer valor entre 0.01 e total
-    if (paymentType === 'custom' && (amount <= 0 || amount > cardInfo.totalAmount)) {
+    if (paymentType === 'custom' && (amountInCardCurrency <= 0 || amountInCardCurrency > cardInfo.totalAmount)) {
       alert(`Valor deve estar entre ${formatCurrency(0.01)} e ${formatCurrency(cardInfo.totalAmount)}`);
       return;
     }
@@ -128,13 +140,14 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
     // Map 'account' to 'deposit' for transaction validation
     const mappedPaymentMethod = paymentMethod === 'account' ? 'deposit' : paymentMethod;
     
+    // Enviar valor CONVERTIDO para a moeda do cartão
     const result = await processCardPayment({
       cardId: cardInfo.id,
-      paymentAmount: amount,
+      paymentAmount: amountInCardCurrency,
       paymentDate,
       paymentMethod: mappedPaymentMethod,
       accountId: paymentMethod === 'account' ? selectedAccount : undefined,
-      notes,
+      notes: `${notes} (Pago em ${CURRENCY_INFO[paymentCurrency].symbol} ${amount.toFixed(2)})`,
     });
     
     if (result) {
@@ -151,6 +164,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
     setPaymentType('full');
     setSelectedAccount('');
     setNotes('');
+    setPaymentCurrency(language === 'pt' ? 'BRL' : 'USD'); // Reset para padrão
   };
 
   const formatCurrency = (amount: number) => {
@@ -287,9 +301,34 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
               </div>
             )}
 
+            {/* Payment Currency */}
+            <div className="space-y-2">
+              <Label htmlFor="paymentCurrency">{t('payCard.paymentCurrency')}</Label>
+              <Select 
+                value={paymentCurrency} 
+                onValueChange={(value) => setPaymentCurrency(value as CurrencyCode)}
+              >
+                <SelectTrigger className="bg-background z-50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background border shadow-md z-50">
+                  {Object.values(CURRENCY_INFO).map((currencyInfo) => (
+                    <SelectItem key={currencyInfo.code} value={currencyInfo.code}>
+                      <div className="flex items-center gap-2">
+                        <span>{currencyInfo.symbol}</span>
+                        <span>{currencyInfo.name} ({currencyInfo.code})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Payment Amount */}
             <div className="space-y-2">
-              <Label htmlFor="paymentAmount">{t('payCard.paymentAmount')}</Label>
+              <Label htmlFor="paymentAmount">
+                {t('payCard.paymentAmount')} ({CURRENCY_INFO[paymentCurrency].symbol})
+              </Label>
               <Input
                 id="paymentAmount"
                 type="number"
@@ -310,9 +349,23 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
                 disabled={paymentType !== 'custom'}
                 required
               />
+              
+              {/* Mostrar conversão se moedas forem diferentes */}
+              {paymentCurrency !== (cardInfo.currency || 'BRL') && paymentAmount && (
+                <p className="text-sm text-muted-foreground">
+                  ≈ {formatCurrency(
+                    convertCurrency(
+                      parseFloat(paymentAmount), 
+                      paymentCurrency, 
+                      cardInfo.currency || 'BRL'
+                    )
+                  )} {t('payCard.willBeDebited')}
+                </p>
+              )}
+              
               {paymentType === 'custom' && (
                 <p className="text-sm text-muted-foreground">
-                  Digite qualquer valor entre {formatCurrency(0.01)} e {formatCurrency(cardInfo.totalAmount)}
+                  {t('payCard.enterValueBetween')} {CURRENCY_INFO[paymentCurrency].symbol} 0.01 {t('payCard.and')} {formatCurrency(cardInfo.totalAmount)}
                 </p>
               )}
             </div>
