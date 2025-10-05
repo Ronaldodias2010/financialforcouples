@@ -46,7 +46,7 @@ resource "google_cloud_run_v2_service" "app" {
         name = "SUPABASE_ANON_KEY"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.supabase_anon_key.secret_id
+            secret  = data.google_secret_manager_secret.supabase_anon_key.secret_id
             version = "latest"
           }
         }
@@ -56,7 +56,7 @@ resource "google_cloud_run_v2_service" "app" {
         name = "SUPABASE_SERVICE_ROLE_KEY"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.supabase_service_role_key.secret_id
+            secret  = data.google_secret_manager_secret.supabase_service_role_key.secret_id
             version = "latest"
           }
         }
@@ -98,8 +98,8 @@ resource "google_cloud_run_v2_service" "app" {
 
   depends_on = [
     google_project_service.required_apis,
-    google_secret_manager_secret_version.supabase_anon_key,
-    google_secret_manager_secret_version.supabase_service_role_key
+    data.google_secret_manager_secret.supabase_anon_key,
+    data.google_secret_manager_secret.supabase_service_role_key
   ]
 }
 
