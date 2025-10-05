@@ -24,23 +24,14 @@ GITHUB_ACTIONS_SA="github-actions-sa@${GCP_PROJECT_ID}.iam.gserviceaccount.com"
 echo -e "${GREEN}✓${NC} Projeto: ${GCP_PROJECT_ID}"
 echo -e "${GREEN}✓${NC} Service Account: ${GITHUB_ACTIONS_SA}\n"
 
-# Conceder acesso ao secret supabase-anon-key
-echo "Concedendo acesso ao secret: supabase-anon-key..."
-gcloud secrets add-iam-policy-binding supabase-anon-key \
-  --project="${GCP_PROJECT_ID}" \
+# Conceder role de admin nos secrets (necessário para Terraform gerenciar IAM)
+echo "Concedendo role secretmanager.admin ao GitHub Actions SA..."
+gcloud projects add-iam-policy-binding "${GCP_PROJECT_ID}" \
   --member="serviceAccount:${GITHUB_ACTIONS_SA}" \
-  --role="roles/secretmanager.secretAccessor"
+  --role="roles/secretmanager.admin" \
+  --condition=None
 
-echo -e "${GREEN}✓${NC} Acesso concedido ao supabase-anon-key\n"
-
-# Conceder acesso ao secret supabase-service-role-key
-echo "Concedendo acesso ao secret: supabase-service-role-key..."
-gcloud secrets add-iam-policy-binding supabase-service-role-key \
-  --project="${GCP_PROJECT_ID}" \
-  --member="serviceAccount:${GITHUB_ACTIONS_SA}" \
-  --role="roles/secretmanager.secretAccessor"
-
-echo -e "${GREEN}✓${NC} Acesso concedido ao supabase-service-role-key\n"
+echo -e "${GREEN}✓${NC} Role admin concedido\n"
 
 echo -e "${GREEN}=== ✓ Permissões concedidas com sucesso! ===${NC}\n"
 echo "Aguarde 1-2 minutos para propagação das permissões."

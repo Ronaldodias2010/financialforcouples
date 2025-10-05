@@ -92,6 +92,11 @@ jobs:
         id: validate
         run: terraform validate
       
+      - name: Import Existing Cloud Run Service
+        run: |
+          terraform import google_cloud_run_v2_service.app projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/services/couples-financials || true
+        continue-on-error: true
+      
       - name: Terraform Plan
         id: plan
         run: terraform plan -out=tfplan -input=false
