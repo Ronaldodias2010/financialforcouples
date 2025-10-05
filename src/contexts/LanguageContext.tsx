@@ -1836,6 +1836,8 @@ const translations = {
     'futureIncomes.futureIncomes': 'Receitas Futuras',
     'futureIncomes.overdueIncomes': 'Receitas Atrasadas',
     'futureIncomes.transfers': 'Transferências',
+    'futureIncomes.paymentMethods.pix': 'PIX',
+    'futureIncomes.paymentMethods.zelle': 'Transferência Bancária',
   },
   
    en: {
@@ -3623,6 +3625,8 @@ const translations = {
     'futureIncomes.futureIncomes': 'Future Incomes',
     'futureIncomes.overdueIncomes': 'Overdue Incomes',
     'futureIncomes.transfers': 'Transfers',
+    'futureIncomes.paymentMethods.pix': 'Bank Transfer',
+    'futureIncomes.paymentMethods.zelle': 'Zelle',
 
 
     // Smart Mileage Section
@@ -4274,6 +4278,8 @@ const translations = {
     'futureIncomes.futureIncomes': 'Ingresos Futuros',
     'futureIncomes.overdueIncomes': 'Ingresos Atrasados',
     'futureIncomes.transfers': 'Transferencias',
+    'futureIncomes.paymentMethods.pix': 'Transferencia Bancaria',
+    'futureIncomes.paymentMethods.zelle': 'Zelle',
     
     'monthlyExpenses.title': 'Gastos Mensuales',
     'monthlyExpenses.month': 'Mes',

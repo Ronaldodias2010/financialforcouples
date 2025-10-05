@@ -175,7 +175,8 @@ export const ReceiveFutureIncomeModal = ({ open, onOpenChange, income, onReceive
                 <SelectItem value="cash">{t('transactionForm.cash')}</SelectItem>
                 <SelectItem value="deposit">{t('transactionForm.deposit')}</SelectItem>
                 <SelectItem value="transfer">{t('transactionForm.receivedTransfer')}</SelectItem>
-                <SelectItem value="pix">PIX</SelectItem>
+                <SelectItem value="pix">{t('futureIncomes.paymentMethods.pix')}</SelectItem>
+                <SelectItem value="zelle">{t('futureIncomes.paymentMethods.zelle')}</SelectItem>
                 <SelectItem value="check">{t('converter.paymentMethods.check')}</SelectItem>
               </SelectContent>
             </Select>
