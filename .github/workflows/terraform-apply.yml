@@ -92,24 +92,6 @@ jobs:
         id: validate
         run: terraform validate
       
-      - name: Import Existing Secrets (if any)
-        id: import_secrets
-        continue-on-error: true
-        run: |
-          # Import supabase-anon-key if it exists
-          if gcloud secrets describe supabase-anon-key --project=${{ secrets.GCP_PROJECT_ID }} &>/dev/null; then
-            echo "Importing existing secret: supabase-anon-key"
-            terraform import google_secret_manager_secret.supabase_anon_key projects/${{ secrets.GCP_PROJECT_ID }}/secrets/supabase-anon-key || true
-          fi
-          
-          # Import supabase-service-role-key if it exists
-          if gcloud secrets describe supabase-service-role-key --project=${{ secrets.GCP_PROJECT_ID }} &>/dev/null; then
-            echo "Importing existing secret: supabase-service-role-key"
-            terraform import google_secret_manager_secret.supabase_service_role_key projects/${{ secrets.GCP_PROJECT_ID }}/secrets/supabase-service-role-key || true
-          fi
-          
-          echo "Secret import check completed"
-      
       - name: Terraform Plan
         id: plan
         run: terraform plan -out=tfplan -input=false
