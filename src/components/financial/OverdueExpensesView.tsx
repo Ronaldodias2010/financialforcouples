@@ -388,6 +388,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
             due_date: selectedExpense.dueDate,
             type: selectedExpense.sourceType === 'manual' ? 'manual_future' : 'recurring',
             category: selectedExpense.categoryName,
+            manualFutureExpenseId: selectedExpense.sourceType === 'manual' ? selectedExpense.sourceId : undefined,
             recurringExpenseId: selectedExpense.sourceType === 'recurring' ? selectedExpense.sourceId : undefined,
           }}
           onPaymentSuccess={handlePaymentSuccess}

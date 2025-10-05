@@ -69,21 +69,65 @@ export const useFutureExpensePayments = () => {
         return data;
       }
 
-      // For recurring expenses, use the legacy RPC function
-      const { data, error } = await supabase.rpc('process_future_expense_payment', {
-        p_user_id: user.id,
-        p_original_due_date: params.originalDueDate,
-        p_amount: params.amount,
-        p_description: params.description,
-        p_recurring_expense_id: params.recurringExpenseId || null,
-        p_installment_transaction_id: null,
-        p_card_payment_info: null,
-        p_payment_date: params.paymentDate || new Date().toISOString().split('T')[0],
-        p_category_id: params.categoryId || null,
-        p_payment_method: params.paymentMethod || 'cash',
-        p_account_id: params.accountId || null,
-        p_card_id: params.cardId || null,
-      });
+      // For recurring expenses, find the pending transaction and mark it as completed
+      // First, try to find existing pending transaction
+      const { data: existingTransaction, error: findError } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .eq('type', 'expense')
+        .eq('due_date', params.originalDueDate)
+        .eq('description', params.description)
+        .maybeSingle();
+
+      if (findError) {
+        console.error('Error finding transaction:', findError);
+      }
+
+      let data;
+      if (existingTransaction) {
+        // Update existing transaction
+        const { data: updated, error: updateError } = await supabase
+          .from('transactions')
+          .update({
+            status: 'completed',
+            transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
+            payment_method: params.paymentMethod || 'cash',
+            account_id: params.accountId || null,
+            card_id: params.cardId || null,
+          })
+          .eq('id', existingTransaction.id)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+        data = updated;
+      } else {
+        // Create new transaction if none exists
+        const { data: created, error: createError } = await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            type: 'expense',
+            amount: params.amount,
+            description: params.description,
+            transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
+            due_date: params.originalDueDate,
+            status: 'completed',
+            category_id: params.categoryId || null,
+            payment_method: params.paymentMethod || 'cash',
+            account_id: params.accountId || null,
+            card_id: params.cardId || null,
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        data = created;
+      }
+
+      const error = null;
 
       if (error) {
         console.error('Error processing payment:', error);
