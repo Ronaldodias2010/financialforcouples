@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, CreditCard, AlertCircle, DollarSign, CheckCircle, Receipt, Plus, Clock } from "lucide-react";
@@ -74,6 +76,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   const [monthlyGroups, setMonthlyGroups] = useState<MonthlyExpenseGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: string; ids: string[] }[]>([]);
   const [paymentModal, setPaymentModal] = useState<{
     isOpen: boolean;
     expense: FutureExpense | null;
@@ -89,8 +92,53 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
   useEffect(() => {
     if (user) {
       fetchFutureExpenses();
+      fetchCategories();
     }
   }, [user, viewMode]);
+
+  const fetchCategories = async () => {
+    try {
+      // Scope categories to the current user and partner (if any)
+      const { data: coupleData } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      let userIds = [user?.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, user_id')
+        .eq('category_type', 'expense')
+        .in('user_id', userIds)
+        .order('name');
+
+      if (error) throw error;
+      const items = (data || []) as { id: string; name: string }[];
+      const normalize = (s: string) =>
+        s
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/\s+/g, ' ')
+          .trim();
+      const map = new Map<string, { key: string; name: string; ids: string[] }>();
+      for (const it of items) {
+        const key = normalize(it.name);
+        if (!map.has(key)) map.set(key, { key, name: it.name, ids: [it.id] });
+        else map.get(key)!.ids.push(it.id);
+      }
+      setCategoryOptions(Array.from(map.values()));
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      toast.error("Erro ao carregar categorias");
+    }
+  };
 
   const fetchFutureExpenses = async () => {
     if (!user) return;
@@ -557,17 +605,23 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
     fetchFutureExpenses();
   };
 
-  const categories = Array.from(new Set((futureExpenses || []).map(expense => expense.category)));
-  
-  // Filtrar grupos mensais por categoria
+  // Filtrar grupos mensais por categoria usando nomes traduzidos
   const filteredMonthlyGroups = monthlyGroups.map(group => ({
     ...group,
     expenses: selectedCategory === "all" 
       ? group.expenses 
-      : group.expenses.filter(expense => expense.category === selectedCategory),
+      : group.expenses.filter(expense => {
+          // Find the category option that matches the selected key
+          const opt = categoryOptions.find(o => o.key === selectedCategory);
+          // Match by translated category name
+          return opt?.name && translateCategory(expense.category) === translateCategory(opt.name);
+        }),
     total: selectedCategory === "all" 
       ? group.total 
-      : sumExpensesInBRL(group.expenses.filter(expense => expense.category === selectedCategory))
+      : sumExpensesInBRL(group.expenses.filter(expense => {
+          const opt = categoryOptions.find(o => o.key === selectedCategory);
+          return opt?.name && translateCategory(expense.category) === translateCategory(opt.name);
+        }))
   })).filter(group => group.expenses.length > 0);
 
   const totalAmount = filteredMonthlyGroups.reduce((sum, group) => sum + group.total, 0);
@@ -672,24 +726,23 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedCategory === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory("all")}
-          >
-            {t('monthlyExpenses.allFilter')}
-          </Button>
-          {categories.map(category => (
-            <Button
-              key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(category)}
-            >
-              {translateCategory(category)}
-            </Button>
-          ))}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Label htmlFor="category-select" className="text-sm font-medium">
+            {t('monthlyExpenses.category')}:
+          </Label>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger id="category-select" className="w-full sm:w-[280px]">
+              <SelectValue placeholder={t('monthlyExpenses.selectCategory')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('monthlyExpenses.allFilter')}</SelectItem>
+              {categoryOptions.map((opt) => (
+                <SelectItem key={opt.key} value={opt.key}>
+                  {translateCategory(opt.name)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Total Geral - Destacado */}
@@ -826,7 +879,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                                 </Badge>
                               </div>
                               <p className="text-xs sm:text-sm text-muted-foreground">
-                                {translateCategory(expense.category)} {expense.card_name && `• ${expense.card_name}`} {expense.owner_user && `• ${getOwnerName(expense.owner_user)}`}
+                                {expense.card_name && `${expense.card_name}`}{expense.card_name && expense.owner_user && ` • `}{expense.owner_user && `${getOwnerName(expense.owner_user)}`}
                               </p>
                               <div className="space-y-0.5">
                                 <p className="text-xs sm:text-sm text-muted-foreground">
