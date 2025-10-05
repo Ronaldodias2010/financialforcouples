@@ -124,17 +124,17 @@ export const useManualFutureExpenses = () => {
     setIsLoading(true);
     
     try {
-      // Get the pending transaction
-      const { data: transaction, error: transactionError } = await supabase
-        .from('transactions')
+      // Get the manual future expense
+      const { data: manualExpense, error: fetchError } = await supabase
+        .from('manual_future_expenses')
         .select('*')
         .eq('id', params.expenseId)
         .eq('user_id', user.id)
-        .eq('status', 'pending')
+        .eq('is_paid', false)
         .single();
 
-      if (transactionError || !transaction) {
-        console.error('Error fetching transaction:', transactionError);
+      if (fetchError || !manualExpense) {
+        console.error('Error fetching manual future expense:', fetchError);
         toast({
           title: "Erro",
           description: "Despesa futura não encontrada",
@@ -145,27 +145,32 @@ export const useManualFutureExpenses = () => {
 
       // Calculate if payment is late
       const today = new Date();
-      const dueDate = new Date(transaction.due_date || transaction.transaction_date);
+      const dueDate = new Date(manualExpense.due_date);
       const daysOverdue = dueDate < today ? Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
       const isPaidLate = daysOverdue > 0;
 
-      // Simply update the transaction status to 'completed'
-      const { data: updatedTransaction, error: updateError } = await supabase
+      // Create a completed transaction
+      const { data: newTransaction, error: createError } = await supabase
         .from('transactions')
-        .update({
-          status: 'completed',
+        .insert({
+          user_id: user.id,
+          type: 'expense',
+          amount: manualExpense.amount,
+          description: manualExpense.description,
           transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
-          account_id: params.accountId || transaction.account_id,
-          card_id: params.cardId || transaction.card_id,
-          payment_method: params.paymentMethod || transaction.payment_method,
-          updated_at: new Date().toISOString()
+          due_date: manualExpense.due_date,
+          status: 'completed',
+          category_id: manualExpense.category_id,
+          account_id: params.accountId,
+          card_id: params.cardId,
+          payment_method: params.paymentMethod || manualExpense.payment_method,
+          owner_user: manualExpense.owner_user,
         })
-        .eq('id', params.expenseId)
         .select()
         .single();
 
-      if (updateError) {
-        console.error('Error updating transaction:', updateError);
+      if (createError) {
+        console.error('Error creating transaction:', createError);
         toast({
           title: "Erro",
           description: "Erro ao processar pagamento",
@@ -174,33 +179,31 @@ export const useManualFutureExpenses = () => {
         return null;
       }
 
-      // ⭐ CRITICAL: Also update manual_future_expenses if this is a manual expense
-      // This ensures the expense disappears from "Despesas Atrasadas" view
-      const { error: manualExpenseError } = await supabase
+      // Mark manual expense as paid
+      const { error: updateError } = await supabase
         .from('manual_future_expenses')
         .update({
           is_paid: true,
           paid_at: new Date().toISOString(),
-          transaction_id: params.expenseId,
+          transaction_id: newTransaction.id,
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', user.id)
-        .or(`due_date.eq.${transaction.due_date || transaction.transaction_date},description.eq.${transaction.description}`);
+        .eq('id', params.expenseId);
 
-      if (manualExpenseError) {
-        console.warn('Could not update manual_future_expenses (may not exist):', manualExpenseError);
-        // Don't fail the payment if manual_future_expenses doesn't exist
+      if (updateError) {
+        console.error('Error updating manual expense:', updateError);
+        // Don't fail the payment if this update fails
       }
 
       toast({
         title: "Pagamento processado",
         description: isPaidLate 
-          ? `Despesa "${transaction.description}" foi paga com ${daysOverdue} dia(s) de atraso.`
+          ? `Despesa "${manualExpense.description}" foi paga com ${daysOverdue} dia(s) de atraso.`
           : "Despesa futura foi paga e adicionada às despesas mensais",
         variant: "default",
       });
 
-      return updatedTransaction;
+      return newTransaction;
     } catch (error) {
       console.error('Error paying manual expense:', error);
       toast({
