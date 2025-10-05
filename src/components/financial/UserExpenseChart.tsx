@@ -118,24 +118,14 @@ export const UserExpenseChart = () => {
       const startStr = format(startDate, 'yyyy-MM-dd');
       const endStr = format(endDate, 'yyyy-MM-dd');
 
-      // Fetch card payment history
-      const { data: cardPayments, error: cardPaymentError } = await supabase
-        .from('card_payment_history')
-        .select('user_id, payment_amount, payment_date')
-        .in('user_id', userIds)
-        .gte('payment_date', startStr)
-        .lte('payment_date', endStr);
-
-      if (cardPaymentError) throw cardPaymentError;
-
-      // Fetch expenses - excluir cartão de crédito para evitar dupla contagem
+      // Fetch expenses - incluir despesas parceladas do cartão filtradas por due_date
       const { data: expenseTransactions, error: expenseError } = await supabase
         .from('transactions')
         .select('user_id, owner_user, amount, transaction_date, due_date, is_installment, created_at, payment_method, status')
         .in('user_id', userIds)
         .eq('type', 'expense')
-        .not('payment_method', 'in', '(account_transfer,account_investment,credit_card)')
-        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,status.eq.pending,due_date.gte.${startStr},due_date.lte.${endStr})`);
+        .not('payment_method', 'in', '(account_transfer,account_investment)')
+        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,due_date.gte.${startStr},due_date.lte.${endStr})`);
 
       if (expenseError) throw expenseError;
 
@@ -171,7 +161,7 @@ export const UserExpenseChart = () => {
         incomeByUser[owner] += Number(transaction.amount);
       });
 
-      // Process expense transactions (excluindo cartão de crédito)
+      // Process expense transactions (incluindo parcelas de cartão)
       expenseTransactions?.forEach((transaction) => {
         let owner: 'user1' | 'user2';
         if (transaction.owner_user === 'user1' || transaction.owner_user === 'user2') {
@@ -182,17 +172,6 @@ export const UserExpenseChart = () => {
           owner = 'user1';
         }
         expenseByUser[owner] += Math.abs(Number(transaction.amount));
-      });
-
-      // Process card payment history (valor efetivamente pago)
-      cardPayments?.forEach((payment) => {
-        let owner: 'user1' | 'user2';
-        if (coupleData) {
-          owner = payment.user_id === coupleData.user1_id ? 'user1' : 'user2';
-        } else {
-          owner = 'user1';
-        }
-        expenseByUser[owner] += Number(payment.payment_amount);
       });
 
       console.log('Processed expense by user:', expenseByUser);
@@ -243,7 +222,7 @@ export const UserExpenseChart = () => {
           monthlyBreakdown[month][`${owner}Income` as keyof typeof monthlyBreakdown[string]] += Number(transaction.amount);
         });
 
-        // Process expenses by month (excluindo cartão)
+        // Process expenses by month (incluindo parcelas)
         expenseTransactions?.forEach(transaction => {
           const dateForGrouping = transaction.is_installment ? transaction.due_date : transaction.transaction_date;
           const month = new Date(dateForGrouping).toLocaleDateString('pt-BR', { 
@@ -265,27 +244,6 @@ export const UserExpenseChart = () => {
           }
 
           monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += Math.abs(Number(transaction.amount));
-        });
-
-        // Process card payments by month
-        cardPayments?.forEach(payment => {
-          const month = new Date(payment.payment_date).toLocaleDateString('pt-BR', { 
-            month: 'short', 
-            year: '2-digit' 
-          });
-          
-          if (!monthlyBreakdown[month]) {
-            monthlyBreakdown[month] = { user1Income: 0, user1Expense: 0, user2Income: 0, user2Expense: 0 };
-          }
-          
-          let owner: 'user1' | 'user2';
-          if (coupleData) {
-            owner = payment.user_id === coupleData.user1_id ? 'user1' : 'user2';
-          } else {
-            owner = 'user1';
-          }
-
-          monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += Number(payment.payment_amount);
         });
 
         const monthlyChartData: MonthlyExpense[] = Object.entries(monthlyBreakdown).map(([month, data]) => ({
