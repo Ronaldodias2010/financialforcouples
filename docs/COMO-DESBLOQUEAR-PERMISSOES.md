@@ -54,7 +54,7 @@ Se você tem acesso ao Cloud Shell no projeto:
 ```bash
 gcloud projects add-iam-policy-binding couples-financials-446721 \
     --member="user:SEU_EMAIL@gmail.com" \
-    --role="roles/editor"
+    --role="roles/editor" projects add-iam-policy
 ```
 
 ## Quem Pode Conceder Essas Permissões?
