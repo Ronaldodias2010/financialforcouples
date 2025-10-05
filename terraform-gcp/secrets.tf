@@ -12,11 +12,19 @@ resource "google_secret_manager_secret" "supabase_anon_key" {
     environment = var.environment
     managed_by  = "terraform"
   }
+
+  lifecycle {
+    ignore_changes = [secret_id]
+  }
 }
 
 resource "google_secret_manager_secret_version" "supabase_anon_key" {
   secret      = google_secret_manager_secret.supabase_anon_key.id
   secret_data = var.supabase_anon_key
+
+  lifecycle {
+    ignore_changes = [secret_data]
+  }
 }
 
 # Secret: Supabase Service Role Key
@@ -31,11 +39,19 @@ resource "google_secret_manager_secret" "supabase_service_role_key" {
     environment = var.environment
     managed_by  = "terraform"
   }
+
+  lifecycle {
+    ignore_changes = [secret_id]
+  }
 }
 
 resource "google_secret_manager_secret_version" "supabase_service_role_key" {
   secret      = google_secret_manager_secret.supabase_service_role_key.id
   secret_data = var.supabase_service_role_key
+
+  lifecycle {
+    ignore_changes = [secret_data]
+  }
 }
 
 # IAM: Service Account pode acessar os secrets

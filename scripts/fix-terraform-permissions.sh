@@ -28,17 +28,21 @@ fi
 # Configurar projeto
 gcloud config set project ${PROJECT_ID}
 
-echo -e "\n${BLUE}Habilitando APIs necessárias...${NC}"
-
-# Habilitar Cloud Resource Manager API primeiro
+echo -e "\n${BLUE}Habilitando Cloud Resource Manager API (CRÍTICO)...${NC}"
+# DEVE ser habilitada primeiro, pois outras operações dependem dela
 gcloud services enable cloudresourcemanager.googleapis.com --project=${PROJECT_ID}
 
-# Habilitar outras APIs necessárias
+echo -e "${YELLOW}Aguardando propagação da Cloud Resource Manager API (30 segundos)...${NC}"
+sleep 30
+
+echo -e "\n${BLUE}Habilitando outras APIs necessárias...${NC}"
 APIS=(
   "compute.googleapis.com"
   "serviceusage.googleapis.com"
   "iam.googleapis.com"
   "secretmanager.googleapis.com"
+  "run.googleapis.com"
+  "artifactregistry.googleapis.com"
 )
 
 for API in "${APIS[@]}"; do
