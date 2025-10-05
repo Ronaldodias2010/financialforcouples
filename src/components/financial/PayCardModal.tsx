@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useCardPayments } from '@/hooks/useCardPayments';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
 
 interface PayCardModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface PayCardModalProps {
     totalAmount: number;
     minimumPayment?: number;
     allowsPartialPayment?: boolean;
+    currency?: import('@/hooks/useCurrencyConverter').CurrencyCode;
   };
   onPaymentSuccess: () => void;
 }
@@ -38,7 +40,8 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { processCardPayment, isProcessing } = useCardPayments();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { formatCurrency: formatCurrencyWithConverter, convertCurrency } = useCurrencyConverter();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -143,10 +146,28 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
   };
 
   const formatCurrency = (amount: number) => {
+    const currency = cardInfo.currency || 'BRL';
+    if (currency !== 'BRL') {
+      return formatCurrencyWithConverter(amount, currency);
+    }
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(amount);
+  };
+  
+  const formatCurrencyWithConversion = (amount: number) => {
+    const currency = cardInfo.currency || 'BRL';
+    const mainValue = formatCurrency(amount);
+    
+    // Se for PT e moeda diferente de BRL, mostrar conversão
+    if (language === 'pt' && currency !== 'BRL') {
+      const convertedValue = convertCurrency(amount, currency, 'BRL');
+      const convertedFormatted = formatCurrencyWithConverter(convertedValue, 'BRL');
+      return { main: mainValue, converted: convertedFormatted };
+    }
+    
+    return { main: mainValue, converted: null };
   };
 
   const formatDate = (dateString: string) => {
@@ -183,13 +204,41 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
               <span className="text-sm text-muted-foreground">{t('payCard.card')}:</span>
               <span className="font-medium">{cardInfo.name}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-start">
               <span className="text-sm text-muted-foreground">{t('payCard.totalAmount')}:</span>
-              <span className="font-bold text-destructive">{formatCurrency(cardInfo.totalAmount)}</span>
+              <div className="text-right">
+                {(() => {
+                  const formatted = formatCurrencyWithConversion(cardInfo.totalAmount);
+                  return (
+                    <>
+                      <span className="font-bold text-destructive block">{formatted.main}</span>
+                      {formatted.converted && (
+                        <span className="text-xs text-muted-foreground block mt-1">
+                          ≈ {formatted.converted}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-start">
               <span className="text-sm text-muted-foreground">{t('payCard.minimumPayment')}:</span>
-              <span className="font-medium">{formatCurrency(minPayment)}</span>
+              <div className="text-right">
+                {(() => {
+                  const formatted = formatCurrencyWithConversion(minPayment);
+                  return (
+                    <>
+                      <span className="font-medium block">{formatted.main}</span>
+                      {formatted.converted && (
+                        <span className="text-xs text-muted-foreground block mt-1">
+                          ≈ {formatted.converted}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </div>
 

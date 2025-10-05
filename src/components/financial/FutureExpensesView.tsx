@@ -543,6 +543,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           totalAmount: expense.amount,
           minimumPayment: expense.cardPaymentInfo.minimumPayment,
           allowsPartialPayment: expense.cardPaymentInfo.allowsPartialPayment,
+          currency: expense.currency, // Add currency info
         }
       });
     } else {

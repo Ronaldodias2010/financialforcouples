@@ -54,8 +54,8 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const { user } = useAuth();
   const { processPayment, isProcessing } = useFutureExpensePayments();
   const { payManualExpense } = useManualFutureExpenses();
-  const { t } = useLanguage();
-  const { formatCurrency: formatCurrencyWithConverter } = useCurrencyConverter();
+  const { t, language } = useLanguage();
+  const { formatCurrency: formatCurrencyWithConverter, convertCurrency } = useCurrencyConverter();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -241,9 +241,18 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
               <span className="text-sm text-muted-foreground">{t('payFutureExpense.description')}:</span>
               <span className="font-medium">{expense.description}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-start">
               <span className="text-sm text-muted-foreground">{t('payFutureExpense.amount')}:</span>
-              <span className="font-bold text-destructive">{formatCurrency(expense.amount, expense.currency)}</span>
+              <div className="text-right">
+                <span className="font-bold text-destructive block">
+                  {formatCurrency(expense.amount, expense.currency)}
+                </span>
+                {language === 'pt' && expense.currency && expense.currency !== 'BRL' && (
+                  <span className="text-xs text-muted-foreground block mt-1">
+                    ≈ {formatCurrency(convertCurrency(expense.amount, expense.currency, 'BRL'), 'BRL')}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">{t('payFutureExpense.dueDate')}:</span>
