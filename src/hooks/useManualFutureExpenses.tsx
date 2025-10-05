@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useInvalidateFinancialData } from './useInvalidateFinancialData';
 
 export interface ManualFutureExpense {
   id: string;
@@ -37,6 +38,7 @@ export const useManualFutureExpenses = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { invalidateTransactions, invalidateFutureExpenses, invalidateFinancialSummary } = useInvalidateFinancialData();
 
   const fetchManualFutureExpenses = async (viewMode: "both" | "user1" | "user2" = "both"): Promise<ManualFutureExpense[]> => {
     if (!user) return [];
@@ -194,6 +196,13 @@ export const useManualFutureExpenses = () => {
         console.error('Error updating manual expense:', updateError);
         // Don't fail the payment if this update fails
       }
+
+      // ⭐ CRITICAL: Invalidate React Query cache to update dashboard immediately
+      await Promise.all([
+        invalidateTransactions(),
+        invalidateFutureExpenses(),
+        invalidateFinancialSummary()
+      ]);
 
       toast({
         title: "Pagamento processado",
