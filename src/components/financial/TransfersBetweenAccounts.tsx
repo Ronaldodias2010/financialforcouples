@@ -70,7 +70,9 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
           owner_user,
           type,
           account_id,
-          accounts(name)
+          card_id,
+          accounts(name),
+          cards(name)
         `)
         .in('user_id', userIds)
         .in('payment_method', ['account_transfer', 'account_investment'])
@@ -109,6 +111,9 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
       
       for (const [key, pair] of transfersMap.entries()) {
         if (pair.expense) {
+          // Check if it's a card payment transfer
+          const isCardPayment = pair.expense.description?.startsWith('Pagamento de Cartão:');
+          
           // Use the expense transaction as the main record
           const transfer: Transfer = {
             id: pair.expense.id,
@@ -118,9 +123,13 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
             payment_method: pair.expense.payment_method,
             user_id: pair.expense.user_id,
             owner_user: pair.expense.owner_user,
-            source_account_name: pair.expense.accounts?.name || t('transfers.unknownAccount'),
-            dest_account_name: pair.income?.accounts?.name || 
-              (pair.expense.payment_method === 'account_investment' ? t('transfers.investment') : t('transfers.unknownAccount'))
+            source_account_name: isCardPayment 
+              ? (pair.expense.accounts?.name || t('transfers.bankAccount'))
+              : (pair.expense.accounts?.name || t('transfers.unknownAccount')),
+            dest_account_name: isCardPayment
+              ? (pair.income?.cards?.name || t('transfers.creditCard'))
+              : (pair.income?.accounts?.name || 
+                  (pair.expense.payment_method === 'account_investment' ? t('transfers.investment') : t('transfers.unknownAccount')))
           };
           
           processedTransfers.push(transfer);

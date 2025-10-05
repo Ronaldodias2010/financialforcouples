@@ -643,6 +643,9 @@ const translations = {
     'transfers.unknownAccount': 'Conta desconhecida',
     'transfers.investment': 'Investimento',
     'transfers.transferAmount': 'Transferência de {{amount}}',
+    'transfers.cardPayment': 'Pagamento de Cartão',
+    'transfers.creditCard': 'Cartão de Crédito',
+    'transfers.bankAccount': 'Conta Bancária',
     
     // Calendar
     'viewInCalendar': 'Visualizar no Calendário',
@@ -2434,6 +2437,9 @@ const translations = {
     'transfers.unknownAccount': 'Unknown account',
     'transfers.investment': 'Investment',
     'transfers.transferAmount': 'Transfer of {{amount}}',
+    'transfers.cardPayment': 'Card Payment',
+    'transfers.creditCard': 'Credit Card',
+    'transfers.bankAccount': 'Bank Account',
     
     // Calendar
     'viewInCalendar': 'View in Calendar',
@@ -4324,6 +4330,9 @@ const translations = {
     'transfers.unknownAccount': 'Cuenta desconocida',
     'transfers.investment': 'Inversión',
     'transfers.transferAmount': 'Transferencia de {{amount}}',
+    'transfers.cardPayment': 'Pago de Tarjeta',
+    'transfers.creditCard': 'Tarjeta de Crédito',
+    'transfers.bankAccount': 'Cuenta Bancaria',
     
     // Calendar
     'viewInCalendar': 'Ver en Calendario',
