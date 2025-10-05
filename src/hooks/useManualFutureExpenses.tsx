@@ -174,6 +174,24 @@ export const useManualFutureExpenses = () => {
         return null;
       }
 
+      // ⭐ CRITICAL: Also update manual_future_expenses if this is a manual expense
+      // This ensures the expense disappears from "Despesas Atrasadas" view
+      const { error: manualExpenseError } = await supabase
+        .from('manual_future_expenses')
+        .update({
+          is_paid: true,
+          paid_at: new Date().toISOString(),
+          transaction_id: params.expenseId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .or(`due_date.eq.${transaction.due_date || transaction.transaction_date},description.eq.${transaction.description}`);
+
+      if (manualExpenseError) {
+        console.warn('Could not update manual_future_expenses (may not exist):', manualExpenseError);
+        // Don't fail the payment if manual_future_expenses doesn't exist
+      }
+
       toast({
         title: "Pagamento processado",
         description: isPaidLate 
