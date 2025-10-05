@@ -72,10 +72,10 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
         setPaymentAmount(minPayment.toString());
         break;
       case 'custom':
-        // Keep current value or set minimum if empty
-        if (!paymentAmount || parseFloat(paymentAmount) < (cardInfo.minimumPayment || 0)) {
-          const minPayment = cardInfo.minimumPayment || cardInfo.totalAmount * 0.15;
-          setPaymentAmount(minPayment.toString());
+        // Não force nenhum valor, deixe o usuário digitar livremente
+        // Se estiver vazio, define como 0.01 (valor mínimo técnico)
+        if (!paymentAmount) {
+          setPaymentAmount('0.01');
         }
         break;
     }
@@ -113,8 +113,15 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
     }
 
     const minPayment = cardInfo.minimumPayment || cardInfo.totalAmount * 0.15;
-    if (amount < minPayment && paymentType !== 'full') {
+    // Apenas valida valor mínimo quando o tipo é 'minimum'
+    if (paymentType === 'minimum' && amount < minPayment) {
       alert(`Valor mínimo de pagamento: ${formatCurrency(minPayment)}`);
+      return;
+    }
+
+    // Para pagamento personalizado, aceita qualquer valor entre 0.01 e total
+    if (paymentType === 'custom' && (amount <= 0 || amount > cardInfo.totalAmount)) {
+      alert(`Valor deve estar entre ${formatCurrency(0.01)} e ${formatCurrency(cardInfo.totalAmount)}`);
       return;
     }
 
@@ -287,7 +294,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
                 id="paymentAmount"
                 type="number"
                 step="0.01"
-                min={minPayment}
+                min={paymentType === 'custom' ? 0.01 : minPayment}
                 max={cardInfo.totalAmount}
                 value={paymentAmount}
                 onChange={(e) => {
@@ -305,7 +312,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
               />
               {paymentType === 'custom' && (
                 <p className="text-sm text-muted-foreground">
-                  {t('payCard.amountRange')} {formatCurrency(minPayment)} e {formatCurrency(cardInfo.totalAmount)}
+                  Digite qualquer valor entre {formatCurrency(0.01)} e {formatCurrency(cardInfo.totalAmount)}
                 </p>
               )}
             </div>
