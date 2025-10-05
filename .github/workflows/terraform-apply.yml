@@ -28,6 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'prod' }}
     
+    permissions:
+      contents: write
+      id-token: write
+    
     defaults:
       run:
         working-directory: terraform-gcp
