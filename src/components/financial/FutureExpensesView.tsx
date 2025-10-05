@@ -453,6 +453,21 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       currency: "BRL",
     }).format(value);
   };
+  
+  // Função para formatar moeda com conversão em PT
+  const formatCurrencyWithConversion = (value: number, currency?: CurrencyCode) => {
+    const currencyCode = currency || 'BRL';
+    const mainValue = formatCurrencyWithConverter(value, currencyCode);
+    
+    // Se for PT e moeda diferente de BRL, mostrar conversão
+    if (language === 'pt' && currencyCode !== 'BRL') {
+      const convertedValue = convertCurrency(value, currencyCode, 'BRL');
+      const convertedFormatted = formatCurrencyWithConverter(convertedValue, 'BRL');
+      return { main: mainValue, converted: convertedFormatted };
+    }
+    
+    return { main: mainValue, converted: null };
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString + 'T00:00:00');
@@ -827,10 +842,22 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                           
                           {/* Seção de Valor e Ação */}
                           <div className="flex items-center justify-between gap-3 lg:flex-col lg:items-end lg:gap-2">
-                            <div className="text-left lg:text-right">
-                              <p className="font-semibold text-lg sm:text-xl text-destructive">
-                                {formatCurrency(expense.amount, expense.currency)}
-                              </p>
+                            <div className="text-left lg:text-right space-y-1">
+                              {(() => {
+                                const formatted = formatCurrencyWithConversion(expense.amount, expense.currency);
+                                return (
+                                  <>
+                                    <p className="font-semibold text-lg sm:text-xl text-destructive">
+                                      {formatted.main}
+                                    </p>
+                                    {formatted.converted && (
+                                      <p className="text-xs sm:text-sm text-muted-foreground">
+                                        ≈ {formatted.converted}
+                                      </p>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               {expense.isPaid ? (
