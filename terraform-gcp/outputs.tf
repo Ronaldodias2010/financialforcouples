@@ -45,6 +45,11 @@ output "ssl_certificate_id" {
   value       = var.domain_name != "" ? google_compute_managed_ssl_certificate.default[0].id : "N/A - No domain configured"
 }
 
+output "ssl_certificate_status" {
+  description = "Status do certificado SSL gerenciado"
+  value       = var.domain_name != "" ? google_compute_managed_ssl_certificate.default[0].managed[0].status : "N/A - No domain configured"
+}
+
 # Outputs para DNS
 output "dns_records" {
   description = "Registros DNS necessários"
