@@ -46,8 +46,8 @@ output "ssl_certificate_id" {
 }
 
 output "ssl_certificate_status" {
-  description = "Status do certificado SSL gerenciado"
-  value       = var.domain_name != "" ? try(google_compute_managed_ssl_certificate.default[0].managed[0].domains, "Checking...") : "N/A - No domain configured"
+  description = "Domínios configurados no certificado SSL"
+  value       = var.domain_name != "" ? join(", ", try(google_compute_managed_ssl_certificate.default[0].subject_alternative_names, ["Provisionando..."])) : "N/A - No domain configured"
 }
 
 # Outputs para DNS
