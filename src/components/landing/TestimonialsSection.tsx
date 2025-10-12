@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/landing/ui/button";
 import useInView from "@/hooks/use-in-view";
 import { Quote, Heart, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -114,6 +114,7 @@ const TestimonialsSection = () => {
               window.open(`mailto:contato@couplesfinancials.com?subject=${subject}&body=${body}`);
             }}
             className="px-8 py-3 text-lg font-semibold bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            variant="hero"
           >
             {t('testimonials.leaveTestimonial')}
           </Button>

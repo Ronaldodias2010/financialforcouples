@@ -17,35 +17,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force single React instance
-      "react": path.resolve(__dirname, "./node_modules/react"),
-      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
-    },
-    dedupe: ['react', 'react-dom', '@supabase/supabase-js'],
-  },
-  optimizeDeps: {
-    include: [
-      'react', 
-      'react-dom', 
-      '@tanstack/react-query',
-      '@supabase/supabase-js',
-      'lucide-react'
-    ],
-    force: true, // Force re-optimization to clear any cached issues
-  },
-  build: {
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true,
-    },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'supabase': ['@supabase/supabase-js'],
-          'ui': ['lucide-react', '@radix-ui/react-slot'],
-        },
-      },
     },
   },
 }));

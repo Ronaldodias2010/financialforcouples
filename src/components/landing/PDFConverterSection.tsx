@@ -1,7 +1,7 @@
 import { useLanguage } from "@/hooks/useLanguage";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/landing/ui/badge";
+import { Button } from "@/components/landing/ui/button";
+import { Card } from "@/components/landing/ui/card";
 import { FileText, Upload, CheckCircle, Zap, BarChart3 } from "lucide-react";
 
 const PDFConverterSection = () => {

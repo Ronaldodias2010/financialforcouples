@@ -1,102 +1,116 @@
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/hooks/useTheme";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 
-// Lazy load pages for better performance
-const LandingPage = lazy(() => import('@/pages/LandingPage'));
-const AuthPage = lazy(() => import('@/pages/AuthPage'));
-const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+import { AuthProvider } from "@/hooks/useAuth";
+import { SafeTooltipProvider } from "./components/system/SafeTooltipProvider";
+import { SubscriptionProvider } from "@/hooks/useSubscription";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
-// Loading component
-const LoadingScreen = () => (
-  <div 
-    style={{ 
-      minHeight: "100vh", 
-      display: "flex", 
-      alignItems: "center", 
-      justifyContent: "center",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      color: "white",
-      fontFamily: "sans-serif"
-    }}
-  >
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>💰</div>
-      <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>Couples Financials</div>
-      <div style={{ marginTop: "1rem", opacity: 0.8 }}>Carregando...</div>
-    </div>
-  </div>
-);
+import LandingSimple from "./pages/LandingSimple";
+const PrivacyPolicy = lazy(() => import("./components/landing/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
+const Partnership = lazy(() => import("./pages/Partnership"));
+import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
+const DirectCheckout = lazy(() => import("./pages/DirectCheckout"));
+const CheckoutEmailConfirmation = lazy(() => import("./pages/CheckoutEmailConfirmation"));
+const AppDashboard = lazy(() => import("./pages/AppDashboard"));
+const AccountsPage = lazy(() => import("./pages/AccountsPage").then(m => ({ default: m.AccountsPage })));
+const CardsPage = lazy(() => import("./pages/CardsPage").then(m => ({ default: m.CardsPage })));
+const MileagePage = lazy(() => import("./pages/MileagePage").then(m => ({ default: m.MileagePage })));
+const UserProfilePage = lazy(() => import("./pages/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
+const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage").then(m => ({ default: m.SubscriptionPage })));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+const ChangePassword = lazy(() => import("./pages/ChangePassword"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const EmailConfirmation = lazy(() => import("./pages/EmailConfirmation"));
+const SendConfirmationEmail = lazy(() => import("./pages/SendConfirmationEmail"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const EmailTest = lazy(() => import("./pages/EmailTest"));
+const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
+const CleanupPastel = lazy(() => import("./pages/CleanupPastel"));
+const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m => ({ default: m.TestPartnerEmails })));
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
-// Protected Route Component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
+const AppRoutes = () => {
+  const navigate = useNavigate();
+  const handleNavBack = () => navigate(-1);
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-// Public Route Component (redirects to dashboard if already logged in)
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-function App() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<LoadingScreen />}>
-        <Routes>
-          {/* Public Routes */}
-          <Route 
-            path="/" 
-            element={
-              <PublicRoute>
-                <LandingPage />
-              </PublicRoute>
-            } 
-          />
-          <Route 
-            path="/auth" 
-            element={
-              <PublicRoute>
-                <AuthPage />
-              </PublicRoute>
-            } 
-          />
-
-          {/* Protected Routes */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            } 
-          />
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+    <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/checkout-direto" element={<DirectCheckout />} />
+        <Route path="/checkout-email-confirmation" element={<CheckoutEmailConfirmation />} />
+        <Route path="/landing-simple" element={<LandingSimple />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/login" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/email-confirmation" element={<EmailConfirmation />} />
+        <Route path="/send-confirmation" element={<SendConfirmationEmail />} />
+        <Route path="/email-test" element={<EmailTest />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/sobre-nos" element={<AboutUs />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/parceria" element={<Partnership />} />
+        <Route path="/partnership" element={<Partnership />} />
+        <Route path="/asociacion" element={<Partnership />} />
+        
+        <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
+        <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/mileage" element={<ProtectedRoute><MileagePage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={handleNavBack} /></ProtectedRoute>} />
+        <Route path="/subscription-success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+        <Route path="/cleanup-pastel" element={<ProtectedRoute><CleanupPastel /></ProtectedRoute>} />
+        <Route path="/test-emails" element={<TestPartnerEmails />} />
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
-}
+};
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ThemeProvider>
+          <AuthProvider>
+            <LanguageProvider>
+              <SafeTooltipProvider>
+                <SubscriptionProvider>
+                  <AppRoutes />
+                  <Toaster />
+                  <Sonner />
+                </SubscriptionProvider>
+              </SafeTooltipProvider>
+            </LanguageProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

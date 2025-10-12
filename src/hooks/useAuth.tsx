@@ -70,11 +70,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       console.log('🔄 Fazendo logout...');
-      await supabase.auth.signOut();
-      setUser(null);
-      setSession(null);
+      // Clean up auth state to prevent limbo
+      const { cleanupAuthState } = await import('@/utils/authCleanup');
+      cleanupAuthState();
+      try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
+      window.location.href = '/auth';
     } catch (error) {
       console.error('❌ Erro ao fazer logout:', error);
+      window.location.href = '/auth';
     }
   };
 
