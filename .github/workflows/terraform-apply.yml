@@ -96,12 +96,16 @@ jobs:
         id: validate
         run: terraform validate
       
-      - name: Import Existing SSL Certificate (if exists)
-        id: import-ssl
+      - name: Handle Existing SSL Certificate
+        id: handle-ssl
         continue-on-error: true
         run: |
+          # Remove from state if exists
+          terraform state rm 'google_compute_managed_ssl_certificate.default[0]' 2>/dev/null || true
+          
+          # Import existing certificate
           terraform import 'google_compute_managed_ssl_certificate.default[0]' \
-            projects/${{ secrets.GCP_PROJECT_ID }}/global/sslCertificates/couples-financials-ssl-cert || true
+            projects/${{ secrets.GCP_PROJECT_ID }}/global/sslCertificates/couples-financials-ssl-cert 2>/dev/null || true
       
       - name: Terraform Plan
         id: plan
