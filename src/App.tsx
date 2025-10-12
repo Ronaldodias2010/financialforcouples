@@ -1,7 +1,21 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { useState, lazy, Suspense, useEffect, createContext, useContext, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from "@/integrations/supabase/client";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+
+// Lazy imports
+const Landing = lazy(() => import("./pages/Landing"));
+const Auth = lazy(() => import("./pages/Auth"));
+const AppDashboard = lazy(() => import("./pages/AppDashboard"));
+const AccountsPage = lazy(() => import("./pages/AccountsPage").then(m => ({ default: m.AccountsPage })));
+const CardsPage = lazy(() => import("./pages/CardsPage").then(m => ({ default: m.CardsPage })));
+const UserProfilePage = lazy(() => import("./pages/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
+const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage").then(m => ({ default: m.SubscriptionPage })));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -12,280 +26,98 @@ const queryClient = new QueryClient({
   },
 });
 
-const SimpleLanding = () => (
-  <div style={{ 
-    minHeight: '100vh', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    fontFamily: 'sans-serif',
-    textAlign: 'center',
-    padding: '2rem'
-  }}>
-    <div style={{ maxWidth: '600px' }}>
-      <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>💰 Couples Financials</h1>
-      <p style={{ fontSize: '1.5rem', marginBottom: '2rem', opacity: 0.9 }}>
-        Gerencie suas finanças em casal
-      </p>
-      <button 
-        onClick={() => window.location.href = '/auth'}
-        style={{
-          padding: '16px 32px',
-          background: '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '12px',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          fontSize: '1.2rem',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.25)'
-        }}
-      >
-        🔐 Entrar / Cadastrar
-      </button>
-    </div>
-  </div>
-);
+// AuthContext simplificado sem conflitos
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+}
 
-const SimpleAuth = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
+const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`
-          }
-        });
-        
-        if (error) throw error;
-        setMessage('✅ Cadastro realizado! Verifique seu email.');
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        
-        if (error) throw error;
-        setMessage('✅ Login realizado com sucesso!');
-        setTimeout(() => {
-          window.location.href = '/app';
-        }, 1000);
-      }
-    } catch (error: any) {
-      setMessage(`❌ Erro: ${error.message}`);
-    } finally {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
       setLoading(false);
-    }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white',
-      fontFamily: 'sans-serif',
-      padding: '2rem'
-    }}>
-      <div style={{ 
-        background: 'rgba(255,255,255,0.1)', 
-        padding: '3rem',
-        borderRadius: '20px',
-        backdropFilter: 'blur(10px)',
-        maxWidth: '400px',
-        width: '100%'
-      }}>
-        <h2 style={{ fontSize: '2rem', marginBottom: '2rem', textAlign: 'center' }}>
-          {isSignUp ? '📝 Cadastrar' : '🔐 Login'}
-        </h2>
-        
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <input 
-              type="email" 
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                fontSize: '1rem',
-                marginBottom: '1rem',
-                boxSizing: 'border-box'
-              }}
-            />
-            <input 
-              type="password" 
-              placeholder="Senha (mínimo 6 caracteres)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                fontSize: '1rem',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-          
-          {message && (
-            <div style={{
-              padding: '10px',
-              borderRadius: '8px',
-              background: message.includes('❌') ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-              marginBottom: '1rem',
-              fontSize: '0.9rem'
-            }}>
-              {message}
-            </div>
-          )}
-          
-          <button 
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: loading ? '#6b7280' : '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              marginBottom: '1rem'
-            }}
-          >
-            {loading ? '⏳ Aguarde...' : (isSignUp ? 'Cadastrar' : 'Entrar')}
-          </button>
-          
-          <button 
-            type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setMessage('');
-            }}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: 'rgba(255,255,255,0.1)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              marginBottom: '1rem'
-            }}
-          >
-            {isSignUp ? '← Já tenho conta' : '→ Criar conta'}
-          </button>
-          
-          <button 
-            type="button"
-            onClick={() => window.location.href = '/'}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              fontSize: '1rem'
-            }}
-          >
-            ← Voltar
-          </button>
-        </form>
-      </div>
-    </div>
+    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 
-const SimpleApp = () => (
-  <div style={{ 
-    minHeight: '100vh', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    color: 'white',
-    fontFamily: 'sans-serif',
-    textAlign: 'center',
-    padding: '2rem'
-  }}>
-    <div style={{ maxWidth: '600px' }}>
-      <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅ Bem-vindo!</h1>
-      <p style={{ fontSize: '1.5rem', marginBottom: '2rem', opacity: 0.9 }}>
-        Você está logado
-      </p>
-      <button 
-        onClick={async () => {
-          await supabase.auth.signOut();
-          window.location.href = '/';
-        }}
-        style={{
-          padding: '16px 32px',
-          background: 'rgba(255,255,255,0.2)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '12px',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          fontSize: '1.2rem',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.25)'
-        }}
-      >
-        🚪 Sair
-      </button>
-    </div>
-  </div>
-);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
+};
+
+// Protected Route
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return <div style={{ padding: 16 }}>Carregando...</div>;
+  }
+
+  return user ? <>{children}</> : null;
+};
 
 const App = () => {
-  console.log("✅ App.tsx - restaurando funcionalidades");
-  
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
-          <Routes>
-            <Route path="/" element={<SimpleLanding />} />
-            <Route path="/auth" element={<SimpleAuth />} />
-            <Route path="/login" element={<SimpleAuth />} />
-            <Route path="/app" element={<SimpleApp />} />
-            <Route path="*" element={<SimpleLanding />} />
-          </Routes>
-        </Suspense>
+        <SimpleAuthProvider>
+          <LanguageProvider>
+            <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Auth />} />
+                
+                <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
+                <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/cards" element={<ProtectedRoute><CardsPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><UserProfilePage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage onBack={() => window.history.back()} /></ProtectedRoute>} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            <Toaster />
+            <Sonner />
+          </LanguageProvider>
+        </SimpleAuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
