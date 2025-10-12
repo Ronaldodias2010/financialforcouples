@@ -1,11 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LandingSimple from "./pages/LandingSimple";
+import Auth from "./pages/Auth";
 
 const App = () => {
-  console.log("✅ App.tsx - versão mínima");
+  console.log("✅ App.tsx - adicionando rotas principais");
   
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingSimple />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/login" element={<Auth />} />
         <Route path="*" element={
           <div style={{ 
             minHeight: '100vh', 
@@ -21,19 +26,10 @@ const App = () => {
             <div style={{ maxWidth: '600px' }}>
               <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>💰 Couples Financials</h1>
               <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>
-                ✅ Sistema ONLINE
+                Página não encontrada
               </p>
-              <div style={{ 
-                background: 'rgba(255,255,255,0.1)', 
-                padding: '1.5rem', 
-                borderRadius: '10px',
-                marginBottom: '1rem'
-              }}>
-                <p><strong>Status:</strong> Funcionando</p>
-                <p><strong>Cache:</strong> Limpo</p>
-              </div>
               <button 
-                onClick={() => window.location.href = '/auth'}
+                onClick={() => window.location.href = '/'}
                 style={{
                   padding: '12px 24px',
                   background: '#3b82f6',
@@ -42,26 +38,10 @@ const App = () => {
                   borderRadius: '8px',
                   cursor: 'pointer',
                   fontWeight: 'bold',
-                  fontSize: '1rem',
-                  marginRight: '10px'
-                }}
-              >
-                🔐 Login
-              </button>
-              <button 
-                onClick={() => window.location.reload()}
-                style={{
-                  padding: '12px 24px',
-                  background: '#10b981',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
                   fontSize: '1rem'
                 }}
               >
-                🔄 Recarregar
+                🏠 Voltar ao Início
               </button>
             </div>
           </div>
