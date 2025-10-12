@@ -1,6 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const SimpleLanding = () => (
   <div style={{ 
@@ -262,18 +272,22 @@ const SimpleApp = () => (
 );
 
 const App = () => {
-  console.log("✅ App.tsx - com autenticação funcional");
+  console.log("✅ App.tsx - restaurando funcionalidades");
   
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<SimpleLanding />} />
-        <Route path="/auth" element={<SimpleAuth />} />
-        <Route path="/login" element={<SimpleAuth />} />
-        <Route path="/app" element={<SimpleApp />} />
-        <Route path="*" element={<SimpleLanding />} />
-      </Routes>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Suspense fallback={<div style={{ padding: 16 }}>Carregando...</div>}>
+          <Routes>
+            <Route path="/" element={<SimpleLanding />} />
+            <Route path="/auth" element={<SimpleAuth />} />
+            <Route path="/login" element={<SimpleAuth />} />
+            <Route path="/app" element={<SimpleApp />} />
+            <Route path="*" element={<SimpleLanding />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 
