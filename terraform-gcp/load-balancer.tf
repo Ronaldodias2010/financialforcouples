@@ -48,14 +48,9 @@ resource "google_compute_url_map" "default" {
   name            = "${var.app_name}-url-map"
   default_service = google_compute_backend_service.default.id
 
-  # Configurar host rules para AMBOS os domínios com www
+  # Redirect HTTP para HTTPS (opcional)
   host_rule {
-    hosts = compact([
-      var.domain_name != "" ? var.domain_name : null,
-      var.domain_name != "" ? "www.${var.domain_name}" : null,
-      var.secondary_domain_name != "" ? var.secondary_domain_name : null,
-      var.secondary_domain_name != "" ? "www.${var.secondary_domain_name}" : null,
-    ])
+    hosts        = var.domain_name != "" ? [var.domain_name] : ["*"]
     path_matcher = "allpaths"
   }
 
@@ -68,19 +63,13 @@ resource "google_compute_url_map" "default" {
 # Certificado SSL gerenciado pelo Google (se domínio configurado)
 resource "google_compute_managed_ssl_certificate" "default" {
   count = var.domain_name != "" ? 1 : 0
-  name  = "${var.app_name}-ssl-cert-v2"
+  name  = "${var.app_name}-ssl-cert"
 
   managed {
     domains = compact([
       var.domain_name,
-      "www.${var.domain_name}",
-      var.secondary_domain_name,
-      "www.${var.secondary_domain_name}"
+      var.secondary_domain_name
     ])
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 }
 

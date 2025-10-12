@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/hooks/useTheme";
@@ -38,7 +38,6 @@ const CleanupPastel = lazy(() => import("./pages/CleanupPastel"));
 const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m => ({ default: m.TestPartnerEmails })));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
-// Create QueryClient instance outside component
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
