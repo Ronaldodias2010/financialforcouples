@@ -1,5 +1,5 @@
 import { Shield, Lock, Eye, Server, Award, FileCheck } from 'lucide-react';
-import { Button } from '@/components/landing/ui/button';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import useInView from '@/hooks/use-in-view';
 
