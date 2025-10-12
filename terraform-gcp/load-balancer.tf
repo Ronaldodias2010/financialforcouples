@@ -68,7 +68,7 @@ resource "google_compute_url_map" "default" {
 # Certificado SSL gerenciado pelo Google (se domínio configurado)
 resource "google_compute_managed_ssl_certificate" "default" {
   count = var.domain_name != "" ? 1 : 0
-  name  = "${var.app_name}-ssl-cert"
+  name  = "${var.app_name}-ssl-cert-v2"
 
   managed {
     domains = compact([
