@@ -78,6 +78,10 @@ resource "google_compute_managed_ssl_certificate" "default" {
       "www.${var.secondary_domain_name}"
     ])
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # HTTPS Proxy
