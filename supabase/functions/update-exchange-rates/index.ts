@@ -27,6 +27,22 @@ async function fetchRates() {
   let bestRates: { USD: number; EUR: number; GBP: number } | null = null;
   const providers = [
     {
+      name: 'AwesomeAPI (Brasil)',
+      url: 'https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,GBP-BRL',
+      parser: (json: any) => {
+        // AwesomeAPI retorna formato: {"USDBRL": {"bid": "5.52", "ask": "5.53"}}
+        // Precisamos converter para formato BRL -> moeda (inverso)
+        if (json.USDBRL && json.EURBRL && json.GBPBRL) {
+          return {
+            USD: 1 / parseFloat(json.USDBRL.bid),
+            EUR: 1 / parseFloat(json.EURBRL.bid),
+            GBP: 1 / parseFloat(json.GBPBRL.bid)
+          };
+        }
+        throw new Error('Invalid AwesomeAPI response format');
+      }
+    },
+    {
       name: 'Frankfurter',
       url: 'https://api.frankfurter.app/latest?from=BRL&to=USD,EUR,GBP',
       parser: (json: any) => json.rates
