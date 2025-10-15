@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Moon, Sun } from "lucide-react";
 
 export const ThemeSwitcher = () => {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { t } = useLanguage();
 
-  const isDark = (resolvedTheme ?? theme) === 'dark';
+  const isDark = theme === 'dark';
 
   return (
     <Button
