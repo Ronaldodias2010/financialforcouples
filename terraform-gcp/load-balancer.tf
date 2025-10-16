@@ -48,9 +48,13 @@ resource "google_compute_url_map" "default" {
   name            = "${var.app_name}-url-map"
   default_service = google_compute_backend_service.default.id
 
-  # Redirect HTTP para HTTPS (opcional)
+  # Aceitar ambos os domínios
   host_rule {
-    hosts        = var.domain_name != "" ? [var.domain_name] : ["*"]
+    hosts = compact([
+      var.domain_name != "" ? var.domain_name : null,
+      var.secondary_domain_name != "" ? var.secondary_domain_name : null,
+      "*"
+    ])
     path_matcher = "allpaths"
   }
 
