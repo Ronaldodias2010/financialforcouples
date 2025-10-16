@@ -40,19 +40,38 @@ else
     echo -e "${GREEN}✓ Application Default Credentials já configuradas${NC}"
 fi
 
-# Passo 1: Deletar certificado SSL existente
+# Passo 1: Deletar recursos HTTPS na ordem correta
 echo ""
-echo -e "${YELLOW}Passo 1: Deletando certificado SSL existente...${NC}"
+echo -e "${YELLOW}Passo 1: Deletando recursos HTTPS existentes...${NC}"
+
+# 1.1: Deletar forwarding rule HTTPS
+if gcloud compute forwarding-rules describe ${APP_NAME}-https-rule --global &>/dev/null; then
+    echo -e "${YELLOW}Deletando forwarding rule HTTPS...${NC}"
+    gcloud compute forwarding-rules delete ${APP_NAME}-https-rule --global --quiet
+    echo -e "${GREEN}✓ Forwarding rule HTTPS deletado${NC}"
+    sleep 10
+fi
+
+# 1.2: Deletar target HTTPS proxy
+if gcloud compute target-https-proxies describe ${APP_NAME}-https-proxy --global &>/dev/null; then
+    echo -e "${YELLOW}Deletando target HTTPS proxy...${NC}"
+    gcloud compute target-https-proxies delete ${APP_NAME}-https-proxy --global --quiet
+    echo -e "${GREEN}✓ Target HTTPS proxy deletado${NC}"
+    sleep 10
+fi
+
+# 1.3: Deletar certificado SSL
 if gcloud compute ssl-certificates describe $SSL_CERT_NAME --global &>/dev/null; then
-    echo -e "${YELLOW}Deletando certificado: $SSL_CERT_NAME${NC}"
+    echo -e "${YELLOW}Deletando certificado SSL: $SSL_CERT_NAME${NC}"
     gcloud compute ssl-certificates delete $SSL_CERT_NAME --global --quiet
-    echo -e "${GREEN}✓ Certificado deletado${NC}"
-    
-    echo -e "${YELLOW}Aguardando 30 segundos para propagação...${NC}"
-    sleep 30
+    echo -e "${GREEN}✓ Certificado SSL deletado${NC}"
+    sleep 10
 else
     echo -e "${BLUE}ℹ Certificado não existe ou já foi deletado${NC}"
 fi
+
+echo -e "${YELLOW}Aguardando 20 segundos para propagação completa...${NC}"
+sleep 20
 
 # Passo 2: Aplicar Terraform
 echo ""
