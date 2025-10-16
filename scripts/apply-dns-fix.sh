@@ -57,6 +57,17 @@ fi
 # Passo 2: Aplicar Terraform
 echo ""
 echo -e "${YELLOW}Passo 2: Aplicando Terraform...${NC}"
+
+# Verificar variáveis do Supabase
+if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+    echo -e "${RED}❌ Variáveis do Supabase não definidas${NC}"
+    echo -e "${YELLOW}Defina as variáveis:${NC}"
+    echo "export SUPABASE_URL=<sua-url>"
+    echo "export SUPABASE_ANON_KEY=<sua-chave-anon>"
+    echo "export SUPABASE_SERVICE_ROLE_KEY=<sua-chave-service>"
+    exit 1
+fi
+
 cd terraform-gcp
 
 # Inicializar Terraform
@@ -67,9 +78,12 @@ terraform init -upgrade
 echo -e "${BLUE}Validando configuração...${NC}"
 terraform validate
 
-# Aplicar mudanças
+# Aplicar mudanças com variáveis via linha de comando
 echo -e "${BLUE}Aplicando infraestrutura...${NC}"
-terraform apply -auto-approve
+terraform apply -auto-approve \
+  -var="supabase_url=${SUPABASE_URL}" \
+  -var="supabase_anon_key=${SUPABASE_ANON_KEY}" \
+  -var="supabase_service_role_key=${SUPABASE_SERVICE_ROLE_KEY}"
 
 echo -e "${GREEN}✓ Terraform aplicado com sucesso!${NC}"
 
