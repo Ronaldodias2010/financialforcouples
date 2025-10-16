@@ -31,6 +31,15 @@ if ! gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q
 fi
 echo -e "${GREEN}✓ Autenticado no GCP${NC}"
 
+# Configurar Application Default Credentials (necessário para Terraform backend GCS)
+echo -e "\n${YELLOW}Configurando Application Default Credentials...${NC}"
+if ! gcloud auth application-default print-access-token &> /dev/null; then
+    echo -e "${YELLOW}Executando: gcloud auth application-default login${NC}"
+    gcloud auth application-default login
+else
+    echo -e "${GREEN}✓ Application Default Credentials já configuradas${NC}"
+fi
+
 # Passo 1: Deletar certificado SSL existente
 echo ""
 echo -e "${YELLOW}Passo 1: Deletando certificado SSL existente...${NC}"
