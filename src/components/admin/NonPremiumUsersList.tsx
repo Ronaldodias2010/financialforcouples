@@ -126,7 +126,7 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
       if (userIds.length > 0) {
         const { data: fetchedProfiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('user_id, display_name')
+          .select('user_id, display_name, created_at')
           .in('user_id', userIds);
 
         if (profilesError) {
