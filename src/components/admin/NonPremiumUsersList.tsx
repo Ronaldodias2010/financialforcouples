@@ -14,6 +14,7 @@ interface UserData {
   user_id: string;
   isCoupled?: boolean;
   partnerName?: string;
+  created_at?: string;
 }
 
 interface NonPremiumUsersListProps {
@@ -36,6 +37,7 @@ const text = {
     email: 'Email',
     status: 'Status',
     plan: 'Plan',
+    createdAt: 'Created At',
     actions: 'Actions',
     active: 'Active',
     inactive: 'Inactive',
@@ -59,6 +61,7 @@ const text = {
     email: 'Email',
     status: 'Status',
     plan: 'Plano',
+    createdAt: 'Data de Criação',
     actions: 'Ações',
     active: 'Ativo',
     inactive: 'Inativo',
@@ -175,7 +178,8 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
           subscribed: subscriber.subscribed || false,
           subscription_tier: subscriber.subscription_tier || 'essential',
           isCoupled,
-          partnerName
+          partnerName,
+          created_at: profile?.created_at
         };
       }) || []);
 
@@ -351,6 +355,9 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                     {t.plan}
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    {t.createdAt}
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     {t.actions}
                   </th>
                 </tr>
@@ -385,6 +392,21 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                       <Badge variant="outline">
                         {user.subscribed ? t.premium : t.essential}
                       </Badge>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <div className="text-sm">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        }) : 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {user.created_at ? new Date(user.created_at).toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : ''}
+                      </div>
                     </td>
                     <td className="p-4 align-middle">
                       <Button
