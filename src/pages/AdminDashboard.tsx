@@ -44,6 +44,7 @@ interface SubscriptionUser {
   isCoupled?: boolean;
   partnerName?: string;
   isManualAccess?: boolean;
+  created_at?: string;
 }
 
 interface RecentAlert {
@@ -227,7 +228,7 @@ const AdminDashboardContent = () => {
         if (userIds.length > 0) {
           const { data: fetchedProfiles, error: profilesFetchError } = await supabase
             .from('profiles')
-            .select('user_id, display_name')
+            .select('user_id, display_name, created_at')
             .in('user_id', userIds);
 
           if (profilesFetchError) {
@@ -291,7 +292,8 @@ const AdminDashboardContent = () => {
             status,
             isCoupled,
             partnerName,
-            isManualAccess: manualAccessUserIds.has(subscriber.user_id)
+            isManualAccess: manualAccessUserIds.has(subscriber.user_id),
+            created_at: profile?.created_at
           };
           
           console.log('✨ Formatted premium user:', formattedUser);
@@ -862,6 +864,7 @@ const AdminDashboardContent = () => {
                       <TableHead>{t('admin.table.email')}</TableHead>
                       <TableHead>{t('admin.table.status')}</TableHead>
                       <TableHead>{t('admin.table.plan')}</TableHead>
+                      <TableHead>{t('admin.table.createdAt')}</TableHead>
                       <TableHead>{t('admin.table.lastPayment')}</TableHead>
                       <TableHead>{t('admin.table.nextBilling')}</TableHead>
                       <TableHead>{t('admin.table.actions')}</TableHead>
@@ -905,9 +908,24 @@ const AdminDashboardContent = () => {
                              {user.subscription_tier}
                            </Badge>
                          </TableCell>
-                        <TableCell>
-                          {user.last_payment ? new Date(user.last_payment).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR') : '—'}
-                        </TableCell>
+                         <TableCell>
+                           <div className="text-sm">
+                             {user.created_at ? new Date(user.created_at).toLocaleDateString(language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es-ES', {
+                               day: '2-digit',
+                               month: '2-digit',
+                               year: 'numeric'
+                             }) : '—'}
+                           </div>
+                           <div className="text-xs text-muted-foreground">
+                             {user.created_at ? new Date(user.created_at).toLocaleTimeString(language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es-ES', {
+                               hour: '2-digit',
+                               minute: '2-digit'
+                             }) : ''}
+                           </div>
+                         </TableCell>
+                         <TableCell>
+                           {user.last_payment ? new Date(user.last_payment).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR') : '—'}
+                         </TableCell>
                         <TableCell>
                           {user.subscription_end ? new Date(user.subscription_end).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR') : '—'}
                         </TableCell>
