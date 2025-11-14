@@ -3,18 +3,23 @@ import { usePhoneRequest } from '@/hooks/usePhoneRequest';
 import { useAuth } from '@/hooks/useAuth';
 
 export const PhoneRequestWrapper = () => {
-  const { user } = useAuth();
-  const { shouldShow, closeModal } = usePhoneRequest();
+  try {
+    const { user } = useAuth();
+    const { shouldShow, closeModal } = usePhoneRequest();
 
-  if (!user?.id || !shouldShow) {
+    if (!user?.id || !shouldShow) {
+      return null;
+    }
+
+    return (
+      <PhoneNumberRequestModal
+        isOpen={shouldShow}
+        onClose={closeModal}
+        userId={user.id}
+      />
+    );
+  } catch (error) {
+    console.error('PhoneRequestWrapper error:', error);
     return null;
   }
-
-  return (
-    <PhoneNumberRequestModal
-      isOpen={shouldShow}
-      onClose={closeModal}
-      userId={user.id}
-    />
-  );
 };
