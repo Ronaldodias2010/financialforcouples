@@ -50,6 +50,32 @@ export const OverdueIncomesView = ({ viewMode }: OverdueIncomesViewProps) => {
 
   const totalOverdue = overdueIncomes.reduce((sum, income) => sum + income.amount, 0);
 
+  // Group incomes by month
+  const groupedIncomes = overdueIncomes.reduce((acc, income) => {
+    const date = parseLocalDate(income.due_date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthLabel = date.toLocaleDateString(t('common.locale') || 'pt-BR', {
+      year: 'numeric',
+      month: 'long'
+    });
+    
+    if (!acc[monthKey]) {
+      acc[monthKey] = {
+        label: monthLabel,
+        incomes: [],
+        total: 0
+      };
+    }
+    
+    acc[monthKey].incomes.push(income);
+    acc[monthKey].total += income.amount;
+    
+    return acc;
+  }, {} as Record<string, { label: string; incomes: any[]; total: number }>);
+
+  // Sort months (oldest first)
+  const sortedMonths = Object.keys(groupedIncomes).sort();
+
   if (loading) {
     return (
       <Card className="p-6">
@@ -93,71 +119,94 @@ export const OverdueIncomesView = ({ viewMode }: OverdueIncomesViewProps) => {
             <p className="text-muted-foreground">{t('futureIncomes.noOverdue')}</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {overdueIncomes.map((income) => {
-              const daysOverdue = Math.floor(
-                (new Date().getTime() - parseLocalDate(income.due_date).getTime()) / (1000 * 60 * 60 * 24)
-              );
-              
+          <div className="space-y-6">
+            {sortedMonths.map((monthKey) => {
+              const group = groupedIncomes[monthKey];
               return (
-                <Card key={income.id} className="p-4 border-destructive/20 bg-destructive/5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h5 className="font-medium">{income.description}</h5>
-                        <Badge variant="destructive">
-                          {daysOverdue} {daysOverdue === 1 ? t('futureIncomes.dayOverdue') : t('futureIncomes.daysOverdue')}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {t('futureIncomes.dueDate')}: {formatLocalDate(income.due_date, 'dd/MM/yyyy')}
-                        </span>
-                        {income.category && (
-                          <Badge variant="outline" style={{ 
-                            borderColor: income.category.color,
-                            color: income.category.color 
-                          }}>
-                            {income.category.name}
-                          </Badge>
-                        )}
-                        {income.account && (
-                          <Badge variant="outline">
-                            {income.account.name}
-                          </Badge>
-                        )}
-                      </div>
-                      {income.notes && (
-                        <p className="text-sm text-muted-foreground mt-2">{income.notes}</p>
-                      )}
-                    </div>
-                    <div className="text-right ml-4">
-                      <p className="text-lg font-bold text-destructive">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(income.amount)}
-                      </p>
-                      <div className="flex gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleReceiveClick(income)}
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteClick(income.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                <div key={monthKey} className="space-y-3">
+                  {/* Month Header */}
+                  <div className="flex items-center justify-between px-2">
+                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                      {group.label}
+                    </h4>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(group.total)}
+                    </span>
                   </div>
-                </Card>
+                  
+                  {/* Month Incomes */}
+                  <div className="space-y-3">
+                    {group.incomes.map((income) => {
+                      const daysOverdue = Math.floor(
+                        (new Date().getTime() - parseLocalDate(income.due_date).getTime()) / (1000 * 60 * 60 * 24)
+                      );
+                      
+                      return (
+                        <Card key={income.id} className="p-4 border-destructive/20 bg-destructive/5">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h5 className="font-medium">{income.description}</h5>
+                                <Badge variant="destructive">
+                                  {daysOverdue} {daysOverdue === 1 ? t('futureIncomes.dayOverdue') : t('futureIncomes.daysOverdue')}
+                                </Badge>
+                              </div>
+                              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {t('futureIncomes.dueDate')}: {formatLocalDate(income.due_date, 'dd/MM/yyyy')}
+                                </span>
+                                {income.category && (
+                                  <Badge variant="outline" style={{ 
+                                    borderColor: income.category.color,
+                                    color: income.category.color 
+                                  }}>
+                                    {income.category.name}
+                                  </Badge>
+                                )}
+                                {income.account && (
+                                  <Badge variant="outline">
+                                    {income.account.name}
+                                  </Badge>
+                                )}
+                              </div>
+                              {income.notes && (
+                                <p className="text-sm text-muted-foreground mt-2">{income.notes}</p>
+                              )}
+                            </div>
+                            <div className="text-right ml-4">
+                              <p className="text-lg font-bold text-destructive">
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(income.amount)}
+                              </p>
+                              <div className="flex gap-2 mt-2">
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => handleReceiveClick(income)}
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteClick(income.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
