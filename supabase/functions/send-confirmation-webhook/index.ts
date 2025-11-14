@@ -94,12 +94,54 @@ const handler = async (req: Request): Promise<Response> => {
           ? (language === 'en' ? MagicLinkEN : language === 'es' ? MagicLinkES : MagicLinkPT)
           : (language === 'en' ? EmailConfirmationEN : language === 'es' ? EmailConfirmationES : EmailConfirmationPT);
 
-        const emailHtml = await renderAsync(
-          React.createElement(EmailComponent, {
-            userEmail: userName,
-            loginUrl: confirmUrl
-          })
-        );
+        let emailHtml: string;
+        
+        try {
+          console.log('Rendering email template...');
+          emailHtml = await renderAsync(
+            React.createElement(EmailComponent, {
+              userEmail: userName,
+              loginUrl: confirmUrl
+            })
+          );
+          console.log('Email template rendered successfully');
+        } catch (renderError) {
+          console.error('Error rendering email template:', renderError);
+          // Fallback to simple HTML email if React template fails
+          emailHtml = `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <style>
+                  body { font-family: Arial, sans-serif; background-color: #1a1a2e; padding: 20px; }
+                  .container { background-color: #16213e; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 12px; }
+                  .logo { text-align: center; margin-bottom: 32px; }
+                  h1 { color: #e94560; text-align: center; }
+                  h2 { color: #ffffff; text-align: center; }
+                  p { color: #e2e8f0; line-height: 1.6; }
+                  .button { display: inline-block; background-color: #22c55e; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+                  .footer { color: #94a3b8; font-size: 14px; text-align: center; margin-top: 32px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="logo">
+                    <img src="https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png" alt="Couples Financials" width="80" height="80">
+                  </div>
+                  <h1>Couples Financials</h1>
+                  <h2>${isMagicLink ? (language === 'pt' ? 'Seu email foi verificado!' : language === 'es' ? '¡Tu email ha sido verificado!' : 'Your email has been verified!') : (language === 'pt' ? 'Confirme seu email' : language === 'es' ? 'Confirma tu email' : 'Confirm your email')}</h2>
+                  <p>${language === 'pt' ? `Olá ${userName}!` : language === 'es' ? `¡Hola ${userName}!` : `Hello ${userName}!`}</p>
+                  <p style="text-align: center;">
+                    <a href="${confirmUrl}" class="button">${isMagicLink ? (language === 'pt' ? 'Continuar' : language === 'es' ? 'Continuar' : 'Continue') : (language === 'pt' ? 'Confirmar Email' : language === 'es' ? 'Confirmar Email' : 'Confirm Email')}</a>
+                  </p>
+                  <p class="footer">© 2024 Couples Financials</p>
+                </div>
+              </body>
+            </html>
+          `;
+          console.log('Using fallback HTML email');
+        }
 
         const subject = isMagicLink
           ? (language === 'en'

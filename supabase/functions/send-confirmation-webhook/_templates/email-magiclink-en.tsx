@@ -88,7 +88,7 @@ const main = {
   padding: '20px 0',
 };
 const container = { backgroundColor: '#16213e', margin: '0 auto', padding: '40px 20px', maxWidth: '600px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)' };
-const header = { display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '32px', gap: '16px' };
+const header = { textAlign: 'center' as const, marginBottom: '32px' };
 const logo = { borderRadius: '8px' };
 const h1 = { color: '#e94560', fontSize: '28px', fontWeight: 'bold', margin: '0', textAlign: 'center' as const };
 const h2 = { color: '#ffffff', fontSize: '24px', fontWeight: '600', margin: '32px 0 24px 0', textAlign: 'center' as const };

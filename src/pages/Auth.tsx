@@ -169,9 +169,12 @@ export default function Auth() {
       return;
     }
 
+    console.log('🔐 [AUTH] Starting signup process for:', email);
+
     // Validar senha antes de submeter
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
+      console.log('❌ [AUTH] Password validation failed');
       toast({
         variant: "destructive",
         title: t('password.error.weakTitle'),
@@ -182,6 +185,7 @@ export default function Auth() {
 
     // Validar se as senhas coincidem
     if (password !== confirmPassword) {
+      console.log('❌ [AUTH] Passwords do not match');
       toast({
         variant: "destructive",
         title: t('password.error.mismatchTitle'),
@@ -193,6 +197,7 @@ export default function Auth() {
     setIsLoading(true);
     try {
 
+      console.log('📧 [AUTH] Calling Supabase signUp...');
       const redirectUrl = `${window.location.origin}/email-confirmation`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -207,16 +212,28 @@ export default function Auth() {
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ [AUTH] Signup error:', error);
+        throw error;
+      }
+
+      console.log('✅ [AUTH] Signup successful, user data:', data?.user?.id);
 
       // Enviar email de confirmação usando nosso template personalizado
       if (data.user && !data.session) {
-        await supabase.functions.invoke('send-confirmation', {
-          body: {
-            userEmail: email,
-            language: language
-          }
-        });
+        console.log('📧 [AUTH] Invoking send-confirmation edge function...');
+        try {
+          await supabase.functions.invoke('send-confirmation', {
+            body: {
+              userEmail: email,
+              language: language
+            }
+          });
+          console.log('✅ [AUTH] Send-confirmation invoked successfully');
+        } catch (emailError) {
+          console.error('⚠️ [AUTH] Error invoking send-confirmation (non-critical):', emailError);
+          // Não falhar o signup se o email falhar
+        }
       }
       
       if (data.user) {
