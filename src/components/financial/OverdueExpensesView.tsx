@@ -68,25 +68,32 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         userIds = [couple.user2_id];
       }
 
-      // Fetch overdue manual future expenses - now filtering by is_overdue flag
-      const { data: manualData, error: manualError } = await supabase
-        .from('manual_future_expenses')
-        .select('*')
+      // Fetch ALL overdue pending transactions (manual expenses) - busca TODAS as despesas com due_date < today
+      // Não filtra por is_overdue, busca diretamente pelo due_date
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          category:categories(id, name, color)
+        `)
         .in('user_id', userIds)
-        .eq('is_overdue', true)
-        .eq('is_paid', false);
+        .eq('status', 'pending')
+        .eq('type', 'expense')
+        .is('card_id', null)
+        .lt('due_date', todayStr)
+        .order('due_date', { ascending: true });
 
-      if (manualError) {
-        console.error('Error fetching manual overdue expenses:', manualError);
-        throw manualError;
+      if (transactionsError) {
+        console.error('Error fetching overdue transactions:', transactionsError);
+        throw transactionsError;
       }
 
-      // Fetch overdue recurring expenses - now filtering by is_overdue flag
+      // Fetch overdue recurring expenses
       const { data: recurringData, error: recurringError } = await supabase
         .from('recurring_expenses')
         .select('*')
         .in('user_id', userIds)
-        .eq('is_overdue', true)
+        .lt('next_due_date', todayStr)
         .eq('is_active', true)
         .eq('is_completed', false);
 
@@ -97,7 +104,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
 
       // Get unique category IDs
       const categoryIds = new Set<string>();
-      manualData?.forEach((item: any) => {
+      transactionsData?.forEach((item: any) => {
         if (item.category_id) categoryIds.add(item.category_id);
       });
       recurringData?.forEach((item: any) => {
@@ -120,8 +127,8 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
       // Combine and format data
       const expenses: OverdueExpense[] = [];
 
-      // Add manual expenses
-      manualData?.forEach((item: any) => {
+      // Add manual expenses from transactions
+      transactionsData?.forEach((item: any) => {
         const dueDate = parseLocalDate(item.due_date);
         const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
         
@@ -132,7 +139,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
           currency: 'BRL',
           dueDate: item.due_date,
           categoryId: item.category_id,
-          categoryName: item.category_id ? categoriesMap.get(item.category_id) || '' : '',
+          categoryName: item.category?.name || (item.category_id ? categoriesMap.get(item.category_id) || '' : ''),
           ownerUser: item.owner_user || 'user1',
           sourceType: 'manual',
           sourceId: item.id,
@@ -255,6 +262,32 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
     return sum + convertCurrency(exp.amount, exp.currency as any, 'BRL');
   }, 0);
 
+  // Group expenses by month
+  const groupedExpenses = overdueExpenses.reduce((acc, expense) => {
+    const date = new Date(expense.dueDate);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthLabel = date.toLocaleDateString(language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : 'en-US', {
+      year: 'numeric',
+      month: 'long'
+    });
+    
+    if (!acc[monthKey]) {
+      acc[monthKey] = {
+        label: monthLabel,
+        expenses: [],
+        total: 0
+      };
+    }
+    
+    acc[monthKey].expenses.push(expense);
+    acc[monthKey].total += convertCurrency(expense.amount, expense.currency as any, 'BRL');
+    
+    return acc;
+  }, {} as Record<string, { label: string; expenses: OverdueExpense[]; total: number }>);
+
+  // Sort months (oldest first)
+  const sortedMonths = Object.keys(groupedExpenses).sort();
+
   const exportAdditionalInfo = [
     { label: t('monthlyExpenses.total'), value: formatCurrency(totalOverdue, 'BRL') }
   ];
@@ -308,67 +341,87 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
           </div>
         </Card>
 
-        {/* Expenses List */}
+        {/* Expenses List Grouped by Month */}
         {overdueExpenses.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-muted-foreground">{t('overdueExpenses.noOverdueExpenses')}</p>
           </Card>
         ) : (
-          <div className="grid gap-4">
-            {overdueExpenses.map((expense) => (
-              <Card key={expense.id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h4 className="font-semibold text-foreground">{expense.description}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {expense.categoryName || t('common.noCategory')}
-                        </p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getOverdueBadgeColor(expense.daysOverdue)}`}>
-                        {expense.daysOverdue} {t('overdueExpenses.daysOverdue')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      <span>
-                        <span className="font-medium">{t('monthlyExpenses.dueDate')}:</span>{' '}
-                        {formatDate(expense.dueDate)}
-                      </span>
-                      {couple && (
-                        <span>
-                          <span className="font-medium">{t('monthlyExpenses.performedBy')}:</span>{' '}
-                          {getUserName(expense.ownerUser)}
-                        </span>
-                      )}
-                      <span>
-                        <span className="font-medium">{t('overdueExpenses.source')}:</span>{' '}
-                        {expense.sourceType === 'manual' 
-                          ? t('overdueExpenses.manualExpense')
-                          : t('overdueExpenses.recurringExpense')
-                        }
-                      </span>
-                    </div>
+          <div className="space-y-6">
+            {sortedMonths.map((monthKey) => {
+              const group = groupedExpenses[monthKey];
+              return (
+                <div key={monthKey} className="space-y-3">
+                  {/* Month Header */}
+                  <div className="flex items-center justify-between px-2">
+                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                      {group.label}
+                    </h4>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {formatCurrency(group.total, 'BRL')}
+                    </span>
                   </div>
+                  
+                  {/* Month Expenses */}
+                  <div className="grid gap-3">
+                    {group.expenses.map((expense) => (
+                      <Card key={expense.id} className="p-4 hover:shadow-md transition-shadow">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h4 className="font-semibold text-foreground">{expense.description}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {expense.categoryName || t('common.noCategory')}
+                                </p>
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getOverdueBadgeColor(expense.daysOverdue)}`}>
+                                {expense.daysOverdue} {t('overdueExpenses.daysOverdue')}
+                              </span>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                              <span>
+                                <span className="font-medium">{t('monthlyExpenses.dueDate')}:</span>{' '}
+                                {formatDate(expense.dueDate)}
+                              </span>
+                              {couple && (
+                                <span>
+                                  <span className="font-medium">{t('monthlyExpenses.performedBy')}:</span>{' '}
+                                  {getUserName(expense.ownerUser)}
+                                </span>
+                              )}
+                              <span>
+                                <span className="font-medium">{t('overdueExpenses.source')}:</span>{' '}
+                                {expense.sourceType === 'manual' 
+                                  ? t('overdueExpenses.manualExpense')
+                                  : t('overdueExpenses.recurringExpense')
+                                }
+                              </span>
+                            </div>
+                          </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-destructive">
-                        {formatCurrency(expense.amount, expense.currency)}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => handlePayExpense(expense)}
-                      variant="default"
-                      size="sm"
-                    >
-                      {t('monthlyExpenses.pay')}
-                    </Button>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-2xl font-bold text-destructive">
+                                {formatCurrency(expense.amount, expense.currency)}
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => handlePayExpense(expense)}
+                              variant="default"
+                              size="sm"
+                            >
+                              {t('monthlyExpenses.pay')}
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
                   </div>
                 </div>
-              </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

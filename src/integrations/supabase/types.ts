@@ -2672,10 +2672,7 @@ export type Database = {
       }
     }
     Functions: {
-      auto_complete_pending_transactions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      auto_complete_pending_transactions: { Args: never; Returns: undefined }
       auto_translate_category_name: {
         Args: { from_lang?: string; input_name: string }
         Returns: {
@@ -2687,10 +2684,7 @@ export type Database = {
           pt_name: string
         }[]
       }
-      check_manual_premium_expiration: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_manual_premium_expiration: { Args: never; Returns: undefined }
       check_user_promotion_eligibility: {
         Args: { p_promotion_id: string; p_user_id: string }
         Returns: boolean
@@ -2712,10 +2706,7 @@ export type Database = {
         }
         Returns: string
       }
-      determine_owner_user: {
-        Args: { p_user_id: string }
-        Returns: string
-      }
+      determine_owner_user: { Args: { p_user_id: string }; Returns: string }
       find_tag_case_insensitive: {
         Args: { search_lang?: string; search_name: string }
         Returns: {
@@ -2731,19 +2722,16 @@ export type Database = {
           name_pt: string
           updated_at: string
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "category_tags"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
-      fix_security_definer_views: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_temp_password: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      fix_security_definer_views: { Args: never; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
+      generate_temp_password: { Args: never; Returns: string }
       get_active_tags_for_category: {
         Args: { p_category_id: string; p_user_id?: string }
         Returns: {
@@ -2777,10 +2765,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      hash_temp_password: {
-        Args: { password: string }
-        Returns: string
-      }
+      hash_temp_password: { Args: { password: string }; Returns: string }
       insert_normalized_user_tag: {
         Args: {
           p_category_id: string
@@ -2790,10 +2775,7 @@ export type Database = {
         }
         Returns: string
       }
-      is_admin_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin_user: { Args: never; Returns: boolean }
       mark_expiration_email_sent: {
         Args: {
           p_email: string
@@ -2804,14 +2786,8 @@ export type Database = {
         }
         Returns: undefined
       }
-      normalize_category_name: {
-        Args: { input_name: string }
-        Returns: string
-      }
-      normalize_text_simple: {
-        Args: { input: string }
-        Returns: string
-      }
+      normalize_category_name: { Args: { input_name: string }; Returns: string }
+      normalize_text_simple: { Args: { input: string }; Returns: string }
       process_card_payment: {
         Args: {
           p_account_id?: string
@@ -2855,10 +2831,7 @@ export type Database = {
         Args: { p_future_payment_id: string }
         Returns: string
       }
-      process_recurring_expenses_daily: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      process_recurring_expenses_daily: { Args: never; Returns: undefined }
       process_withdrawal: {
         Args: {
           p_amount: number
@@ -2870,26 +2843,29 @@ export type Database = {
         }
         Returns: string
       }
-      recalculate_mileage_goals: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      regenerate_future_expenses: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      suggest_category_and_tag: {
-        Args:
-          | { description: string; language?: string }
-          | { description: string; language?: string; p_user_id?: string }
-        Returns: {
-          category_id: string
-          category_name: string
-          confidence: number
-          tag_id: string
-          tag_name: string
-        }[]
-      }
+      recalculate_mileage_goals: { Args: never; Returns: undefined }
+      regenerate_future_expenses: { Args: never; Returns: number }
+      suggest_category_and_tag:
+        | {
+            Args: { description: string; language?: string; p_user_id?: string }
+            Returns: {
+              category_id: string
+              category_name: string
+              confidence: number
+              tag_id: string
+              tag_name: string
+            }[]
+          }
+        | {
+            Args: { description: string; language?: string }
+            Returns: {
+              category_id: string
+              category_name: string
+              confidence: number
+              tag_id: string
+              tag_name: string
+            }[]
+          }
       sync_user_tag_preferences: {
         Args: { p_user_id: string }
         Returns: undefined
