@@ -9,29 +9,31 @@ export const usePhoneRequest = () => {
 
   useEffect(() => {
     const checkPhoneStatus = async () => {
-      if (!user?.id) {
-        setShouldShow(false);
-        return;
-      }
-
-      // Check if user completed or skipped the request
-      const completed = localStorage.getItem(`phone_request_completed_${user.id}`);
-      const skipped = localStorage.getItem(`phone_request_skipped_${user.id}`);
-
-      if (completed || skipped) {
-        setShouldShow(false);
-        return;
-      }
-
-      // Check if user signed in with Google
-      const provider = user.app_metadata?.provider;
-      if (provider !== 'google') {
-        setShouldShow(false);
-        return;
-      }
-
-      // Check if user has phone number in profile
       try {
+        if (!user?.id) {
+          setShouldShow(false);
+          return;
+        }
+
+        // Check if user completed or skipped the request
+        const completed = localStorage.getItem(`phone_request_completed_${user.id}`);
+        const skipped = localStorage.getItem(`phone_request_skipped_${user.id}`);
+
+        if (completed || skipped) {
+          setShouldShow(false);
+          return;
+        }
+
+        // Check if user signed in with Google by checking identities
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        const isGoogleUser = authUser?.identities?.some(identity => identity.provider === 'google');
+        
+        if (!isGoogleUser) {
+          setShouldShow(false);
+          return;
+        }
+
+        // Check if user has phone number in profile
         const { data: profile } = await supabase
           .from('profiles')
           .select('phone_number')
