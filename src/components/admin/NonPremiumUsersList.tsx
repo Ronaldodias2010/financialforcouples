@@ -395,14 +395,14 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                     </td>
                     <td className="p-4 align-middle">
                       <div className="text-sm">
-                        {user.created_at ? new Date(user.created_at).toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US', {
+                        {user.created_at && typeof user.created_at === 'string' ? new Date(user.created_at).toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US', {
                           day: '2-digit',
                           month: '2-digit',
                           year: 'numeric'
                         }) : 'N/A'}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {user.created_at ? new Date(user.created_at).toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', {
+                        {user.created_at && typeof user.created_at === 'string' ? new Date(user.created_at).toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', {
                           hour: '2-digit',
                           minute: '2-digit'
                         }) : ''}

@@ -127,11 +127,8 @@ const container = {
 };
 
 const header = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  textAlign: 'center' as const,
   marginBottom: '32px',
-  gap: '16px',
 };
 
 const logo = {
