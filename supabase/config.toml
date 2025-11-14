@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.process-installments]
 verify_jwt = false
+
+[functions.ensure-profile]
+verify_jwt = true

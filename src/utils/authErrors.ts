@@ -41,6 +41,16 @@ const errorTranslations: Record<string, ErrorTranslation> = {
     pt: 'Senha muito fraca. Use pelo menos 6 caracteres com letras maiúsculas, minúsculas e números.',
     en: 'Weak password. Use at least 6 characters with uppercase, lowercase letters and numbers.',
     es: 'Contraseña débil. Use al menos 6 caracteres con mayúsculas, minúsculas y números.'
+  },
+  'Profile creation failed': {
+    pt: 'Erro ao criar perfil de usuário. Por favor, tente novamente.',
+    en: 'Failed to create user profile. Please try again.',
+    es: 'Error al crear el perfil de usuario. Por favor, inténtelo de nuevo.'
+  },
+  'Phone number required': {
+    pt: 'Número de telefone necessário para continuar',
+    en: 'Phone number required to continue',
+    es: 'Se requiere número de teléfono para continuar'
   }
 };
 
