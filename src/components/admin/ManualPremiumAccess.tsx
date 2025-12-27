@@ -36,7 +36,7 @@ const texts = {
     active: "Active",
     expired: "Expired",
     revoked: "Revoked",
-    maxDays: "Maximum 90 days from start date",
+    maxDays: "Maximum 365 days from start date",
     accessGranted: "Premium access granted successfully",
     accessRevoked: "Premium access revoked successfully",
     generated: "Generated",
@@ -61,7 +61,7 @@ const texts = {
     active: "Ativo",
     expired: "Expirado",
     revoked: "Revogado",
-    maxDays: "Máximo de 90 dias a partir da data de início",
+    maxDays: "Máximo de 365 dias a partir da data de início",
     accessGranted: "Acesso premium concedido com sucesso",
     accessRevoked: "Acesso premium revogado com sucesso",
     generated: "Gerada",
@@ -78,11 +78,11 @@ const manualAccessSchema = z.object({
   const start = new Date(data.startDate);
   const end = new Date(data.endDate);
   const maxDate = new Date(start);
-  maxDate.setDate(maxDate.getDate() + 90);
+  maxDate.setDate(maxDate.getDate() + 365);
   
   return end > start && end <= maxDate;
 }, {
-  message: "End date must be after start date and within 90 days",
+  message: "End date must be after start date and within 365 days",
   path: ["endDate"],
 });
 
