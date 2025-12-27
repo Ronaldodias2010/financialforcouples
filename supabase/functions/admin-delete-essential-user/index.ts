@@ -124,12 +124,17 @@ serve(async (req) => {
       .eq('user_id', userId);
 
     // 7. Delete investments and related
-    await supabaseClient
-      .from('investment_performance')
-      .delete()
-      .in('investment_id', 
-        supabaseClient.from('investments').select('id').eq('user_id', userId)
-      );
+    const { data: investmentIds } = await supabaseClient
+      .from('investments')
+      .select('id')
+      .eq('user_id', userId);
+    
+    if (investmentIds && investmentIds.length > 0) {
+      await supabaseClient
+        .from('investment_performance')
+        .delete()
+        .in('investment_id', investmentIds.map(i => i.id));
+    }
 
     await supabaseClient
       .from('investments')
