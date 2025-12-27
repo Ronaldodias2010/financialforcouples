@@ -21,16 +21,16 @@ interface ConfirmationEmailRequest {
 }
 
 // Generate HTML email template
-const generateEmailHtml = (userName: string, loginUrl: string, language: 'pt' | 'en'): string => {
+const generateEmailHtml = (userName: string, confirmUrl: string, language: 'pt' | 'en'): string => {
   const logoUrl = "https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
   
   const texts = {
     pt: {
-      title: 'Bem-vindo ao Couples Financials!',
-      subtitle: 'Sua conta foi confirmada com sucesso',
+      title: 'Confirme seu email',
+      subtitle: 'Clique no botão abaixo para confirmar',
       greeting: `Olá ${userName}!`,
-      message: 'Sua conta está pronta! Clique no botão abaixo para acessar a plataforma e começar a gerenciar suas finanças em casal.',
-      button: 'Acessar Plataforma',
+      message: 'Obrigado por se cadastrar no Couples Financials! Clique no botão abaixo para confirmar seu email e ativar sua conta.',
+      button: 'Confirmar Email',
       features: [
         '📊 Controle completo das finanças do casal',
         '💳 Gestão de cartões e contas',
@@ -40,11 +40,11 @@ const generateEmailHtml = (userName: string, loginUrl: string, language: 'pt' | 
       footer: '© 2024 Couples Financials. Todos os direitos reservados.'
     },
     en: {
-      title: 'Welcome to Couples Financials!',
-      subtitle: 'Your account has been confirmed successfully',
+      title: 'Confirm your email',
+      subtitle: 'Click the button below to confirm',
       greeting: `Hello ${userName}!`,
-      message: 'Your account is ready! Click the button below to access the platform and start managing your finances as a couple.',
-      button: 'Access Platform',
+      message: 'Thank you for signing up for Couples Financials! Click the button below to confirm your email and activate your account.',
+      button: 'Confirm Email',
       features: [
         '📊 Complete control of couple finances',
         '💳 Card and account management',
@@ -90,7 +90,7 @@ const generateEmailHtml = (userName: string, loginUrl: string, language: 'pt' | 
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center" style="padding: 16px 0 32px;">
-                    <a href="${loginUrl}" target="_blank" style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
+                    <a href="${confirmUrl}" target="_blank" style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
                   </td>
                 </tr>
               </table>
@@ -148,10 +148,36 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     const userName = userProfile?.display_name || userEmail.split('@')[0];
-    const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '')}.lovableproject.com/app`;
     const lang = language === 'en' ? 'en' : 'pt';
+    const siteUrl = 'https://couplesfinancials.com';
+    const redirectTo = `${siteUrl}/email-confirmation?lang=${lang}`;
 
-    const emailHtml = generateEmailHtml(userName, loginUrl, lang);
+    // Generate a real confirmation link using Supabase Admin API
+    console.log(`Generating confirmation link for ${userEmail}...`);
+    
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'signup',
+      email: userEmail,
+      options: {
+        redirectTo: redirectTo
+      }
+    });
+
+    if (linkError) {
+      console.error('Error generating confirmation link:', linkError);
+      throw new Error(`Failed to generate confirmation link: ${linkError.message}`);
+    }
+
+    const confirmUrl = linkData.properties?.action_link;
+    
+    if (!confirmUrl) {
+      console.error('No action_link returned from generateLink');
+      throw new Error('Failed to generate confirmation URL');
+    }
+
+    console.log(`Generated confirmation URL for ${userEmail}`);
+
+    const emailHtml = generateEmailHtml(userName, confirmUrl, lang);
 
     console.log(`Sending confirmation email to ${userEmail}`);
     
@@ -159,14 +185,18 @@ const handler = async (req: Request): Promise<Response> => {
       from: "Couples Financials <noreply@couplesfinancials.com>",
       to: [userEmail],
       subject: lang === 'en' 
-        ? "🎉 Welcome to Couples Financials! Account confirmed successfully"
-        : "🎉 Bem-vindo ao Couples Financials! Sua conta foi confirmada com sucesso",
+        ? "🎉 Confirm your email - Couples Financials"
+        : "🎉 Confirme seu email - Couples Financials",
       html: emailHtml,
     });
 
     console.log("Confirmation email sent successfully:", JSON.stringify(emailResponse));
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ 
+      success: true,
+      email_id: emailResponse.id,
+      message: `Confirmation email sent to ${userEmail}`
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });

@@ -197,7 +197,8 @@ const handler = async (req: Request): Promise<Response> => {
                         user.user_metadata?.name || 
                         user.email.split('@')[0];
 
-        const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
+        // Build the real Supabase verification URL that will actually confirm the email
+        const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
         
         const action = (email_action_type || '').toLowerCase();
         const isMagicLink = action.includes('magic') || action === 'email_link';
@@ -217,6 +218,7 @@ const handler = async (req: Request): Promise<Response> => {
               : '🎉 Confirme seu endereço de email - Couples Financials');
 
         console.log(`Sending email to ${user.email} with subject: ${subject}`);
+        console.log(`Confirmation URL (type: ${email_action_type}): ${confirmUrl.substring(0, 100)}...`);
         
         const emailResponse = await resend.emails.send({
           from: "Couples Financials <noreply@couplesfinancials.com>",
