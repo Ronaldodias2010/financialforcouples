@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.ensure-profile]
 verify_jwt = true
+
+[functions.cleanup-rate-limits]
+verify_jwt = false
