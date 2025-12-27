@@ -1,13 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from 'https://esm.sh/resend@2.0.0';
-import { renderAsync } from 'https://esm.sh/@react-email/components@0.0.22';
-import React from 'https://esm.sh/react@18.3.1';
-import { EmailConfirmationPT } from './_templates/email-confirmation-pt.tsx';
-import { EmailConfirmationEN } from './_templates/email-confirmation-en.tsx';
-import { EmailConfirmationES } from './_templates/email-confirmation-es.tsx';
-import { MagicLinkPT } from './_templates/email-magiclink-pt.tsx';
-import { MagicLinkEN } from './_templates/email-magiclink-en.tsx';
-import { MagicLinkES } from './_templates/email-magiclink-es.tsx';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -37,14 +29,138 @@ interface WebhookPayload {
   };
 }
 
+// Generate HTML email template
+const generateEmailHtml = (
+  userName: string,
+  confirmUrl: string,
+  isMagicLink: boolean,
+  language: 'pt' | 'en' | 'es'
+): string => {
+  const logoUrl = "https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
+  
+  const texts = {
+    pt: {
+      title: isMagicLink ? 'Seu email foi verificado!' : 'Confirme seu email',
+      greeting: `Olá ${userName}!`,
+      message: isMagicLink 
+        ? 'Clique no botão abaixo para continuar com segurança para o pagamento.'
+        : 'Clique no botão abaixo para confirmar seu endereço de email e acessar a plataforma.',
+      button: isMagicLink ? 'Continuar para pagamento' : 'Confirmar Email',
+      footer: 'Se você não solicitou isso, pode ignorar este email com segurança.',
+      features: [
+        '📊 Controle completo das finanças do casal',
+        '💳 Gestão de cartões e contas',
+        '📈 Relatórios e insights financeiros',
+        '🎯 Metas e investimentos compartilhados'
+      ]
+    },
+    en: {
+      title: isMagicLink ? 'Your email has been verified!' : 'Confirm your email',
+      greeting: `Hello ${userName}!`,
+      message: isMagicLink 
+        ? 'Click the button below to continue securely to payment.'
+        : 'Click the button below to confirm your email address and access the platform.',
+      button: isMagicLink ? 'Continue to payment' : 'Confirm Email',
+      footer: 'If you didn\'t request this, you can safely ignore this email.',
+      features: [
+        '📊 Complete control of couple finances',
+        '💳 Card and account management',
+        '📈 Financial reports and insights',
+        '🎯 Shared goals and investments'
+      ]
+    },
+    es: {
+      title: isMagicLink ? '¡Tu email ha sido verificado!' : 'Confirma tu email',
+      greeting: `¡Hola ${userName}!`,
+      message: isMagicLink 
+        ? 'Haz clic en el botón a continuación para continuar de forma segura al pago.'
+        : 'Haz clic en el botón a continuación para confirmar tu dirección de email y acceder a la plataforma.',
+      button: isMagicLink ? 'Continuar al pago' : 'Confirmar Email',
+      footer: 'Si no solicitaste esto, puedes ignorar este email con seguridad.',
+      features: [
+        '📊 Control completo de las finanzas de la pareja',
+        '💳 Gestión de tarjetas y cuentas',
+        '📈 Informes e insights financieros',
+        '🎯 Metas e inversiones compartidas'
+      ]
+    }
+  };
+
+  const t = texts[language];
+
+  return `
+<!DOCTYPE html>
+<html lang="${language}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${t.title}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #1a1a2e; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #1a1a2e; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #16213e; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px;">
+              <img src="${logoUrl}" alt="Couples Financials" width="80" height="80" style="border-radius: 8px; display: block;">
+              <h1 style="color: #e94560; font-size: 28px; font-weight: bold; margin: 20px 0 0;">Couples Financials</h1>
+            </td>
+          </tr>
+          
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 20px 40px;">
+              <h2 style="color: #ffffff; font-size: 24px; font-weight: 600; text-align: center; margin: 0 0 24px;">${t.title}</h2>
+              <p style="color: #e2e8f0; font-size: 16px; line-height: 24px; margin: 0 0 16px;">${t.greeting}</p>
+              <p style="color: #e2e8f0; font-size: 16px; line-height: 24px; margin: 0 0 24px;">${t.message}</p>
+              
+              <!-- Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="padding: 16px 0 32px;">
+                    <a href="${confirmUrl}" target="_blank" style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
+                  </td>
+                </tr>
+              </table>
+              
+              ${!isMagicLink ? `
+              <!-- Features -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: rgba(233, 69, 96, 0.1); border-radius: 8px; padding: 20px;">
+                <tr>
+                  <td style="padding: 16px;">
+                    ${t.features.map(feature => `<p style="color: #e2e8f0; font-size: 14px; line-height: 20px; margin: 8px 0;">${feature}</p>`).join('')}
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px 40px 40px;">
+              <hr style="border: none; border-top: 1px solid #334155; margin: 0 0 20px;">
+              <p style="color: #94a3b8; font-size: 14px; line-height: 20px; text-align: center; margin: 0 0 16px;">${t.footer}</p>
+              <p style="color: #94a3b8; font-size: 14px; line-height: 20px; text-align: center; margin: 0;">© 2024 Couples Financials. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+};
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Read body fast
     const requestText = await req.text();
     if (!requestText || requestText.trim() === '') {
       console.log('Empty request body received');
@@ -55,27 +171,23 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const payload: WebhookPayload = JSON.parse(requestText);
-    console.log('Webhook payload received (ack fast):', JSON.stringify({ user: payload.user.email }, null, 2));
+    console.log('Webhook payload received:', JSON.stringify({ user: payload.user.email }, null, 2));
 
-    // Start background email render/send to avoid 5s timeout
+    // Process email in background to avoid timeout
     (async () => {
       try {
         const { user, email_data } = payload;
         const { token_hash, redirect_to, email_action_type } = email_data;
 
-        // Detect language from redirect_to URL or default to Portuguese
+        // Detect language from redirect_to URL
         const detectLanguage = (redirectTo: string): 'pt' | 'en' | 'es' => {
-          const url = new URL(redirectTo);
-          const hostname = url.hostname;
-          
-          // Check for specific language domains or paths
-          if (hostname.includes('couples-financials') || hostname.includes('lovableproject')) {
-            // For now, use Portuguese as default for our main domains
-            // Later we can detect language from URL params or user agent
-            return 'pt';
-          }
-          
-          // Default fallback
+          try {
+            const url = new URL(redirectTo);
+            const langParam = url.searchParams.get('lang');
+            if (langParam === 'en' || langParam === 'es' || langParam === 'pt') {
+              return langParam;
+            }
+          } catch {}
           return 'pt';
         };
 
@@ -90,58 +202,7 @@ const handler = async (req: Request): Promise<Response> => {
         const action = (email_action_type || '').toLowerCase();
         const isMagicLink = action.includes('magic') || action === 'email_link';
 
-        const EmailComponent = isMagicLink
-          ? (language === 'en' ? MagicLinkEN : language === 'es' ? MagicLinkES : MagicLinkPT)
-          : (language === 'en' ? EmailConfirmationEN : language === 'es' ? EmailConfirmationES : EmailConfirmationPT);
-
-        let emailHtml: string;
-        
-        try {
-          console.log('Rendering email template...');
-          emailHtml = await renderAsync(
-            React.createElement(EmailComponent, {
-              userEmail: userName,
-              loginUrl: confirmUrl
-            })
-          );
-          console.log('Email template rendered successfully');
-        } catch (renderError) {
-          console.error('Error rendering email template:', renderError);
-          // Fallback to simple HTML email if React template fails
-          emailHtml = `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta charset="utf-8">
-                <style>
-                  body { font-family: Arial, sans-serif; background-color: #1a1a2e; padding: 20px; }
-                  .container { background-color: #16213e; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 12px; }
-                  .logo { text-align: center; margin-bottom: 32px; }
-                  h1 { color: #e94560; text-align: center; }
-                  h2 { color: #ffffff; text-align: center; }
-                  p { color: #e2e8f0; line-height: 1.6; }
-                  .button { display: inline-block; background-color: #22c55e; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
-                  .footer { color: #94a3b8; font-size: 14px; text-align: center; margin-top: 32px; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <div class="logo">
-                    <img src="https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png" alt="Couples Financials" width="80" height="80">
-                  </div>
-                  <h1>Couples Financials</h1>
-                  <h2>${isMagicLink ? (language === 'pt' ? 'Seu email foi verificado!' : language === 'es' ? '¡Tu email ha sido verificado!' : 'Your email has been verified!') : (language === 'pt' ? 'Confirme seu email' : language === 'es' ? 'Confirma tu email' : 'Confirm your email')}</h2>
-                  <p>${language === 'pt' ? `Olá ${userName}!` : language === 'es' ? `¡Hola ${userName}!` : `Hello ${userName}!`}</p>
-                  <p style="text-align: center;">
-                    <a href="${confirmUrl}" class="button">${isMagicLink ? (language === 'pt' ? 'Continuar' : language === 'es' ? 'Continuar' : 'Continue') : (language === 'pt' ? 'Confirmar Email' : language === 'es' ? 'Confirmar Email' : 'Confirm Email')}</a>
-                  </p>
-                  <p class="footer">© 2024 Couples Financials</p>
-                </div>
-              </body>
-            </html>
-          `;
-          console.log('Using fallback HTML email');
-        }
+        const emailHtml = generateEmailHtml(userName, confirmUrl, isMagicLink, language);
 
         const subject = isMagicLink
           ? (language === 'en'
@@ -155,6 +216,8 @@ const handler = async (req: Request): Promise<Response> => {
               ? '🎉 Confirma tu dirección de email - Couples Financials'
               : '🎉 Confirme seu endereço de email - Couples Financials');
 
+        console.log(`Sending email to ${user.email} with subject: ${subject}`);
+        
         const emailResponse = await resend.emails.send({
           from: "Couples Financials <noreply@couplesfinancials.com>",
           to: [user.email],
@@ -162,28 +225,21 @@ const handler = async (req: Request): Promise<Response> => {
           html: emailHtml,
         });
 
-        console.log("Confirmation email sent successfully:", emailResponse);
+        console.log("Email sent successfully:", JSON.stringify(emailResponse));
       } catch (bgErr) {
-        console.error('Error sending confirmation email in background:', bgErr);
+        console.error('Error sending email in background:', bgErr);
       }
     })();
 
-    // Immediate ACK to prevent timeout
     return new Response(JSON.stringify({ accepted: true }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error in send-confirmation-webhook function:", error);
+    console.error("Error in send-confirmation-webhook:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 };
