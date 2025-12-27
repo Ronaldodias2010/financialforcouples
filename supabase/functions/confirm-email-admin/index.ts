@@ -11,8 +11,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface ConfirmEmailRequest {
-  email: string;
+interface AdminRequest {
+  email?: string;
+  userId?: string;
+  newPassword?: string;
+  action?: 'confirm_email' | 'reset_password';
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,52 +24,77 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email }: ConfirmEmailRequest = await req.json();
-    console.log(`Confirming email for: ${email}`);
+    const { email, userId, newPassword, action }: AdminRequest = await req.json();
+    console.log(`Admin action request - email: ${email}, userId: ${userId}, action: ${action || 'auto'}`);
 
-    if (!email) {
-      throw new Error('Email is required');
+    let targetUserId = userId;
+
+    // If email is provided, find user by email
+    if (email && !userId) {
+      const { data: usersData, error: listError } = await supabase.auth.admin.listUsers();
+      
+      if (listError) {
+        console.error('Error listing users:', listError);
+        throw new Error(`Failed to list users: ${listError.message}`);
+      }
+
+      const targetUser = usersData?.users?.find(u => u.email === email);
+      
+      if (!targetUser) {
+        console.error(`User with email ${email} not found`);
+        throw new Error(`User with email ${email} not found`);
+      }
+
+      targetUserId = targetUser.id;
+      console.log(`Found user with ID: ${targetUserId}`);
     }
 
-    // Find user by email
-    const { data: usersData, error: listError } = await supabase.auth.admin.listUsers();
+    if (!targetUserId) {
+      throw new Error('Email or userId is required');
+    }
+
+    // Build update object
+    const updateData: any = {};
     
-    if (listError) {
-      console.error('Error listing users:', listError);
-      throw new Error(`Failed to list users: ${listError.message}`);
+    // If password reset is requested
+    if (newPassword) {
+      updateData.password = newPassword;
+      console.log(`Will reset password for user ${targetUserId}`);
     }
-
-    const targetUser = usersData?.users?.find(u => u.email === email);
     
-    if (!targetUser) {
-      console.error(`User with email ${email} not found`);
-      throw new Error(`User with email ${email} not found`);
+    // If email confirmation is requested (or no specific action)
+    if (action === 'confirm_email' || (!action && !newPassword)) {
+      updateData.email_confirm = true;
+      console.log(`Will confirm email for user ${targetUserId}`);
     }
 
-    console.log(`Found user with ID: ${targetUser.id}, current email_confirmed_at: ${targetUser.email_confirmed_at}`);
+    // If we have something to update
+    if (Object.keys(updateData).length > 0) {
+      const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
+        targetUserId,
+        updateData
+      );
 
-    // Confirm the user's email using admin API
-    const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
-      targetUser.id,
-      { email_confirm: true }
-    );
+      if (updateError) {
+        console.error('Error updating user:', updateError);
+        throw new Error(`Failed to update user: ${updateError.message}`);
+      }
 
-    if (updateError) {
-      console.error('Error confirming email:', updateError);
-      throw new Error(`Failed to confirm email: ${updateError.message}`);
+      console.log(`User ${targetUserId} updated successfully`);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `User updated successfully`,
+          user_id: targetUserId,
+          password_updated: !!newPassword,
+          email_confirmed: updateData.email_confirm || false
+        }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
-    console.log(`Email confirmed successfully for ${email}. New email_confirmed_at: ${updatedUser?.user?.email_confirmed_at}`);
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Email ${email} confirmed successfully`,
-        user_id: targetUser.id,
-        email_confirmed_at: updatedUser?.user?.email_confirmed_at
-      }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    throw new Error('No action specified');
   } catch (error: any) {
     console.error("Error in confirm-email-admin:", error);
     return new Response(
