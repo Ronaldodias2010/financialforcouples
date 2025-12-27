@@ -25,7 +25,8 @@ const premiumFeatures = [
   'customGoals',
   'advancedAnalytics',
   'prioritySupport',
-  'aiRecommendations' // AI Recommendations should be premium only
+  'aiRecommendations', // AI Recommendations should be premium only
+  'converter' // Statement converter should be premium only
 ];
 
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
