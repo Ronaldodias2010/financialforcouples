@@ -15,6 +15,9 @@ interface User {
   failure_date?: string;
   failure_reason?: string;
   created_at?: string;
+  canceled_at?: string;
+  user_type?: 'payer' | 'partner';
+  source?: 'payment_failure' | 'subscription_overdue';
 }
 
 interface UserListModalProps {
@@ -88,12 +91,13 @@ export const UserListModal = ({ isOpen, onClose, type, users, loading }: UserLis
                   <TableHead>Email</TableHead>
                   {type === 'active' && (
                     <>
+                      <TableHead>{language === 'pt' ? 'Tipo' : language === 'es' ? 'Tipo' : 'Type'}</TableHead>
                       <TableHead>{language === 'pt' ? 'Plano' : language === 'es' ? 'Plan' : 'Plan'}</TableHead>
                       <TableHead>{language === 'pt' ? 'Expira em' : language === 'es' ? 'Expira en' : 'Expires'}</TableHead>
                     </>
                   )}
                   {type === 'canceled' && (
-                    <TableHead>{language === 'pt' ? 'Data Cancelamento' : language === 'es' ? 'Fecha Cancelación' : 'Cancellation Date'}</TableHead>
+                    <TableHead>{language === 'pt' ? 'Cancelado há' : language === 'es' ? 'Cancelado hace' : 'Canceled Since'}</TableHead>
                   )}
                   {type === 'failed' && (
                     <>
@@ -114,15 +118,28 @@ export const UserListModal = ({ isOpen, onClose, type, users, loading }: UserLis
                     {type === 'active' && (
                       <>
                         <TableCell>
+                          {user.user_type === 'payer' ? (
+                            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                              {language === 'pt' ? 'Pagante' : language === 'es' ? 'Pagador' : 'Payer'}
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                              {language === 'pt' ? 'Parceiro' : language === 'es' ? 'Socio' : 'Partner'}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="secondary" className="border-blue-500 bg-blue-100 text-blue-800 dark:border-blue-400 dark:bg-blue-900/30 dark:text-blue-300">
-                            {user.subscription_tier || 'premium'}
+                            {user.subscription_tier === 'partner' 
+                              ? (language === 'pt' ? 'Via parceiro' : language === 'es' ? 'Vía socio' : 'Via partner')
+                              : (user.subscription_tier || 'premium')}
                           </Badge>
                         </TableCell>
-                        <TableCell>{formatDate(user.subscription_end)}</TableCell>
+                        <TableCell>{user.subscription_end ? formatDate(user.subscription_end) : '-'}</TableCell>
                       </>
                     )}
                     {type === 'canceled' && (
-                      <TableCell>{formatDate(user.subscription_end || user.created_at)}</TableCell>
+                      <TableCell>{formatDate(user.canceled_at)}</TableCell>
                     )}
                     {type === 'failed' && (
                       <>
