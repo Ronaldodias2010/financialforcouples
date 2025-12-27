@@ -7,6 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Users, Trash2, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface UserActivityData {
+  status: 'pending' | 'active' | 'inactive';
+  days_inactive: number;
+  last_activity_at: string | null;
+}
+
 interface UserData {
   email: string;
   display_name: string;
@@ -16,6 +22,7 @@ interface UserData {
   isCoupled?: boolean;
   partnerName?: string;
   created_at?: string;
+  activity?: UserActivityData;
 }
 
 interface NonPremiumUsersListProps {
@@ -39,11 +46,13 @@ const text = {
     userName: 'User Name',
     email: 'Email',
     status: 'Status',
+    activityStatus: 'Activity',
     plan: 'Plan',
     createdAt: 'Created At',
     actions: 'Actions',
     active: 'Active',
     inactive: 'Inactive',
+    pending: 'Pending',
     coupled: 'Coupled',
     deleteUser: 'Delete User',
     deleteSuccess: 'User deleted successfully',
@@ -52,7 +61,9 @@ const text = {
     createdNewest: 'Newest first',
     createdOldest: 'Oldest first',
     nameAZ: 'Name A-Z',
-    nameZA: 'Name Z-A'
+    nameZA: 'Name Z-A',
+    daysInactive: 'days inactive',
+    neverAccessed: 'Never accessed'
   },
   pt: {
     title: 'Lista de Usuários Essential',
@@ -68,11 +79,13 @@ const text = {
     userName: 'Nome de Usuário',
     email: 'Email',
     status: 'Status',
+    activityStatus: 'Atividade',
     plan: 'Plano',
     createdAt: 'Data de Criação',
     actions: 'Ações',
     active: 'Ativo',
     inactive: 'Inativo',
+    pending: 'Pendente',
     coupled: 'Casal',
     deleteUser: 'Excluir Usuário',
     deleteSuccess: 'Usuário excluído com sucesso',
@@ -81,7 +94,9 @@ const text = {
     createdNewest: 'Mais recentes',
     createdOldest: 'Mais antigos',
     nameAZ: 'Nome A-Z',
-    nameZA: 'Nome Z-A'
+    nameZA: 'Nome Z-A',
+    daysInactive: 'dias inativo',
+    neverAccessed: 'Nunca acessou'
   }
 };
 
@@ -171,9 +186,27 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
 
       console.log('👤 Profiles data:', profilesData);
 
+      // Fetch activity tracking data for all users
+      let activityData: any[] = [];
+      if (userIds.length > 0) {
+        const { data: fetchedActivity, error: activityError } = await supabase
+          .from('user_activity_tracking')
+          .select('user_id, status, days_inactive, last_activity_at')
+          .in('user_id', userIds);
+
+        if (activityError) {
+          console.error('❌ Error fetching activity data:', activityError);
+        } else {
+          activityData = fetchedActivity || [];
+        }
+      }
+
+      console.log('📊 Activity data:', activityData);
+
       // Combinar dados dos subscribers com profiles e buscar casais
       const usersWithNames = await Promise.all(filteredSubscribers?.map(async (subscriber) => {
         const profile = profilesData?.find(p => p.user_id === subscriber.user_id);
+        const activity = activityData?.find(a => a.user_id === subscriber.user_id);
         
         // Verificar se o usuário tem casal (abordagem simplificada)
         const { data: coupleData } = await supabase
@@ -210,7 +243,12 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
           subscription_tier: subscriber.subscription_tier || 'essential',
           isCoupled,
           partnerName,
-          created_at: profile?.created_at
+          created_at: profile?.created_at,
+          activity: activity ? {
+            status: activity.status as 'pending' | 'active' | 'inactive',
+            days_inactive: activity.days_inactive || 0,
+            last_activity_at: activity.last_activity_at
+          } : undefined
         };
       }) || []);
 
@@ -398,7 +436,7 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                     {t.email}
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    {t.status}
+                    {t.activityStatus}
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     {t.plan}
@@ -439,9 +477,31 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                       <div className="text-sm">{user.email}</div>
                     </td>
                     <td className="p-4 align-middle">
-                      <Badge variant={user.subscribed ? "default" : "secondary"}>
-                        {user.subscribed ? t.active : t.inactive}
-                      </Badge>
+                      {user.activity ? (
+                        <div className="flex flex-col gap-1">
+                          <Badge 
+                            variant={user.activity.status === 'active' ? 'default' : 'secondary'}
+                            className={
+                              user.activity.status === 'active' 
+                                ? 'bg-green-500 text-white' 
+                                : user.activity.status === 'inactive'
+                                ? 'bg-red-500 text-white'
+                                : 'bg-orange-500 text-white'
+                            }
+                          >
+                            {user.activity.status === 'active' ? t.active : user.activity.status === 'inactive' ? t.inactive : t.pending}
+                          </Badge>
+                          {user.activity.status === 'inactive' && user.activity.days_inactive > 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              {user.activity.days_inactive} {t.daysInactive}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <Badge className="bg-orange-500 text-white">
+                          {t.pending}
+                        </Badge>
+                      )}
                     </td>
                     <td className="p-4 align-middle">
                       <Badge variant="outline">

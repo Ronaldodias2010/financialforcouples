@@ -68,6 +68,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
     };
+
+    const trackUserActivity = async (userId: string) => {
+      try {
+        console.log('📊 [AUTH] Registrando atividade do usuário:', userId);
+        const { error } = await supabase.rpc('track_user_activity', { p_user_id: userId });
+        if (error) {
+          console.error('❌ [AUTH] Erro ao registrar atividade:', error);
+        } else {
+          console.log('✅ [AUTH] Atividade registrada com sucesso');
+        }
+      } catch (error) {
+        console.error('❌ [AUTH] Erro em trackUserActivity:', error);
+      }
+    };
     
     const initAuth = async () => {
       try {
@@ -81,9 +95,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.log('✅ Sessão obtida:', session ? 'Logado' : 'Não logado');
           }
           
-          // If user is logged in, ensure profile exists
+          // If user is logged in, ensure profile exists and track activity
           if (session?.user) {
             await ensureProfile(session.user.id);
+            await trackUserActivity(session.user.id);
           }
           
           setSession(session);
@@ -103,10 +118,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (event, session) => {
         console.log('🔄 Mudança de estado auth:', event);
         if (mounted) {
-          // If signed in, ensure profile exists
+          // If signed in, ensure profile exists and track activity
           if (session?.user && event === 'SIGNED_IN') {
             setTimeout(async () => {
               await ensureProfile(session.user.id);
+              await trackUserActivity(session.user.id);
             }, 0);
           }
           

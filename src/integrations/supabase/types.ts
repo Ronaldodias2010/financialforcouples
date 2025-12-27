@@ -2350,6 +2350,48 @@ export type Database = {
           },
         ]
       }
+      user_activity_tracking: {
+        Row: {
+          activity_count: number | null
+          created_at: string | null
+          days_inactive: number | null
+          entered_inactive_funnel_at: string | null
+          first_access_at: string | null
+          id: string
+          last_activity_at: string
+          last_reengagement_email_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_count?: number | null
+          created_at?: string | null
+          days_inactive?: number | null
+          entered_inactive_funnel_at?: string | null
+          first_access_at?: string | null
+          id?: string
+          last_activity_at?: string
+          last_reengagement_email_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_count?: number | null
+          created_at?: string | null
+          days_inactive?: number | null
+          entered_inactive_funnel_at?: string | null
+          first_access_at?: string | null
+          id?: string
+          last_activity_at?: string
+          last_reengagement_email_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_category_tag_exclusions: {
         Row: {
           category_id: string
@@ -2771,6 +2813,19 @@ export type Database = {
           tag_name_pt: string
         }[]
       }
+      get_inactive_users: {
+        Args: never
+        Returns: {
+          days_inactive: number
+          display_name: string
+          email: string
+          entered_inactive_funnel_at: string
+          first_access_at: string
+          is_premium: boolean
+          last_activity_at: string
+          user_id: string
+        }[]
+      }
       get_temp_password_for_invite: {
         Args: { p_record_id: string }
         Returns: string
@@ -2898,6 +2953,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      track_user_activity: { Args: { p_user_id: string }; Returns: undefined }
       update_ai_usage: {
         Args: {
           p_estimated_cost_brl?: number
@@ -2914,6 +2970,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_inactive_users: { Args: never; Returns: number }
       use_referral_code: {
         Args: { p_code: string; p_referred_user_id: string }
         Returns: Json
