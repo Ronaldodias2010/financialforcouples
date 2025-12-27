@@ -2847,7 +2847,7 @@ export type Database = {
       regenerate_future_expenses: { Args: never; Returns: number }
       suggest_category_and_tag:
         | {
-            Args: { description: string; language?: string; p_user_id?: string }
+            Args: { description: string; language?: string }
             Returns: {
               category_id: string
               category_name: string
@@ -2857,7 +2857,7 @@ export type Database = {
             }[]
           }
         | {
-            Args: { description: string; language?: string }
+            Args: { description: string; language?: string; p_user_id?: string }
             Returns: {
               category_id: string
               category_name: string
