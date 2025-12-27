@@ -143,12 +143,14 @@ const handler = async (req: Request): Promise<Response> => {
       totalProcessed += usersExpired.length;
     }
 
-    // Update expired users status
-    console.log('[CHECK-PREMIUM-EXPIRATION] Updating expired users status...');
+    // Update expired users status and downgrade if needed
+    console.log('[CHECK-PREMIUM-EXPIRATION] Running check_manual_premium_expiration to update expired users...');
     const { error: updateError } = await supabase.rpc('check_manual_premium_expiration');
     
     if (updateError) {
       console.error('[CHECK-PREMIUM-EXPIRATION] Error updating expired users:', updateError);
+    } else {
+      console.log('[CHECK-PREMIUM-EXPIRATION] Successfully updated expired users and checked for downgrades');
     }
 
     const summary = {

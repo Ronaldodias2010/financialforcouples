@@ -41,7 +41,8 @@ const texts = {
     accessRevoked: "Premium access revoked successfully",
     generated: "Generated",
     loading: "Processing...",
-    noActiveGrants: "No active access grants found"
+    noActiveGrants: "No active access grants found",
+    allGrants: "Access Grants"
   },
   pt: {
     title: "Conceder Acesso Premium Manual",
@@ -66,7 +67,8 @@ const texts = {
     accessRevoked: "Acesso premium revogado com sucesso",
     generated: "Gerada",
     loading: "Processando...",
-    noActiveGrants: "Nenhum acesso ativo encontrado"
+    noActiveGrants: "Nenhum acesso encontrado",
+    allGrants: "Acessos Concedidos"
   }
 };
 
@@ -149,13 +151,33 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
           status,
           temp_password_hash
         `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
+        .in('status', ['active', 'expired'])
+        .order('end_date', { ascending: false });
 
       if (error) throw error;
       setActiveGrants(data || []);
     } catch (error) {
       console.error('Error fetching active grants:', error);
+    }
+  };
+
+  // Determine display status based on actual dates
+  const getDisplayStatus = (grant: any): 'active' | 'expired' | 'revoked' => {
+    if (grant.status === 'revoked') return 'revoked';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDate = new Date(grant.end_date);
+    endDate.setHours(0, 0, 0, 0);
+    if (endDate < today) return 'expired';
+    return 'active';
+  };
+
+  const getStatusVariant = (status: 'active' | 'expired' | 'revoked') => {
+    switch (status) {
+      case 'active': return 'default';
+      case 'expired': return 'secondary';
+      case 'revoked': return 'destructive';
+      default: return 'secondary';
     }
   };
 
@@ -367,7 +389,7 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            {t.activeAccess}
+            {t.allGrants}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -385,33 +407,38 @@ export const ManualPremiumAccess = ({ language }: ManualPremiumAccessProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {activeGrants.map((grant) => (
-                  <TableRow key={grant.id}>
-                    <TableCell>{grant.email}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {new Date(grant.start_date).toLocaleDateString()} - 
-                        {new Date(grant.end_date).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={grant.status === 'active' ? 'default' : 'secondary'}>
-                        {t[grant.status as keyof typeof t] || grant.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => revokeAccess(grant.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {activeGrants.map((grant) => {
+                  const displayStatus = getDisplayStatus(grant);
+                  return (
+                    <TableRow key={grant.id}>
+                      <TableCell>{grant.email}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(grant.start_date).toLocaleDateString()} - 
+                          {new Date(grant.end_date).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusVariant(displayStatus)}>
+                          {t[displayStatus as keyof typeof t] || displayStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {displayStatus === 'active' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => revokeAccess(grant.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
