@@ -398,35 +398,77 @@ const AdminDashboardContent = () => {
     setModalType('active');
     setModalLoading(true);
     try {
-      const { data: subscribers } = await supabase
+      // 1. Buscar apenas usuários premium PAGANTES (com stripe_customer_id)
+      const { data: payingSubscribers } = await supabase
         .from('subscribers')
         .select('*')
         .eq('subscribed', true)
-        .eq('subscription_tier', 'premium');
+        .eq('subscription_tier', 'premium')
+        .not('stripe_customer_id', 'is', null);
       
-      // Get profiles for display names
-      const userIds = subscribers?.map(s => s.user_id) || [];
+      const payingUserIds = payingSubscribers?.map(s => s.user_id) || [];
+      
+      // 2. Buscar parceiros ativos dos usuários pagantes
+      let partnerUserIds: string[] = [];
+      if (payingUserIds.length > 0) {
+        const { data: couples } = await supabase
+          .from('user_couples')
+          .select('user1_id, user2_id')
+          .eq('status', 'active');
+        
+        couples?.forEach(couple => {
+          if (payingUserIds.includes(couple.user1_id)) {
+            partnerUserIds.push(couple.user2_id);
+          }
+          if (payingUserIds.includes(couple.user2_id)) {
+            partnerUserIds.push(couple.user1_id);
+          }
+        });
+      }
+      
+      // 3. Buscar profiles de todos (pagantes + parceiros)
+      const allUserIds = [...new Set([...payingUserIds, ...partnerUserIds])];
       let profiles: any[] = [];
-      if (userIds.length > 0) {
+      if (allUserIds.length > 0) {
         const { data } = await supabase
           .from('profiles')
           .select('user_id, display_name')
-          .in('user_id', userIds);
+          .in('user_id', allUserIds);
         profiles = data || [];
       }
       
-      const formattedUsers = (subscribers || []).map(sub => {
+      // 4. Formatar usuários pagantes
+      const payingUsers = (payingSubscribers || []).map(sub => {
         const profile = profiles.find(p => p.user_id === sub.user_id);
         return {
           id: sub.user_id,
           email: sub.email,
           display_name: profile?.display_name,
           subscription_tier: sub.subscription_tier,
-          subscription_end: sub.subscription_end
+          subscription_end: sub.subscription_end,
+          user_type: 'payer' as const
         };
       });
       
-      setModalUsers(formattedUsers);
+      // 5. Buscar dados dos parceiros
+      let partnerUsers: any[] = [];
+      if (partnerUserIds.length > 0) {
+        const { data: partnerProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name')
+          .in('user_id', partnerUserIds);
+        
+        partnerUsers = (partnerProfiles || []).map(p => ({
+          id: p.user_id,
+          email: '-',
+          display_name: p.display_name,
+          subscription_tier: 'partner',
+          subscription_end: null,
+          user_type: 'partner' as const
+        }));
+      }
+      
+      setModalUsers([...payingUsers, ...partnerUsers]);
     } catch (error) {
       console.error('Error fetching active users:', error);
     } finally {
@@ -438,10 +480,16 @@ const AdminDashboardContent = () => {
     setModalType('canceled');
     setModalLoading(true);
     try {
+      // Buscar usuários que JÁ FORAM pagantes (stripe_customer_id) mas cancelaram há mais de 2 meses
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+      
       const { data: subscribers } = await supabase
         .from('subscribers')
         .select('*')
-        .eq('subscribed', false);
+        .eq('subscribed', false)
+        .not('stripe_customer_id', 'is', null)
+        .lt('updated_at', twoMonthsAgo.toISOString());
       
       // Get profiles for display names
       const userIds = subscribers?.map(s => s.user_id) || [];
@@ -461,7 +509,7 @@ const AdminDashboardContent = () => {
           email: sub.email,
           display_name: profile?.display_name,
           subscription_end: sub.subscription_end,
-          created_at: sub.updated_at
+          canceled_at: sub.updated_at
         };
       });
       
@@ -477,21 +525,56 @@ const AdminDashboardContent = () => {
     setModalType('failed');
     setModalLoading(true);
     try {
-      const { data: failures } = await supabase
+      // 1. Buscar da tabela payment_failures (não resolvidos)
+      const { data: localFailures } = await supabase
         .from('payment_failures')
         .select('*')
         .neq('status', 'resolved')
         .order('failure_date', { ascending: false });
       
-      const formattedUsers = (failures || []).map(failure => ({
+      // 2. Buscar usuários premium com subscription_end vencido neste mês (não renovaram)
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      const now = new Date();
+      
+      const { data: overdueUsers } = await supabase
+        .from('subscribers')
+        .select('*')
+        .eq('subscribed', true)
+        .eq('subscription_tier', 'premium')
+        .not('stripe_customer_id', 'is', null)
+        .lt('subscription_end', now.toISOString())
+        .gte('subscription_end', startOfMonth.toISOString());
+      
+      // Formatar falhas de pagamento
+      const failureUsers = (localFailures || []).map(failure => ({
         id: failure.id,
         email: failure.email,
         failure_date: failure.failure_date,
         failure_reason: failure.failure_reason,
-        status: failure.status
+        status: failure.status,
+        source: 'payment_failure' as const
       }));
       
-      setModalUsers(formattedUsers);
+      // Formatar usuários com assinatura vencida neste mês
+      const overdueFormattedUsers = (overdueUsers || []).map(sub => ({
+        id: sub.user_id,
+        email: sub.email,
+        failure_date: sub.subscription_end,
+        failure_reason: language === 'pt' ? 'Assinatura vencida' : language === 'es' ? 'Suscripción vencida' : 'Subscription expired',
+        status: 'overdue',
+        source: 'subscription_overdue' as const
+      }));
+      
+      // Combinar e remover duplicados por email
+      const allFailures = [...failureUsers, ...overdueFormattedUsers];
+      const uniqueFailures = allFailures.filter((failure, index, self) =>
+        index === self.findIndex(f => f.email === failure.email)
+      );
+      
+      setModalUsers(uniqueFailures);
     } catch (error) {
       console.error('Error fetching failed payments:', error);
     } finally {
