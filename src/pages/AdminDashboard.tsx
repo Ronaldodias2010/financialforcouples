@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck, FileSpreadsheet, FileText, Gift } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck, FileSpreadsheet, FileText, Gift, Clock } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { toast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
@@ -22,6 +22,7 @@ import { AIControlSection } from '@/components/admin/AIControlSection';
 import { PartnershipApplicationsManager } from '@/components/admin/PartnershipApplicationsManager';
 import { PromoCodesManager } from '@/components/admin/PromoCodesManager';
 import { UserListModal } from '@/components/admin/UserListModal';
+import { InactiveUsersSection } from '@/components/admin/InactiveUsersSection';
 
 
 interface SubscriptionMetrics {
@@ -1265,40 +1266,59 @@ const AdminDashboardContent = () => {
             </TabsContent>
 
             <TabsContent value="alerts">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('admin.alerts.title')}</CardTitle>
-                  <CardDescription>{t('admin.alerts.subtitle')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {alerts.map((alert) => (
-                      <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{alert.date}</span>
-                            <Badge variant="outline">{alert.user_email}</Badge>
+              <Tabs defaultValue="system-alerts" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="system-alerts">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    {language === 'pt' ? 'Alertas do Sistema' : 'System Alerts'}
+                  </TabsTrigger>
+                  <TabsTrigger value="inactive-time">
+                    <Clock className="h-4 w-4 mr-2" />
+                    {language === 'pt' ? 'Tempo Inativo' : 'Inactive Time'}
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="system-alerts">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{t('admin.alerts.title')}</CardTitle>
+                      <CardDescription>{t('admin.alerts.subtitle')}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {alerts.map((alert) => (
+                          <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{alert.date}</span>
+                                <Badge variant="outline">{alert.user_email}</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{alert.event}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">{alert.action}</p>
+                              <div className="mt-2 flex items-center justify-end gap-2">
+                                {alert.action !== t('admin.actions.noActionNeeded') && (
+                                  <Button size="sm" variant="outline">
+                                    {t('admin.actions.execute')}
+                                  </Button>
+                                )}
+                                <Button size="sm" variant="outline" onClick={() => handleDeleteAlert(alert.id)}>
+                                  {t('common.delete')}
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">{alert.event}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">{alert.action}</p>
-                          <div className="mt-2 flex items-center justify-end gap-2">
-                            {alert.action !== t('admin.actions.noActionNeeded') && (
-                              <Button size="sm" variant="outline">
-                                {t('admin.actions.execute')}
-                              </Button>
-                            )}
-                            <Button size="sm" variant="outline" onClick={() => handleDeleteAlert(alert.id)}>
-                              {t('common.delete')}
-                            </Button>
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="inactive-time">
+                  <InactiveUsersSection language={language === 'es' ? 'en' : language as 'pt' | 'en'} />
+                </TabsContent>
+              </Tabs>
             </TabsContent>
           </Tabs>
         </TabsContent>
