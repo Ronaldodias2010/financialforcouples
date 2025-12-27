@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Crown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Crown, ArrowUpDown } from 'lucide-react';
 import { ManualAccessBadge } from './ManualAccessBadge';
 
 interface PremiumUserData {
@@ -17,11 +18,14 @@ interface PremiumUserData {
   partnerName?: string;
   isManualAccess?: boolean;
   accessSource?: 'stripe' | 'manual';
+  created_at?: string;
 }
 
 interface PremiumUsersListProps {
   language: 'en' | 'pt';
 }
+
+type SortOption = 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc';
 
 const ADMIN_EMAIL = 'admin@arxexperience.com.br';
 
@@ -38,7 +42,12 @@ const text = {
     inactive: 'Inactive',
     coupled: 'Coupled',
     source: 'Source',
-    nextBilling: 'Next Billing'
+    nextBilling: 'Next Billing',
+    sortBy: 'Sort by',
+    createdNewest: 'Newest first',
+    createdOldest: 'Oldest first',
+    nameAZ: 'Name A-Z',
+    nameZA: 'Name Z-A'
   },
   pt: {
     title: 'Usuários Premium',
@@ -52,14 +61,37 @@ const text = {
     inactive: 'Inativo',
     coupled: 'Casal',
     source: 'Origem',
-    nextBilling: 'Próxima Cobrança'
+    nextBilling: 'Próxima Cobrança',
+    sortBy: 'Ordenar por',
+    createdNewest: 'Mais recentes',
+    createdOldest: 'Mais antigos',
+    nameAZ: 'Nome A-Z',
+    nameZA: 'Nome Z-A'
   }
 };
 
 export function PremiumUsersList({ language }: PremiumUsersListProps) {
   const [users, setUsers] = useState<PremiumUserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortOption, setSortOption] = useState<SortOption>('created_desc');
   const t = text[language];
+
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+      switch (sortOption) {
+        case 'created_desc':
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        case 'created_asc':
+          return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+        case 'name_asc':
+          return (a.display_name || '').localeCompare(b.display_name || '');
+        case 'name_desc':
+          return (b.display_name || '').localeCompare(a.display_name || '');
+        default:
+          return 0;
+      }
+    });
+  }, [users, sortOption]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -122,14 +154,15 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
           user_id: s.user_id,
           email: s.email,
           display_name: profile?.display_name || s.email?.split('@')[0] || 'Usuário',
-          subscribed: s.subscribed && !isExpired, // Show as not subscribed if expired
+          subscribed: s.subscribed && !isExpired,
           subscription_tier: s.subscription_tier,
           subscription_end: s.subscription_end,
           isExpired: isExpired,
           isCoupled,
           partnerName,
           isManualAccess: !!manualAccess,
-          accessSource: manualAccess ? 'manual' : 'stripe'
+          accessSource: manualAccess ? 'manual' : 'stripe',
+          created_at: s.created_at
         } as PremiumUserData;
       }));
 
@@ -162,10 +195,28 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Crown className="h-5 w-5" />
-          {t.title}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Crown className="h-5 w-5" />
+            {t.title} ({users.length})
+          </CardTitle>
+          {users.length > 0 && (
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortOption} onValueChange={(value: SortOption) => setSortOption(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder={t.sortBy} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_desc">{t.createdNewest}</SelectItem>
+                  <SelectItem value="created_asc">{t.createdOldest}</SelectItem>
+                  <SelectItem value="name_asc">{t.nameAZ}</SelectItem>
+                  <SelectItem value="name_desc">{t.nameZA}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {users.length === 0 ? (
@@ -184,7 +235,7 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {sortedUsers.map((u) => (
                   <tr key={u.user_id} className="border-b transition-colors hover:bg-muted/50">
                     <td className="p-4 align-middle">
                       <div className="flex items-center gap-2">

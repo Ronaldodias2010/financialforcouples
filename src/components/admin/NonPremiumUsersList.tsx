@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, Trash2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Users, Trash2, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserData {
@@ -20,6 +21,8 @@ interface UserData {
 interface NonPremiumUsersListProps {
   language: 'en' | 'pt';
 }
+
+type SortOption = 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc';
 
 const text = {
   en: {
@@ -44,7 +47,12 @@ const text = {
     coupled: 'Coupled',
     deleteUser: 'Delete User',
     deleteSuccess: 'User deleted successfully',
-    deleteError: 'Error deleting user'
+    deleteError: 'Error deleting user',
+    sortBy: 'Sort by',
+    createdNewest: 'Newest first',
+    createdOldest: 'Oldest first',
+    nameAZ: 'Name A-Z',
+    nameZA: 'Name Z-A'
   },
   pt: {
     title: 'Lista de Usuários Essential',
@@ -68,15 +76,38 @@ const text = {
     coupled: 'Casal',
     deleteUser: 'Excluir Usuário',
     deleteSuccess: 'Usuário excluído com sucesso',
-    deleteError: 'Erro ao excluir usuário'
+    deleteError: 'Erro ao excluir usuário',
+    sortBy: 'Ordenar por',
+    createdNewest: 'Mais recentes',
+    createdOldest: 'Mais antigos',
+    nameAZ: 'Nome A-Z',
+    nameZA: 'Nome Z-A'
   }
 };
 
 export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortOption, setSortOption] = useState<SortOption>('created_desc');
   const { toast } = useToast();
   const t = text[language];
+
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+      switch (sortOption) {
+        case 'created_desc':
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        case 'created_asc':
+          return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+        case 'name_asc':
+          return (a.display_name || '').localeCompare(b.display_name || '');
+        case 'name_desc':
+          return (b.display_name || '').localeCompare(a.display_name || '');
+        default:
+          return 0;
+      }
+    });
+  }, [users, sortOption]);
 
   const fetchUsers = async () => {
     try {
@@ -329,10 +360,28 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          {t.title} ({users.length})
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            {t.title} ({users.length})
+          </CardTitle>
+          {users.length > 0 && (
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortOption} onValueChange={(value: SortOption) => setSortOption(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder={t.sortBy} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_desc">{t.createdNewest}</SelectItem>
+                  <SelectItem value="created_asc">{t.createdOldest}</SelectItem>
+                  <SelectItem value="name_asc">{t.nameAZ}</SelectItem>
+                  <SelectItem value="name_desc">{t.nameZA}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {users.length === 0 ? (
@@ -363,7 +412,7 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
+                {sortedUsers.map((user) => (
                   <tr key={user.user_id} className="border-b transition-colors hover:bg-muted/50">
                     <td className="p-4 align-middle">
                       <div className="flex items-center gap-2">
