@@ -17,19 +17,22 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force a single React instance across all deps (prevents invalid hook call)
-      react: path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
-      "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime"),
-      "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime"),
+
+      // Ensure a single React module instance (fixes "Invalid hook call")
+      react: path.resolve(__dirname, "node_modules/react/index.js"),
+      "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),
+      "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime.js"),
+
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom/index.js"),
+      "react-dom/client": path.resolve(__dirname, "node_modules/react-dom/client.js"),
     },
-    // Prevent duplicate React instances (fixes "Cannot read properties of null (reading 'useEffect')")
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "react-dom/client"],
   },
   optimizeDeps: {
     include: [
       "react",
       "react-dom",
+      "react-dom/client",
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
       "@tanstack/react-query",
