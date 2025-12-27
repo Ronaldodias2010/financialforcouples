@@ -21,6 +21,7 @@ import { EducationalContentManager } from "@/components/admin/EducationalContent
 import { AIControlSection } from '@/components/admin/AIControlSection';
 import { PartnershipApplicationsManager } from '@/components/admin/PartnershipApplicationsManager';
 import { PromoCodesManager } from '@/components/admin/PromoCodesManager';
+import { UserListModal } from '@/components/admin/UserListModal';
 
 
 interface SubscriptionMetrics {
@@ -78,6 +79,11 @@ const AdminDashboardContent = () => {
   const [activeMainTab, setActiveMainTab] = useState("overview");
   const [activeUsersSubTab, setActiveUsersSubTab] = useState("users");
   const [activeAISubTab, setActiveAISubTab] = useState("overview");
+  
+  // Modal states for clickable cards
+  const [modalType, setModalType] = useState<'active' | 'canceled' | 'failed' | null>(null);
+  const [modalUsers, setModalUsers] = useState<any[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
 
   // Check if user is admin (simplified - in production use proper role system)
   const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email === 'admin@example.com' || user?.email?.includes('admin');
@@ -385,6 +391,112 @@ const AdminDashboardContent = () => {
 
   const handleDeleteAlert = (id: string) => {
     setAlerts((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  // Functions for clickable metric cards
+  const handleActiveUsersClick = async () => {
+    setModalType('active');
+    setModalLoading(true);
+    try {
+      const { data: subscribers } = await supabase
+        .from('subscribers')
+        .select('*')
+        .eq('subscribed', true)
+        .eq('subscription_tier', 'premium');
+      
+      // Get profiles for display names
+      const userIds = subscribers?.map(s => s.user_id) || [];
+      let profiles: any[] = [];
+      if (userIds.length > 0) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('user_id, display_name')
+          .in('user_id', userIds);
+        profiles = data || [];
+      }
+      
+      const formattedUsers = (subscribers || []).map(sub => {
+        const profile = profiles.find(p => p.user_id === sub.user_id);
+        return {
+          id: sub.user_id,
+          email: sub.email,
+          display_name: profile?.display_name,
+          subscription_tier: sub.subscription_tier,
+          subscription_end: sub.subscription_end
+        };
+      });
+      
+      setModalUsers(formattedUsers);
+    } catch (error) {
+      console.error('Error fetching active users:', error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleCanceledUsersClick = async () => {
+    setModalType('canceled');
+    setModalLoading(true);
+    try {
+      const { data: subscribers } = await supabase
+        .from('subscribers')
+        .select('*')
+        .eq('subscribed', false);
+      
+      // Get profiles for display names
+      const userIds = subscribers?.map(s => s.user_id) || [];
+      let profiles: any[] = [];
+      if (userIds.length > 0) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('user_id, display_name')
+          .in('user_id', userIds);
+        profiles = data || [];
+      }
+      
+      const formattedUsers = (subscribers || []).map(sub => {
+        const profile = profiles.find(p => p.user_id === sub.user_id);
+        return {
+          id: sub.user_id,
+          email: sub.email,
+          display_name: profile?.display_name,
+          subscription_end: sub.subscription_end,
+          created_at: sub.updated_at
+        };
+      });
+      
+      setModalUsers(formattedUsers);
+    } catch (error) {
+      console.error('Error fetching canceled users:', error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleFailedPaymentsClick = async () => {
+    setModalType('failed');
+    setModalLoading(true);
+    try {
+      const { data: failures } = await supabase
+        .from('payment_failures')
+        .select('*')
+        .neq('status', 'resolved')
+        .order('failure_date', { ascending: false });
+      
+      const formattedUsers = (failures || []).map(failure => ({
+        id: failure.id,
+        email: failure.email,
+        failure_date: failure.failure_date,
+        failure_reason: failure.failure_reason,
+        status: failure.status
+      }));
+      
+      setModalUsers(formattedUsers);
+    } catch (error) {
+      console.error('Error fetching failed payments:', error);
+    } finally {
+      setModalLoading(false);
+    }
   };
 
   // Contextual export functions
@@ -705,7 +817,10 @@ const AdminDashboardContent = () => {
         <TabsContent value="overview" className="space-y-6">
           {/* Métricas do Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <Card>
+            <Card 
+              className="cursor-pointer hover:border-primary hover:shadow-md transition-all"
+              onClick={handleActiveUsersClick}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('admin.metrics.activeUsers')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -715,7 +830,10 @@ const AdminDashboardContent = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card 
+              className="cursor-pointer hover:border-primary hover:shadow-md transition-all"
+              onClick={handleCanceledUsersClick}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('admin.metrics.canceledSubscriptions')}</CardTitle>
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -725,7 +843,10 @@ const AdminDashboardContent = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card 
+              className="cursor-pointer hover:border-primary hover:shadow-md transition-all"
+              onClick={handleFailedPaymentsClick}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('admin.metrics.failedPayments')}</CardTitle>
                 <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -1030,6 +1151,15 @@ const AdminDashboardContent = () => {
           <AIControlSection />
         </TabsContent>
       </Tabs>
+
+      {/* Modal for clickable metric cards */}
+      <UserListModal
+        isOpen={modalType !== null}
+        onClose={() => setModalType(null)}
+        type={modalType || 'active'}
+        users={modalUsers}
+        loading={modalLoading}
+      />
     </div>
   );
 };
