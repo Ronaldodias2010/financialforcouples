@@ -211,12 +211,40 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                       </div>
                     </td>
                     <td className="p-4 align-middle">
-                      <Badge 
-                        variant={u.isManualAccess ? "secondary" : "default"}
-                        className={u.isManualAccess ? "border-amber-500 bg-amber-100 text-amber-800 dark:border-amber-400 dark:bg-amber-900/30 dark:text-amber-300" : ""}
-                      >
-                        {u.subscription_tier}
-                      </Badge>
+                      {(() => {
+                        const isAnnual = u.subscription_tier?.toLowerCase().includes('annual') || 
+                                        u.subscription_tier?.toLowerCase().includes('anual') ||
+                                        u.subscription_tier?.toLowerCase().includes('yearly');
+                        
+                        if (u.isManualAccess) {
+                          return (
+                            <Badge 
+                              variant="secondary"
+                              className="border-amber-500 bg-amber-100 text-amber-800 dark:border-amber-400 dark:bg-amber-900/30 dark:text-amber-300"
+                            >
+                              {u.subscription_tier}
+                            </Badge>
+                          );
+                        } else if (isAnnual) {
+                          return (
+                            <Badge 
+                              variant="secondary"
+                              className="border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-400 dark:bg-emerald-900/30 dark:text-emerald-300"
+                            >
+                              {u.subscription_tier}
+                            </Badge>
+                          );
+                        } else {
+                          return (
+                            <Badge 
+                              variant="secondary"
+                              className="border-blue-500 bg-blue-100 text-blue-800 dark:border-blue-400 dark:bg-blue-900/30 dark:text-blue-300"
+                            >
+                              {u.subscription_tier}
+                            </Badge>
+                          );
+                        }
+                      })()}
                     </td>
                     <td className="p-4 align-middle">
                       {u.isManualAccess ? (
