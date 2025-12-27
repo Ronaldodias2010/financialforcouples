@@ -169,34 +169,113 @@ const AdminDashboardContent = () => {
           }
         } catch (stripeError) {
           console.error('Failed to fetch from Stripe, using fallback data:', stripeError);
-          
-          // Fallback to basic subscriber data from Supabase
-          const { data: subscribers, error: subscribersError } = await supabase
-            .from('subscribers')
-            .select('*');
-
-          if (!subscribersError && subscribers) {
-            const activeUsers = subscribers.filter(s => s.subscribed).length || 0;
-            const canceledSubscriptions = subscribers.filter(s => !s.subscribed).length || 0;
-            
-            // Calculate monthly revenue in BRL
-            const monthlyRevenueBRL = activeUsers * 19.90;
-            
-            // Convert to USD if language is English or Spanish
-            const monthlyRevenue = (language === 'en' || language === 'es')
-              ? convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
-              : monthlyRevenueBRL;
-            
-            setMetrics({
-              activeUsers,
-              canceledSubscriptions,
-              failedPayments: Math.floor(Math.random() * 100), // Mock data as fallback
-              monthlyRevenue,
-              annualRevenue: 0,
-            });
-          }
+          await calculateLocalMetrics();
         }
       }
+
+      // Always recalculate local metrics to ensure consistency with modal logic
+      await calculateLocalMetrics();
+      
+      // Fetch users data for the table
+      await fetchUsersData();
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateLocalMetrics = async () => {
+    try {
+      // 1. Usuários Ativos: apenas pagantes (com stripe_customer_id) + parceiros
+      const { data: payingSubscribers } = await supabase
+        .from('subscribers')
+        .select('user_id')
+        .eq('subscribed', true)
+        .eq('subscription_tier', 'premium')
+        .not('stripe_customer_id', 'is', null);
+      
+      const payingUserIds = payingSubscribers?.map(s => s.user_id) || [];
+      
+      // Buscar parceiros ativos
+      let partnerCount = 0;
+      if (payingUserIds.length > 0) {
+        const { data: couples } = await supabase
+          .from('user_couples')
+          .select('user1_id, user2_id')
+          .eq('status', 'active');
+        
+        const partnerIds = new Set<string>();
+        couples?.forEach(couple => {
+          if (payingUserIds.includes(couple.user1_id)) {
+            partnerIds.add(couple.user2_id);
+          }
+          if (payingUserIds.includes(couple.user2_id)) {
+            partnerIds.add(couple.user1_id);
+          }
+        });
+        partnerCount = partnerIds.size;
+      }
+      
+      const activeUsers = payingUserIds.length + partnerCount;
+      
+      // 2. Cancelados: ex-pagantes que cancelaram há mais de 2 meses
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+      
+      const { data: canceledSubs, count: canceledCount } = await supabase
+        .from('subscribers')
+        .select('*', { count: 'exact', head: true })
+        .eq('subscribed', false)
+        .not('stripe_customer_id', 'is', null)
+        .lt('updated_at', twoMonthsAgo.toISOString());
+      
+      // 3. Pagamentos Falhados: payment_failures + assinaturas vencidas neste mês
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      const now = new Date();
+      
+      const { count: failuresCount } = await supabase
+        .from('payment_failures')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'resolved');
+      
+      const { data: overdueUsers } = await supabase
+        .from('subscribers')
+        .select('email')
+        .eq('subscribed', true)
+        .eq('subscription_tier', 'premium')
+        .not('stripe_customer_id', 'is', null)
+        .lt('subscription_end', now.toISOString())
+        .gte('subscription_end', startOfMonth.toISOString());
+      
+      const failedPayments = (failuresCount || 0) + (overdueUsers?.length || 0);
+      
+      // Calculate revenue
+      const monthlyRevenueBRL = payingUserIds.length * 19.90;
+      const monthlyRevenue = (language === 'en' || language === 'es')
+        ? convertCurrency(monthlyRevenueBRL, 'BRL', 'USD')
+        : monthlyRevenueBRL;
+      
+      setMetrics(prev => ({
+        ...prev,
+        activeUsers,
+        canceledSubscriptions: canceledCount || 0,
+        failedPayments,
+        monthlyRevenue,
+      }));
+      
+      console.log('Local metrics calculated:', { activeUsers, canceledSubscriptions: canceledCount, failedPayments });
+    } catch (error) {
+      console.error('Error calculating local metrics:', error);
+    }
+  };
+
+  const fetchUsersData = async () => {
+    try {
+      // Loading is already set by fetchDashboardData
 
       // Fetch ONLY premium AND subscribed users
       console.log('🔍 Fetching premium users...');
@@ -357,14 +436,12 @@ const AdminDashboardContent = () => {
       setAlerts(mockAlerts);
 
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Error fetching users data:', error);
       toast({
         title: t('error'),
         description: t('admin.loading.error'),
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
     }
   };
 
