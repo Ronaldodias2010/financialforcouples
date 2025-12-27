@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from "https://esm.sh/resend@2.0.0";
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -14,7 +20,7 @@ interface ConfirmationEmailRequest {
 }
 
 // Generate HTML email template
-const generateEmailHtml = (userEmail: string, loginUrl: string, language: 'pt' | 'en' | 'es'): string => {
+const generateEmailHtml = (userEmail: string, confirmUrl: string, language: 'pt' | 'en' | 'es'): string => {
   const logoUrl = "https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
   
   const texts = {
@@ -23,7 +29,7 @@ const generateEmailHtml = (userEmail: string, loginUrl: string, language: 'pt' |
       title: 'Confirme seu endereço de email',
       greeting: 'Olá! Obrigado por se cadastrar no',
       brand: 'Couples Financials',
-      message: 'Para ativar sua conta, confirme seu endereço de email.',
+      message: 'Para ativar sua conta, clique no botão abaixo para confirmar seu endereço de email.',
       emailLabel: 'Email a ser confirmado:',
       button: 'Confirmar Email',
       linkText: 'Ou copie e cole este link no seu navegador:',
@@ -44,7 +50,7 @@ const generateEmailHtml = (userEmail: string, loginUrl: string, language: 'pt' |
       title: 'Confirm your email address',
       greeting: 'Hello! Thank you for signing up for',
       brand: 'Couples Financials',
-      message: 'To activate your account, please confirm your email address.',
+      message: 'To activate your account, click the button below to confirm your email address.',
       emailLabel: 'Email to be confirmed:',
       button: 'Confirm Email',
       linkText: 'Or copy and paste this link into your browser:',
@@ -65,7 +71,7 @@ const generateEmailHtml = (userEmail: string, loginUrl: string, language: 'pt' |
       title: 'Confirma tu dirección de email',
       greeting: '¡Hola! Gracias por registrarte en',
       brand: 'Couples Financials',
-      message: 'Para activar tu cuenta, confirma tu dirección de email.',
+      message: 'Para activar tu cuenta, haz clic en el botón a continuación para confirmar tu dirección de email.',
       emailLabel: 'Email a confirmar:',
       button: 'Confirmar Email',
       linkText: 'O copia y pega este enlace en tu navegador:',
@@ -117,13 +123,13 @@ const generateEmailHtml = (userEmail: string, loginUrl: string, language: 'pt' |
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center" style="padding: 16px 0 24px;">
-                    <a href="${loginUrl}" target="_blank" style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
+                    <a href="${confirmUrl}" target="_blank" style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
                   </td>
                 </tr>
               </table>
               
               <p style="color: #94a3b8; font-size: 14px; text-align: center; margin: 0 0 16px;">${t.linkText}</p>
-              <p style="color: #60a5fa; font-size: 12px; word-break: break-all; text-align: center; margin: 0 0 24px;">${loginUrl}</p>
+              <p style="color: #60a5fa; font-size: 12px; word-break: break-all; text-align: center; margin: 0 0 24px;">${confirmUrl}</p>
               
               <!-- Features -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: rgba(233, 69, 96, 0.1); border-radius: 8px; margin-bottom: 24px;">
@@ -163,10 +169,37 @@ const handler = async (req: Request): Promise<Response> => {
     const { userEmail, language = 'pt' }: ConfirmationEmailRequest = await req.json();
     console.log(`Processing confirmation email for: ${userEmail}, language: ${language}`);
     
-    const loginUrl = `https://couplesfinancials.com/auth?email=${encodeURIComponent(userEmail)}`;
     const lang = language === 'en' ? 'en' : language === 'es' ? 'es' : 'pt';
+    const siteUrl = 'https://couplesfinancials.com';
+    const redirectTo = `${siteUrl}/email-confirmation?lang=${lang}`;
 
-    const emailHtml = generateEmailHtml(userEmail, loginUrl, lang);
+    // Generate a real confirmation link using Supabase Admin API
+    console.log(`Generating confirmation link for ${userEmail}...`);
+    
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'signup',
+      email: userEmail,
+      options: {
+        redirectTo: redirectTo
+      }
+    });
+
+    if (linkError) {
+      console.error('Error generating confirmation link:', linkError);
+      throw new Error(`Failed to generate confirmation link: ${linkError.message}`);
+    }
+
+    // The action_link is the real Supabase confirmation URL
+    const confirmUrl = linkData.properties?.action_link;
+    
+    if (!confirmUrl) {
+      console.error('No action_link returned from generateLink');
+      throw new Error('Failed to generate confirmation URL');
+    }
+
+    console.log(`Generated confirmation URL (truncated): ${confirmUrl.substring(0, 80)}...`);
+
+    const emailHtml = generateEmailHtml(userEmail, confirmUrl, lang);
 
     const subject = lang === 'en' 
       ? "🎉 Confirm your email address - Couples Financials"
@@ -185,7 +218,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Confirmation email sent successfully:", JSON.stringify(emailResponse));
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      email_id: emailResponse.id,
+      message: `Confirmation email sent to ${userEmail}`
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
