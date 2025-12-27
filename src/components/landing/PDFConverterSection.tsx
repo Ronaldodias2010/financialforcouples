@@ -117,16 +117,6 @@ const PDFConverterSection = () => {
                   </div>
                 </div>
               </div>
-
-              <Button 
-                className="px-8 py-3 text-lg text-white border-0"
-                style={{
-                  background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--success) / 0.9), hsl(var(--accent)))",
-                  boxShadow: "0 8px 24px hsl(var(--primary) / 0.25)"
-                }}
-              >
-                {t('pdfConverter.cta')}
-              </Button>
             </div>
 
             {/* Right Column - Visual Mockup */}
