@@ -12,7 +12,7 @@ import { translateCategoryName as translateCategoryUtil, translateCategoryDescri
 import { TagEditModal } from "./TagEditModal";
 import { CategoryEditModal } from "./CategoryEditModal";
 import { Plus, Trash2, ArrowUpCircle, ArrowDownCircle, Settings, Tag, X, EyeOff } from "lucide-react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 
 interface Category {
   id: string;
@@ -547,14 +547,8 @@ const CategoryManagerContent = () => {
   );
 };
 
-const queryClient = new QueryClient();
-
 const CategoryManager = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <CategoryManagerContent />
-    </QueryClientProvider>
-  );
+  return <CategoryManagerContent />;
 };
 
 export default CategoryManager;
