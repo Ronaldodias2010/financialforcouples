@@ -403,8 +403,14 @@ export function NonPremiumUsersList({ language }: NonPremiumUsersListProps) {
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     {t.plan}
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    {t.createdAt}
+                  <th 
+                    className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer hover:bg-muted/80 transition-colors"
+                    onClick={() => setSortOption(sortOption === 'created_desc' ? 'created_asc' : 'created_desc')}
+                  >
+                    <div className="flex items-center gap-1">
+                      {t.createdAt}
+                      <ArrowUpDown className={`h-4 w-4 ${sortOption.includes('created') ? 'text-primary' : 'text-muted-foreground/50'}`} />
+                    </div>
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     {t.actions}
