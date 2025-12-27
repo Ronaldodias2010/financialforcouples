@@ -23,6 +23,8 @@ interface PremiumUsersListProps {
   language: 'en' | 'pt';
 }
 
+const ADMIN_EMAIL = 'admin@arxexperience.com.br';
+
 const text = {
   en: {
     title: 'Premium Users',
@@ -35,7 +37,8 @@ const text = {
     active: 'Active',
     inactive: 'Inactive',
     coupled: 'Coupled',
-    source: 'Source'
+    source: 'Source',
+    nextBilling: 'Next Billing'
   },
   pt: {
     title: 'Usuários Premium',
@@ -48,7 +51,8 @@ const text = {
     active: 'Ativo',
     inactive: 'Inativo',
     coupled: 'Casal',
-    source: 'Origem'
+    source: 'Origem',
+    nextBilling: 'Próxima Cobrança'
   }
 };
 
@@ -176,6 +180,7 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.status}</th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.plan}</th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.source}</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{t.nextBilling}</th>
                 </tr>
               </thead>
               <tbody>
@@ -229,6 +234,11 @@ export function PremiumUsersList({ language }: PremiumUsersListProps) {
                       ) : (
                         <Badge variant="success">Stripe</Badge>
                       )}
+                    </td>
+                    <td className="p-4 align-middle">
+                      <span className="text-sm font-medium">
+                        {u.email === ADMIN_EMAIL ? '31/12/2099' : (u.subscription_end ? new Date(u.subscription_end).toLocaleDateString('pt-BR') : '-')}
+                      </span>
                     </td>
                   </tr>
                 ))}
