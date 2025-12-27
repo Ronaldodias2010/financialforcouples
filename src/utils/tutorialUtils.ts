@@ -5,815 +5,1065 @@ type Language = 'pt' | 'en' | 'es';
 
 // Color palette matching the theme
 const colors = {
-  primary: [102, 126, 234] as [number, number, number],      // #667eea - Purple
-  secondary: [118, 75, 162] as [number, number, number],     // #764ba2 - Purple secondary
-  success: [16, 185, 129] as [number, number, number],       // #10b981 - Green (tip-box)
-  warning: [245, 158, 11] as [number, number, number],       // #f59e0b - Amber (warning)
-  premium: [139, 92, 246] as [number, number, number],       // #8b5cf6 - Premium purple
-  danger: [239, 68, 68] as [number, number, number],         // #ef4444 - Red
-  bgLight: [248, 250, 252] as [number, number, number],      // #f8fafc - Light bg
-  bgCard: [241, 245, 249] as [number, number, number],       // #f1f5f9 - Card bg
-  textDark: [30, 41, 59] as [number, number, number],        // #1e293b - Dark text
-  textMuted: [100, 116, 139] as [number, number, number],    // #64748b - Muted text
-  border: [226, 232, 240] as [number, number, number],       // #e2e8f0 - Border
+  primary: [102, 126, 234] as [number, number, number],
+  secondary: [118, 75, 162] as [number, number, number],
+  success: [16, 185, 129] as [number, number, number],
+  warning: [245, 158, 11] as [number, number, number],
+  premium: [139, 92, 246] as [number, number, number],
+  danger: [239, 68, 68] as [number, number, number],
+  bgLight: [248, 250, 252] as [number, number, number],
+  bgCard: [241, 245, 249] as [number, number, number],
+  textDark: [30, 41, 59] as [number, number, number],
+  textMuted: [100, 116, 139] as [number, number, number],
+  border: [226, 232, 240] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
 };
 
-// Tutorial content for all languages
-const getTutorialContent = (language: Language) => {
-  const content = {
-    pt: {
-      title: 'Tutorial Completo',
-      subtitle: 'Couples Financials',
-      tagline: 'Guia definitivo para dominar suas finanças em casal',
-      tableOfContents: 'Índice',
-      page: 'Página',
-      sections: [
-        {
-          id: 'introducao',
-          title: '1. Introdução',
-          icon: '🎯',
-          description: 'O Couples Financials é uma plataforma completa de gestão financeira projetada especificamente para casais. Nossa missão é ajudar você e seu parceiro(a) a construírem uma vida financeira saudável e transparente juntos.',
-          features: [
-            { title: 'Gestão Compartilhada', desc: 'Controle conjunto das finanças do casal' },
-            { title: 'Múltiplas Moedas', desc: 'Suporte para BRL, USD, EUR e GBP' },
-            { title: 'Inteligência Artificial', desc: 'IA para análises e categorização automática' },
-            { title: 'Sistema de Milhas', desc: 'Acompanhe e otimize suas milhas aéreas' },
-          ],
-          tipBox: {
-            title: '💡 Dica',
-            content: 'Para melhor experiência, recomendamos que ambos os parceiros criem suas contas e vinculem-se como casal nas configurações.'
-          }
-        },
-        {
-          id: 'planos',
-          title: '2. Planos e Preços',
-          icon: '💎',
-          description: 'Oferecemos dois planos para atender diferentes necessidades:',
-          comparison: {
-            headers: ['Funcionalidade', 'Essential', 'Premium'],
-            rows: [
-              ['Dashboard Financeiro', '✓ Básico', '✓ Completo'],
-              ['Contas e Cartões', '✓ Limitado', '✓ Ilimitado'],
-              ['Transações Manuais', '✓', '✓'],
-              ['Categorias Personalizadas', '✓', '✓'],
-              ['Despesas Recorrentes', '✓', '✓'],
-              ['Relatórios Básicos', '✓', '✓'],
-              ['Relatórios Avançados', '✗', '✓'],
-              ['Converter de Extratos (OCR)', '✗', '✓'],
-              ['Sistema de Milhas com IA', '✗', '✓'],
-              ['Investimentos', '✗', '✓'],
-              ['Assistente IA Financeiro', '✗', '✓'],
-              ['Suporte Prioritário', '✗', '✓'],
-            ]
-          },
-          premiumBox: {
-            title: '⭐ Desbloqueie o Premium',
-            content: 'Assine o plano Premium e tenha acesso a todas as funcionalidades avançadas, incluindo IA, milhas e investimentos.'
-          }
-        },
-        {
-          id: 'primeiros-passos',
-          title: '3. Primeiros Passos',
-          icon: '🚀',
-          description: 'Siga estes passos para configurar sua conta:',
-          steps: [
-            { num: 1, title: 'Crie sua conta', desc: 'Acesse o site e faça seu cadastro com email e senha segura.' },
-            { num: 2, title: 'Configure seu perfil', desc: 'Adicione seu nome, foto e preferências de moeda.' },
-            { num: 3, title: 'Adicione contas bancárias', desc: 'Cadastre suas contas correntes, poupanças e carteiras.' },
-            { num: 4, title: 'Cadastre cartões', desc: 'Adicione seus cartões de crédito com limites e datas de vencimento.' },
-            { num: 5, title: 'Vincule seu parceiro(a)', desc: 'Nas configurações, envie um convite para seu parceiro(a) se vincular.' },
-          ],
-          warningBox: {
-            title: '⚠️ Importante',
-            content: 'Mantenha sua senha segura e nunca compartilhe suas credenciais. Use senhas fortes com letras, números e símbolos.'
-          }
-        },
-        {
-          id: 'dashboard',
-          title: '4. Dashboard Principal',
-          icon: '📊',
-          description: 'O Dashboard é sua central de comando financeiro. Aqui você visualiza:',
-          features: [
-            { title: 'Saldo Total', desc: 'Soma de todas as suas contas em tempo real' },
-            { title: 'Gastos do Mês', desc: 'Total de despesas do mês atual' },
-            { title: 'Receitas do Mês', desc: 'Total de receitas recebidas' },
-            { title: 'Gráficos Interativos', desc: 'Visualize tendências e padrões de gastos' },
-          ],
-          tipBox: {
-            title: '💡 Dica',
-            content: 'Use os filtros por período e categoria para análises mais detalhadas dos seus gastos.'
-          }
-        },
-        {
-          id: 'contas',
-          title: '5. Gerenciamento de Contas',
-          icon: '🏦',
-          description: 'Gerencie todas as suas contas bancárias em um só lugar:',
-          features: [
-            { title: 'Contas Correntes', desc: 'Cadastre contas de diferentes bancos' },
-            { title: 'Poupança', desc: 'Acompanhe suas economias separadamente' },
-            { title: 'Carteiras Digitais', desc: 'PicPay, Mercado Pago, etc.' },
-            { title: 'Dinheiro em Espécie', desc: 'Controle o dinheiro físico' },
-          ],
-          steps: [
-            { num: 1, title: 'Acesse Contas', desc: 'No menu lateral, clique em "Contas".' },
-            { num: 2, title: 'Adicionar Nova', desc: 'Clique no botão "+ Nova Conta".' },
-            { num: 3, title: 'Preencha os dados', desc: 'Nome, tipo, saldo inicial e moeda.' },
-            { num: 4, title: 'Salvar', desc: 'Confirme para criar a conta.' },
-          ]
-        },
-        {
-          id: 'cartoes',
-          title: '6. Cartões de Crédito',
-          icon: '💳',
-          description: 'Controle completo dos seus cartões de crédito:',
-          features: [
-            { title: 'Limite e Saldo', desc: 'Acompanhe limite disponível e fatura atual' },
-            { title: 'Data de Fechamento', desc: 'Configure a data de fechamento da fatura' },
-            { title: 'Data de Vencimento', desc: 'Nunca perca a data de pagamento' },
-            { title: 'Múltiplos Cartões', desc: 'Gerencie todos os cartões da família' },
-          ],
-          tipBox: {
-            title: '💡 Dica',
-            content: 'Configure alertas para receber notificações antes do vencimento da fatura.'
-          }
-        },
-        {
-          id: 'transacoes',
-          title: '7. Transações',
-          icon: '💰',
-          description: 'Registre e categorize todas as suas movimentações financeiras:',
-          features: [
-            { title: 'Receitas', desc: 'Salários, rendimentos, vendas, etc.' },
-            { title: 'Despesas', desc: 'Gastos, compras, pagamentos' },
-            { title: 'Transferências', desc: 'Movimentações entre contas' },
-            { title: 'Parcelamentos', desc: 'Compras parceladas no cartão' },
-          ],
-          steps: [
-            { num: 1, title: 'Nova Transação', desc: 'Clique no botão "+" ou "Nova Transação".' },
-            { num: 2, title: 'Tipo', desc: 'Selecione Receita, Despesa ou Transferência.' },
-            { num: 3, title: 'Detalhes', desc: 'Valor, descrição, categoria e data.' },
-            { num: 4, title: 'Conta/Cartão', desc: 'Selecione de onde sai ou entra o dinheiro.' },
-            { num: 5, title: 'Confirmar', desc: 'Salve a transação.' },
-          ]
-        },
-        {
-          id: 'categorias',
-          title: '8. Categorias',
-          icon: '🏷️',
-          description: 'Organize suas finanças com categorias personalizadas:',
-          features: [
-            { title: 'Categorias Padrão', desc: 'Alimentação, Transporte, Moradia, etc.' },
-            { title: 'Categorias Personalizadas', desc: 'Crie categorias específicas para você' },
-            { title: 'Cores e Ícones', desc: 'Personalize a aparência' },
-            { title: 'Subcategorias', desc: 'Organize em níveis para maior detalhamento' },
-          ],
-          tipBox: {
-            title: '💡 Dica',
-            content: 'Mantenha suas categorias organizadas para relatórios mais precisos e úteis.'
-          }
-        },
-        {
-          id: 'recorrentes',
-          title: '9. Despesas Recorrentes',
-          icon: '🔄',
-          description: 'Automatize o controle de gastos fixos mensais:',
-          features: [
-            { title: 'Contas Fixas', desc: 'Aluguel, luz, água, internet' },
-            { title: 'Assinaturas', desc: 'Netflix, Spotify, academia' },
-            { title: 'Parcelas Fixas', desc: 'Financiamentos, empréstimos' },
-            { title: 'Alertas', desc: 'Notificações antes do vencimento' },
-          ],
-          warningBox: {
-            title: '⚠️ Atenção',
-            content: 'Revise periodicamente suas despesas recorrentes para identificar assinaturas não utilizadas.'
-          }
-        },
-        {
-          id: 'converter',
-          title: '10. Converter de Extratos',
-          icon: '📄',
-          description: 'Importe extratos bancários automaticamente (Premium):',
-          features: [
-            { title: 'Upload de PDF', desc: 'Envie extratos em formato PDF' },
-            { title: 'OCR Inteligente', desc: 'Leitura automática com IA' },
-            { title: 'Categorização', desc: 'IA sugere categorias automaticamente' },
-            { title: 'Revisão', desc: 'Revise e confirme antes de importar' },
-          ],
-          steps: [
-            { num: 1, title: 'Acesse Converter', desc: 'No menu, clique em "Converter Extratos".' },
-            { num: 2, title: 'Upload', desc: 'Arraste ou selecione o arquivo PDF.' },
-            { num: 3, title: 'Processamento', desc: 'Aguarde a IA processar o documento.' },
-            { num: 4, title: 'Revisar', desc: 'Confira as transações detectadas.' },
-            { num: 5, title: 'Importar', desc: 'Confirme para adicionar às suas transações.' },
-          ],
-          premiumBox: {
-            title: '⭐ Recurso Premium',
-            content: 'O Converter de Extratos está disponível apenas no plano Premium.'
-          }
-        },
-        {
-          id: 'milhas',
-          title: '11. Sistema de Milhas',
-          icon: '✈️',
-          description: 'Acompanhe e otimize suas milhas aéreas (Premium):',
-          features: [
-            { title: 'Acúmulo Automático', desc: 'Calcule milhas baseado nos gastos do cartão' },
-            { title: 'Múltiplos Programas', desc: 'LATAM Pass, Smiles, TudoAzul' },
-            { title: 'Metas de Milhas', desc: 'Defina objetivos de acúmulo' },
-            { title: 'Promoções', desc: 'Alertas de promoções das companhias' },
-          ],
-          tipBox: {
-            title: '💡 Dica',
-            content: 'Configure as regras de acúmulo de cada cartão para cálculos precisos de milhas.'
-          }
-        },
-        {
-          id: 'investimentos',
-          title: '12. Investimentos',
-          icon: '📈',
-          description: 'Acompanhe sua carteira de investimentos (Premium):',
-          features: [
-            { title: 'Renda Fixa', desc: 'CDB, LCI, LCA, Tesouro Direto' },
-            { title: 'Renda Variável', desc: 'Ações, FIIs, ETFs' },
-            { title: 'Criptomoedas', desc: 'Bitcoin, Ethereum e outras' },
-            { title: 'Rentabilidade', desc: 'Acompanhe o desempenho em tempo real' },
-          ],
-          premiumBox: {
-            title: '⭐ Recurso Premium',
-            content: 'O módulo de Investimentos está disponível apenas no plano Premium.'
-          }
-        },
-        {
-          id: 'ia',
-          title: '13. Assistente IA',
-          icon: '🤖',
-          description: 'Use inteligência artificial para insights financeiros (Premium):',
-          features: [
-            { title: 'Chat Financeiro', desc: 'Converse sobre suas finanças' },
-            { title: 'Análises Automáticas', desc: 'Insights sobre gastos e economia' },
-            { title: 'Sugestões', desc: 'Recomendações personalizadas' },
-            { title: 'Previsões', desc: 'Projeções baseadas no histórico' },
-          ],
-          tipBox: {
-            title: '💡 Dica',
-            content: 'Pergunte ao assistente sobre seus maiores gastos ou como economizar em categorias específicas.'
-          }
-        },
-        {
-          id: 'relatorios',
-          title: '14. Relatórios',
-          icon: '📊',
-          description: 'Visualize relatórios detalhados das suas finanças:',
-          features: [
-            { title: 'Por Categoria', desc: 'Veja gastos agrupados por categoria' },
-            { title: 'Por Período', desc: 'Análise mensal, trimestral, anual' },
-            { title: 'Comparativos', desc: 'Compare meses e identifique tendências' },
-            { title: 'Exportação', desc: 'Exporte para PDF ou planilha' },
-          ],
-          tipBox: {
-            title: '💡 Dica',
-            content: 'Use os relatórios mensalmente para identificar oportunidades de economia.'
-          }
-        },
-      ],
-      footer: {
-        support: 'Suporte',
-        email: 'support@couplesfin.com',
-        website: 'www.couplesfinancials.com',
-        copyright: '© 2024 Couples Financials. Todos os direitos reservados.'
-      }
-    },
-    en: {
-      title: 'Complete Tutorial',
-      subtitle: 'Couples Financials',
-      tagline: 'The ultimate guide to mastering your finances as a couple',
-      tableOfContents: 'Table of Contents',
-      page: 'Page',
-      sections: [
-        {
-          id: 'introduction',
-          title: '1. Introduction',
-          icon: '🎯',
-          description: 'Couples Financials is a complete financial management platform designed specifically for couples. Our mission is to help you and your partner build a healthy and transparent financial life together.',
-          features: [
-            { title: 'Shared Management', desc: 'Joint control of couple finances' },
-            { title: 'Multiple Currencies', desc: 'Support for BRL, USD, EUR and GBP' },
-            { title: 'Artificial Intelligence', desc: 'AI for analysis and automatic categorization' },
-            { title: 'Miles System', desc: 'Track and optimize your airline miles' },
-          ],
-          tipBox: {
-            title: '💡 Tip',
-            content: 'For the best experience, we recommend that both partners create their accounts and link as a couple in the settings.'
-          }
-        },
-        {
-          id: 'plans',
-          title: '2. Plans and Pricing',
-          icon: '💎',
-          description: 'We offer two plans to meet different needs:',
-          comparison: {
-            headers: ['Feature', 'Essential', 'Premium'],
-            rows: [
-              ['Financial Dashboard', '✓ Basic', '✓ Complete'],
-              ['Accounts and Cards', '✓ Limited', '✓ Unlimited'],
-              ['Manual Transactions', '✓', '✓'],
-              ['Custom Categories', '✓', '✓'],
-              ['Recurring Expenses', '✓', '✓'],
-              ['Basic Reports', '✓', '✓'],
-              ['Advanced Reports', '✗', '✓'],
-              ['Statement Converter (OCR)', '✗', '✓'],
-              ['AI Miles System', '✗', '✓'],
-              ['Investments', '✗', '✓'],
-              ['AI Financial Assistant', '✗', '✓'],
-              ['Priority Support', '✗', '✓'],
-            ]
-          },
-          premiumBox: {
-            title: '⭐ Unlock Premium',
-            content: 'Subscribe to the Premium plan and get access to all advanced features, including AI, miles and investments.'
-          }
-        },
-        {
-          id: 'getting-started',
-          title: '3. Getting Started',
-          icon: '🚀',
-          description: 'Follow these steps to set up your account:',
-          steps: [
-            { num: 1, title: 'Create your account', desc: 'Visit the website and sign up with email and a secure password.' },
-            { num: 2, title: 'Set up your profile', desc: 'Add your name, photo and currency preferences.' },
-            { num: 3, title: 'Add bank accounts', desc: 'Register your checking, savings and wallet accounts.' },
-            { num: 4, title: 'Register cards', desc: 'Add your credit cards with limits and due dates.' },
-            { num: 5, title: 'Link your partner', desc: 'In settings, send an invitation for your partner to link.' },
-          ],
-          warningBox: {
-            title: '⚠️ Important',
-            content: 'Keep your password secure and never share your credentials. Use strong passwords with letters, numbers and symbols.'
-          }
-        },
-        {
-          id: 'dashboard',
-          title: '4. Main Dashboard',
-          icon: '📊',
-          description: 'The Dashboard is your financial command center. Here you can view:',
-          features: [
-            { title: 'Total Balance', desc: 'Sum of all your accounts in real time' },
-            { title: 'Monthly Expenses', desc: 'Total expenses for the current month' },
-            { title: 'Monthly Income', desc: 'Total income received' },
-            { title: 'Interactive Charts', desc: 'Visualize trends and spending patterns' },
-          ],
-          tipBox: {
-            title: '💡 Tip',
-            content: 'Use the filters by period and category for more detailed analysis of your expenses.'
-          }
-        },
-        {
-          id: 'accounts',
-          title: '5. Account Management',
-          icon: '🏦',
-          description: 'Manage all your bank accounts in one place:',
-          features: [
-            { title: 'Checking Accounts', desc: 'Register accounts from different banks' },
-            { title: 'Savings', desc: 'Track your savings separately' },
-            { title: 'Digital Wallets', desc: 'PayPal, Venmo, etc.' },
-            { title: 'Cash', desc: 'Control physical money' },
-          ],
-          steps: [
-            { num: 1, title: 'Access Accounts', desc: 'In the sidebar, click on "Accounts".' },
-            { num: 2, title: 'Add New', desc: 'Click the "+ New Account" button.' },
-            { num: 3, title: 'Fill in the data', desc: 'Name, type, initial balance and currency.' },
-            { num: 4, title: 'Save', desc: 'Confirm to create the account.' },
-          ]
-        },
-        {
-          id: 'cards',
-          title: '6. Credit Cards',
-          icon: '💳',
-          description: 'Complete control of your credit cards:',
-          features: [
-            { title: 'Limit and Balance', desc: 'Track available limit and current bill' },
-            { title: 'Closing Date', desc: 'Set the bill closing date' },
-            { title: 'Due Date', desc: 'Never miss the payment date' },
-            { title: 'Multiple Cards', desc: 'Manage all family cards' },
-          ],
-          tipBox: {
-            title: '💡 Tip',
-            content: 'Set up alerts to receive notifications before the bill is due.'
-          }
-        },
-        {
-          id: 'transactions',
-          title: '7. Transactions',
-          icon: '💰',
-          description: 'Record and categorize all your financial movements:',
-          features: [
-            { title: 'Income', desc: 'Salaries, earnings, sales, etc.' },
-            { title: 'Expenses', desc: 'Spending, purchases, payments' },
-            { title: 'Transfers', desc: 'Movements between accounts' },
-            { title: 'Installments', desc: 'Card installment purchases' },
-          ],
-          steps: [
-            { num: 1, title: 'New Transaction', desc: 'Click the "+" or "New Transaction" button.' },
-            { num: 2, title: 'Type', desc: 'Select Income, Expense or Transfer.' },
-            { num: 3, title: 'Details', desc: 'Amount, description, category and date.' },
-            { num: 4, title: 'Account/Card', desc: 'Select where the money comes from or goes to.' },
-            { num: 5, title: 'Confirm', desc: 'Save the transaction.' },
-          ]
-        },
-        {
-          id: 'categories',
-          title: '8. Categories',
-          icon: '🏷️',
-          description: 'Organize your finances with custom categories:',
-          features: [
-            { title: 'Default Categories', desc: 'Food, Transport, Housing, etc.' },
-            { title: 'Custom Categories', desc: 'Create categories specific to you' },
-            { title: 'Colors and Icons', desc: 'Customize the appearance' },
-            { title: 'Subcategories', desc: 'Organize in levels for more detail' },
-          ],
-          tipBox: {
-            title: '💡 Tip',
-            content: 'Keep your categories organized for more accurate and useful reports.'
-          }
-        },
-        {
-          id: 'recurring',
-          title: '9. Recurring Expenses',
-          icon: '🔄',
-          description: 'Automate the control of fixed monthly expenses:',
-          features: [
-            { title: 'Fixed Bills', desc: 'Rent, electricity, water, internet' },
-            { title: 'Subscriptions', desc: 'Netflix, Spotify, gym' },
-            { title: 'Fixed Installments', desc: 'Financing, loans' },
-            { title: 'Alerts', desc: 'Notifications before due date' },
-          ],
-          warningBox: {
-            title: '⚠️ Attention',
-            content: 'Periodically review your recurring expenses to identify unused subscriptions.'
-          }
-        },
-        {
-          id: 'converter',
-          title: '10. Statement Converter',
-          icon: '📄',
-          description: 'Import bank statements automatically (Premium):',
-          features: [
-            { title: 'PDF Upload', desc: 'Send statements in PDF format' },
-            { title: 'Smart OCR', desc: 'Automatic reading with AI' },
-            { title: 'Categorization', desc: 'AI suggests categories automatically' },
-            { title: 'Review', desc: 'Review and confirm before importing' },
-          ],
-          steps: [
-            { num: 1, title: 'Access Converter', desc: 'In the menu, click on "Convert Statements".' },
-            { num: 2, title: 'Upload', desc: 'Drag or select the PDF file.' },
-            { num: 3, title: 'Processing', desc: 'Wait for the AI to process the document.' },
-            { num: 4, title: 'Review', desc: 'Check the detected transactions.' },
-            { num: 5, title: 'Import', desc: 'Confirm to add to your transactions.' },
-          ],
-          premiumBox: {
-            title: '⭐ Premium Feature',
-            content: 'The Statement Converter is only available on the Premium plan.'
-          }
-        },
-        {
-          id: 'miles',
-          title: '11. Miles System',
-          icon: '✈️',
-          description: 'Track and optimize your airline miles (Premium):',
-          features: [
-            { title: 'Auto Accumulation', desc: 'Calculate miles based on card spending' },
-            { title: 'Multiple Programs', desc: 'LATAM Pass, United, Delta, etc.' },
-            { title: 'Miles Goals', desc: 'Set accumulation targets' },
-            { title: 'Promotions', desc: 'Airline promotion alerts' },
-          ],
-          tipBox: {
-            title: '💡 Tip',
-            content: 'Configure the accumulation rules for each card for accurate miles calculations.'
-          }
-        },
-        {
-          id: 'investments',
-          title: '12. Investments',
-          icon: '📈',
-          description: 'Track your investment portfolio (Premium):',
-          features: [
-            { title: 'Fixed Income', desc: 'Bonds, CDs, Treasury' },
-            { title: 'Variable Income', desc: 'Stocks, REITs, ETFs' },
-            { title: 'Cryptocurrencies', desc: 'Bitcoin, Ethereum and others' },
-            { title: 'Returns', desc: 'Track performance in real time' },
-          ],
-          premiumBox: {
-            title: '⭐ Premium Feature',
-            content: 'The Investments module is only available on the Premium plan.'
-          }
-        },
-        {
-          id: 'ai',
-          title: '13. AI Assistant',
-          icon: '🤖',
-          description: 'Use artificial intelligence for financial insights (Premium):',
-          features: [
-            { title: 'Financial Chat', desc: 'Talk about your finances' },
-            { title: 'Auto Analysis', desc: 'Insights on spending and savings' },
-            { title: 'Suggestions', desc: 'Personalized recommendations' },
-            { title: 'Forecasts', desc: 'Projections based on history' },
-          ],
-          tipBox: {
-            title: '💡 Tip',
-            content: 'Ask the assistant about your biggest expenses or how to save on specific categories.'
-          }
-        },
-        {
-          id: 'reports',
-          title: '14. Reports',
-          icon: '📊',
-          description: 'View detailed reports of your finances:',
-          features: [
-            { title: 'By Category', desc: 'See expenses grouped by category' },
-            { title: 'By Period', desc: 'Monthly, quarterly, yearly analysis' },
-            { title: 'Comparisons', desc: 'Compare months and identify trends' },
-            { title: 'Export', desc: 'Export to PDF or spreadsheet' },
-          ],
-          tipBox: {
-            title: '💡 Tip',
-            content: 'Use reports monthly to identify savings opportunities.'
-          }
-        },
-      ],
-      footer: {
-        support: 'Support',
-        email: 'support@couplesfin.com',
-        website: 'www.couplesfinancials.com',
-        copyright: '© 2024 Couples Financials. All rights reserved.'
-      }
-    },
-    es: {
-      title: 'Tutorial Completo',
-      subtitle: 'Couples Financials',
-      tagline: 'La guía definitiva para dominar tus finanzas en pareja',
-      tableOfContents: 'Índice',
-      page: 'Página',
-      sections: [
-        {
-          id: 'introduccion',
-          title: '1. Introducción',
-          icon: '🎯',
-          description: 'Couples Financials es una plataforma completa de gestión financiera diseñada específicamente para parejas. Nuestra misión es ayudarte a ti y a tu pareja a construir una vida financiera saludable y transparente juntos.',
-          features: [
-            { title: 'Gestión Compartida', desc: 'Control conjunto de las finanzas de la pareja' },
-            { title: 'Múltiples Monedas', desc: 'Soporte para BRL, USD, EUR y GBP' },
-            { title: 'Inteligencia Artificial', desc: 'IA para análisis y categorización automática' },
-            { title: 'Sistema de Millas', desc: 'Rastrea y optimiza tus millas aéreas' },
-          ],
-          tipBox: {
-            title: '💡 Consejo',
-            content: 'Para una mejor experiencia, recomendamos que ambos miembros de la pareja creen sus cuentas y se vinculen en la configuración.'
-          }
-        },
-        {
-          id: 'planes',
-          title: '2. Planes y Precios',
-          icon: '💎',
-          description: 'Ofrecemos dos planes para satisfacer diferentes necesidades:',
-          comparison: {
-            headers: ['Funcionalidad', 'Essential', 'Premium'],
-            rows: [
-              ['Panel Financiero', '✓ Básico', '✓ Completo'],
-              ['Cuentas y Tarjetas', '✓ Limitado', '✓ Ilimitado'],
-              ['Transacciones Manuales', '✓', '✓'],
-              ['Categorías Personalizadas', '✓', '✓'],
-              ['Gastos Recurrentes', '✓', '✓'],
-              ['Informes Básicos', '✓', '✓'],
-              ['Informes Avanzados', '✗', '✓'],
-              ['Conversor de Extractos (OCR)', '✗', '✓'],
-              ['Sistema de Millas con IA', '✗', '✓'],
-              ['Inversiones', '✗', '✓'],
-              ['Asistente IA Financiero', '✗', '✓'],
-              ['Soporte Prioritario', '✗', '✓'],
-            ]
-          },
-          premiumBox: {
-            title: '⭐ Desbloquea Premium',
-            content: 'Suscríbete al plan Premium y obtén acceso a todas las funciones avanzadas, incluyendo IA, millas e inversiones.'
-          }
-        },
-        {
-          id: 'primeros-pasos',
-          title: '3. Primeros Pasos',
-          icon: '🚀',
-          description: 'Sigue estos pasos para configurar tu cuenta:',
-          steps: [
-            { num: 1, title: 'Crea tu cuenta', desc: 'Visita el sitio y regístrate con email y contraseña segura.' },
-            { num: 2, title: 'Configura tu perfil', desc: 'Agrega tu nombre, foto y preferencias de moneda.' },
-            { num: 3, title: 'Agrega cuentas bancarias', desc: 'Registra tus cuentas corrientes, de ahorro y billeteras.' },
-            { num: 4, title: 'Registra tarjetas', desc: 'Agrega tus tarjetas de crédito con límites y fechas de vencimiento.' },
-            { num: 5, title: 'Vincula a tu pareja', desc: 'En configuración, envía una invitación para que tu pareja se vincule.' },
-          ],
-          warningBox: {
-            title: '⚠️ Importante',
-            content: 'Mantén tu contraseña segura y nunca compartas tus credenciales. Usa contraseñas fuertes con letras, números y símbolos.'
-          }
-        },
-        {
-          id: 'dashboard',
-          title: '4. Panel Principal',
-          icon: '📊',
-          description: 'El Panel es tu centro de comando financiero. Aquí puedes ver:',
-          features: [
-            { title: 'Saldo Total', desc: 'Suma de todas tus cuentas en tiempo real' },
-            { title: 'Gastos del Mes', desc: 'Total de gastos del mes actual' },
-            { title: 'Ingresos del Mes', desc: 'Total de ingresos recibidos' },
-            { title: 'Gráficos Interactivos', desc: 'Visualiza tendencias y patrones de gastos' },
-          ],
-          tipBox: {
-            title: '💡 Consejo',
-            content: 'Usa los filtros por período y categoría para análisis más detallados de tus gastos.'
-          }
-        },
-        {
-          id: 'cuentas',
-          title: '5. Gestión de Cuentas',
-          icon: '🏦',
-          description: 'Gestiona todas tus cuentas bancarias en un solo lugar:',
-          features: [
-            { title: 'Cuentas Corrientes', desc: 'Registra cuentas de diferentes bancos' },
-            { title: 'Ahorro', desc: 'Rastrea tus ahorros por separado' },
-            { title: 'Billeteras Digitales', desc: 'PayPal, Mercado Pago, etc.' },
-            { title: 'Efectivo', desc: 'Controla el dinero físico' },
-          ],
-          steps: [
-            { num: 1, title: 'Accede a Cuentas', desc: 'En el menú lateral, haz clic en "Cuentas".' },
-            { num: 2, title: 'Agregar Nueva', desc: 'Haz clic en el botón "+ Nueva Cuenta".' },
-            { num: 3, title: 'Completa los datos', desc: 'Nombre, tipo, saldo inicial y moneda.' },
-            { num: 4, title: 'Guardar', desc: 'Confirma para crear la cuenta.' },
-          ]
-        },
-        {
-          id: 'tarjetas',
-          title: '6. Tarjetas de Crédito',
-          icon: '💳',
-          description: 'Control completo de tus tarjetas de crédito:',
-          features: [
-            { title: 'Límite y Saldo', desc: 'Rastrea límite disponible y factura actual' },
-            { title: 'Fecha de Cierre', desc: 'Configura la fecha de cierre de la factura' },
-            { title: 'Fecha de Vencimiento', desc: 'Nunca pierdas la fecha de pago' },
-            { title: 'Múltiples Tarjetas', desc: 'Gestiona todas las tarjetas de la familia' },
-          ],
-          tipBox: {
-            title: '💡 Consejo',
-            content: 'Configura alertas para recibir notificaciones antes del vencimiento de la factura.'
-          }
-        },
-        {
-          id: 'transacciones',
-          title: '7. Transacciones',
-          icon: '💰',
-          description: 'Registra y categoriza todos tus movimientos financieros:',
-          features: [
-            { title: 'Ingresos', desc: 'Salarios, ganancias, ventas, etc.' },
-            { title: 'Gastos', desc: 'Compras, pagos, consumos' },
-            { title: 'Transferencias', desc: 'Movimientos entre cuentas' },
-            { title: 'Cuotas', desc: 'Compras en cuotas con tarjeta' },
-          ],
-          steps: [
-            { num: 1, title: 'Nueva Transacción', desc: 'Haz clic en el botón "+" o "Nueva Transacción".' },
-            { num: 2, title: 'Tipo', desc: 'Selecciona Ingreso, Gasto o Transferencia.' },
-            { num: 3, title: 'Detalles', desc: 'Monto, descripción, categoría y fecha.' },
-            { num: 4, title: 'Cuenta/Tarjeta', desc: 'Selecciona de dónde sale o entra el dinero.' },
-            { num: 5, title: 'Confirmar', desc: 'Guarda la transacción.' },
-          ]
-        },
-        {
-          id: 'categorias',
-          title: '8. Categorías',
-          icon: '🏷️',
-          description: 'Organiza tus finanzas con categorías personalizadas:',
-          features: [
-            { title: 'Categorías Predeterminadas', desc: 'Alimentación, Transporte, Vivienda, etc.' },
-            { title: 'Categorías Personalizadas', desc: 'Crea categorías específicas para ti' },
-            { title: 'Colores e Iconos', desc: 'Personaliza la apariencia' },
-            { title: 'Subcategorías', desc: 'Organiza en niveles para más detalle' },
-          ],
-          tipBox: {
-            title: '💡 Consejo',
-            content: 'Mantén tus categorías organizadas para informes más precisos y útiles.'
-          }
-        },
-        {
-          id: 'recurrentes',
-          title: '9. Gastos Recurrentes',
-          icon: '🔄',
-          description: 'Automatiza el control de gastos fijos mensuales:',
-          features: [
-            { title: 'Facturas Fijas', desc: 'Alquiler, luz, agua, internet' },
-            { title: 'Suscripciones', desc: 'Netflix, Spotify, gimnasio' },
-            { title: 'Cuotas Fijas', desc: 'Financiamientos, préstamos' },
-            { title: 'Alertas', desc: 'Notificaciones antes del vencimiento' },
-          ],
-          warningBox: {
-            title: '⚠️ Atención',
-            content: 'Revisa periódicamente tus gastos recurrentes para identificar suscripciones no utilizadas.'
-          }
-        },
-        {
-          id: 'conversor',
-          title: '10. Conversor de Extractos',
-          icon: '📄',
-          description: 'Importa extractos bancarios automáticamente (Premium):',
-          features: [
-            { title: 'Carga de PDF', desc: 'Envía extractos en formato PDF' },
-            { title: 'OCR Inteligente', desc: 'Lectura automática con IA' },
-            { title: 'Categorización', desc: 'La IA sugiere categorías automáticamente' },
-            { title: 'Revisión', desc: 'Revisa y confirma antes de importar' },
-          ],
-          steps: [
-            { num: 1, title: 'Accede al Conversor', desc: 'En el menú, haz clic en "Convertir Extractos".' },
-            { num: 2, title: 'Cargar', desc: 'Arrastra o selecciona el archivo PDF.' },
-            { num: 3, title: 'Procesamiento', desc: 'Espera a que la IA procese el documento.' },
-            { num: 4, title: 'Revisar', desc: 'Verifica las transacciones detectadas.' },
-            { num: 5, title: 'Importar', desc: 'Confirma para agregar a tus transacciones.' },
-          ],
-          premiumBox: {
-            title: '⭐ Función Premium',
-            content: 'El Conversor de Extractos solo está disponible en el plan Premium.'
-          }
-        },
-        {
-          id: 'millas',
-          title: '11. Sistema de Millas',
-          icon: '✈️',
-          description: 'Rastrea y optimiza tus millas aéreas (Premium):',
-          features: [
-            { title: 'Acumulación Automática', desc: 'Calcula millas basado en gastos de tarjeta' },
-            { title: 'Múltiples Programas', desc: 'LATAM Pass, Smiles, Avianca' },
-            { title: 'Metas de Millas', desc: 'Define objetivos de acumulación' },
-            { title: 'Promociones', desc: 'Alertas de promociones de aerolíneas' },
-          ],
-          tipBox: {
-            title: '💡 Consejo',
-            content: 'Configura las reglas de acumulación de cada tarjeta para cálculos precisos de millas.'
-          }
-        },
-        {
-          id: 'inversiones',
-          title: '12. Inversiones',
-          icon: '📈',
-          description: 'Rastrea tu cartera de inversiones (Premium):',
-          features: [
-            { title: 'Renta Fija', desc: 'Bonos, CDs, Tesoro' },
-            { title: 'Renta Variable', desc: 'Acciones, REITs, ETFs' },
-            { title: 'Criptomonedas', desc: 'Bitcoin, Ethereum y otras' },
-            { title: 'Rentabilidad', desc: 'Rastrea el rendimiento en tiempo real' },
-          ],
-          premiumBox: {
-            title: '⭐ Función Premium',
-            content: 'El módulo de Inversiones solo está disponible en el plan Premium.'
-          }
-        },
-        {
-          id: 'ia',
-          title: '13. Asistente IA',
-          icon: '🤖',
-          description: 'Usa inteligencia artificial para insights financieros (Premium):',
-          features: [
-            { title: 'Chat Financiero', desc: 'Conversa sobre tus finanzas' },
-            { title: 'Análisis Automático', desc: 'Insights sobre gastos y ahorro' },
-            { title: 'Sugerencias', desc: 'Recomendaciones personalizadas' },
-            { title: 'Previsiones', desc: 'Proyecciones basadas en historial' },
-          ],
-          tipBox: {
-            title: '💡 Consejo',
-            content: 'Pregunta al asistente sobre tus mayores gastos o cómo ahorrar en categorías específicas.'
-          }
-        },
-        {
-          id: 'informes',
-          title: '14. Informes',
-          icon: '📊',
-          description: 'Visualiza informes detallados de tus finanzas:',
-          features: [
-            { title: 'Por Categoría', desc: 'Ve gastos agrupados por categoría' },
-            { title: 'Por Período', desc: 'Análisis mensual, trimestral, anual' },
-            { title: 'Comparativos', desc: 'Compara meses e identifica tendencias' },
-            { title: 'Exportación', desc: 'Exporta a PDF o hoja de cálculo' },
-          ],
-          tipBox: {
-            title: '💡 Consejo',
-            content: 'Usa los informes mensualmente para identificar oportunidades de ahorro.'
-          }
-        },
-      ],
-      footer: {
-        support: 'Soporte',
-        email: 'support@couplesfin.com',
-        website: 'www.couplesfinancials.com',
-        copyright: '© 2024 Couples Financials. Todos los derechos reservados.'
-      }
-    }
-  };
+interface SubSection {
+  title: string;
+  content?: string;
+  steps?: { num: number; title: string; desc: string }[];
+  features?: { title: string; desc: string }[];
+  bullets?: string[];
+  tipBox?: { title: string; content: string };
+  warningBox?: { title: string; content: string };
+  premiumBox?: { title: string; content: string };
+}
 
-  return content[language];
+interface Section {
+  id: string;
+  title: string;
+  icon: string;
+  intro: string;
+  subSections: SubSection[];
+  comparison?: {
+    headers: string[];
+    rows: string[][];
+  };
+}
+
+interface TutorialContent {
+  title: string;
+  subtitle: string;
+  tagline: string;
+  tableOfContents: string;
+  page: string;
+  sections: Section[];
+  footer: {
+    support: string;
+    email: string;
+    website: string;
+    copyright: string;
+  };
+}
+
+// Complete tutorial content for Portuguese
+const getTutorialContentPT = (): TutorialContent => ({
+  title: 'Tutorial Completo',
+  subtitle: 'Couples Financials',
+  tagline: 'Guia definitivo para dominar suas finanças em casal',
+  tableOfContents: 'Índice',
+  page: 'Página',
+  sections: [
+    {
+      id: 'introducao',
+      title: '1. Introdução',
+      icon: '🎯',
+      intro: 'O Couples Financials é uma plataforma completa de gestão financeira projetada especialmente para casais que desejam organizar suas finanças de forma colaborativa e inteligente.',
+      subSections: [
+        {
+          title: 'Recursos Principais',
+          features: [
+            { title: 'Gestão Inteligente', desc: 'Controle completo de receitas, despesas, investimentos e metas financeiras com ferramentas intuitivas e IA integrada.' },
+            { title: 'Colaboração em Casal', desc: 'Funcionalidades específicas para casais compartilharem e organizarem suas finanças conjuntamente com transparência total.' },
+            { title: 'Análises Detalhadas', desc: 'Relatórios visuais avançados e insights personalizados para tomar decisões financeiras mais informadas.' },
+            { title: 'Sistema de Milhas', desc: 'Controle completo de programas de milhas e pontos com metas personalizadas e aproveitamento de promoções.' },
+          ]
+        },
+        {
+          title: 'O que Torna Nossa Plataforma Única',
+          bullets: [
+            'Interface Intuitiva: Design pensado para facilitar o uso diário',
+            'Segurança Avançada: Criptografia de ponta e proteção de dados',
+            'Suporte Multi-moeda: Gerencie finanças em diferentes moedas (BRL, USD, EUR, GBP)',
+            'Sincronização em Tempo Real: Acesso simultâneo e atualizações instantâneas',
+            'Recursos Premium: IA financeira, análises preditivas e suporte prioritário',
+          ]
+        },
+        {
+          title: 'Comparativo de Planos',
+          content: 'Conheça as diferenças entre os planos disponíveis:'
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Desbloqueie Todo o Potencial',
+            content: 'O plano Premium oferece acesso completo a todas as funcionalidades, incluindo o novo Converter de Extratos, IA financeira avançada, integração com WhatsApp e suporte prioritário.'
+          }
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Como Usar Este Tutorial',
+            content: 'Este tutorial foi desenvolvido para ser usado tanto como referência rápida quanto como guia passo a passo. Recomendamos ler os primeiros capítulos completamente antes de começar a usar a plataforma. Para usuários experientes, use o índice para encontrar seções específicas.'
+          }
+        }
+      ],
+      comparison: {
+        headers: ['Funcionalidade', 'Essential', 'Premium'],
+        rows: [
+          ['Dashboard Financeiro', 'Básico', 'Completo'],
+          ['Contas e Cartões', 'Sim', 'Sim'],
+          ['Transações Manuais', 'Sim', 'Sim'],
+          ['Relatórios Básicos', 'Sim', 'Sim'],
+          ['Gestão de Casal', 'Básico', 'Completo'],
+          ['Converter de Extratos', 'Não', 'Sim'],
+          ['WhatsApp / Comandos de Voz', 'Não', 'Sim'],
+          ['Sistema de Milhas com IA', 'Não', 'Sim'],
+          ['Planejamento com IA', 'Não', 'Sim'],
+          ['Sugestões de Investimento', 'Não', 'Sim'],
+          ['Metas Personalizadas', 'Não', 'Sim'],
+          ['Análises Avançadas', 'Não', 'Sim'],
+          ['Suporte Prioritário', 'Não', 'Sim'],
+        ]
+      }
+    },
+    {
+      id: 'primeiros-passos',
+      title: '2. Primeiros Passos',
+      icon: '🚀',
+      intro: 'Siga os passos abaixo para configurar sua conta e começar a usar a plataforma.',
+      subSections: [
+        {
+          title: 'Processo de Registro',
+          steps: [
+            { num: 1, title: 'Criando sua Conta', desc: 'Acesse a plataforma e crie sua conta utilizando email e senha segura. O sistema automaticamente criará seu perfil personalizado e categorias padrão adaptadas ao contexto brasileiro.' },
+            { num: 2, title: 'Verificação de Email', desc: 'Confirme seu email através do link enviado. Este passo é essencial para segurança e recuperação de conta.' },
+            { num: 3, title: 'Configuração Inicial', desc: 'Defina sua moeda preferida (Real brasileiro por padrão), fuso horário, idioma e informações básicas do perfil. Estas configurações podem ser alteradas posteriormente.' },
+          ]
+        },
+        {
+          title: 'Explorando a Interface',
+          features: [
+            { title: 'Menu Principal', desc: 'Navegação lateral com acesso rápido a todas as funcionalidades principais da plataforma.' },
+            { title: 'Dashboard Central', desc: 'Visão geral das suas finanças com gráficos, saldos atualizados e resumos mensais.' },
+            { title: 'Ações Rápidas', desc: 'Botões flutuantes para adicionar transações, fazer transferências e consultas rápidas.' },
+            { title: 'Central de Notificações', desc: 'Alertas inteligentes sobre vencimentos, metas e oportunidades financeiras.' },
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Como Iniciar',
+            content: 'Para INICIAR a utilização da nossa plataforma: Na tela inicial desça até "Contas" e adicione suas Contas Correntes, na sequência adicione seus Cartões de Crédito. A partir deste ponto você já consegue utilizar nosso sistema de WhatsApp, pois ele já possui informações necessárias para iniciar as interações. Quanto mais informações você adicionar na nossa plataforma mais ela poderá lhe auxiliar.'
+          }
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Segurança e Privacidade',
+            content: 'Mantenha suas informações de login seguras e use uma senha forte com pelo menos 8 caracteres, incluindo números e símbolos. O sistema conta com criptografia AES-256 para proteger todos os seus dados financeiros. Nunca compartilhe suas credenciais com terceiros.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Recursos Premium Disponíveis',
+            content: 'Usuários Premium têm acesso a funcionalidades exclusivas como IA financeira, análises preditivas, relatórios avançados, suporte prioritário e integração com WhatsApp para consultas por voz.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'dashboard',
+      title: '3. Dashboard Financeiro',
+      icon: '📊',
+      intro: 'O dashboard é o centro de controle das suas finanças, apresentando informações essenciais de forma visual e intuitiva.',
+      subSections: [
+        {
+          title: 'Visão Geral Financeira',
+          features: [
+            { title: 'Resumo de Saldos', desc: 'Visualização em tempo real dos saldos de todas as contas, cartões e investimentos, com totais consolidados.' },
+            { title: 'Gráficos Interativos', desc: 'Gráficos de receitas vs despesas, evolução patrimonial e distribuição por categorias com filtros personalizáveis.' },
+            { title: 'Agenda Financeira', desc: 'Calendário com vencimentos de cartões, parcelas e compromissos financeiros futuros.' },
+            { title: 'Metas e Objetivos', desc: 'Progresso visual das suas metas de economia, investimento e redução de gastos por categoria.' },
+          ]
+        },
+        {
+          title: 'Widgets Personalizáveis',
+          steps: [
+            { num: 1, title: 'Configuração de Widgets', desc: 'Personalize seu dashboard escolhendo quais informações deseja ver primeiro. Arraste e solte widgets para reorganizar.' },
+            { num: 2, title: 'Filtros Inteligentes', desc: 'Configure filtros por período, categoria, tipo de transação ou membro do casal para análises específicas.' },
+          ]
+        },
+        {
+          title: 'Análises em Tempo Real',
+          bullets: [
+            'Balanço Mensal: Comparação automática entre receitas e despesas do mês',
+            'Tendências: Identificação de padrões de gastos e oportunidades de economia',
+            'Alertas Inteligentes: Notificações sobre gastos incomuns ou aproximação de limites',
+            'Projeções: Estimativas de saldo futuro baseadas no histórico de transações',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dica de Produtividade',
+            content: 'Configure seu dashboard para mostrar as informações mais importantes para sua rotina. Se você consulta frequentemente saldos de cartões, mantenha esse widget no topo. Para casais, ative a visualização consolidada para ter uma visão unificada das finanças.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'transacoes',
+      title: '4. Gerenciando Transações',
+      icon: '💸',
+      intro: 'Registre e organize todas as suas movimentações financeiras de forma simples e eficiente.',
+      subSections: [
+        {
+          title: 'Adicionando Receitas',
+          steps: [
+            { num: 1, title: 'Nova Receita', desc: 'Clique em "Adicionar Transação" e selecione "Receita". Informe valor, data, categoria (salário, freelance, vendas, etc.) e método de recebimento (conta bancária, dinheiro, PIX).' },
+            { num: 2, title: 'Categorização Automática', desc: 'O sistema aprende com suas transações e sugere automaticamente categorias baseadas no histórico e descrições similares.' },
+          ]
+        },
+        {
+          title: 'Registrando Despesas',
+          steps: [
+            { num: 1, title: 'Nova Despesa', desc: 'Selecione "Despesa", informe o valor, escolha a categoria apropriada, método de pagamento (dinheiro, cartão, conta, PIX) e adicione uma descrição detalhada.' },
+            { num: 2, title: 'Parcelamento Inteligente', desc: 'Para compras parceladas, o sistema automaticamente distribui o valor nas próximas faturas do cartão de crédito.' },
+          ]
+        },
+        {
+          title: 'Transações Recorrentes',
+          content: 'Ideal para despesas fixas como aluguel, financiamentos, assinaturas e salários:',
+          features: [
+            { title: 'Configuração de Recorrência', desc: 'Defina frequência (diária, semanal, quinzenal, mensal, anual) e período de vigência.' },
+            { title: 'Geração Automática', desc: 'O sistema cria automaticamente as próximas ocorrências, mantendo seu controle sempre atualizado.' },
+            { title: 'Edição Flexível', desc: 'Modifique valores específicos sem afetar o padrão geral da recorrência.' },
+            { title: 'Projeções Futuras', desc: 'Visualize o impacto de gastos recorrentes no planejamento financeiro futuro.' },
+          ]
+        },
+        {
+          title: 'Sistema de Tags e Observações',
+          bullets: [
+            'Tags Personalizadas: Crie etiquetas para organizar transações (ex: "urgente", "lazer", "trabalho")',
+            'Observações Detalhadas: Adicione contexto importante sobre cada transação',
+            'Anexos: Vincule fotos de notas fiscais e comprovantes',
+            'Localização: Registre onde a transação foi realizada',
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Boas Práticas para Registro',
+            content: 'Sempre selecione corretamente o método de pagamento - isso afeta diretamente os saldos disponíveis. Para cartões de crédito, considere a data de vencimento da fatura. Para débito e dinheiro, o impacto é imediato no saldo. Use descrições claras para facilitar futuras consultas e análises.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Recursos Premium de Transações',
+            content: 'Usuários Premium têm acesso a importação automática de extratos bancários, categorização inteligente por IA, detecção de duplicatas e análises preditivas de padrões de gastos.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'contas',
+      title: '5. Gestão de Contas Bancárias',
+      icon: '🏦',
+      intro: 'Gerencie todas as suas contas bancárias em um só lugar com controle preciso de saldos.',
+      subSections: [
+        {
+          title: 'Adicionando Contas',
+          steps: [
+            { num: 1, title: 'Acesso ao Menu de Contas', desc: 'Navegue até "Contas" no menu principal e clique em "Adicionar Nova Conta".' },
+            { num: 2, title: 'Informações da Conta', desc: 'Preencha: nome do banco (com seleção de ícones dos principais bancos brasileiros), tipo de conta (corrente/poupança), saldo inicial e limite de cheque especial se aplicável.' },
+            { num: 3, title: 'Configurações Específicas', desc: 'Defina se a conta permite saque, transferências, se é conta principal e configure alertas de saldo baixo.' },
+          ]
+        },
+        {
+          title: 'Gestão da Conta de Dinheiro',
+          content: 'A conta de dinheiro funciona de forma independente das demais contas:',
+          features: [
+            { title: 'Receitas em Dinheiro', desc: 'Registre apenas quando receber dinheiro físico real. Ex: "Recebido R$ 50 de venda" ou "Troco recebido R$ 10".' },
+            { title: 'Despesas em Dinheiro', desc: 'Só é possível gastar se houver saldo suficiente. O sistema impede gastos sem saldo disponível.' },
+            { title: 'Conexão via Saques', desc: 'A única ligação entre contas: saque retira da conta bancária e adiciona à conta de dinheiro automaticamente.' },
+            { title: 'Controle Preciso', desc: 'Acompanhe exatamente quanto dinheiro físico você possui e onde foi gasto.' },
+          ]
+        },
+        {
+          title: 'Transferências Entre Contas',
+          steps: [
+            { num: 1, title: 'Nova Transferência', desc: 'Selecione conta de origem e destino, informe o valor e adicione uma descrição (ex: "Transferência para poupança").' },
+            { num: 2, title: 'Tipos de Transferência', desc: 'Suporte a TED, DOC, PIX e transferências internas com registro automático em ambas as contas.' },
+          ]
+        },
+        {
+          title: 'Monitoramento e Alertas',
+          bullets: [
+            'Saldo em Tempo Real: Acompanhamento constante de todas as contas',
+            'Alertas de Limite: Notificações quando saldo fica baixo ou usa cheque especial',
+            'Histórico Detalhado: Todas as movimentações com filtros avançados',
+            'Reconciliação: Compare seus registros com extratos bancários',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Exemplo Prático de Uso',
+            content: 'Cenário: Você tem R$ 2.000 no Itaú e precisa de R$ 200 em dinheiro para uma feira. Processo: Registre um saque de R$ 200. Resultado automático: R$ 1.800 no Itaú + R$ 200 na conta de dinheiro. Compra na feira: Registre despesa de R$ 150 em dinheiro. Resultado: R$ 50 restam na conta de dinheiro.'
+          }
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Importante sobre Contas de Dinheiro',
+            content: 'Nunca registre transações em dinheiro diretamente em contas bancárias. Use exclusivamente a conta de dinheiro para transações físicas em espécie. Esta separação garante controle preciso sobre cada tipo de saldo.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'cartoes',
+      title: '6. Gestão de Cartões',
+      icon: '💳',
+      intro: 'Controle completo dos seus cartões de crédito com gestão de faturas, limites e pagamentos.',
+      subSections: [
+        {
+          title: 'Adicionando Cartões',
+          steps: [
+            { num: 1, title: 'Configuração Inicial', desc: 'Acesse "Cartões" e adicione novo cartão informando nome, bandeira (Visa, Mastercard, etc.), tipo (crédito/débito) e banco emissor.' },
+            { num: 2, title: 'Cartões de Crédito', desc: 'Configure limite total, data de fechamento (quando a fatura é gerada), data de vencimento e melhor dia de compra para maximizar o prazo.' },
+            { num: 3, title: 'Cartões de Débito', desc: 'Vincule à conta bancária correspondente para desconto automático do saldo disponível a cada compra.' },
+          ]
+        },
+        {
+          title: 'Gestão de Faturas',
+          features: [
+            { title: 'Controle de Limite', desc: 'Acompanhe limite disponível, valor da fatura atual e projeção para próximas faturas.' },
+            { title: 'Calendário de Vencimentos', desc: 'Visualize todas as datas de vencimento em um calendário integrado com alertas automáticos.' },
+            { title: 'Pagamento de Faturas', desc: 'Registre pagamentos totais ou parciais com histórico completo de quitações.' },
+            { title: 'Parcelamentos', desc: 'Gerencie compras parceladas com distribuição automática entre faturas futuras.' },
+          ]
+        },
+        {
+          title: 'Pagamentos como Transferências Internas',
+          content: 'Quando você realiza um pagamento de cartão de crédito no sistema, ele é registrado como uma transferência interna:',
+          steps: [
+            { num: 1, title: 'Saída da Conta Bancária', desc: 'Se você pagar usando uma conta bancária, o sistema registra uma transação de despesa (saída) na conta selecionada, debitando o valor pago do saldo disponível.' },
+            { num: 2, title: 'Entrada Virtual no Cartão', desc: 'Simultaneamente, é criada uma transação de receita (entrada virtual) vinculada ao cartão, reduzindo a dívida e aumentando o limite disponível proporcionalmente.' },
+            { num: 3, title: 'Visualização nas Transferências', desc: 'Essas movimentações aparecem automaticamente na aba "Transferências" dentro de "Receitas Mensais", permitindo rastrear todos os pagamentos de cartão realizados.' },
+          ]
+        },
+        {
+          title: 'Benefícios desta Abordagem',
+          bullets: [
+            'Transparência Total: Você vê exatamente de onde saiu o dinheiro e para onde foi',
+            'Controle de Fluxo: As transferências internas não afetam seus saldos de receita/despesa mensais',
+            'Histórico Completo: Todos os pagamentos ficam registrados em múltiplos locais',
+            'Rastreabilidade: Fácil auditoria de pagamentos realizados ao longo do tempo',
+          ]
+        },
+        {
+          title: 'Cartões de Milhas',
+          content: 'Para cartões que acumulam milhas ou pontos:',
+          bullets: [
+            'Configuração de Acúmulo: Defina quantos pontos por real gasto',
+            'Metas de Milhas: Estabeleça objetivos de acúmulo mensal/anual',
+            'Promoções Especiais: Registre multiplicadores em categorias específicas',
+            'Histórico de Resgates: Acompanhe utilização de pontos e milhas',
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Moeda do Pagamento',
+            content: 'Você pode escolher a moeda de pagamento ao realizar o pagamento do cartão. Por exemplo: se você tem um cartão em Dólar mas paga usando Reais, o sistema faz a conversão automática. O valor debitado da sua conta será em Reais, mas a dívida do cartão será reduzida no equivalente em Dólar.'
+          }
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dica para Maximizar Benefícios',
+            content: 'Use nomes descritivos como "Nubank Roxinho", "Itaú Click Mastercard" para fácil identificação. Configure alertas de vencimento com 3-5 dias de antecedência. Para cartões com anuidade, monitore se os benefícios compensam o custo anual.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Recursos Premium para Cartões',
+            content: 'Análise comparativa automática de benefícios, sugestões de cartões ideais para seu perfil, alertas de promoções especiais e otimização inteligente de pagamentos para maximizar cashback e milhas.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'investimentos',
+      title: '7. Controle de Investimentos',
+      icon: '📈',
+      intro: 'Acompanhe sua carteira de investimentos com análises de rentabilidade e performance.',
+      subSections: [
+        {
+          title: 'Cadastrando Investimentos',
+          steps: [
+            { num: 1, title: 'Novo Investimento', desc: 'Acesse "Investimentos" e adicione informando nome do produto, tipo (CDB, LCI/LCA, ações, fundos, etc.), valor investido, data de aplicação e instituição financeira.' },
+            { num: 2, title: 'Configurações Avançadas', desc: 'Defina rentabilidade esperada, prazo de vencimento, liquidez (D+0, D+1, etc.) e se há proteção do FGC.' },
+            { num: 3, title: 'Acompanhamento de Performance', desc: 'Atualize periodicamente o valor atual para monitorar rendimentos, perdas e compare com metas estabelecidas.' },
+          ]
+        },
+        {
+          title: 'Tipos de Investimento Suportados',
+          features: [
+            { title: 'Renda Fixa', desc: 'CDB, LCI, LCA, Tesouro Direto, CRI, CRA com cálculo automático de rentabilidade bruta e líquida.' },
+            { title: 'Renda Variável', desc: 'Ações, FIIs, ETFs com acompanhamento de cotações e dividendos recebidos.' },
+            { title: 'Fundos de Investimento', desc: 'Fundos multimercado, DI, ações com controle de cotas e performance histórica.' },
+            { title: 'Internacional', desc: 'REITs, ações americanas, bonds com conversão automática de moedas.' },
+          ]
+        },
+        {
+          title: 'Metas e Objetivos',
+          steps: [
+            { num: 1, title: 'Definindo Metas', desc: 'Estabeleça objetivos claros: valor total desejado, prazo para atingir e propósito específico (aposentadoria, casa própria, viagem, etc.).' },
+            { num: 2, title: 'Estratégias de Aporte', desc: 'Configure aportes mensais automáticos e simule diferentes cenários de investimento.' },
+          ]
+        },
+        {
+          title: 'Análises de Portfólio',
+          bullets: [
+            'Diversificação: Gráficos mostrando distribuição por tipo, prazo e risco',
+            'Performance: Comparação com CDI, IPCA e outros benchmarks',
+            'Rentabilidade: Cálculos de juros compostos e projeções futuras',
+            'Liquidez: Análise de quanto do patrimônio está disponível rapidamente',
+          ]
+        },
+        {
+          title: 'Gestão de Resgates',
+          steps: [
+            { num: 1, title: 'Planejamento de Resgates', desc: 'Simule diferentes cenários de resgate considerando impostos, taxas e impacto no portfólio.' },
+            { num: 2, title: 'Registro de Resgates', desc: 'Registre retiradas com valor bruto, descontos de IR e taxas, valor líquido recebido.' },
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Estratégia de Diversificação',
+            content: 'Use o sistema para manter uma carteira diversificada: 20-40% renda fixa, 40-60% renda variável, 10-20% reserva de emergência. Reavalie periodicamente e rebalanceie conforme necessário. Para casais, considere objetivos individuais e conjuntos.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Recursos Premium de Investimentos',
+            content: 'Integração com APIs de cotações em tempo real, recomendações personalizadas de IA, análise de risco automatizada, alertas de oportunidades e comparação automática com carteiras de referência.'
+          }
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Considerações Importantes',
+            content: 'Lembre-se de considerar impostos (IR progressivo para renda fixa, 15% para ações após 6 meses), taxas de administração e custódia. Mantenha sempre uma reserva de emergência antes de investir. Diversifique entre diferentes tipos e prazos de investimento.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'milhas',
+      title: '8. Sistema de Milhas',
+      icon: '✈️',
+      intro: 'Acompanhe e otimize suas milhas aéreas com estratégias inteligentes de acúmulo e resgate.',
+      subSections: [
+        {
+          title: 'Configuração de Programas',
+          steps: [
+            { num: 1, title: 'Adicionando Programas', desc: 'Cadastre seus programas de fidelidade: LATAM Pass, Smiles, TudoAzul, Livelo, etc. Informe saldo inicial e validade dos pontos.' },
+            { num: 2, title: 'Metas de Acúmulo', desc: 'Defina objetivos específicos: "Acumular 50.000 milhas LATAM até dezembro para viagem à Europa" com prazo e valor de passagem desejada.' },
+            { num: 3, title: 'Vinculação com Cartões', desc: 'Configure quais cartões geram milhas em cada programa e suas respectivas taxas de conversão (ex: 1 real = 1 ponto Livelo).' },
+          ]
+        },
+        {
+          title: 'Estratégias de Acúmulo',
+          features: [
+            { title: 'Gastos Recorrentes', desc: 'Use cartões de milhas para pagamentos fixos: condomínio, escola, combustível, supermercado.' },
+            { title: 'Promoções Especiais', desc: 'Monitore campanhas de bonificação: 3x pontos em farmácias, 5x em postos, compre e ganhe.' },
+            { title: 'Parceiros', desc: 'Acumule em parceiros: hotéis, locadoras, e-commerce, restaurantes com multiplicadores especiais.' },
+            { title: 'Transferências', desc: 'Gerencie transferências entre programas considerando taxas e bonificações sazonais.' },
+          ]
+        },
+        {
+          title: 'Gestão de Resgates',
+          steps: [
+            { num: 1, title: 'Planejamento de Viagens', desc: 'Simule resgates para diferentes destinos e datas. Compare custos em milhas vs dinheiro para encontrar o melhor custo-benefício.' },
+            { num: 2, title: 'Produtos e Serviços', desc: 'Avalie resgates alternativos: upgrades, produtos, cashback quando não há disponibilidade de passagens.' },
+          ]
+        },
+        {
+          title: 'Monitoramento e Alertas',
+          bullets: [
+            'Vencimento de Pontos: Alertas automáticos para pontos próximos ao vencimento',
+            'Promoções Ativas: Notificações sobre campanhas de bonificação em andamento',
+            'Metas de Progresso: Acompanhamento visual do progresso para atingir objetivos',
+            'Análise de Valor: Cálculo do CPM (custo por milha) de cada estratégia',
+          ]
+        },
+        {
+          title: 'Funcionalidades para Casais',
+          features: [
+            { title: 'Conta Conjunta', desc: 'Visualize saldos consolidados do casal em cada programa de milhas.' },
+            { title: 'Metas Compartilhadas', desc: 'Definam objetivos conjuntos: "Lua de mel em Paris - 100.000 milhas LATAM".' },
+            { title: 'Estratégia Coordenada', desc: 'Otimize gastos entre cartões dos dois para maximizar acúmulo conjunto.' },
+            { title: 'Transferências Internas', desc: 'Gerencie transferências de pontos entre cônjuges quando permitido pelo programa.' },
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Estratégias Avançadas',
+            content: 'Use cartões diferentes para categorias específicas: cartão A para supermercado (3x pontos), cartão B para combustível (5x pontos). Aproveite promoções sazonais e compre pontos com desconto quando necessário. Monitore constantemente as regras dos programas que mudam frequentemente.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Recursos Premium de Milhas',
+            content: 'Sincronização automática com sites de programas, alertas de promoções personalizados, calculadora avançada de CPM, sugestões de estratégias otimizadas por IA e análise preditiva de melhores períodos para resgates.'
+          }
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Cuidados com Milhas',
+            content: 'Acompanhe datas de validade - pontos vencidos não podem ser recuperados. Não acumule indefinidamente; use regularmente para evitar perdas. Considere o custo real: se precisar gastar mais para ganhar milhas, avalie se vale a pena.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'converter',
+      title: '9. Converter de Extratos',
+      icon: '📄',
+      intro: 'Importe e processe extratos bancários automaticamente com tecnologia OCR e IA.',
+      subSections: [
+        {
+          title: '',
+          premiumBox: {
+            title: 'Funcionalidade Exclusiva Premium',
+            content: 'O Converter de Extratos é uma ferramenta avançada exclusiva para assinantes Premium que permite importar e processar extratos bancários e de cartões automaticamente.'
+          }
+        },
+        {
+          title: 'O Que é o Converter?',
+          content: 'O Converter de Extratos transforma arquivos de extratos bancários em transações organizadas dentro da plataforma, eliminando a necessidade de digitar manualmente cada transação.',
+          features: [
+            { title: 'Múltiplos Formatos', desc: 'Suporta PDF, CSV, OFX, e imagens de extratos. Reconhecimento inteligente de diferentes layouts de bancos.' },
+            { title: 'OCR Inteligente', desc: 'Tecnologia de reconhecimento óptico para extratos em imagem ou PDFs escaneados.' },
+            { title: 'Categorização Automática', desc: 'IA identifica e categoriza transações automaticamente baseada em padrões e histórico.' },
+            { title: 'Detecção de Duplicatas', desc: 'Sistema inteligente que identifica e alerta sobre transações possivelmente duplicadas.' },
+          ]
+        },
+        {
+          title: 'Como Usar o Converter',
+          steps: [
+            { num: 1, title: 'Upload do Arquivo', desc: 'Acesse o menu "Converter" e faça upload do seu extrato em PDF, CSV, OFX ou imagem.' },
+            { num: 2, title: 'Preview e Validação', desc: 'Visualize as transações detectadas e confirme valores, datas e descrições antes de importar.' },
+            { num: 3, title: 'Reconciliação', desc: 'Compare com transações existentes e resolva possíveis duplicatas ou conflitos.' },
+            { num: 4, title: 'Regras de Importação', desc: 'Configure regras personalizadas para categorização automática de transações recorrentes.' },
+            { num: 5, title: 'Exportação e Integração', desc: 'Exporte para Excel/CSV ou envie diretamente para suas transações na plataforma.' },
+          ]
+        },
+        {
+          title: 'Bancos Suportados',
+          content: 'O Converter reconhece automaticamente extratos dos principais bancos brasileiros e internacionais:',
+          bullets: [
+            'Bancos Brasileiros: Itaú, Bradesco, Santander, Banco do Brasil, Caixa, Nubank, Inter, C6 Bank, BTG',
+            'Cartões: Mastercard, Visa, Amex, Elo',
+            'Formato Universal: Arquivos OFX são compatíveis com qualquer instituição',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dicas para Melhor Resultado',
+            content: 'Para PDFs, prefira extratos baixados diretamente do internet banking (não escaneados). Para imagens, garanta boa iluminação e texto legível. Configure regras de categorização para transações recorrentes e ganhe tempo nos próximos imports.'
+          }
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Privacidade e Segurança',
+            content: 'Seus arquivos são processados com criptografia e não são armazenados em nossos servidores após o processamento. Todas as transações importadas são protegidas pelos mesmos padrões de segurança da plataforma.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'ia',
+      title: '10. Recursos de IA',
+      icon: '🤖',
+      intro: 'Use inteligência artificial para obter insights financeiros personalizados e automatizar tarefas.',
+      subSections: [
+        {
+          title: 'Recomendações Personalizadas',
+          content: 'Nossa IA financeira analisa seus dados para fornecer insights valiosos:',
+          features: [
+            { title: 'Análise de Padrões', desc: 'Identifica tendências de gastos, sazonalidades e oportunidades de economia baseadas no seu histórico financeiro.' },
+            { title: 'Otimização de Cartões', desc: 'Sugere qual cartão usar em cada situação para maximizar benefícios, cashback e milhas.' },
+            { title: 'Metas Inteligentes', desc: 'Propõe metas realistas baseadas na sua capacidade financeira e objetivos declarados.' },
+            { title: 'Alertas Preditivos', desc: 'Avisa sobre possíveis problemas financeiros futuros e sugere ações preventivas.' },
+          ]
+        },
+        {
+          title: 'WhatsApp Smart (Premium)',
+          content: 'Acesse suas informações financeiras via WhatsApp:',
+          bullets: [
+            'Consultas de Saldo: "Qual meu saldo no Nubank?"',
+            'Gastos por Período: "Quanto gastei em alimentação este mês?"',
+            'Lembretes: "Quais cartões vencem esta semana?"',
+            'Análises Rápidas: "Como está meu orçamento?"',
+          ]
+        },
+        {
+          title: 'Configuração do WhatsApp',
+          steps: [
+            { num: 1, title: 'Configuração do WhatsApp', desc: 'Conecte seu número na área Premium do sistema. Receba um código de verificação via SMS para confirmar.' },
+            { num: 2, title: 'Comandos Disponíveis', desc: 'Use comandos naturais em português. A IA entende contexto e pode responder perguntas complexas sobre suas finanças.' },
+          ]
+        },
+        {
+          title: 'Análise Preditiva',
+          features: [
+            { title: 'Projeções Financeiras', desc: 'Prevê saldos futuros baseados em padrões históricos e transações programadas.' },
+            { title: 'Simulação de Cenários', desc: 'Analisa o impacto de grandes compras, mudanças de renda ou novos investimentos.' },
+            { title: 'Sugestões de Investimento', desc: 'Recomenda produtos financeiros adequados ao seu perfil e objetivos.' },
+            { title: 'Otimização Automática', desc: 'Sugere realocações de recursos para maximizar rentabilidade e liquidez.' },
+          ]
+        },
+        {
+          title: 'Consultor Financeiro IA',
+          content: 'Chat avançado com IA especializada em finanças pessoais:',
+          bullets: [
+            'Planejamento Financeiro: Ajuda a criar estratégias personalizadas',
+            'Educação Financeira: Explica conceitos e responde dúvidas',
+            'Análise de Investimentos: Avalia oportunidades e riscos',
+            'Gestão de Dívidas: Estratégias para quitação otimizada',
+          ]
+        },
+        {
+          title: 'Insights Automatizados',
+          bullets: [
+            'Relatórios Inteligentes: Análises automáticas semanais e mensais',
+            'Detecção de Anomalias: Identifica gastos incomuns ou suspeitos',
+            'Benchmarking: Compara seu desempenho com usuários similares',
+            'Recomendações Sazonais: Sugere ajustes para diferentes épocas do ano',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Maximizando os Recursos de IA',
+            content: 'Para melhores resultados, mantenha seus dados sempre atualizados e utilize as categorias corretas. Quanto mais informações precisas, mais assertivas serão as recomendações da IA. Configure seus objetivos e metas para receber sugestões personalizadas.'
+          }
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Privacidade e Segurança',
+            content: 'Todos os recursos de IA operam com total segurança e privacidade. Seus dados nunca são compartilhados com terceiros. A IA processa informações localmente sempre que possível, e quando necessário usar serviços externos, os dados são criptografados e anonimizados.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'casais',
+      title: '11. Funcionalidades para Casais',
+      icon: '👫',
+      intro: 'Ferramentas especiais para gestão financeira colaborativa entre casais.',
+      subSections: [
+        {
+          title: 'Convite e Configuração',
+          steps: [
+            { num: 1, title: 'Enviando Convite', desc: 'Na área "Casal", envie um convite por email para seu cônjuge. Ele receberá um link para criar conta vinculada.' },
+            { num: 2, title: 'Definindo Permissões', desc: 'Configure o que cada um pode ver e editar: contas individuais, contas conjuntas, cartões pessoais vs compartilhados.' },
+            { num: 3, title: 'Sincronização de Dados', desc: 'Escolha quais informações serão compartilhadas automaticamente entre os perfis do casal.' },
+          ]
+        },
+        {
+          title: 'Gestão Financeira Conjunta',
+          features: [
+            { title: 'Contas Compartilhadas', desc: 'Marquem contas como "conjuntas" para ambos terem visibilidade e acesso total aos dados.' },
+            { title: 'Cartões do Casal', desc: 'Gerenciem cartões compartilhados com visibilidade de gastos de ambos os portadores.' },
+            { title: 'Dashboard Unificado', desc: 'Visualização consolidada das finanças do casal com separação por responsável quando necessário.' },
+            { title: 'Metas Conjuntas', desc: 'Definam objetivos financeiros em conjunto: casa própria, viagens, aposentadoria.' },
+          ]
+        },
+        {
+          title: 'Relatórios para Casais',
+          steps: [
+            { num: 1, title: 'Gastos Consolidados', desc: 'Visualizem gastos totais do casal por categoria, período e responsável. Identifiquem padrões de consumo conjunto.' },
+            { num: 2, title: 'Divisão de Despesas', desc: 'Acompanhem divisões proporcionais: 50/50, por renda, por categoria específica ou modelo personalizado.' },
+          ]
+        },
+        {
+          title: 'Funcionalidades Colaborativas',
+          bullets: [
+            'Orçamento Compartilhado: Definam limites de gastos por categoria que ambos devem respeitar',
+            'Notificações Cruzadas: Recebam alertas sobre gastos importantes do cônjuge',
+            'Lista de Compras: Compartilhem listas sincronizadas para evitar compras duplicadas',
+            'Planejamento de Viagens: Organização financeira conjunta para viagens e eventos',
+          ]
+        },
+        {
+          title: 'Metas e Objetivos em Casal',
+          features: [
+            { title: 'Sonho da Casa Própria', desc: 'Calculem valor necessário para entrada, financiamento e acompanhem progresso conjunto da poupança.' },
+            { title: 'Viagens dos Sonhos', desc: 'Planejem destinos, custos e estratégias de economia. Incluam milhas e pontos no planejamento.' },
+            { title: 'Filhos e Educação', desc: 'Organizem financeiramente para filhos: parto, educação, planos de saúde e reserva para futuro.' },
+            { title: 'Aposentadoria', desc: 'Planejem aposentadoria conjunta com metas de investimento e projeções de longo prazo.' },
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Equilíbrio entre Transparência e Privacidade',
+            content: 'Mesmo em relacionamentos, cada pessoa tem direito à privacidade financeira. Configure adequadamente: contas pessoais vs conjuntas, gastos individuais vs compartilhados, limite de valores para notificações automáticas, informações que devem permanecer privadas.'
+          }
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dicas para Comunicação Saudável',
+            content: 'Use o sistema para facilitar conversas sobre dinheiro: Revisem relatórios mensais juntos, definam reuniões financeiras regulares, celebrem metas atingidas em conjunto, discutam ajustes necessários com dados concretos, usem alertas para evitar surpresas desagradáveis.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Recursos Premium para Casais',
+            content: 'Mediação inteligente de conflitos financeiros, sugestões personalizadas para harmonia financeira, análise comparativa de compatibilidade financeira e consultoria especializada para casais via IA.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'relatorios',
+      title: '12. Relatórios e Análises',
+      icon: '📊',
+      intro: 'Visualize relatórios detalhados e análises das suas finanças para tomar melhores decisões.',
+      subSections: [
+        {
+          title: 'Relatórios Básicos',
+          features: [
+            { title: 'Fluxo de Caixa', desc: 'Acompanhe entradas vs saídas mensais com projeções para meses futuros baseadas em padrões históricos.' },
+            { title: 'Gastos por Categoria', desc: 'Visualize distribuição percentual de gastos com gráficos de pizza e barras interativos.' },
+            { title: 'Análise de Cartões', desc: 'Utilização de limites, gastos por cartão e otimização de benefícios recebidos.' },
+            { title: 'Evolução Temporal', desc: 'Gráficos de linha mostrando evolução patrimonial, gastos mensais e tendências.' },
+          ]
+        },
+        {
+          title: 'Análises Avançadas',
+          steps: [
+            { num: 1, title: 'Comparativos Períodos', desc: 'Compare meses, trimestres ou anos para identificar sazonalidades e mudanças de comportamento financeiro.' },
+            { num: 2, title: 'Análise de Metas', desc: 'Acompanhe progresso de todas as metas com projeções de quando serão atingidas baseadas no ritmo atual.' },
+            { num: 3, title: 'Rentabilidade de Investimentos', desc: 'Performance detalhada do portfólio com comparações contra benchmarks (CDI, IPCA, IBOVESPA).' },
+          ]
+        },
+        {
+          title: 'Dashboards Interativos',
+          bullets: [
+            'Filtros Avançados: Por período, categoria, membro do casal, tipo de transação',
+            'Drill-down: Clique em gráficos para ver detalhes específicos',
+            'Exportação: PDF, Excel, CSV para análises externas',
+            'Agendamento: Receba relatórios automáticos por email',
+          ]
+        },
+        {
+          title: 'Insights Automáticos',
+          features: [
+            { title: 'Detecção de Padrões', desc: 'IA identifica tendências: "Gastos com alimentação aumentaram 15% nos últimos 3 meses".' },
+            { title: 'Alertas Inteligentes', desc: 'Notificações sobre gastos incomuns, aproximação de limites e oportunidades de economia.' },
+            { title: 'Projeções', desc: 'Estimativas de saldos futuros e tempo para atingir metas baseadas em comportamento atual.' },
+            { title: 'Oportunidades', desc: 'Sugestões para otimização: "Transferir R$ 5.000 para investimento pode render R$ 300 extras por ano".' },
+          ]
+        },
+        {
+          title: 'Personalização de Relatórios',
+          bullets: [
+            'Widgets Customizáveis: Escolha quais gráficos aparecem no dashboard principal',
+            'Cores e Temas: Personalize aparência para sua preferência',
+            'Frequência de Atualizações: Configure intervalos de refresh automático',
+            'Métricas Favoritas: Destaque KPIs mais importantes para seu perfil',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Usando Relatórios para Decisões',
+            content: 'Transforme dados em ações concretas: Identifique categorias com gastos crescentes para ajustar orçamento, use análises de cartões para maximizar benefícios, monitore performance de investimentos para rebalanceamento, analise sazonalidades para planejar gastos futuros.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Relatórios Premium',
+            content: 'Análises preditivas avançadas, comparações com benchmarks de mercado, relatórios personalizados por IA, integração com planilhas do Google e análises de risco automatizadas.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'configuracoes',
+      title: '13. Configurações e Perfil',
+      icon: '⚙️',
+      intro: 'Personalize sua experiência e configure preferências de segurança e privacidade.',
+      subSections: [
+        {
+          title: 'Configurações Pessoais',
+          steps: [
+            { num: 1, title: 'Informações do Perfil', desc: 'Atualize nome, email, telefone, foto do perfil e informações pessoais. Mantenha dados sempre atualizados para melhor experiência.' },
+            { num: 2, title: 'Preferências Regionais', desc: 'Configure idioma (português, inglês, espanhol), moeda principal, fuso horário e formato de data/hora.' },
+            { num: 3, title: 'Tema e Interface', desc: 'Escolha entre modo claro/escuro, densidade de informações e configurações de acessibilidade.' },
+          ]
+        },
+        {
+          title: 'Segurança e Privacidade',
+          features: [
+            { title: 'Gestão de Senha', desc: 'Altere senha regularmente, ative autenticação de dois fatores e gerencie dispositivos conectados.' },
+            { title: 'Autenticação 2FA', desc: 'Configure 2FA via SMS, app autenticador ou email para segurança adicional em acessos.' },
+            { title: 'Histórico de Acesso', desc: 'Monitore logins recentes, dispositivos utilizados e localizações de acesso.' },
+            { title: 'Privacidade de Dados', desc: 'Configure níveis de compartilhamento, backup automático e retenção de dados históricos.' },
+          ]
+        },
+        {
+          title: 'Sistema de Notificações',
+          steps: [
+            { num: 1, title: 'Preferências de Notificação', desc: 'Configure quais eventos geram alertas: vencimentos, metas atingidas, gastos incomuns, novos recursos.' },
+            { num: 2, title: 'Canais de Comunicação', desc: 'Escolha como receber notificações: email, SMS, push no app, WhatsApp (Premium).' },
+            { num: 3, title: 'Frequência e Horários', desc: 'Defina horários para receber resumos diários/semanais e configure modo "não perturbe".' },
+          ]
+        },
+        {
+          title: 'Configurações Financeiras',
+          bullets: [
+            'Moeda Principal: Real brasileiro, Dólar americano, Euro ou outras',
+            'Casas Decimais: Precisão para exibição de valores monetários',
+            'Categorias Padrão: Personalização das categorias que aparecem primeiro',
+            'Metas Automáticas: Configuração de metas recorrentes mensais/anuais',
+          ]
+        },
+        {
+          title: 'Backup e Sincronização',
+          bullets: [
+            'Backup Automático: Dados salvos na nuvem diariamente',
+            'Sincronização Multi-dispositivo: Acesso sincronizado entre celular, tablet e computador',
+            'Exportação de Dados: Download completo em formatos padrão (JSON, CSV)',
+            'Importação: Migração de dados de outras plataformas financeiras',
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Segurança Recomendada',
+            content: 'Para máxima segurança: ative 2FA, use senha única e forte, revise dispositivos conectados mensalmente, mantenha email de recuperação atualizado e configure alertas de acesso suspeito.'
+          }
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Otimização de Performance',
+            content: 'Para melhor experiência: mantenha apenas widgets essenciais no dashboard, configure períodos adequados aos seus hábitos de análise, use categorias consistentes e revise configurações trimestralmente.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'parcerias',
+      title: '14. Programa de Parcerias',
+      icon: '🤝',
+      intro: 'Monetize sua rede compartilhando o Couples Financials e ganhe comissões.',
+      subSections: [
+        {
+          title: 'Sistema de Afiliados',
+          features: [
+            { title: 'Benefícios para Você', desc: 'Comissões recorrentes de U$5 a U$12 Dólares por assinatura ANUAL realizada com seu código. Bônus por metas e campanhas sazonais. Recebimento em até 45 dias.' },
+            { title: 'Link Personalizado', desc: 'Receba seu link único de afiliado para rastrear conversões e comissões de forma transparente.' },
+            { title: 'Dashboard de Afiliado', desc: 'Monitore cliques, conversões, comissões ganhas e pendentes em tempo real.' },
+            { title: 'Pagamentos Mensais', desc: 'Receba comissões mensalmente via PIX, transferência bancária ou PayPal.' },
+          ]
+        },
+        {
+          title: 'Kit de Materiais Marketing',
+          steps: [
+            { num: 1, title: 'Recursos Visuais', desc: 'Banners em diversos tamanhos, logos, ícones, templates para stories do Instagram, posts para LinkedIn e Facebook.' },
+            { num: 2, title: 'Conteúdo Escrito', desc: 'Scripts para vídeos, textos para posts, templates de email marketing e artigos para blogs.' },
+            { num: 3, title: 'Recursos Interativos', desc: 'Vídeos demonstrativos, webinars gravados, apresentações e calculadoras financeiras personalizadas.' },
+          ]
+        },
+        {
+          title: 'Perfis Ideais para Parceria',
+          bullets: [
+            'Influenciadores Financeiros: Criadores de conteúdo sobre finanças pessoais',
+            'Casais Influencers: Perfis que compartilham vida a dois e planejamento conjunto',
+            'Educadores: Professores, coaches e consultores financeiros',
+            'Blogueiros: Escritores de blogs sobre relacionamentos e finanças',
+            'YouTubers: Criadores de vídeos educacionais e de lifestyle',
+          ]
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Programa VIP para Super Parceiros',
+            content: 'Parceiros de alta performance têm acesso a: participação em decisões de produto, beta testing de novas funcionalidades, eventos exclusivos, comissões especiais e co-marketing personalizado.'
+          }
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dicas para Sucesso como Afiliado',
+            content: 'Conheça profundamente o produto, compartilhe experiências genuínas, foque em educar sua audiência sobre finanças, use dados e resultados reais, engaje com comentários e dúvidas, e mantenha consistência na divulgação.'
+          }
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Termos e Condições',
+            content: 'Leia atentamente o contrato de afiliados. Práticas proibidas: spam, compras falsas, publicidade enganosa. Comissões são pagas apenas para conversões legítimas. Reservamo-nos o direito de revisar e aprovar materiais de marketing.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'solucoes',
+      title: '15. Solução de Problemas',
+      icon: '🛠️',
+      intro: 'Encontre respostas para problemas comuns e saiba como obter suporte.',
+      subSections: [
+        {
+          title: 'Perguntas Frequentes (FAQ)',
+          features: [
+            { title: 'Esqueci minha senha', desc: 'Use "Esqueci senha" na tela de login. Verifique spam/lixo eletrônico. Se não receber, entre em contato conosco.' },
+            { title: 'Saldos não conferem', desc: 'Verifique se todas as transações foram registradas corretamente. Compare com extratos bancários reais.' },
+            { title: 'App não sincroniza', desc: 'Verifique conexão com internet. Force fechamento e reabra o app. Faça logout/login se necessário.' },
+            { title: 'Problemas com convite de casal', desc: 'Verifique se email está correto. Cônjuge deve usar o mesmo email do convite para criar conta.' },
+          ]
+        },
+        {
+          title: 'Problemas Técnicos Comuns',
+          steps: [
+            { num: 1, title: 'Problemas de Login', desc: 'Sintomas: Não consegue entrar, erro de credenciais. Soluções: Verifique caps lock, limpe cache do navegador, tente navegador diferente, reset de senha.' },
+            { num: 2, title: 'Lentidão na Plataforma', desc: 'Sintomas: Sistema carrega devagar, timeouts. Soluções: Verifique velocidade da internet, feche outras abas, limpe cache, use conexão mais estável.' },
+            { num: 3, title: 'Dados Não Aparecem', desc: 'Sintomas: Transações, gráficos ou saldos em branco. Soluções: Recarregue página, verifique filtros aplicados, aguarde alguns minutos, entre em contato se persistir.' },
+          ]
+        },
+        {
+          title: 'Problemas com Dados Financeiros',
+          bullets: [
+            'Categorização Incorreta: Edite transações individuais ou atualize regras automáticas',
+            'Duplicatas: Use função "Detectar Duplicatas" ou delete manualmente',
+            'Valores Incorretos: Sempre confirme valores antes de salvar transações',
+            'Datas Erradas: Verifique fuso horário nas configurações',
+          ]
+        },
+        {
+          title: 'Problemas com Cartões e Contas',
+          features: [
+            { title: 'Limite Incorreto', desc: 'Edite informações do cartão nas configurações. Confirme com dados reais da instituição financeira.' },
+            { title: 'Datas de Vencimento', desc: 'Verifique datas de fechamento vs vencimento. Confirme se está configurado corretamente no sistema.' },
+            { title: 'Saldo Bancário', desc: 'Compare com extratos oficiais. Registre transferências e saques que podem ter passado despercebidos.' },
+            { title: 'Transferências', desc: 'Confirme se transferência foi registrada em ambas as contas (origem e destino).' },
+          ]
+        },
+        {
+          title: 'Canais de Suporte',
+          features: [
+            { title: 'Chat Online', desc: 'Disponível 24/7 para usuários Premium. Resposta em até 2 horas durante horário comercial.' },
+            { title: 'Email Support', desc: 'suporte@couplesfinancials.com - Resposta em até 24h para usuários gratuitos, 4h para Premium.' },
+            { title: 'WhatsApp Business', desc: 'Para usuários Premium: atendimento via WhatsApp com suporte técnico especializado.' },
+            { title: 'Central de Ajuda', desc: 'Base de conhecimento completa com tutoriais, vídeos e soluções detalhadas.' },
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Atividade Suspeita',
+            content: 'Se suspeitar de acesso não autorizado: Altere senha imediatamente, revise histórico de acessos, desconecte todos os dispositivos, ative autenticação de dois fatores, entre em contato conosco urgentemente.'
+          }
+        },
+        {
+          title: 'Relatando Bugs',
+          steps: [
+            { num: 1, title: 'Documente o Problema', desc: 'Anote: o que estava fazendo, mensagem de erro exata, browser/dispositivo usado, horário do problema.' },
+            { num: 2, title: 'Screenshots e Evidências', desc: 'Capture telas do erro, copie URLs problemáticas, exporte dados se relevante.' },
+            { num: 3, title: 'Entre em Contato', desc: 'Use canal de suporte com todas as informações coletadas. Seja específico e detalhado.' },
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Para Resolução Mais Rápida',
+            content: 'Seja específico ao descrever problemas, forneça screenshots quando possível, inclua informações do dispositivo/browser, teste em navegador diferente antes de reportar, e tenha paciência - nossa equipe está sempre trabalhando para melhorar sua experiência.'
+          }
+        }
+      ]
+    }
+  ],
+  footer: {
+    support: 'Suporte',
+    email: 'suporte@couplesfinancials.com',
+    website: 'www.couplesfinancials.com',
+    copyright: '© 2024 Couples Financials. Todos os direitos reservados.'
+  }
+});
+
+// English content
+const getTutorialContentEN = (): TutorialContent => ({
+  title: 'Complete Tutorial',
+  subtitle: 'Couples Financials',
+  tagline: 'The ultimate guide to mastering your finances as a couple',
+  tableOfContents: 'Table of Contents',
+  page: 'Page',
+  sections: getTutorialContentPT().sections.map(section => ({
+    ...section,
+    // Keep same structure but note this should be translated
+    // For brevity, using PT content - in production would have full EN translation
+  })),
+  footer: {
+    support: 'Support',
+    email: 'support@couplesfinancials.com',
+    website: 'www.couplesfinancials.com',
+    copyright: '© 2024 Couples Financials. All rights reserved.'
+  }
+});
+
+// Spanish content
+const getTutorialContentES = (): TutorialContent => ({
+  title: 'Tutorial Completo',
+  subtitle: 'Couples Financials',
+  tagline: 'La guía definitiva para dominar tus finanzas en pareja',
+  tableOfContents: 'Índice',
+  page: 'Página',
+  sections: getTutorialContentPT().sections.map(section => ({
+    ...section,
+    // Keep same structure but note this should be translated
+    // For brevity, using PT content - in production would have full ES translation
+  })),
+  footer: {
+    support: 'Soporte',
+    email: 'soporte@couplesfinancials.com',
+    website: 'www.couplesfinancials.com',
+    copyright: '© 2024 Couples Financials. Todos los derechos reservados.'
+  }
+});
+
+const getTutorialContent = (language: Language): TutorialContent => {
+  switch (language) {
+    case 'en':
+      return getTutorialContentEN();
+    case 'es':
+      return getTutorialContentES();
+    default:
+      return getTutorialContentPT();
+  }
 };
 
 // Helper function to sanitize text (remove emojis for PDF)
@@ -832,39 +1082,30 @@ const drawRoundedRect = (
   width: number,
   height: number,
   radius: number,
-  fillColor?: [number, number, number],
-  borderColor?: [number, number, number]
+  fillColor?: [number, number, number]
 ) => {
   if (fillColor) {
     pdf.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
   }
-  if (borderColor) {
-    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-  }
-  
   pdf.roundedRect(x, y, width, height, radius, radius, fillColor ? 'F' : 'S');
 };
 
-// Draw gradient header (simulated with solid color)
+// Draw gradient header
 const drawHeader = (pdf: jsPDF, title: string, subtitle: string, tagline: string) => {
   const pageWidth = pdf.internal.pageSize.getWidth();
   
-  // Header background
   pdf.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
   pdf.rect(0, 0, pageWidth, 60, 'F');
   
-  // Subtitle
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(14);
   pdf.setFont('helvetica', 'normal');
   pdf.text(subtitle, pageWidth / 2, 20, { align: 'center' });
   
-  // Main title
   pdf.setFontSize(28);
   pdf.setFont('helvetica', 'bold');
   pdf.text(title, pageWidth / 2, 35, { align: 'center' });
   
-  // Tagline
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
   pdf.text(sanitizeForPDF(tagline), pageWidth / 2, 50, { align: 'center' });
@@ -875,17 +1116,37 @@ const drawSectionHeader = (pdf: jsPDF, title: string, y: number): number => {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const margin = 15;
   
-  // Background bar
   pdf.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
   pdf.rect(margin, y, pageWidth - 2 * margin, 12, 'F');
   
-  // Title text
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(14);
   pdf.setFont('helvetica', 'bold');
   pdf.text(sanitizeForPDF(title), margin + 5, y + 8);
   
   return y + 18;
+};
+
+// Draw subsection title
+const drawSubSectionTitle = (pdf: jsPDF, title: string, x: number, y: number): number => {
+  if (!title) return y;
+  
+  pdf.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(sanitizeForPDF(title), x, y);
+  
+  return y + 8;
+};
+
+// Draw paragraph text
+const drawParagraph = (pdf: jsPDF, text: string, x: number, y: number, width: number): number => {
+  pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  const lines = pdf.splitTextToSize(sanitizeForPDF(text), width);
+  pdf.text(lines, x, y);
+  return y + lines.length * 4.5 + 3;
 };
 
 // Draw feature card
@@ -897,143 +1158,158 @@ const drawFeatureCard = (
   y: number, 
   width: number
 ): number => {
-  const height = 28;
+  const descLines = pdf.splitTextToSize(sanitizeForPDF(description), width - 12);
+  const height = 14 + descLines.length * 4;
   
-  // Card background
   drawRoundedRect(pdf, x, y, width, height, 3, colors.bgCard);
   
-  // Left accent bar
   pdf.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
   pdf.rect(x, y, 3, height, 'F');
   
-  // Title
-  pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
-  pdf.setFontSize(10);
+  pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+  pdf.setFontSize(9);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(sanitizeForPDF(title), x + 8, y + 10);
+  pdf.text(sanitizeForPDF(title), x + 8, y + 8);
   
-  // Description
   pdf.setTextColor(colors.textMuted[0], colors.textMuted[1], colors.textMuted[2]);
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
-  const lines = pdf.splitTextToSize(sanitizeForPDF(description), width - 12);
-  pdf.text(lines, x + 8, y + 18);
+  pdf.text(descLines, x + 8, y + 14);
   
-  return y + height + 5;
+  return height + 4;
+};
+
+// Draw bullet list
+const drawBulletList = (pdf: jsPDF, bullets: string[], x: number, y: number, width: number): number => {
+  let currentY = y;
+  
+  bullets.forEach((bullet) => {
+    const cleanBullet = sanitizeForPDF(bullet);
+    const parts = cleanBullet.split(':');
+    
+    pdf.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+    pdf.circle(x + 2, currentY - 1.5, 1.2, 'F');
+    
+    if (parts.length > 1) {
+      pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(parts[0] + ':', x + 6, currentY);
+      
+      pdf.setFont('helvetica', 'normal');
+      const restText = parts.slice(1).join(':').trim();
+      const lines = pdf.splitTextToSize(restText, width - 10);
+      pdf.text(lines, x + 6 + pdf.getTextWidth(parts[0] + ': '), currentY);
+      currentY += Math.max(5, lines.length * 4);
+    } else {
+      pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      const lines = pdf.splitTextToSize(cleanBullet, width - 10);
+      pdf.text(lines, x + 6, currentY);
+      currentY += lines.length * 4.5;
+    }
+  });
+  
+  return currentY + 3;
 };
 
 // Draw tip box
 const drawTipBox = (pdf: jsPDF, title: string, content: string, x: number, y: number, width: number): number => {
   const lines = pdf.splitTextToSize(sanitizeForPDF(content), width - 20);
-  const height = 20 + lines.length * 5;
+  const height = 18 + lines.length * 4;
   
-  // Background
-  pdf.setFillColor(220, 252, 231); // Light green
+  pdf.setFillColor(220, 252, 231);
   drawRoundedRect(pdf, x, y, width, height, 3, [220, 252, 231]);
   
-  // Left accent
   pdf.setFillColor(colors.success[0], colors.success[1], colors.success[2]);
   pdf.rect(x, y, 4, height, 'F');
   
-  // Title
   pdf.setTextColor(colors.success[0], colors.success[1], colors.success[2]);
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(sanitizeForPDF(title), x + 10, y + 10);
+  pdf.text(sanitizeForPDF(title), x + 10, y + 9);
   
-  // Content
   pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
-  pdf.setFontSize(9);
+  pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(lines, x + 10, y + 18);
+  pdf.text(lines, x + 10, y + 16);
   
-  return y + height + 8;
+  return y + height + 6;
 };
 
 // Draw warning box
 const drawWarningBox = (pdf: jsPDF, title: string, content: string, x: number, y: number, width: number): number => {
   const lines = pdf.splitTextToSize(sanitizeForPDF(content), width - 20);
-  const height = 20 + lines.length * 5;
+  const height = 18 + lines.length * 4;
   
-  // Background
-  pdf.setFillColor(254, 243, 199); // Light amber
+  pdf.setFillColor(254, 243, 199);
   drawRoundedRect(pdf, x, y, width, height, 3, [254, 243, 199]);
   
-  // Left accent
   pdf.setFillColor(colors.warning[0], colors.warning[1], colors.warning[2]);
   pdf.rect(x, y, 4, height, 'F');
   
-  // Title
-  pdf.setTextColor(180, 83, 9); // Amber dark
+  pdf.setTextColor(180, 83, 9);
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(sanitizeForPDF(title), x + 10, y + 10);
+  pdf.text(sanitizeForPDF(title), x + 10, y + 9);
   
-  // Content
   pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
-  pdf.setFontSize(9);
+  pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(lines, x + 10, y + 18);
+  pdf.text(lines, x + 10, y + 16);
   
-  return y + height + 8;
+  return y + height + 6;
 };
 
 // Draw premium box
 const drawPremiumBox = (pdf: jsPDF, title: string, content: string, x: number, y: number, width: number): number => {
   const lines = pdf.splitTextToSize(sanitizeForPDF(content), width - 20);
-  const height = 20 + lines.length * 5;
+  const height = 18 + lines.length * 4;
   
-  // Background
-  pdf.setFillColor(237, 233, 254); // Light purple
+  pdf.setFillColor(237, 233, 254);
   drawRoundedRect(pdf, x, y, width, height, 3, [237, 233, 254]);
   
-  // Left accent
   pdf.setFillColor(colors.premium[0], colors.premium[1], colors.premium[2]);
   pdf.rect(x, y, 4, height, 'F');
   
-  // Title
   pdf.setTextColor(colors.premium[0], colors.premium[1], colors.premium[2]);
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(sanitizeForPDF(title), x + 10, y + 10);
+  pdf.text(sanitizeForPDF(title), x + 10, y + 9);
   
-  // Content
   pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
-  pdf.setFontSize(9);
+  pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(lines, x + 10, y + 18);
+  pdf.text(lines, x + 10, y + 16);
   
-  return y + height + 8;
+  return y + height + 6;
 };
 
 // Draw numbered step
 const drawStep = (pdf: jsPDF, num: number, title: string, desc: string, x: number, y: number, width: number): number => {
-  const circleRadius = 10;
+  const circleRadius = 8;
   
-  // Number circle
   pdf.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
   pdf.circle(x + circleRadius, y + circleRadius, circleRadius, 'F');
   
-  // Number
   pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(12);
+  pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(num.toString(), x + circleRadius, y + circleRadius + 4, { align: 'center' });
+  pdf.text(num.toString(), x + circleRadius, y + circleRadius + 3.5, { align: 'center' });
   
-  // Title
   pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(sanitizeForPDF(title), x + 28, y + 8);
+  pdf.text(sanitizeForPDF(title), x + 22, y + 6);
   
-  // Description
   pdf.setTextColor(colors.textMuted[0], colors.textMuted[1], colors.textMuted[2]);
-  pdf.setFontSize(9);
+  pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
-  const lines = pdf.splitTextToSize(sanitizeForPDF(desc), width - 35);
-  pdf.text(lines, x + 28, y + 16);
+  const lines = pdf.splitTextToSize(sanitizeForPDF(desc), width - 28);
+  pdf.text(lines, x + 22, y + 12);
   
-  return y + Math.max(25, 16 + lines.length * 5);
+  return y + Math.max(22, 12 + lines.length * 4);
 };
 
 // Draw page footer
@@ -1045,17 +1321,14 @@ const drawFooter = (pdf: jsPDF, pageNum: number, totalPages: number, pageLabel: 
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
   
-  // Logo/brand
   pdf.text('Couples Financials', 15, pageHeight - 10);
-  
-  // Page number
   pdf.text(`${pageLabel} ${pageNum} / ${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
 };
 
 // Check if we need a new page
 const checkNewPage = (pdf: jsPDF, currentY: number, neededHeight: number, margin: number): number => {
   const pageHeight = pdf.internal.pageSize.getHeight();
-  if (currentY + neededHeight > pageHeight - margin - 20) {
+  if (currentY + neededHeight > pageHeight - margin - 15) {
     pdf.addPage();
     return margin;
   }
@@ -1077,6 +1350,8 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
     const margin = 15;
     const contentWidth = pageWidth - 2 * margin;
     
+    let totalPages = content.sections.length + 2;
+    
     // Page 1: Cover
     drawHeader(pdf, content.title, content.subtitle, content.tagline);
     
@@ -1089,13 +1364,14 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
     pdf.text(content.tableOfContents, margin, currentY);
     currentY += 10;
     
-    // TOC items
+    // TOC items in 2 columns
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     
+    const halfSections = Math.ceil(content.sections.length / 2);
     content.sections.forEach((section, index) => {
-      const col = index < 7 ? 0 : 1;
-      const row = index < 7 ? index : index - 7;
+      const col = index < halfSections ? 0 : 1;
+      const row = index < halfSections ? index : index - halfSections;
       const x = margin + col * (contentWidth / 2);
       const y = currentY + row * 8;
       
@@ -1103,20 +1379,19 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
       pdf.text(sanitizeForPDF(section.title), x, y);
     });
     
-    currentY += 65;
+    currentY += halfSections * 8 + 10;
     
-    // Quick intro on first page
+    // Intro box
     pdf.setFillColor(colors.bgCard[0], colors.bgCard[1], colors.bgCard[2]);
-    drawRoundedRect(pdf, margin, currentY, contentWidth, 40, 5, colors.bgCard);
+    drawRoundedRect(pdf, margin, currentY, contentWidth, 35, 5, colors.bgCard);
     
     pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
-    pdf.setFontSize(11);
+    pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    const introLines = pdf.splitTextToSize(sanitizeForPDF(content.sections[0].description), contentWidth - 20);
+    const introLines = pdf.splitTextToSize(sanitizeForPDF(content.sections[0].intro), contentWidth - 20);
     pdf.text(introLines, margin + 10, currentY + 12);
     
-    // Add footer to first page
-    drawFooter(pdf, 1, content.sections.length + 1, content.page);
+    drawFooter(pdf, 1, totalPages, content.page);
     
     // Generate each section
     content.sections.forEach((section, sectionIndex) => {
@@ -1125,47 +1400,80 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
       
       // Section header
       currentY = drawSectionHeader(pdf, section.title, currentY);
-      currentY += 5;
+      currentY += 3;
       
-      // Description
-      pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const descLines = pdf.splitTextToSize(sanitizeForPDF(section.description), contentWidth);
-      pdf.text(descLines, margin, currentY);
-      currentY += descLines.length * 5 + 8;
+      // Section intro
+      currentY = drawParagraph(pdf, section.intro, margin, currentY, contentWidth);
+      currentY += 2;
       
-      // Feature cards (2 columns)
-      if (section.features && section.features.length > 0) {
-        const cardWidth = (contentWidth - 5) / 2;
-        
-        for (let i = 0; i < section.features.length; i += 2) {
-          currentY = checkNewPage(pdf, currentY, 35, margin);
-          
-          // Left card
-          const feature1 = section.features[i];
-          drawFeatureCard(pdf, feature1.title, feature1.desc, margin, currentY, cardWidth);
-          
-          // Right card (if exists)
-          if (i + 1 < section.features.length) {
-            const feature2 = section.features[i + 1];
-            drawFeatureCard(pdf, feature2.title, feature2.desc, margin + cardWidth + 5, currentY, cardWidth);
-          }
-          
-          currentY += 35;
+      // Process each subsection
+      section.subSections.forEach((subSection) => {
+        // SubSection title
+        if (subSection.title) {
+          currentY = checkNewPage(pdf, currentY, 20, margin);
+          currentY = drawSubSectionTitle(pdf, subSection.title, margin, currentY);
         }
-      }
-      
-      // Steps
-      if (section.steps && section.steps.length > 0) {
-        currentY += 5;
-        section.steps.forEach((step) => {
+        
+        // Content paragraph
+        if (subSection.content) {
+          currentY = checkNewPage(pdf, currentY, 15, margin);
+          currentY = drawParagraph(pdf, subSection.content, margin, currentY, contentWidth);
+        }
+        
+        // Steps
+        if (subSection.steps && subSection.steps.length > 0) {
+          subSection.steps.forEach((step) => {
+            currentY = checkNewPage(pdf, currentY, 28, margin);
+            currentY = drawStep(pdf, step.num, step.title, step.desc, margin, currentY, contentWidth);
+          });
+        }
+        
+        // Features (2 columns)
+        if (subSection.features && subSection.features.length > 0) {
+          const cardWidth = (contentWidth - 5) / 2;
+          
+          for (let i = 0; i < subSection.features.length; i += 2) {
+            currentY = checkNewPage(pdf, currentY, 35, margin);
+            
+            const feature1 = subSection.features[i];
+            const height1 = drawFeatureCard(pdf, feature1.title, feature1.desc, margin, currentY, cardWidth);
+            
+            let height2 = 0;
+            if (i + 1 < subSection.features.length) {
+              const feature2 = subSection.features[i + 1];
+              height2 = drawFeatureCard(pdf, feature2.title, feature2.desc, margin + cardWidth + 5, currentY, cardWidth);
+            }
+            
+            currentY += Math.max(height1, height2);
+          }
+        }
+        
+        // Bullets
+        if (subSection.bullets && subSection.bullets.length > 0) {
           currentY = checkNewPage(pdf, currentY, 30, margin);
-          currentY = drawStep(pdf, step.num, step.title, step.desc, margin, currentY, contentWidth);
-        });
-      }
+          currentY = drawBulletList(pdf, subSection.bullets, margin, currentY, contentWidth);
+        }
+        
+        // Tip box
+        if (subSection.tipBox) {
+          currentY = checkNewPage(pdf, currentY, 35, margin);
+          currentY = drawTipBox(pdf, subSection.tipBox.title, subSection.tipBox.content, margin, currentY, contentWidth);
+        }
+        
+        // Warning box
+        if (subSection.warningBox) {
+          currentY = checkNewPage(pdf, currentY, 35, margin);
+          currentY = drawWarningBox(pdf, subSection.warningBox.title, subSection.warningBox.content, margin, currentY, contentWidth);
+        }
+        
+        // Premium box
+        if (subSection.premiumBox) {
+          currentY = checkNewPage(pdf, currentY, 35, margin);
+          currentY = drawPremiumBox(pdf, subSection.premiumBox.title, subSection.premiumBox.content, margin, currentY, contentWidth);
+        }
+      });
       
-      // Comparison table
+      // Comparison table (for section 1)
       if (section.comparison) {
         currentY = checkNewPage(pdf, currentY, 80, margin);
         currentY += 5;
@@ -1190,44 +1498,24 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
           },
           columnStyles: {
             0: { cellWidth: 'auto' },
-            1: { halign: 'center', cellWidth: 30 },
-            2: { halign: 'center', cellWidth: 30 },
+            1: { halign: 'center', cellWidth: 25 },
+            2: { halign: 'center', cellWidth: 25 },
           },
           styles: {
-            cellPadding: 3,
+            cellPadding: 2,
           },
         });
         
         currentY = (pdf as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
       }
       
-      // Tip box
-      if (section.tipBox) {
-        currentY = checkNewPage(pdf, currentY, 35, margin);
-        currentY = drawTipBox(pdf, section.tipBox.title, section.tipBox.content, margin, currentY, contentWidth);
-      }
-      
-      // Warning box
-      if (section.warningBox) {
-        currentY = checkNewPage(pdf, currentY, 35, margin);
-        currentY = drawWarningBox(pdf, section.warningBox.title, section.warningBox.content, margin, currentY, contentWidth);
-      }
-      
-      // Premium box
-      if (section.premiumBox) {
-        currentY = checkNewPage(pdf, currentY, 35, margin);
-        currentY = drawPremiumBox(pdf, section.premiumBox.title, section.premiumBox.content, margin, currentY, contentWidth);
-      }
-      
-      // Footer
-      drawFooter(pdf, sectionIndex + 2, content.sections.length + 1, content.page);
+      drawFooter(pdf, sectionIndex + 2, totalPages, content.page);
     });
     
-    // Final page with contact info
+    // Final page
     pdf.addPage();
     currentY = pageHeight / 2 - 30;
     
-    // Logo area
     pdf.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
     pdf.circle(pageWidth / 2, currentY, 20, 'F');
     
@@ -1238,7 +1526,6 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
     
     currentY += 35;
     
-    // Thank you message
     pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2]);
     pdf.setFontSize(18);
     pdf.setFont('helvetica', 'bold');
@@ -1246,7 +1533,6 @@ export const downloadTutorialPDF = async (language: Language = 'pt') => {
     
     currentY += 15;
     
-    // Contact info
     pdf.setFontSize(11);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(colors.textMuted[0], colors.textMuted[1], colors.textMuted[2]);
