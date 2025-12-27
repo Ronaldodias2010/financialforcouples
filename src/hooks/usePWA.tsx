@@ -45,7 +45,8 @@ export const usePWA = () => {
 
     // Register service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js?v=11')
+      // Bump querystring to force SW refresh and avoid stale cached chunks causing white screens
+      navigator.serviceWorker.register('/sw.js?v=15')
         .then((reg) => {
           setRegistration(reg);
           // Proactively check for updates
