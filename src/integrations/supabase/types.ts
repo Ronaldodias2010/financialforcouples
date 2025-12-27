@@ -1861,6 +1861,33 @@ export type Database = {
           },
         ]
       }
+      rate_limit_entries: {
+        Row: {
+          created_at: string | null
+          function_name: string
+          id: string
+          identifier: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          function_name: string
+          id?: string
+          identifier: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          function_name?: string
+          id?: string
+          identifier?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       recurring_expenses: {
         Row: {
           account_id: string | null
@@ -2689,6 +2716,7 @@ export type Database = {
         Args: { p_promotion_id: string; p_user_id: string }
         Returns: boolean
       }
+      cleanup_old_rate_limits: { Args: never; Returns: number }
       create_cash_accounts_for_user: {
         Args: { p_user_id: string }
         Returns: undefined

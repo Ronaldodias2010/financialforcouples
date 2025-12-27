@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIP, createRateLimitResponse } from "../_shared/rateLimiter.ts";
+import { logSecurityEvent, createAuditContext } from "../_shared/auditLogger.ts";
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -23,8 +25,48 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const clientIP = getClientIP(req);
+  const auditContext = createAuditContext(req);
+
   try {
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(clientIP, 'validate-temp-login');
+    
+    if (!rateLimitResult.allowed) {
+      console.log(`[VALIDATE-TEMP-LOGIN] Rate limit exceeded for IP: ${clientIP}`);
+
+      // Log rate limit exceeded event
+      await logSecurityEvent({
+        actionType: 'rate_limit_exceeded',
+        resourceType: 'user_invite',
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          function: 'validate-temp-login',
+          currentCount: rateLimitResult.currentCount,
+          limit: rateLimitResult.limit,
+          retryAfterSeconds: rateLimitResult.retryAfterSeconds
+        }
+      });
+
+      return createRateLimitResponse(rateLimitResult.retryAfterSeconds || 60, corsHeaders);
+    }
+
     const { email, temp_password }: TempLoginRequest = await req.json();
+
+    console.log(`[VALIDATE-TEMP-LOGIN] Attempting login for email: ${email}`);
+
+    // Log login attempt
+    await logSecurityEvent({
+      actionType: 'temp_login',
+      resourceType: 'user_invite',
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        email,
+        step: 'attempt'
+      }
+    });
 
     // Check if there's a valid invite with this email and temp password
     const { data: invite, error: inviteError } = await supabase
@@ -37,6 +79,21 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (inviteError || !invite) {
+      console.log(`[VALIDATE-TEMP-LOGIN] Invalid invite for email: ${email}`);
+
+      // Log failed login attempt
+      await logSecurityEvent({
+        actionType: 'login_attempt',
+        resourceType: 'user_invite',
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          email,
+          success: false,
+          reason: 'invalid_or_expired_invite'
+        }
+      });
+
       return new Response(
         JSON.stringify({ error: 'Invalid or expired invitation' }),
         {
@@ -60,6 +117,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (authError) {
       console.error('Error creating user:', authError);
+
+      // Log failed user creation
+      await logSecurityEvent({
+        actionType: 'login_attempt',
+        resourceType: 'user_account',
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          email,
+          success: false,
+          reason: 'user_creation_failed',
+          error: authError.message
+        }
+      });
+
       return new Response(
         JSON.stringify({ error: 'Error creating user account' }),
         {
@@ -154,6 +226,21 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (sessionError) {
         console.error('Error creating session:', sessionError);
+
+        // Log failed session creation
+        await logSecurityEvent({
+          actionType: 'login_attempt',
+          resourceType: 'user_account',
+          userId: authData.user.id,
+          ipAddress: auditContext.ipAddress,
+          userAgent: auditContext.userAgent,
+          details: { 
+            email,
+            success: false,
+            reason: 'session_creation_failed'
+          }
+        });
+
         return new Response(
           JSON.stringify({ error: 'Error creating session' }),
           {
@@ -162,6 +249,23 @@ const handler = async (req: Request): Promise<Response> => {
           }
         );
       }
+
+      // Log successful login
+      await logSecurityEvent({
+        actionType: 'login_attempt',
+        resourceType: 'user_account',
+        userId: authData.user.id,
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          email,
+          success: true,
+          inviteId: invite.id,
+          inviterId: invite.inviter_user_id
+        }
+      });
+
+      console.log(`[VALIDATE-TEMP-LOGIN] User created and logged in successfully: ${authData.user.id}`);
 
       return new Response(JSON.stringify({ 
         success: true, 
@@ -186,6 +290,20 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error("Error in validate-temp-login function:", error);
+
+    // Log error
+    await logSecurityEvent({
+      actionType: 'login_attempt',
+      resourceType: 'user_invite',
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        success: false,
+        reason: 'unexpected_error',
+        error: error.message
+      }
+    });
+
     return new Response(
       JSON.stringify({ error: error.message }),
       {

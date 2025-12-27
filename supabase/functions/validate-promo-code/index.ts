@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { checkRateLimit, getClientIP, createRateLimitResponse } from "../_shared/rateLimiter.ts";
+import { logSecurityEvent, createAuditContext } from "../_shared/auditLogger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,8 +23,37 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
+  const clientIP = getClientIP(req);
+  const auditContext = createAuditContext(req);
+
   try {
     logStep("Function started");
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(clientIP, 'validate-promo-code');
+    
+    if (!rateLimitResult.allowed) {
+      logStep("Rate limit exceeded", { 
+        ip: clientIP, 
+        retryAfter: rateLimitResult.retryAfterSeconds 
+      });
+
+      // Log rate limit exceeded event
+      await logSecurityEvent({
+        actionType: 'rate_limit_exceeded',
+        resourceType: 'promo_code',
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          function: 'validate-promo-code',
+          currentCount: rateLimitResult.currentCount,
+          limit: rateLimitResult.limit,
+          retryAfterSeconds: rateLimitResult.retryAfterSeconds
+        }
+      });
+
+      return createRateLimitResponse(rateLimitResult.retryAfterSeconds || 60, corsHeaders);
+    }
 
     const { code, country = 'BR' } = await req.json();
     if (!code) {
@@ -38,6 +69,21 @@ serve(async (req) => {
       .eq('code', code.toUpperCase())
       .eq('is_active', true)
       .single();
+
+    // Log the validation attempt
+    await logSecurityEvent({
+      actionType: 'promo_validation',
+      resourceType: 'promo_code',
+      resourceId: promoCode?.id,
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        code: code.toUpperCase(),
+        country,
+        found: !!promoCode,
+        valid: false // Will be updated below if valid
+      }
+    });
 
     if (promoError || !promoCode) {
       logStep("Promo code not found", { code, error: promoError });
@@ -91,6 +137,23 @@ serve(async (req) => {
       discount_type: promoCode.discount_type,
       discount_value: promoCode.discount_value,
       stripe_price_id: promoCode.stripe_price_id
+    });
+
+    // Log successful validation
+    await logSecurityEvent({
+      actionType: 'promo_validation',
+      resourceType: 'promo_code',
+      resourceId: promoCode.id,
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        code: code.toUpperCase(),
+        country,
+        found: true,
+        valid: true,
+        discountType: promoCode.discount_type,
+        discountValue: promoCode.discount_value
+      }
     });
 
     return new Response(JSON.stringify({

@@ -1,5 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkRateLimit, getClientIP, createRateLimitResponse } from "../_shared/rateLimiter.ts";
+import { logSecurityEvent, createAuditContext } from "../_shared/auditLogger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -108,7 +110,33 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const clientIP = getClientIP(req);
+  const auditContext = createAuditContext(req);
+
   try {
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(clientIP, 'excel-generator');
+    
+    if (!rateLimitResult.allowed) {
+      console.log(`[EXCEL-GENERATOR] Rate limit exceeded for IP: ${clientIP}`);
+
+      // Log rate limit exceeded event
+      await logSecurityEvent({
+        actionType: 'rate_limit_exceeded',
+        resourceType: 'excel_file',
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          function: 'excel-generator',
+          currentCount: rateLimitResult.currentCount,
+          limit: rateLimitResult.limit,
+          retryAfterSeconds: rateLimitResult.retryAfterSeconds
+        }
+      });
+
+      return createRateLimitResponse(rateLimitResult.retryAfterSeconds || 60, corsHeaders);
+    }
+
     const requestData = await req.json();
     
     console.log('Generating Excel file...', {
@@ -129,6 +157,20 @@ serve(async (req) => {
       bufferSize: excelBuffer.length,
       fileName: requestData.fileName
     });
+
+    // Log successful export
+    await logSecurityEvent({
+      actionType: 'data_export',
+      resourceType: 'excel_file',
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        fileName: requestData.fileName,
+        transactionCount: requestData.transactions?.length || 0,
+        currency: requestData.currency,
+        fileSize: excelBuffer.length
+      }
+    });
     
     // Create response with proper XLSX headers
     const headers = {
@@ -143,6 +185,18 @@ serve(async (req) => {
   } catch (error) {
     console.error('Excel generation error:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
+    // Log error
+    await logSecurityEvent({
+      actionType: 'data_export',
+      resourceType: 'excel_file',
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    });
     
     return new Response(JSON.stringify({ 
       success: false, 

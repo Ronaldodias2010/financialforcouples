@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIP, createRateLimitResponse } from "../_shared/rateLimiter.ts";
+import { logSecurityEvent, createAuditContext } from "../_shared/auditLogger.ts";
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -23,7 +25,33 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const clientIP = getClientIP(req);
+  const auditContext = createAuditContext(req);
+
   try {
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(clientIP, 'confirm-email-admin');
+    
+    if (!rateLimitResult.allowed) {
+      console.log(`[CONFIRM-EMAIL-ADMIN] Rate limit exceeded for IP: ${clientIP}`);
+
+      // Log rate limit exceeded event
+      await logSecurityEvent({
+        actionType: 'rate_limit_exceeded',
+        resourceType: 'user_account',
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          function: 'confirm-email-admin',
+          currentCount: rateLimitResult.currentCount,
+          limit: rateLimitResult.limit,
+          retryAfterSeconds: rateLimitResult.retryAfterSeconds
+        }
+      });
+
+      return createRateLimitResponse(rateLimitResult.retryAfterSeconds || 60, corsHeaders);
+    }
+
     const { email, userId, newPassword, action }: AdminRequest = await req.json();
     console.log(`Admin action request - email: ${email}, userId: ${userId}, action: ${action || 'auto'}`);
 
@@ -42,6 +70,21 @@ const handler = async (req: Request): Promise<Response> => {
       
       if (!targetUser) {
         console.error(`User with email ${email} not found`);
+
+        // Log failed admin action
+        await logSecurityEvent({
+          actionType: 'admin_action',
+          resourceType: 'user_account',
+          ipAddress: auditContext.ipAddress,
+          userAgent: auditContext.userAgent,
+          details: { 
+            email,
+            action: action || 'auto',
+            success: false,
+            reason: 'user_not_found'
+          }
+        });
+
         throw new Error(`User with email ${email} not found`);
       }
 
@@ -77,10 +120,44 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (updateError) {
         console.error('Error updating user:', updateError);
+
+        // Log failed admin action
+        await logSecurityEvent({
+          actionType: 'admin_action',
+          resourceType: 'user_account',
+          userId: targetUserId,
+          ipAddress: auditContext.ipAddress,
+          userAgent: auditContext.userAgent,
+          details: { 
+            email,
+            action: action || 'auto',
+            success: false,
+            reason: 'update_failed',
+            error: updateError.message
+          }
+        });
+
         throw new Error(`Failed to update user: ${updateError.message}`);
       }
 
       console.log(`User ${targetUserId} updated successfully`);
+
+      // Log successful admin action
+      const actionType = newPassword ? 'password_reset' : 'email_confirmed';
+      await logSecurityEvent({
+        actionType: actionType,
+        resourceType: 'user_account',
+        userId: targetUserId,
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          email,
+          action: action || 'auto',
+          success: true,
+          passwordUpdated: !!newPassword,
+          emailConfirmed: updateData.email_confirm || false
+        }
+      });
 
       return new Response(
         JSON.stringify({ 
