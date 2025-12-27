@@ -97,7 +97,7 @@ serve(async (req) => {
         stripe_customer_id: null,
         subscribed: true,
         subscription_tier: 'premium',
-        subscription_end: '2025-12-31T23:59:59+00:00',
+        subscription_end: '2099-12-31T23:59:59+00:00',
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
       
@@ -127,7 +127,7 @@ serve(async (req) => {
               stripe_customer_id: null,
               subscribed: true,
               subscription_tier: 'premium',
-              subscription_end: '2025-12-31T23:59:59+00:00',
+              subscription_end: '2099-12-31T23:59:59+00:00',
               updated_at: new Date().toISOString(),
             }, { onConflict: 'email' });
           }
@@ -142,7 +142,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: true,
         subscription_tier: 'premium',
-        subscription_end: '2025-12-31T23:59:59+00:00',
+        subscription_end: '2099-12-31T23:59:59+00:00',
         admin_access: true
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
