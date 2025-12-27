@@ -1,5 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkRateLimit, getClientIP, createRateLimitResponse } from "../_shared/rateLimiter.ts";
+import { logSecurityEvent, createAuditContext } from "../_shared/auditLogger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,10 +13,49 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const clientIP = getClientIP(req);
+  const auditContext = createAuditContext(req);
+
   try {
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(clientIP, 'pdf-extractor');
+    
+    if (!rateLimitResult.allowed) {
+      console.log(`[PDF-EXTRACTOR] Rate limit exceeded for IP: ${clientIP}`);
+
+      // Log rate limit exceeded event
+      await logSecurityEvent({
+        actionType: 'rate_limit_exceeded',
+        resourceType: 'pdf_file',
+        ipAddress: auditContext.ipAddress,
+        userAgent: auditContext.userAgent,
+        details: { 
+          function: 'pdf-extractor',
+          currentCount: rateLimitResult.currentCount,
+          limit: rateLimitResult.limit,
+          retryAfterSeconds: rateLimitResult.retryAfterSeconds
+        }
+      });
+
+      return createRateLimitResponse(rateLimitResult.retryAfterSeconds || 60, corsHeaders);
+    }
+
     const { fileData, fileName, fileType } = await req.json();
 
     console.log(`Processing ${fileType} file: ${fileName} with real OCR`);
+
+    // Log extraction attempt
+    await logSecurityEvent({
+      actionType: 'pdf_extraction',
+      resourceType: 'pdf_file',
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        fileName,
+        fileType,
+        step: 'started'
+      }
+    });
 
     let extractedText = '';
     let detectedLanguage = 'pt';
@@ -155,6 +196,24 @@ serve(async (req) => {
       statementType = 'bank';
     }
 
+    // Log successful extraction
+    await logSecurityEvent({
+      actionType: 'pdf_extraction',
+      resourceType: 'pdf_file',
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        fileName,
+        fileType,
+        success: true,
+        detectedLanguage,
+        detectedCurrency,
+        detectedRegion,
+        statementType,
+        textLength: extractedText.length
+      }
+    });
+
     return new Response(JSON.stringify({
       success: true,
       extractedText,
@@ -169,6 +228,19 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('PDF extraction error:', error);
+
+    // Log error
+    await logSecurityEvent({
+      actionType: 'pdf_extraction',
+      resourceType: 'pdf_file',
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    });
+
     return new Response(JSON.stringify({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error'

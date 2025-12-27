@@ -112,6 +112,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auditContext = createAuditContext(req);
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -316,6 +318,23 @@ serve(async (req) => {
       p_user_id: user.id,
       p_tokens_used: totalTokens,
       p_estimated_cost_brl: estimatedCost
+    });
+
+    // Log AI query to audit log
+    await logSecurityEvent({
+      actionType: 'ai_query',
+      resourceType: 'ai_consultant',
+      userId: user.id,
+      ipAddress: auditContext.ipAddress,
+      userAgent: auditContext.userAgent,
+      details: {
+        inputTokens,
+        outputTokens,
+        totalTokens,
+        estimatedCostBRL: estimatedCost,
+        detectedLanguage,
+        transactionsAnalyzed: financialData.transactions.length
+      }
     });
 
     // Save to AI history if this is an analysis or recommendation
