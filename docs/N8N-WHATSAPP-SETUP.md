@@ -228,6 +228,19 @@ Mensagem: {{ $('Nó 2').json.raw_message }}
 }
 ```
 
+**⚠️ IMPORTANTE: Categoria Obrigatória para WhatsApp**
+
+Para inputs do WhatsApp, a **categoria é obrigatória**. Se não for fornecida ou não for encontrada, o erro retornado será:
+
+```json
+{
+  "success": false,
+  "error": "Categoria é obrigatória para transações via WhatsApp",
+  "error_code": "CATEGORY_REQUIRED",
+  "hint": "Informe a categoria na mensagem (ex: 'gastei 50 em alimentação')"
+}
+```
+
 ---
 
 ## 📱 Nó 7: Responder no WhatsApp
@@ -254,6 +267,16 @@ Transação criada automaticamente.
 📝 {{ $json.description_hint }}
 
 ⚠️ Confirme no app para registrar a transação.
+```
+
+**Mensagem de Erro - Categoria Faltando:**
+```
+⚠️ Não consegui identificar a categoria.
+
+Por favor, reformule sua mensagem incluindo a categoria.
+Exemplo: "gastei 50 em alimentação"
+
+Categorias disponíveis: {{ $('Nó 3').json.options.categories.map(c => c.name).join(', ') }}
 ```
 
 ---
@@ -342,3 +365,4 @@ Use o **N8N Error Workflow** para notificações de falhas.
 - Logs das Edge Functions: Supabase Dashboard → Edge Functions → Logs
 - Logs N8N: Executions → Ver detalhes
 - Tabela de inputs: `incoming_financial_inputs` no Supabase
+- Tabela de transações: `transactions` (campo `source` indica origem: app, whatsapp, import, api, recurring)

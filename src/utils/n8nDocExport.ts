@@ -242,10 +242,22 @@ export function exportN8NDocumentation() {
       ['amount', 'Numero decimal obrigatorio (50, 150.50)'],
       ['transaction_type', '"expense" ou "income"'],
       ['payment_method', 'cash, pix, debit_card, credit_card'],
+      ['category_hint', 'OBRIGATORIO para WhatsApp!'],
       ['card_hint', 'Nome do cartao (se credit_card)'],
       ['account_hint', 'Nome do banco (se debit_card/pix)'],
     ]
   );
+
+  checkNewPage(80);
+  addTitle('[CATEGORIA OBRIGATORIA - WHATSAPP]', 14);
+  addText('Para inputs do WhatsApp, a categoria e OBRIGATORIA.');
+  addText('Se nao for fornecida, o erro retornado sera:');
+  addCode(`{
+  "success": false,
+  "error": "Categoria e obrigatoria para transacoes via WhatsApp",
+  "error_code": "CATEGORY_REQUIRED",
+  "hint": "Informe a categoria na mensagem"
+}`);
 
   checkNewPage(100);
   addTitle('[FORMATO DA MENSAGEM]', 14);
@@ -370,7 +382,21 @@ SE COMPLETO:
     [
       ['profiles', 'phone_number, whatsapp_verified_at'],
       ['incoming_financial_inputs', 'whatsapp_message_id, status'],
-      ['transactions', 'external_reference_id'],
+      ['transactions', 'external_reference_id, source'],
+    ]
+  );
+
+  checkNewPage(60);
+  addTitle('[CAMPO SOURCE EM TRANSACTIONS]', 14);
+  addText('O campo "source" identifica a origem da transacao:');
+  addTable(
+    ['Valor', 'Descricao'],
+    [
+      ['app', 'Criada manualmente no app'],
+      ['whatsapp', 'Via integracao WhatsApp/N8N'],
+      ['import', 'Importada de arquivo'],
+      ['api', 'Via API externa'],
+      ['recurring', 'Gerada automaticamente'],
     ]
   );
 
