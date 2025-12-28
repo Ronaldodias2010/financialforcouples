@@ -1267,6 +1267,7 @@ export type Database = {
           id: string
           ip_address: string | null
           owner_user: string | null
+          payment_method: string | null
           processed_at: string | null
           raw_message: string
           resolved_account_id: string | null
@@ -1295,6 +1296,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           owner_user?: string | null
+          payment_method?: string | null
           processed_at?: string | null
           raw_message: string
           resolved_account_id?: string | null
@@ -1323,6 +1325,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           owner_user?: string | null
+          payment_method?: string | null
           processed_at?: string | null
           raw_message?: string
           resolved_account_id?: string | null
@@ -3006,6 +3009,7 @@ export type Database = {
           description: string
           due_date: string | null
           expense_source_type: string | null
+          external_reference_id: string | null
           id: string
           installment_number: number | null
           is_installment: boolean | null
@@ -3034,6 +3038,7 @@ export type Database = {
           description: string
           due_date?: string | null
           expense_source_type?: string | null
+          external_reference_id?: string | null
           id?: string
           installment_number?: number | null
           is_installment?: boolean | null
@@ -3062,6 +3067,7 @@ export type Database = {
           description?: string
           due_date?: string | null
           expense_source_type?: string | null
+          external_reference_id?: string | null
           id?: string
           installment_number?: number | null
           is_installment?: boolean | null

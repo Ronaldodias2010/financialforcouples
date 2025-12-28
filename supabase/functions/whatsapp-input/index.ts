@@ -19,7 +19,7 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
     
-    // POST: Criar novo input do WhatsApp
+    // POST: Criar novo input do WhatsApp (IDEMPOTENTE com UPSERT)
     if (req.method === 'POST') {
       const body = await req.json();
       const { 
@@ -29,7 +29,11 @@ serve(async (req) => {
         source = 'whatsapp'
       } = body;
 
-      console.log('[whatsapp-input] POST - Creating new input:', { phone_number, raw_message: raw_message?.substring(0, 50) });
+      console.log('[whatsapp-input] POST - Creating new input:', { 
+        phone_number, 
+        raw_message: raw_message?.substring(0, 50),
+        whatsapp_message_id 
+      });
 
       // Validações
       if (!phone_number) {
@@ -80,45 +84,85 @@ serve(async (req) => {
         );
       }
 
-      // Verificar duplicação por whatsapp_message_id
+      // =====================================================
+      // IDEMPOTÊNCIA: Usar UPSERT com onConflict
+      // Se whatsapp_message_id já existe, retorna o existente
+      // =====================================================
+      
+      const inputData = {
+        user_id: profile.user_id,
+        raw_message,
+        whatsapp_message_id,
+        source,
+        status: 'pending',
+        ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+        user_agent: req.headers.get('user-agent')
+      };
+
+      // Se tem whatsapp_message_id, usar UPSERT para idempotência
       if (whatsapp_message_id) {
+        // Primeiro verificar se já existe
         const { data: existing } = await supabase
           .from('incoming_financial_inputs')
-          .select('id')
+          .select('id, status, created_at, processed_at, transaction_id')
           .eq('user_id', profile.user_id)
           .eq('whatsapp_message_id', whatsapp_message_id)
           .single();
 
         if (existing) {
-          console.log('[whatsapp-input] Duplicate message:', whatsapp_message_id);
+          console.log('[whatsapp-input] IDEMPOTENT: Returning existing input:', existing.id);
           return new Response(
             JSON.stringify({ 
-              success: false, 
-              error: 'Mensagem já processada',
-              code: 'DUPLICATE_MESSAGE',
-              input_id: existing.id
+              success: true, 
+              input_id: existing.id,
+              user_id: profile.user_id,
+              user_name: profile.display_name,
+              status: existing.status,
+              already_exists: true,
+              processed: !!existing.processed_at,
+              transaction_id: existing.transaction_id,
+              message: 'Input já existe. Retornando dados existentes.'
             }),
-            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
       }
 
-      // Criar input
+      // Criar novo input
       const { data: input, error: insertError } = await supabase
         .from('incoming_financial_inputs')
-        .insert({
-          user_id: profile.user_id,
-          raw_message,
-          whatsapp_message_id,
-          source,
-          status: 'pending',
-          ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
-          user_agent: req.headers.get('user-agent')
-        })
+        .insert(inputData)
         .select('id, status, created_at')
         .single();
 
       if (insertError) {
+        // Se erro de duplicação (constraint violation), buscar existente
+        if (insertError.code === '23505') {
+          console.log('[whatsapp-input] Duplicate detected via constraint, fetching existing...');
+          const { data: existing } = await supabase
+            .from('incoming_financial_inputs')
+            .select('id, status, created_at, processed_at, transaction_id')
+            .eq('user_id', profile.user_id)
+            .eq('whatsapp_message_id', whatsapp_message_id)
+            .single();
+
+          if (existing) {
+            return new Response(
+              JSON.stringify({ 
+                success: true, 
+                input_id: existing.id,
+                user_id: profile.user_id,
+                user_name: profile.display_name,
+                status: existing.status,
+                already_exists: true,
+                processed: !!existing.processed_at,
+                transaction_id: existing.transaction_id,
+                message: 'Input já existe. Retornando dados existentes.'
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
         console.error('[whatsapp-input] Insert error:', insertError);
         throw insertError;
       }
@@ -132,6 +176,7 @@ serve(async (req) => {
           user_id: profile.user_id,
           user_name: profile.display_name,
           status: input.status,
+          already_exists: false,
           message: 'Input criado com sucesso. Aguardando processamento da IA.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -152,11 +197,12 @@ serve(async (req) => {
         description_hint,
         transaction_date,
         confidence_score,
+        payment_method,
         owner_user,
         auto_confirm = true
       } = body;
 
-      console.log('[whatsapp-input] PATCH - Updating input:', { input_id, amount, confidence_score });
+      console.log('[whatsapp-input] PATCH - Updating input:', { input_id, amount, confidence_score, payment_method });
 
       if (!input_id) {
         return new Response(
@@ -168,7 +214,7 @@ serve(async (req) => {
       // Verificar se input existe e não foi processado
       const { data: existingInput, error: fetchError } = await supabase
         .from('incoming_financial_inputs')
-        .select('id, status, processed_at')
+        .select('id, status, processed_at, transaction_id')
         .eq('id', input_id)
         .single();
 
@@ -179,19 +225,32 @@ serve(async (req) => {
         );
       }
 
+      // IDEMPOTÊNCIA: Se já processado, retornar sucesso com dados existentes
       if (existingInput.processed_at) {
+        console.log('[whatsapp-input] IDEMPOTENT: Input already processed:', input_id);
         return new Response(
-          JSON.stringify({ success: false, error: 'Input já foi processado' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ 
+            success: true, 
+            input: existingInput,
+            already_processed: true,
+            transaction_id: existingInput.transaction_id,
+            message: 'Input já foi processado anteriormente.'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Determinar novo status baseado na confiança
+      // Determinar novo status baseado na confiança e campos obrigatórios
       let newStatus = existingInput.status;
-      if (auto_confirm && confidence_score && confidence_score >= 0.85 && amount && transaction_type) {
+      const hasRequiredFields = amount && transaction_type && payment_method;
+      
+      if (auto_confirm && confidence_score && confidence_score >= 0.85 && hasRequiredFields) {
         newStatus = 'confirmed';
-      } else if (amount && transaction_type) {
+      } else if (hasRequiredFields) {
         newStatus = 'needs_confirmation';
+      } else {
+        // Campos faltando - aguardando input do usuário
+        newStatus = 'pending';
       }
 
       // Atualizar input
@@ -209,13 +268,14 @@ serve(async (req) => {
       if (description_hint !== undefined) updateData.description_hint = description_hint;
       if (transaction_date !== undefined) updateData.transaction_date = transaction_date;
       if (confidence_score !== undefined) updateData.confidence_score = confidence_score;
+      if (payment_method !== undefined) updateData.payment_method = payment_method;
       if (owner_user !== undefined) updateData.owner_user = owner_user;
 
       const { data: updated, error: updateError } = await supabase
         .from('incoming_financial_inputs')
         .update(updateData)
         .eq('id', input_id)
-        .select('id, status, amount, transaction_type, confidence_score')
+        .select('id, status, amount, transaction_type, confidence_score, payment_method')
         .single();
 
       if (updateError) {
@@ -225,14 +285,26 @@ serve(async (req) => {
 
       console.log('[whatsapp-input] Input updated:', updated);
 
+      // Retornar campos faltantes se não estiver completo
+      const missingFields: string[] = [];
+      if (!amount) missingFields.push('amount');
+      if (!transaction_type) missingFields.push('transaction_type');
+      if (!payment_method) missingFields.push('payment_method');
+      if (payment_method === 'credit_card' && !card_hint) missingFields.push('card_hint');
+      if ((payment_method === 'debit_card' || payment_method === 'pix') && !account_hint) missingFields.push('account_hint');
+
       return new Response(
         JSON.stringify({ 
           success: true, 
           input: updated,
           auto_confirmed: newStatus === 'confirmed',
+          complete: missingFields.length === 0,
+          missing_fields: missingFields,
           message: newStatus === 'confirmed' 
             ? 'Input confirmado automaticamente. Pronto para processamento.'
-            : 'Input atualizado. Aguardando confirmação manual.'
+            : missingFields.length > 0
+              ? `Campos faltando: ${missingFields.join(', ')}`
+              : 'Input atualizado. Aguardando confirmação manual.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -283,7 +355,7 @@ serve(async (req) => {
 
         const { data: inputs } = await supabase
           .from('incoming_financial_inputs')
-          .select('id, status, amount, transaction_type, created_at, processed_at')
+          .select('id, status, amount, transaction_type, payment_method, created_at, processed_at, transaction_id')
           .eq('user_id', profile.user_id)
           .order('created_at', { ascending: false })
           .limit(10);

@@ -33,8 +33,7 @@ export function exportN8NDocumentation() {
     yPos += blockHeight + 5;
   };
 
-  const addTable = (headers: string[], rows: string[][]) => {
-    const colWidths = [70, 100];
+  const addTable = (headers: string[], rows: string[][], colWidths: number[] = [70, 100]) => {
     const rowHeight = 8;
     const cellPadding = 3;
 
@@ -48,7 +47,7 @@ export function exportN8NDocumentation() {
     let xPos = margin + cellPadding;
     headers.forEach((header, i) => {
       doc.text(header, xPos, yPos + 5.5);
-      xPos += colWidths[i];
+      xPos += colWidths[i] || 50;
     });
     yPos += rowHeight;
 
@@ -56,22 +55,19 @@ export function exportN8NDocumentation() {
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
     rows.forEach((row, rowIndex) => {
-      // Alternating row colors
       if (rowIndex % 2 === 0) {
         doc.setFillColor(249, 250, 251);
       } else {
         doc.setFillColor(255, 255, 255);
       }
       doc.rect(margin, yPos, contentWidth, rowHeight, 'F');
-      
-      // Border
       doc.setDrawColor(229, 231, 235);
       doc.rect(margin, yPos, contentWidth, rowHeight, 'S');
 
       xPos = margin + cellPadding;
       row.forEach((cell, i) => {
         doc.text(cell, xPos, yPos + 5.5);
-        xPos += colWidths[i];
+        xPos += colWidths[i] || 50;
       });
       yPos += rowHeight;
     });
@@ -89,128 +85,184 @@ export function exportN8NDocumentation() {
   doc.setFillColor(59, 130, 246);
   doc.rect(0, 0, pageWidth, 60, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
+  doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
-  doc.text('Integracao N8N + WhatsApp', margin, 35);
-  doc.setFontSize(12);
-  doc.text('Couples Financials - Guia de Configuracao', margin, 48);
+  doc.text('N8N + WhatsApp + Supabase', margin, 30);
+  doc.setFontSize(14);
+  doc.text('Guia Completo - IDEMPOTENTE', margin, 42);
+  doc.setFontSize(10);
+  doc.text('Couples Financials - v2.0', margin, 52);
   doc.setTextColor(0, 0, 0);
   yPos = 80;
 
-  // Introdução
-  addTitle('[VISAO GERAL]', 14);
-  addText('Este guia explica como configurar a integracao com N8N para receber lancamentos financeiros via WhatsApp no sistema Couples Financials.');
+  // IDEMPOTÊNCIA
+  addTitle('[IDEMPOTENCIA - GARANTIA DE CONSISTENCIA]', 14);
+  addText('O sistema garante que mensagens duplicadas NAO criem transacoes duplicadas.');
+  yPos += 3;
 
-  checkNewPage();
-  addTitle('[PRE-REQUISITOS]', 14);
-  addText('- Conta no N8N (self-hosted ou cloud)');
-  addText('- Conta Evolution API ou similar para WhatsApp');
-  addText('- Acesso ao Supabase do projeto');
-
-  checkNewPage(50);
-  addTitle('[ARQUITETURA]', 14);
-  addText('WhatsApp -> Evolution API -> N8N -> Edge Function -> Supabase');
-  addText('O fluxo funciona da seguinte forma:');
-  addText('1. Usuario envia mensagem no WhatsApp');
-  addText('2. Evolution API recebe e encaminha para N8N');
-  addText('3. N8N processa e chama a Edge Function');
-  addText('4. Edge Function valida e salva no Supabase');
+  addTable(
+    ['Mecanismo', 'Descricao'],
+    [
+      ['UNIQUE Constraint', '(user_id, whatsapp_message_id) impede duplicatas'],
+      ['UPSERT Pattern', 'Se mensagem ja existe, retorna dados existentes'],
+      ['external_reference_id', 'Transacoes usam referencia unica do input'],
+      ['processed_at Check', 'Inputs processados retornam transaction_id'],
+    ]
+  );
 
   checkNewPage(80);
-  addTitle('[CONFIGURACAO DO N8N]', 14);
-  addText('Passo 1: Criar novo Workflow');
-  addText('- Acesse seu N8N e crie um novo workflow');
-  addText('- Adicione um trigger "Webhook"');
-
-  checkNewPage();
-  addText('Passo 2: Configurar Webhook');
-  addCode('URL: https://SEU_N8N/webhook/whatsapp-financial\nMetodo: POST\nAuthentication: Header Auth');
-
-  checkNewPage();
-  addText('Passo 3: Processar Mensagem');
-  addText('Adicione um no "Code" com a logica de parsing:');
-  addCode(`const message = $input.first().json.body.message;
-const phoneNumber = $input.first().json.body.from;
-
-// Extrair dados da mensagem
-const regex = /([\\d.,]+)\\s*(.+)/;
-const match = message.match(regex);
-
-return [{
-  json: {
-    amount: parseFloat(match[1].replace(',', '.')),
-    description: match[2].trim(),
-    phone: phoneNumber,
-    raw_message: message
-  }
-}];`);
+  addTitle('[FLUXO IDEMPOTENTE]', 14);
+  addCode(`1. N8N envia POST /whatsapp-input com whatsapp_message_id
+2. Edge Function verifica se ja existe:
+   - SE EXISTE: Retorna { already_exists: true, input_id: "..." }
+   - SE NAO: Cria novo com status "pending"
+3. N8N envia PATCH com dados da IA
+4. Edge Function verifica se processado:
+   - SE SIM: Retorna { already_processed: true, transaction_id }
+   - SE NAO: Atualiza e retorna status
+5. process-financial-input usa external_reference_id`);
 
   doc.addPage();
   yPos = 20;
 
-  addTitle('[CONFIGURACAO DA EDGE FUNCTION]', 14);
-  addText('A Edge Function whatsapp-webhook ja esta configurada no projeto.');
-  addText('URL da Edge Function:');
-  addCode('https://YOUR_PROJECT.supabase.co/functions/v1/whatsapp-webhook');
-
-  checkNewPage();
-  addText('Headers necessarios:');
-  addCode(`Authorization: Bearer YOUR_ANON_KEY
-Content-Type: application/json
-x-webhook-secret: YOUR_WEBHOOK_SECRET`);
-
-  checkNewPage();
-  addText('Payload esperado:');
-  addCode(`{
-  "phone_number": "+5511999999999",
-  "message": "50 almoco",
-  "user_id": "uuid-do-usuario" // opcional
-}`);
+  addTitle('[PRE-REQUISITOS]', 14);
+  addText('- N8N (self-hosted ou cloud)');
+  addText('- WhatsApp Business API (Evolution API, WABA, etc)');
+  addText('- Supabase Project com Edge Functions');
+  addText('- OpenAI API Key para IA');
 
   checkNewPage(60);
-  addTitle('[VINCULACAO DE USUARIO]', 14);
-  addText('Para vincular um numero de WhatsApp a um usuario:');
-  addText('1. Usuario acessa Configuracoes -> WhatsApp');
-  addText('2. Informa o numero de telefone');
-  addText('3. Sistema gera codigo de verificacao');
-  addText('4. Usuario envia codigo via WhatsApp');
-  addText('5. Sistema confirma vinculacao');
+  addTitle('[ARQUITETURA]', 14);
+  addText('WhatsApp -> Evolution API -> N8N -> Edge Function -> Supabase');
+  addText('1. Usuario envia mensagem no WhatsApp');
+  addText('2. Evolution API recebe e encaminha para N8N');
+  addText('3. N8N processa com IA e chama Edge Function');
+  addText('4. Edge Function valida e salva no Supabase');
 
   checkNewPage(80);
+  addTitle('[EDGE FUNCTIONS]', 14);
+  addTable(
+    ['Funcao', 'Metodo', 'Descricao'],
+    [
+      ['whatsapp-input', 'POST', 'Cria input (IDEMPOTENTE)'],
+      ['whatsapp-input', 'PATCH', 'Atualiza com dados IA'],
+      ['whatsapp-input', 'GET', 'Consulta status'],
+      ['get-user-options', 'GET', 'Busca categorias/contas/cartoes'],
+      ['process-financial-input', 'POST', 'Cria transacao'],
+    ],
+    [55, 35, 80]
+  );
+
+  doc.addPage();
+  yPos = 20;
+
+  addTitle('[PAYLOAD POST /whatsapp-input]', 14);
+  addCode(`{
+  "phone_number": "+5511999999999",
+  "raw_message": "gastei 50 almoco credito nubank",
+  "whatsapp_message_id": "wamid.abc123...",  // OBRIGATORIO!
+  "source": "whatsapp"
+}`);
+
+  checkNewPage(80);
+  addTitle('[RESPOSTA POST - NOVO INPUT]', 14);
+  addCode(`{
+  "success": true,
+  "input_id": "uuid-do-input",
+  "user_id": "uuid-do-usuario",
+  "user_name": "Nome",
+  "status": "pending",
+  "already_exists": false,
+  "message": "Input criado com sucesso"
+}`);
+
+  checkNewPage(80);
+  addTitle('[RESPOSTA POST - JA EXISTE (IDEMPOTENTE)]', 14);
+  addCode(`{
+  "success": true,
+  "input_id": "uuid-existente",
+  "status": "confirmed",
+  "already_exists": true,
+  "processed": true,
+  "transaction_id": "uuid-transacao",
+  "message": "Input ja existe"
+}`);
+
+  doc.addPage();
+  yPos = 20;
+
+  addTitle('[PAYLOAD PATCH /whatsapp-input]', 14);
+  addCode(`{
+  "input_id": "uuid-do-input",
+  "amount": 50.00,
+  "currency": "BRL",
+  "transaction_type": "expense",
+  "payment_method": "credit_card",  // OBRIGATORIO
+  "category_hint": "Alimentacao",
+  "card_hint": "Nubank",            // Se credit_card
+  "account_hint": null,             // Se debit_card/pix
+  "description_hint": "Almoco",
+  "confidence_score": 0.92,
+  "owner_user": "user1",            // Para casais
+  "auto_confirm": true
+}`);
+
+  checkNewPage(80);
+  addTitle('[RESPOSTA PATCH - CAMPOS FALTANDO]', 14);
+  addCode(`{
+  "success": true,
+  "input": { "id": "...", "status": "pending" },
+  "auto_confirmed": false,
+  "complete": false,
+  "missing_fields": ["payment_method", "card_hint"],
+  "message": "Campos faltando: payment_method, card_hint"
+}`);
+
+  checkNewPage(80);
+  addTitle('[RESPOSTA PATCH - COMPLETO]', 14);
+  addCode(`{
+  "success": true,
+  "input": { "id": "...", "status": "confirmed" },
+  "auto_confirmed": true,
+  "complete": true,
+  "missing_fields": [],
+  "message": "Input confirmado automaticamente"
+}`);
+
+  doc.addPage();
+  yPos = 20;
+
   addTitle('[CAMPOS OBRIGATORIOS]', 14);
-  addText('Para registrar uma transacao completa, a IA precisa extrair:');
+  addText('Para registrar uma transacao completa:');
   yPos += 3;
   
   addTable(
     ['Campo', 'Descricao'],
     [
-      ['Valor (amount)', 'Numero decimal obrigatorio (ex: 50, 150.50)'],
-      ['Tipo (transaction_type)', '"expense" ou "income" - obrigatorio'],
-      ['Forma de Pagamento', 'dinheiro, pix, debito ou credito'],
-      ['Cartao/Conta', 'Nome do cartao ou banco usado'],
+      ['amount', 'Numero decimal obrigatorio (50, 150.50)'],
+      ['transaction_type', '"expense" ou "income"'],
+      ['payment_method', 'cash, pix, debit_card, credit_card'],
+      ['card_hint', 'Nome do cartao (se credit_card)'],
+      ['account_hint', 'Nome do banco (se debit_card/pix)'],
     ]
   );
 
   checkNewPage(100);
   addTitle('[FORMATO DA MENSAGEM]', 14);
-  addText('Formato esperado: [TIPO] [VALOR] [DESCRICAO] [FORMA_PAGAMENTO] [BANCO_OU_CARTAO]');
+  addText('Formato: [TIPO] [VALOR] [DESCRICAO] [FORMA] [BANCO/CARTAO]');
   yPos += 3;
-  addText('Exemplos de TIPO: "gastei", "paguei", "recebi", "entrada", "+"');
-  addText('Exemplos de FORMA: "dinheiro", "pix", "debito", "credito"');
+  addText('TIPO: "gastei", "paguei", "recebi", "entrada", "+"');
+  addText('FORMA: "dinheiro", "pix", "debito", "credito"');
 
-  checkNewPage(120);
-  addTitle('[EXEMPLOS DE MENSAGENS COMPLETAS]', 14);
-  addText('Mensagens com todas as informacoes necessarias:');
-  yPos += 3;
-  
+  checkNewPage(80);
+  addTitle('[EXEMPLOS DE MENSAGENS]', 14);
   addTable(
-    ['Mensagem Completa', 'Resultado'],
+    ['Mensagem', 'Resultado'],
     [
-      ['gastei 100 almoco credito Nubank', 'Despesa R$100 - Credito Nubank'],
-      ['paguei 50 padaria debito Itau', 'Despesa R$50 - Debito Itau'],
-      ['200 supermercado pix Bradesco', 'Despesa R$200 - Pix Bradesco'],
-      ['+1500 salario conta Santander', 'Receita R$1500 - Santander'],
-      ['89.90 farmacia credito Visa BB', 'Despesa R$89,90 - Visa BB'],
+      ['gastei 100 almoco credito Nubank', 'Despesa R$100 Nubank'],
+      ['paguei 50 padaria debito Itau', 'Despesa R$50 Itau'],
+      ['200 mercado pix Bradesco', 'Despesa R$200 Pix'],
+      ['+1500 salario conta Santander', 'Receita R$1500'],
     ]
   );
 
@@ -218,98 +270,115 @@ x-webhook-secret: YOUR_WEBHOOK_SECRET`);
   yPos = 20;
 
   addTitle('[FLUXO DE PERGUNTAS DA IA]', 14);
-  addText('Se a mensagem estiver incompleta, a IA deve perguntar:');
-  yPos += 5;
-
-  addText('Exemplo - Mensagem incompleta: "50 almoco"');
+  addText('Se a mensagem estiver incompleta, a IA pergunta:');
   yPos += 3;
-  addCode(`IA responde:
-"Entendi que voce gastou R$50 em almoco.
-Como voce pagou?
-1 - Dinheiro
-2 - Pix  
-3 - Cartao de Debito
-4 - Cartao de Credito"
+  addCode(`Mensagem: "50 almoco"
+
+IA: "Entendi R$50 em almoco. Como pagou?
+1 - Dinheiro  2 - Pix  3 - Debito  4 - Credito"
 
 Usuario: "4"
 
-IA responde:
-"Qual cartao de credito voce usou?"
-[Lista os cartoes cadastrados]
+IA: "Qual cartao de credito?"
+[Lista cartoes cadastrados]
 
 Usuario: "Nubank"
 
-IA confirma:
-"Registrado: Despesa R$50 - Almoco
-Cartao: Nubank (Credito)
-Data: Hoje"`);
+IA: "Registrado: Despesa R$50 - Almoco
+Cartao: Nubank (Credito) | Data: Hoje"`);
 
-  checkNewPage(150);
+  checkNewPage(120);
   addTitle('[PROMPT OPENAI PARA N8N]', 14);
-  addText('Use este prompt no no de IA do N8N:');
-  yPos += 3;
-  addCode(`Voce e um assistente financeiro que extrai dados de mensagens.
+  addCode(`Voce extrai dados financeiros de mensagens.
 
 CAMPOS OBRIGATORIOS:
-- amount: valor numerico (OBRIGATORIO)
-- transaction_type: "expense" ou "income" (OBRIGATORIO)
+- amount: valor numerico
+- transaction_type: "expense" ou "income"
 - payment_method: "cash", "pix", "debit_card", "credit_card"
-- Para credito: preencha card_hint com nome do cartao
-- Para debito/pix: preencha account_hint com banco
+- card_hint: nome do cartao (se credit_card)
+- account_hint: nome do banco (se debit_card/pix)
 
-SE FALTAREM INFORMACOES, retorne:
+SE INCOMPLETO:
 {
   "complete": false,
-  "missing": ["payment_method", "card_hint"],
-  "question": "Como voce pagou? (1)Dinheiro (2)Pix (3)Debito (4)Credito"
+  "missing": ["payment_method"],
+  "question": "Como voce pagou?"
 }
 
-SE TIVER TUDO:
+SE COMPLETO:
 {
   "complete": true,
   "amount": 100,
   "transaction_type": "expense",
-  "description_hint": "Almoco",
   "payment_method": "credit_card",
-  "card_hint": "Nubank Visa",
-  "account_hint": null
+  "card_hint": "Nubank",
+  "description_hint": "Almoco"
 }`);
 
   doc.addPage();
   yPos = 20;
 
+  addTitle('[SUPORTE A CASAIS]', 14);
+  addText('O sistema suporta casais compartilhando financas.');
+  addText('Use o campo owner_user para identificar quem registrou:');
+  addCode(`{
+  "owner_user": "user1"  // ou "user2"
+}`);
+  addText('O campo e opcional. Se nao informado, usa o usuario principal.');
+
+  checkNewPage(80);
+  addTitle('[VINCULACAO WHATSAPP]', 14);
+  addText('1. Usuario acessa Configuracoes > WhatsApp');
+  addText('2. Informa numero com DDI (+55...)');
+  addText('3. Sistema envia codigo de verificacao');
+  addText('4. Usuario confirma codigo no app');
+  addText('5. Campo whatsapp_verified_at e preenchido');
+
+  checkNewPage(60);
   addTitle('[SEGURANCA]', 14);
-  addText('Configuracoes de seguranca importantes:');
   addText('- Use HTTPS em todas as comunicacoes');
-  addText('- Configure o webhook secret no N8N e na Edge Function');
-  addText('- Mantenha as chaves API em variaveis de ambiente');
-  addText('- Monitore os logs de acesso regularmente');
+  addText('- Configure webhook secret no N8N');
+  addText('- Mantenha API keys em variaveis de ambiente');
+  addText('- Monitore logs regularmente');
 
-  checkNewPage(50);
+  doc.addPage();
+  yPos = 20;
+
   addTitle('[TROUBLESHOOTING]', 14);
-  addText('Problema: Mensagens nao chegam');
-  addText('- Verifique se o webhook do N8N esta ativo');
-  addText('- Confirme a URL da Edge Function');
-  addText('- Verifique os logs no Supabase Dashboard');
+  
+  addText('Problema: Mensagens duplicadas');
+  addText('- Verifique se whatsapp_message_id esta sendo enviado');
+  addText('- Confirme constraint UNIQUE no banco');
+  addText('- Confira resposta already_exists: true');
+  yPos += 5;
 
-  checkNewPage();
   addText('Problema: Usuario nao encontrado');
-  addText('- Confirme que o numero esta vinculado');
-  addText('- Verifique formato do numero (+55...)');
-  addText('- Consulte tabela whatsapp_user_links');
+  addText('- Confirme numero vinculado (+55...)');
+  addText('- Verifique whatsapp_verified_at preenchido');
+  addText('- Consulte tabela profiles');
+  yPos += 5;
 
-  checkNewPage();
-  addText('Problema: Informacoes incompletas');
-  addText('- Verifique se o prompt da IA esta correto');
-  addText('- Confirme que a IA esta perguntando campos faltantes');
-  addText('- Consulte logs da Edge Function');
+  addText('Problema: Campos faltando');
+  addText('- Verifique prompt da IA');
+  addText('- Confirme fluxo de perguntas');
+  addText('- Consulte missing_fields na resposta');
+
+  checkNewPage(60);
+  addTitle('[TABELAS DO BANCO]', 14);
+  addTable(
+    ['Tabela', 'Descricao'],
+    [
+      ['profiles', 'phone_number, whatsapp_verified_at'],
+      ['incoming_financial_inputs', 'whatsapp_message_id, status'],
+      ['transactions', 'external_reference_id'],
+    ]
+  );
 
   checkNewPage(40);
   addTitle('[SUPORTE]', 14);
-  addText('Para duvidas ou problemas:');
-  addText('- Consulte a documentacao do N8N: https://docs.n8n.io');
+  addText('- N8N: https://docs.n8n.io');
   addText('- Evolution API: https://doc.evolution-api.com');
-  addText('- Supabase Edge Functions: https://supabase.com/docs/guides/functions');
+  addText('- Supabase: https://supabase.com/docs');
 
   // Footer
   const totalPages = doc.getNumberOfPages();
@@ -325,5 +394,5 @@ SE TIVER TUDO:
     );
   }
 
-  doc.save('N8N-WhatsApp-Setup-Guide.pdf');
+  doc.save('N8N-WhatsApp-Setup-Guide-Idempotente.pdf');
 }
