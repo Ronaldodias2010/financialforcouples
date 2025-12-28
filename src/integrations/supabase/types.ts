@@ -4032,32 +4032,60 @@ export type Database = {
         }
       }
       fix_security_definer_views: { Args: never; Returns: string }
-      generate_cash_flow_report: {
-        Args: {
-          p_account_id?: string
-          p_category_id?: string
-          p_end_date: string
-          p_movement_type?: string
-          p_start_date: string
-          p_user_id: string
-          p_view_mode?: string
-        }
-        Returns: {
-          account_name: string
-          amount: number
-          balance_after: number
-          card_name: string
-          category_name: string
-          description: string
-          id: string
-          is_reconciled: boolean
-          movement_date: string
-          movement_type: string
-          owner_user: string
-          payment_method: string
-          transaction_id: string
-        }[]
-      }
+      generate_cash_flow_report:
+        | {
+            Args: {
+              p_account_id?: string
+              p_category_id?: string
+              p_end_date: string
+              p_movement_type?: string
+              p_start_date: string
+              p_user_id: string
+              p_view_mode?: string
+            }
+            Returns: {
+              account_name: string
+              amount: number
+              balance_after: number
+              card_name: string
+              category_name: string
+              description: string
+              id: string
+              is_reconciled: boolean
+              movement_date: string
+              movement_type: string
+              owner_user: string
+              payment_method: string
+              transaction_id: string
+            }[]
+          }
+        | {
+            Args: {
+              p_account_id?: string
+              p_category_id?: string
+              p_end_date: string
+              p_exclude_card_payments?: boolean
+              p_movement_type?: string
+              p_start_date: string
+              p_user_id: string
+              p_view_mode?: string
+            }
+            Returns: {
+              account_name: string
+              amount: number
+              balance_after: number
+              card_name: string
+              category_name: string
+              description: string
+              id: string
+              is_reconciled: boolean
+              movement_date: string
+              movement_type: string
+              owner_user: string
+              payment_method: string
+              transaction_id: string
+            }[]
+          }
       generate_referral_code: { Args: never; Returns: string }
       generate_temp_password: { Args: never; Returns: string }
       get_active_tags_for_category: {
