@@ -25,23 +25,26 @@ serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
-    const phone_number = url.searchParams.get('phone');
+    const phone_number = url.searchParams.get('phone') || url.searchParams.get('phone_number');
     const user_id = url.searchParams.get('user_id');
 
     console.log('[get-user-options] Request:', { phone_number, user_id });
 
     let targetUserId = user_id;
 
-    // Se phone_number foi passado, buscar user_id
+    // Se phone_number foi passado, buscar user_id na tabela profiles
     if (phone_number && !user_id) {
-      const { data: mapping, error: mappingError } = await supabase
-        .from('whatsapp_user_mappings')
-        .select('user_id, is_verified')
-        .eq('phone_number', phone_number)
+      // Normalizar número de telefone
+      const normalizedPhone = phone_number.replace(/[\s\-\(\)]/g, '');
+      
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, whatsapp_verified_at')
+        .eq('phone_number', normalizedPhone)
         .single();
 
-      if (mappingError || !mapping) {
-        console.log('[get-user-options] Phone not registered:', phone_number);
+      if (profileError || !profile) {
+        console.log('[get-user-options] Phone not registered:', normalizedPhone);
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -52,18 +55,18 @@ serve(async (req) => {
         );
       }
 
-      if (!mapping.is_verified) {
+      if (!profile.whatsapp_verified_at) {
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: 'Número não verificado',
-            code: 'PHONE_NOT_VERIFIED'
+            error: 'WhatsApp não verificado',
+            code: 'WHATSAPP_NOT_VERIFIED'
           }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      targetUserId = mapping.user_id;
+      targetUserId = profile.user_id;
     }
 
     if (!targetUserId) {

@@ -46,15 +46,18 @@ serve(async (req) => {
         );
       }
 
-      // Buscar user_id pelo phone_number
-      const { data: mapping, error: mappingError } = await supabase
-        .from('whatsapp_user_mappings')
-        .select('user_id, is_verified')
-        .eq('phone_number', phone_number)
+      // Normalizar número de telefone (remover espaços, traços, parênteses)
+      const normalizedPhone = phone_number.replace(/[\s\-\(\)]/g, '');
+
+      // Buscar user_id pelo phone_number na tabela profiles
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, phone_number, whatsapp_verified_at')
+        .eq('phone_number', normalizedPhone)
         .single();
 
-      if (mappingError || !mapping) {
-        console.log('[whatsapp-input] Phone not registered:', phone_number);
+      if (profileError || !profile) {
+        console.log('[whatsapp-input] Phone not registered:', normalizedPhone);
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -65,13 +68,13 @@ serve(async (req) => {
         );
       }
 
-      if (!mapping.is_verified) {
-        console.log('[whatsapp-input] Phone not verified:', phone_number);
+      if (!profile.whatsapp_verified_at) {
+        console.log('[whatsapp-input] WhatsApp not verified:', normalizedPhone);
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: 'Número não verificado. Complete a verificação no app.',
-            code: 'PHONE_NOT_VERIFIED'
+            error: 'WhatsApp não verificado. Complete a verificação no app.',
+            code: 'WHATSAPP_NOT_VERIFIED'
           }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -82,7 +85,7 @@ serve(async (req) => {
         const { data: existing } = await supabase
           .from('incoming_financial_inputs')
           .select('id')
-          .eq('user_id', mapping.user_id)
+          .eq('user_id', profile.user_id)
           .eq('whatsapp_message_id', whatsapp_message_id)
           .single();
 
@@ -104,7 +107,7 @@ serve(async (req) => {
       const { data: input, error: insertError } = await supabase
         .from('incoming_financial_inputs')
         .insert({
-          user_id: mapping.user_id,
+          user_id: profile.user_id,
           raw_message,
           whatsapp_message_id,
           source,
@@ -126,6 +129,8 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           input_id: input.id,
+          user_id: profile.user_id,
+          user_name: profile.display_name,
           status: input.status,
           message: 'Input criado com sucesso. Aguardando processamento da IA.'
         }),
@@ -139,6 +144,7 @@ serve(async (req) => {
       const { 
         input_id,
         amount,
+        currency,
         transaction_type,
         category_hint,
         account_hint,
@@ -146,6 +152,7 @@ serve(async (req) => {
         description_hint,
         transaction_date,
         confidence_score,
+        owner_user,
         auto_confirm = true
       } = body;
 
@@ -179,15 +186,22 @@ serve(async (req) => {
         );
       }
 
-      // Determinar novo status
+      // Determinar novo status baseado na confiança
       let newStatus = existingInput.status;
       if (auto_confirm && confidence_score && confidence_score >= 0.85 && amount && transaction_type) {
         newStatus = 'confirmed';
+      } else if (amount && transaction_type) {
+        newStatus = 'needs_confirmation';
       }
 
       // Atualizar input
-      const updateData: Record<string, unknown> = {};
+      const updateData: Record<string, unknown> = {
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      };
+      
       if (amount !== undefined) updateData.amount = amount;
+      if (currency !== undefined) updateData.currency = currency;
       if (transaction_type !== undefined) updateData.transaction_type = transaction_type;
       if (category_hint !== undefined) updateData.category_hint = category_hint;
       if (account_hint !== undefined) updateData.account_hint = account_hint;
@@ -195,7 +209,7 @@ serve(async (req) => {
       if (description_hint !== undefined) updateData.description_hint = description_hint;
       if (transaction_date !== undefined) updateData.transaction_date = transaction_date;
       if (confidence_score !== undefined) updateData.confidence_score = confidence_score;
-      updateData.status = newStatus;
+      if (owner_user !== undefined) updateData.owner_user = owner_user;
 
       const { data: updated, error: updateError } = await supabase
         .from('incoming_financial_inputs')
@@ -250,14 +264,17 @@ serve(async (req) => {
       }
 
       if (phone_number) {
-        // Buscar inputs recentes do usuário
-        const { data: mapping } = await supabase
-          .from('whatsapp_user_mappings')
+        // Normalizar número
+        const normalizedPhone = phone_number.replace(/[\s\-\(\)]/g, '');
+        
+        // Buscar inputs recentes do usuário via profiles
+        const { data: profile } = await supabase
+          .from('profiles')
           .select('user_id')
-          .eq('phone_number', phone_number)
+          .eq('phone_number', normalizedPhone)
           .single();
 
-        if (!mapping) {
+        if (!profile) {
           return new Response(
             JSON.stringify({ success: false, error: 'Número não cadastrado' }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -267,12 +284,12 @@ serve(async (req) => {
         const { data: inputs } = await supabase
           .from('incoming_financial_inputs')
           .select('id, status, amount, transaction_type, created_at, processed_at')
-          .eq('user_id', mapping.user_id)
+          .eq('user_id', profile.user_id)
           .order('created_at', { ascending: false })
           .limit(10);
 
         return new Response(
-          JSON.stringify({ success: true, inputs: inputs || [] }),
+          JSON.stringify({ success: true, inputs: inputs || [], user_id: profile.user_id }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
