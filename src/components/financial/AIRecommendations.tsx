@@ -2,36 +2,20 @@ import { useState } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { CalendarIcon, Download, Brain, BookOpen, MessageSquare, TrendingUp, PieChart, Receipt, Sparkles, Loader2, Lock, AlertCircle, Users, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR, enUS, es } from "date-fns/locale";
+import { Brain, MessageSquare, Loader2, Lock, AlertCircle, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PremiumFeatureGuard } from '@/components/subscription/PremiumFeatureGuard';
 import { useSubscription } from '@/hooks/useSubscription';
 import { AIHistorySection } from "./AIHistorySection";
 import { EducationalContentSection } from "@/components/educational/EducationalContentSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { usePartnerNames } from "@/hooks/usePartnerNames";
-import { useAuth } from "@/hooks/useAuth";
-import { exportCashFlow, exportConsolidatedExpenses, exportConsolidatedRevenues, exportTaxReport } from "@/utils/exportUtils";
 import { useSpeech } from "@/hooks/useSpeech";
 
 const AIRecommendationsContent = () => {
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const { names } = usePartnerNames();
-  const { user } = useAuth();
-  const [dateFrom, setDateFrom] = useState<Date>();
-  const [dateTo, setDateTo] = useState<Date>(); 
-  const [viewMode, setViewMode] = useState<'both' | 'user1' | 'user2'>('both');
-  const [exportFormat, setExportFormat] = useState<'pdf' | 'csv' | 'xlsx'>('pdf');
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'ai', message: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,10 +26,7 @@ const AIRecommendationsContent = () => {
     isSpeaking,
     currentTranscript,
     capabilities,
-    startListening,
-    stopListening,
     speak,
-    stopSpeaking,
     toggleListening,
     toggleSpeaking
   } = useSpeech({
@@ -57,14 +38,6 @@ const AIRecommendationsContent = () => {
     autoSpeak: true
   });
 
-  const getDateLocale = () => {
-    switch (language) {
-      case 'pt': return ptBR;
-      case 'es': return es;
-      default: return enUS;
-    }
-  };
-
   const handleSendMessage = async () => {
     if (!chatMessage.trim() || isLoading) return;
     
@@ -74,16 +47,10 @@ const AIRecommendationsContent = () => {
     setIsLoading(true);
 
     try {
-      const dateRange = dateFrom && dateTo ? {
-        from: format(dateFrom, 'yyyy-MM-dd'),
-        to: format(dateTo, 'yyyy-MM-dd')
-      } : undefined;
-
       const { data, error } = await supabase.functions.invoke('ai-financial-consultant', {
         body: {
           message: userMessage,
-          chatHistory: chatHistory,
-          dateRange: dateRange
+          chatHistory: chatHistory
         }
       });
 
@@ -147,65 +114,6 @@ const AIRecommendationsContent = () => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleExportData = async (dataType: string) => {
-    if (!dateFrom || !dateTo) {
-      toast({
-        title: "Erro na exportação",
-        description: "Por favor, selecione um período válido",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!user?.id) {
-      toast({
-        title: "Erro na exportação",
-        description: "Usuário não autenticado",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      toast({
-        title: "Exportando dados...",
-        description: `Gerando ${exportFormat.toUpperCase()} para ${dataType}`,
-      });
-
-      const dateFromStr = format(dateFrom, 'yyyy-MM-dd');
-      const dateToStr = format(dateTo, 'yyyy-MM-dd');
-
-      switch (dataType) {
-        case 'cashflow':
-          await exportCashFlow(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
-          break;
-        case 'expenses':
-          await exportConsolidatedExpenses(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
-          break;
-        case 'income':
-          await exportConsolidatedRevenues(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
-          break;
-        case 'taxes':
-          await exportTaxReport(exportFormat, dateFromStr, dateToStr, viewMode, user.id);
-          break;
-        default:
-          throw new Error('Tipo de exportação não reconhecido');
-      }
-
-      toast({
-        title: "Exportação concluída!",
-        description: `Arquivo ${exportFormat.toUpperCase()} gerado com sucesso`,
-      });
-    } catch (error) {
-      console.error('Erro na exportação:', error);
-      toast({
-        title: "Erro na exportação",
-        description: "Ocorreu um erro ao gerar o arquivo",
-        variant: "destructive",
-      });
     }
   };
 
@@ -338,198 +246,6 @@ const AIRecommendationsContent = () => {
 
       {/* History Section */}
       <AIHistorySection />
-
-      {/* Date Range Selector */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5" />
-            {t('aiRecommendations.analysisPanel')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Date Range Selection */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{t('aiRecommendations.from')}</span>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !dateFrom && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateFrom ? format(dateFrom, "PPP", { locale: getDateLocale() }) : t('aiRecommendations.selectDate')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dateFrom}
-                      onSelect={setDateFrom}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{t('aiRecommendations.to')}</span>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !dateTo && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateTo ? format(dateTo, "PPP", { locale: getDateLocale() }) : t('aiRecommendations.selectDate')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dateTo}
-                      onSelect={setDateTo}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-
-            {/* View Mode and Format Selection */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <Label className="text-sm font-medium">{t('aiRecommendations.viewMode')}:</Label>
-                <Select value={viewMode} onValueChange={(value: 'both' | 'user1' | 'user2') => setViewMode(value)}>
-                  <SelectTrigger className="w-full mt-1">
-                    <Users className="mr-2 h-4 w-4" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="both">{t('aiRecommendations.both')}</SelectItem>
-                    <SelectItem value="user1">{names.user1Name}</SelectItem>
-                    <SelectItem value="user2">{names.user2Name}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex-1">
-                <Label htmlFor="export-format" className="text-sm font-medium">{t('aiRecommendations.exportFormat')}:</Label>
-                <Select value={exportFormat} onValueChange={(value: 'pdf' | 'csv' | 'xlsx') => setExportFormat(value)}>
-                  <SelectTrigger id="export-format" className="w-full mt-1">
-                    <Download className="mr-2 h-4 w-4" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="csv">CSV</SelectItem>
-                    <SelectItem value="xlsx">Excel</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Extraction Tools */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="h-5 w-5" />
-              {t('aiRecommendations.cashflow')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('aiRecommendations.cashflowDesc')}
-            </p>
-            <Button 
-              onClick={() => handleExportData('cashflow')} 
-              className="w-full"
-              disabled={!dateFrom || !dateTo}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar {exportFormat.toUpperCase()}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <PieChart className="h-5 w-5" />
-              {t('aiRecommendations.expensesConsolidated')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('aiRecommendations.expensesDesc')}
-            </p>
-            <Button 
-              onClick={() => handleExportData('expenses')} 
-              className="w-full"
-              disabled={!dateFrom || !dateTo}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar {exportFormat.toUpperCase()}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="h-5 w-5" />
-              {t('aiRecommendations.incomeConsolidated')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('aiRecommendations.incomeDesc')}
-            </p>
-            <Button 
-              onClick={() => handleExportData('income')} 
-              className="w-full"
-              disabled={!dateFrom || !dateTo}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar {exportFormat.toUpperCase()}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Receipt className="h-5 w-5" />
-              {t('aiRecommendations.taxReport')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('aiRecommendations.taxDesc')}
-            </p>
-            <Button 
-              onClick={() => handleExportData('taxes')} 
-              className="w-full"
-              disabled={!dateFrom || !dateTo}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar {exportFormat.toUpperCase()}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Educational Content */}
       <EducationalContentSection />
