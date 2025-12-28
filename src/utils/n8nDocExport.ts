@@ -299,33 +299,70 @@ Usuario: "Nubank"
 IA: "Registrado: Despesa R$50 - Almoco
 Cartao: Nubank (Credito) | Data: Hoje"`);
 
-  checkNewPage(120);
-  addTitle('[PROMPT OPENAI PARA N8N]', 14);
-  addCode(`Voce extrai dados financeiros de mensagens.
+  checkNewPage(180);
+  addTitle('[PROMPT OPENAI PARA N8N - VERSAO FINAL]', 14);
+  addText('Voce e um assistente financeiro responsavel por extrair dados estruturados de mensagens enviadas via WhatsApp para registro de transacoes financeiras.');
+  yPos += 3;
+  
+  addText('IMPORTANTE:');
+  addText('- Nenhuma transacao pode ser criada se faltar informacao obrigatoria');
+  addText('- Nunca assuma valores, categorias ou metodos de pagamento');
+  addText('- Se faltar algo, pergunte ao usuario');
+  yPos += 5;
 
-CAMPOS OBRIGATORIOS:
-- amount: valor numerico
-- transaction_type: "expense" ou "income"
-- payment_method: "cash", "pix", "debit_card", "credit_card"
-- card_hint: nome do cartao (se credit_card)
-- account_hint: nome do banco (se debit_card/pix)
-
-SE INCOMPLETO:
-{
-  "complete": false,
-  "missing": ["payment_method"],
-  "question": "Como voce pagou?"
-}
-
-SE COMPLETO:
-{
+  addTitle('CAMPOS OBRIGATORIOS:', 12);
+  addTable(
+    ['Campo', 'Descricao'],
+    [
+      ['amount', 'Numero decimal (ex: 50.00) - OBRIGATORIO'],
+      ['transaction_type', '"expense" ou "income" - OBRIGATORIO'],
+      ['category_hint', 'Categoria (ex: "Padaria") - OBRIGATORIO'],
+      ['description_hint', 'Descricao curta e clara - OBRIGATORIO'],
+      ['payment_method', 'cash | pix | debit_card | credit_card - OBRIGATORIO'],
+    ]
+  );
+  
+  checkNewPage(80);
+  addTitle('REGRAS DE ORIGEM DO PAGAMENTO:', 12);
+  addText('Se payment_method = "credit_card":');
+  addText('  - card_hint e OBRIGATORIO (ex: "Visa Bradesco")');
+  addText('  - account_hint deve ser null');
+  yPos += 3;
+  addText('Se payment_method = "debit_card" OU "pix" OU "cash":');
+  addText('  - account_hint e OBRIGATORIO (ex: "Conta Bradesco")');
+  addText('  - card_hint deve ser null');
+  
+  checkNewPage(100);
+  addTitle('EXEMPLO DE MENSAGEM COMPLETA:', 12);
+  addText('"Gastei 50 reais na padaria no cartao de credito Visa do Bradesco"');
+  yPos += 3;
+  addCode(`{
   "complete": true,
-  "amount": 100,
+  "amount": 50.00,
   "transaction_type": "expense",
+  "category_hint": "Padaria",
+  "description_hint": "Compra na padaria",
   "payment_method": "credit_card",
-  "card_hint": "Nubank",
-  "description_hint": "Almoco"
+  "card_hint": "Visa Bradesco",
+  "account_hint": null
 }`);
+
+  checkNewPage(100);
+  addTitle('SE FALTAREM INFORMACOES:', 12);
+  addText('Se QUALQUER campo obrigatorio estiver ausente, retorne:');
+  addCode(`{
+  "complete": false,
+  "missing": ["category_hint", "payment_method"],
+  "question": "Qual a categoria e como voce pagou? (1) Dinheiro (2) Pix (3) Debito (4) Credito"
+}`);
+  addText('A pergunta deve ser curta, objetiva, solicitar apenas os campos faltantes.');
+
+  checkNewPage(60);
+  addTitle('REGRAS FINAIS:', 12);
+  addText('- Nunca crie transacoes incompletas');
+  addText('- Nunca assuma informacoes nao informadas');
+  addText('- Sempre retornar JSON valido');
+  addText('- Nao incluir texto fora do JSON');
 
   doc.addPage();
   yPos = 20;
