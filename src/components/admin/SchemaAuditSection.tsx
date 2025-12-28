@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSchemaAudit } from '@/hooks/useSchemaAudit';
-import { Database, Key, Shield, Zap, AlertTriangle, AlertCircle, Info, RefreshCw, Download, FileText } from 'lucide-react';
+import { exportN8NDocumentation } from '@/utils/n8nDocExport';
+import { Database, Key, Shield, Zap, AlertTriangle, AlertCircle, Info, RefreshCw, Download, FileText, MessageSquare } from 'lucide-react';
 
 interface SchemaAuditSectionProps {
   language?: 'pt' | 'en';
@@ -11,6 +12,16 @@ interface SchemaAuditSectionProps {
 
 export function SchemaAuditSection({ language = 'pt' }: SchemaAuditSectionProps) {
   const { loading, exporting, summary, data, fetchAuditData, exportToPDF } = useSchemaAudit();
+  const [exportingN8N, setExportingN8N] = useState(false);
+
+  const handleExportN8N = async () => {
+    setExportingN8N(true);
+    try {
+      exportN8NDocumentation();
+    } finally {
+      setExportingN8N(false);
+    }
+  };
 
   useEffect(() => {
     fetchAuditData();
@@ -31,6 +42,7 @@ export function SchemaAuditSection({ language = 'pt' }: SchemaAuditSectionProps)
       lastAudit: 'Última auditoria',
       refresh: 'Atualizar',
       export: 'Exportar PDF Completo',
+      exportN8N: 'Guia N8N WhatsApp',
       loading: 'Carregando...',
       exporting: 'Gerando PDF...',
       noForeignKeys: 'Nenhuma Foreign Key explícita definida',
@@ -51,6 +63,7 @@ export function SchemaAuditSection({ language = 'pt' }: SchemaAuditSectionProps)
       lastAudit: 'Last audit',
       refresh: 'Refresh',
       export: 'Export Full PDF',
+      exportN8N: 'N8N WhatsApp Guide',
       loading: 'Loading...',
       exporting: 'Generating PDF...',
       noForeignKeys: 'No explicit Foreign Keys defined',
@@ -89,7 +102,7 @@ export function SchemaAuditSection({ language = 'pt' }: SchemaAuditSectionProps)
                 <CardDescription>{text.subtitle}</CardDescription>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -98,6 +111,16 @@ export function SchemaAuditSection({ language = 'pt' }: SchemaAuditSectionProps)
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 {loading ? text.loading : text.refresh}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportN8N}
+                disabled={exportingN8N}
+                className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+              >
+                <MessageSquare className={`h-4 w-4 mr-2 ${exportingN8N ? 'animate-pulse' : ''}`} />
+                {text.exportN8N}
               </Button>
               <Button
                 onClick={exportToPDF}
