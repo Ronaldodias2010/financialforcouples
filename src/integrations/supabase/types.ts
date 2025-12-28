@@ -3436,7 +3436,6 @@ export type Database = {
           balance: number | null
           created_at: string | null
           currency: Database["public"]["Enums"]["currency_type"] | null
-          deleted_at: string | null
           id: string | null
           is_active: boolean | null
           is_cash_account: boolean | null
@@ -3452,7 +3451,6 @@ export type Database = {
           balance?: number | null
           created_at?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
-          deleted_at?: string | null
           id?: string | null
           is_active?: boolean | null
           is_cash_account?: boolean | null
@@ -3468,7 +3466,6 @@ export type Database = {
           balance?: number | null
           created_at?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
-          deleted_at?: string | null
           id?: string | null
           is_active?: boolean | null
           is_cash_account?: boolean | null
@@ -3490,7 +3487,6 @@ export type Database = {
           credit_limit: number | null
           currency: Database["public"]["Enums"]["currency_type"] | null
           current_balance: number | null
-          deleted_at: string | null
           due_date: number | null
           id: string | null
           initial_balance: number | null
@@ -3511,7 +3507,6 @@ export type Database = {
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
           current_balance?: number | null
-          deleted_at?: string | null
           due_date?: number | null
           id?: string | null
           initial_balance?: number | null
@@ -3532,7 +3527,6 @@ export type Database = {
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
           current_balance?: number | null
-          deleted_at?: string | null
           due_date?: number | null
           id?: string | null
           initial_balance?: number | null
@@ -3567,7 +3561,6 @@ export type Database = {
           color: string | null
           created_at: string | null
           default_category_id: string | null
-          deleted_at: string | null
           description: string | null
           icon: string | null
           id: string | null
@@ -3581,7 +3574,6 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           default_category_id?: string | null
-          deleted_at?: string | null
           description?: string | null
           icon?: string | null
           id?: string | null
@@ -3595,7 +3587,6 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           default_category_id?: string | null
-          deleted_at?: string | null
           description?: string | null
           icon?: string | null
           id?: string | null
@@ -3622,7 +3613,6 @@ export type Database = {
           created_at: string | null
           currency: Database["public"]["Enums"]["currency_type"] | null
           current_value: number | null
-          deleted_at: string | null
           goal_id: string | null
           id: string | null
           is_shared: boolean | null
@@ -3644,7 +3634,6 @@ export type Database = {
           created_at?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
           current_value?: number | null
-          deleted_at?: string | null
           goal_id?: string | null
           id?: string | null
           is_shared?: boolean | null
@@ -3666,7 +3655,6 @@ export type Database = {
           created_at?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
           current_value?: number | null
-          deleted_at?: string | null
           goal_id?: string | null
           id?: string | null
           is_shared?: boolean | null
@@ -3695,12 +3683,12 @@ export type Database = {
         Row: {
           account_id: string | null
           amount: number | null
+          business_at: string | null
           card_id: string | null
           card_transaction_type: string | null
           category_id: string | null
           created_at: string | null
           currency: Database["public"]["Enums"]["currency_type"] | null
-          deleted_at: string | null
           description: string | null
           due_date: string | null
           expense_source_type: string | null
@@ -3722,12 +3710,12 @@ export type Database = {
         Insert: {
           account_id?: string | null
           amount?: number | null
+          business_at?: string | null
           card_id?: string | null
           card_transaction_type?: string | null
           category_id?: string | null
           created_at?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
-          deleted_at?: string | null
           description?: string | null
           due_date?: string | null
           expense_source_type?: string | null
@@ -3749,12 +3737,12 @@ export type Database = {
         Update: {
           account_id?: string | null
           amount?: number | null
+          business_at?: string | null
           card_id?: string | null
           card_transaction_type?: string | null
           category_id?: string | null
           created_at?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
-          deleted_at?: string | null
           description?: string | null
           due_date?: string | null
           expense_source_type?: string | null
