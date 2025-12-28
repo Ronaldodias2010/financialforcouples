@@ -1659,6 +1659,45 @@ export type Database = {
         }
         Relationships: []
       }
+      migration_audit_log: {
+        Row: {
+          action: string
+          affected_rows: number | null
+          created_at: string
+          error_message: string | null
+          executed_at: string
+          executed_by: string
+          id: string
+          notes: string | null
+          phase: string
+          status: string
+        }
+        Insert: {
+          action: string
+          affected_rows?: number | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string
+          executed_by?: string
+          id?: string
+          notes?: string | null
+          phase: string
+          status?: string
+        }
+        Update: {
+          action?: string
+          affected_rows?: number | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string
+          executed_by?: string
+          id?: string
+          notes?: string | null
+          phase?: string
+          status?: string
+        }
+        Relationships: []
+      }
       mileage_goals: {
         Row: {
           created_at: string
