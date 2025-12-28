@@ -1491,38 +1491,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_future_expenses_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "active_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_expenses_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_future_expenses_recurring"
             columns: ["recurring_expense_id"]
             isOneToOne: false
             referencedRelation: "recurring_expenses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_expenses_transaction"
-            columns: ["transaction_id"]
-            isOneToOne: false
-            referencedRelation: "active_transactions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_expenses_transaction"
-            columns: ["transaction_id"]
-            isOneToOne: false
-            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
           {
@@ -1598,50 +1570,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_future_incomes_account"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_incomes_account"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "active_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_incomes_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "active_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_incomes_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_incomes_transaction"
-            columns: ["transaction_id"]
-            isOneToOne: false
-            referencedRelation: "active_transactions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_future_incomes_transaction"
-            columns: ["transaction_id"]
-            isOneToOne: false
-            referencedRelation: "transactions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       manual_premium_access: {
         Row: {
@@ -2958,48 +2887,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_transactions_account"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_account"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "active_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_card"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "active_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_card"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "active_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
@@ -3799,48 +3686,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_transactions_account"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_account"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "active_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_card"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "active_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_card"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "active_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_transactions_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
