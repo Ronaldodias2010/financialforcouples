@@ -473,6 +473,20 @@ export type Database = {
             referencedRelation: "active_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cash_flow_history: {
@@ -2926,6 +2940,55 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_tag"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "category_tags"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
@@ -3510,6 +3573,20 @@ export type Database = {
             referencedRelation: "active_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       active_categories: {
@@ -3725,6 +3802,55 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_tag"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "category_tags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
