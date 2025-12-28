@@ -117,6 +117,36 @@ serve(async (req) => {
 
     console.log('[process-financial-input] Resolve result:', resolveResult);
 
+    // PASSO 1.5: Validação específica para WhatsApp - categoria é obrigatória
+    // Re-buscar input com IDs resolvidos
+    const { data: resolvedInput, error: refetchError } = await supabase
+      .from('incoming_financial_inputs')
+      .select('resolved_category_id, category_hint, source')
+      .eq('id', input_id)
+      .single();
+
+    if (refetchError) {
+      console.error('[process-financial-input] Refetch error:', refetchError);
+      throw refetchError;
+    }
+
+    // Para inputs do WhatsApp, categoria é obrigatória
+    if (resolvedInput.source === 'whatsapp' && !resolvedInput.resolved_category_id) {
+      console.log('[process-financial-input] WhatsApp input missing category');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Categoria é obrigatória para transações via WhatsApp',
+          error_code: 'CATEGORY_REQUIRED',
+          hint: resolvedInput.category_hint 
+            ? `Categoria "${resolvedInput.category_hint}" não foi encontrada. Crie a categoria ou use um nome existente.`
+            : 'Informe a categoria na mensagem (ex: "gastei 50 em alimentação")',
+          resolved_hints: resolveResult
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // PASSO 2: Criar transação via função CAIXA-FORTE
     console.log('[process-financial-input] Creating transaction...');
     const { data: createResult, error: createError } = await supabase
