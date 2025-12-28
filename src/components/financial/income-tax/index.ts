@@ -1,0 +1,8 @@
+export { IncomeTaxDashboard } from './IncomeTaxDashboard';
+export { TaxSummaryCards } from './TaxSummaryCards';
+export { TaxIdentificationSection } from './TaxIdentificationSection';
+export { TaxIncomeSection } from './TaxIncomeSection';
+export { TaxDeductionsSection } from './TaxDeductionsSection';
+export { TaxAssetsSection } from './TaxAssetsSection';
+export { TaxPendingSection } from './TaxPendingSection';
+export { TaxExportSection } from './TaxExportSection';

@@ -19,7 +19,8 @@ import {
   BarChart3,
   List,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Receipt
 } from 'lucide-react';
 import { format, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -29,6 +30,7 @@ import { CashFlowTable } from './CashFlowTable';
 import { ConsolidatedExpensesView } from './ConsolidatedExpensesView';
 import { ConsolidatedRevenuesView } from './ConsolidatedRevenuesView';
 import { ExportCashFlowDialog } from './ExportCashFlowDialog';
+import { IncomeTaxDashboard } from './income-tax';
 import { cn } from '@/lib/utils';
 
 interface CashFlowDashboardProps {
@@ -265,7 +267,7 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
 
       {/* Tabs for different views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Visão Geral</span>
@@ -281,6 +283,10 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
           <TabsTrigger value="revenues" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">Receitas</span>
+          </TabsTrigger>
+          <TabsTrigger value="incomeTax" className="gap-2">
+            <Receipt className="h-4 w-4" />
+            <span className="hidden sm:inline">Imposto de Renda</span>
           </TabsTrigger>
         </TabsList>
 
@@ -316,6 +322,10 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
             isLoading={isLoading}
             dateRange={dateRange}
           />
+        </TabsContent>
+
+        <TabsContent value="incomeTax" className="space-y-4">
+          <IncomeTaxDashboard viewMode={viewMode} />
         </TabsContent>
       </Tabs>
 
