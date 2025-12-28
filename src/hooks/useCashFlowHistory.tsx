@@ -222,9 +222,13 @@ export function useCashFlowHistory(options: UseCashFlowOptions) {
       queryClient.invalidateQueries({ queryKey: ['consolidated-expenses'] });
       queryClient.invalidateQueries({ queryKey: ['consolidated-revenues'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error populating cash flow history:', error);
-      toast.error('Erro ao popular histórico de fluxo de caixa');
+      const errorMessage = error?.message || 'Erro desconhecido';
+      const errorDetails = error?.details || '';
+      const errorHint = error?.hint || '';
+      const fullError = [errorMessage, errorDetails, errorHint].filter(Boolean).join(' - ');
+      toast.error(`Erro ao popular histórico: ${fullError}`);
     }
   });
 
