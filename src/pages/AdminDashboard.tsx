@@ -23,6 +23,7 @@ import { PartnershipApplicationsManager } from '@/components/admin/PartnershipAp
 import { PromoCodesManager } from '@/components/admin/PromoCodesManager';
 import { UserListModal } from '@/components/admin/UserListModal';
 import { InactiveUsersSection } from '@/components/admin/InactiveUsersSection';
+import { SchemaAuditSection } from '@/components/admin/SchemaAuditSection';
 
 
 interface SubscriptionMetrics {
@@ -968,11 +969,12 @@ const AdminDashboardContent = () => {
 
       {/* Main Admin Tabs */}
       <Tabs defaultValue="overview" className="w-full" onValueChange={(value) => setActiveMainTab(value)}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">📊 {t('admin.tabs.overview')}</TabsTrigger>
           <TabsTrigger value="users">👥 {t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="content">📚 {t('admin.tabs.content')}</TabsTrigger>
           <TabsTrigger value="ai-control">🤖 {t('admin.tabs.aiControl')}</TabsTrigger>
+          <TabsTrigger value="schema-audit">🔍 Schema</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -1329,6 +1331,10 @@ const AdminDashboardContent = () => {
 
         <TabsContent value="ai-control">
           <AIControlSection />
+        </TabsContent>
+
+        <TabsContent value="schema-audit">
+          <SchemaAuditSection language={language === 'pt' ? 'pt' : 'en'} />
         </TabsContent>
       </Tabs>
 
