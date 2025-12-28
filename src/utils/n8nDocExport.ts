@@ -177,19 +177,103 @@ x-webhook-secret: YOUR_WEBHOOK_SECRET`);
   addText('5. Sistema confirma vinculacao');
 
   checkNewPage(80);
-  addTitle('[EXEMPLOS DE MENSAGENS]', 14);
-  addText('Formatos aceitos pelo sistema:');
+  addTitle('[CAMPOS OBRIGATORIOS]', 14);
+  addText('Para registrar uma transacao completa, a IA precisa extrair:');
   yPos += 3;
   
   addTable(
-    ['Mensagem', 'Resultado'],
+    ['Campo', 'Descricao'],
     [
-      ['"50 almoco"', 'Despesa R$50 - Almoco'],
-      ['"150.50 supermercado"', 'Despesa R$150,50 - Supermercado'],
-      ['"+500 salario"', 'Receita R$500 - Salario'],
-      ['"entrada 1000 bonus"', 'Receita R$1000 - Bonus'],
+      ['Valor (amount)', 'Numero decimal obrigatorio (ex: 50, 150.50)'],
+      ['Tipo (transaction_type)', '"expense" ou "income" - obrigatorio'],
+      ['Forma de Pagamento', 'dinheiro, pix, debito ou credito'],
+      ['Cartao/Conta', 'Nome do cartao ou banco usado'],
     ]
   );
+
+  checkNewPage(100);
+  addTitle('[FORMATO DA MENSAGEM]', 14);
+  addText('Formato esperado: [TIPO] [VALOR] [DESCRICAO] [FORMA_PAGAMENTO] [BANCO_OU_CARTAO]');
+  yPos += 3;
+  addText('Exemplos de TIPO: "gastei", "paguei", "recebi", "entrada", "+"');
+  addText('Exemplos de FORMA: "dinheiro", "pix", "debito", "credito"');
+
+  checkNewPage(120);
+  addTitle('[EXEMPLOS DE MENSAGENS COMPLETAS]', 14);
+  addText('Mensagens com todas as informacoes necessarias:');
+  yPos += 3;
+  
+  addTable(
+    ['Mensagem Completa', 'Resultado'],
+    [
+      ['gastei 100 almoco credito Nubank', 'Despesa R$100 - Credito Nubank'],
+      ['paguei 50 padaria debito Itau', 'Despesa R$50 - Debito Itau'],
+      ['200 supermercado pix Bradesco', 'Despesa R$200 - Pix Bradesco'],
+      ['+1500 salario conta Santander', 'Receita R$1500 - Santander'],
+      ['89.90 farmacia credito Visa BB', 'Despesa R$89,90 - Visa BB'],
+    ]
+  );
+
+  doc.addPage();
+  yPos = 20;
+
+  addTitle('[FLUXO DE PERGUNTAS DA IA]', 14);
+  addText('Se a mensagem estiver incompleta, a IA deve perguntar:');
+  yPos += 5;
+
+  addText('Exemplo - Mensagem incompleta: "50 almoco"');
+  yPos += 3;
+  addCode(`IA responde:
+"Entendi que voce gastou R$50 em almoco.
+Como voce pagou?
+1 - Dinheiro
+2 - Pix  
+3 - Cartao de Debito
+4 - Cartao de Credito"
+
+Usuario: "4"
+
+IA responde:
+"Qual cartao de credito voce usou?"
+[Lista os cartoes cadastrados]
+
+Usuario: "Nubank"
+
+IA confirma:
+"Registrado: Despesa R$50 - Almoco
+Cartao: Nubank (Credito)
+Data: Hoje"`);
+
+  checkNewPage(150);
+  addTitle('[PROMPT OPENAI PARA N8N]', 14);
+  addText('Use este prompt no no de IA do N8N:');
+  yPos += 3;
+  addCode(`Voce e um assistente financeiro que extrai dados de mensagens.
+
+CAMPOS OBRIGATORIOS:
+- amount: valor numerico (OBRIGATORIO)
+- transaction_type: "expense" ou "income" (OBRIGATORIO)
+- payment_method: "cash", "pix", "debit_card", "credit_card"
+- Para credito: preencha card_hint com nome do cartao
+- Para debito/pix: preencha account_hint com banco
+
+SE FALTAREM INFORMACOES, retorne:
+{
+  "complete": false,
+  "missing": ["payment_method", "card_hint"],
+  "question": "Como voce pagou? (1)Dinheiro (2)Pix (3)Debito (4)Credito"
+}
+
+SE TIVER TUDO:
+{
+  "complete": true,
+  "amount": 100,
+  "transaction_type": "expense",
+  "description_hint": "Almoco",
+  "payment_method": "credit_card",
+  "card_hint": "Nubank Visa",
+  "account_hint": null
+}`);
 
   doc.addPage();
   yPos = 20;
@@ -213,6 +297,12 @@ x-webhook-secret: YOUR_WEBHOOK_SECRET`);
   addText('- Confirme que o numero esta vinculado');
   addText('- Verifique formato do numero (+55...)');
   addText('- Consulte tabela whatsapp_user_links');
+
+  checkNewPage();
+  addText('Problema: Informacoes incompletas');
+  addText('- Verifique se o prompt da IA esta correto');
+  addText('- Confirme que a IA esta perguntando campos faltantes');
+  addText('- Consulte logs da Edge Function');
 
   checkNewPage(40);
   addTitle('[SUPORTE]', 14);
