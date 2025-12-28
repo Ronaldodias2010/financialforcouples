@@ -441,6 +441,193 @@ export type Database = {
           },
         ]
       }
+      cash_flow_history: {
+        Row: {
+          account_id: string | null
+          account_name: string | null
+          amount: number
+          balance_after: number
+          balance_before: number
+          card_id: string | null
+          card_name: string | null
+          category_id: string | null
+          category_name: string | null
+          created_at: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          description: string
+          id: string
+          is_reconciled: boolean | null
+          movement_date: string
+          movement_type: string
+          notes: string | null
+          owner_user: string | null
+          payment_method: string | null
+          period_month: number | null
+          period_quarter: number | null
+          period_year: number | null
+          reconciled_at: string | null
+          reconciled_by: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          account_name?: string | null
+          amount: number
+          balance_after: number
+          balance_before?: number
+          card_id?: string | null
+          card_name?: string | null
+          category_id?: string | null
+          category_name?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description: string
+          id?: string
+          is_reconciled?: boolean | null
+          movement_date: string
+          movement_type: string
+          notes?: string | null
+          owner_user?: string | null
+          payment_method?: string | null
+          period_month?: number | null
+          period_quarter?: number | null
+          period_year?: number | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          account_name?: string | null
+          amount?: number
+          balance_after?: number
+          balance_before?: number
+          card_id?: string | null
+          card_name?: string | null
+          category_id?: string | null
+          category_name?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description?: string
+          id?: string
+          is_reconciled?: boolean | null
+          movement_date?: string
+          movement_type?: string
+          notes?: string | null
+          owner_user?: string | null
+          payment_method?: string | null
+          period_month?: number | null
+          period_quarter?: number | null
+          period_year?: number | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_flow_history_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flow_history_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flow_history_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flow_history_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_flow_monthly_summary: {
+        Row: {
+          account_id: string | null
+          closed_at: string | null
+          created_at: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          final_balance: number
+          id: string
+          initial_balance: number
+          is_closed: boolean | null
+          month: number
+          net_result: number | null
+          owner_user: string | null
+          total_expense: number
+          total_income: number
+          transaction_count: number
+          updated_at: string | null
+          user_id: string
+          year: number
+        }
+        Insert: {
+          account_id?: string | null
+          closed_at?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          final_balance?: number
+          id?: string
+          initial_balance?: number
+          is_closed?: boolean | null
+          month: number
+          net_result?: number | null
+          owner_user?: string | null
+          total_expense?: number
+          total_income?: number
+          transaction_count?: number
+          updated_at?: string | null
+          user_id: string
+          year: number
+        }
+        Update: {
+          account_id?: string | null
+          closed_at?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          final_balance?: number
+          id?: string
+          initial_balance?: number
+          is_closed?: boolean | null
+          month?: number
+          net_result?: number | null
+          owner_user?: string | null
+          total_expense?: number
+          total_income?: number
+          transaction_count?: number
+          updated_at?: string | null
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_flow_monthly_summary_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           category_type: string
@@ -2247,6 +2434,48 @@ export type Database = {
         }
         Relationships: []
       }
+      transaction_audit_log: {
+        Row: {
+          action_type: string
+          change_reason: string | null
+          changed_fields: string[] | null
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          performed_at: string | null
+          transaction_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          change_reason?: string | null
+          changed_fields?: string[] | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_at?: string | null
+          transaction_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          change_reason?: string | null
+          changed_fields?: string[] | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_at?: string | null
+          transaction_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           account_id: string | null
@@ -2800,6 +3029,32 @@ export type Database = {
         }
       }
       fix_security_definer_views: { Args: never; Returns: string }
+      generate_cash_flow_report: {
+        Args: {
+          p_account_id?: string
+          p_category_id?: string
+          p_end_date: string
+          p_movement_type?: string
+          p_start_date: string
+          p_user_id: string
+          p_view_mode?: string
+        }
+        Returns: {
+          account_name: string
+          amount: number
+          balance_after: number
+          card_name: string
+          category_name: string
+          description: string
+          id: string
+          is_reconciled: boolean
+          movement_date: string
+          movement_type: string
+          owner_user: string
+          payment_method: string
+          transaction_id: string
+        }[]
+      }
       generate_referral_code: { Args: never; Returns: string }
       generate_temp_password: { Args: never; Returns: string }
       get_active_tags_for_category: {
@@ -2811,6 +3066,65 @@ export type Database = {
           tag_name_en: string
           tag_name_es: string
           tag_name_pt: string
+        }[]
+      }
+      get_cash_flow_summary: {
+        Args: {
+          p_account_id?: string
+          p_end_date: string
+          p_start_date: string
+          p_user_id: string
+          p_view_mode?: string
+        }
+        Returns: {
+          expense_count: number
+          final_balance: number
+          income_count: number
+          initial_balance: number
+          net_result: number
+          total_expense: number
+          total_income: number
+          transaction_count: number
+        }[]
+      }
+      get_consolidated_expenses: {
+        Args: {
+          p_end_date: string
+          p_start_date: string
+          p_user_id: string
+          p_view_mode?: string
+        }
+        Returns: {
+          avg_amount: number
+          category_color: string
+          category_icon: string
+          category_id: string
+          category_name: string
+          max_amount: number
+          min_amount: number
+          percentage: number
+          total_amount: number
+          transaction_count: number
+        }[]
+      }
+      get_consolidated_revenues: {
+        Args: {
+          p_end_date: string
+          p_start_date: string
+          p_user_id: string
+          p_view_mode?: string
+        }
+        Returns: {
+          avg_amount: number
+          category_color: string
+          category_icon: string
+          category_id: string
+          category_name: string
+          max_amount: number
+          min_amount: number
+          percentage: number
+          total_amount: number
+          transaction_count: number
         }[]
       }
       get_inactive_users: {
@@ -2825,6 +3139,15 @@ export type Database = {
           last_activity_at: string
           user_id: string
         }[]
+      }
+      get_period_initial_balance: {
+        Args: {
+          p_account_id?: string
+          p_start_date: string
+          p_user_id: string
+          p_view_mode?: string
+        }
+        Returns: number
       }
       get_temp_password_for_invite: {
         Args: { p_record_id: string }
@@ -2871,6 +3194,10 @@ export type Database = {
       }
       normalize_category_name: { Args: { input_name: string }; Returns: string }
       normalize_text_simple: { Args: { input: string }; Returns: string }
+      populate_initial_cash_flow_history: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       process_card_payment: {
         Args: {
           p_account_id?: string
