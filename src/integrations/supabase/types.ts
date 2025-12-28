@@ -21,6 +21,7 @@ export type Database = {
           balance: number
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
+          deleted_at: string | null
           id: string
           is_active: boolean | null
           is_cash_account: boolean | null
@@ -36,6 +37,7 @@ export type Database = {
           balance?: number
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          deleted_at?: string | null
           id?: string
           is_active?: boolean | null
           is_cash_account?: boolean | null
@@ -51,6 +53,7 @@ export type Database = {
           balance?: number
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          deleted_at?: string | null
           id?: string
           is_active?: boolean | null
           is_cash_account?: boolean | null
@@ -311,6 +314,13 @@ export type Database = {
             foreignKeyName: "card_mileage_rules_card_id_fkey"
             columns: ["card_id"]
             isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_mileage_rules_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
             referencedRelation: "cards"
             referencedColumns: ["id"]
           },
@@ -362,6 +372,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "card_payment_history_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_payment_history_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "card_payment_history_card_id_fkey"
             columns: ["card_id"]
             isOneToOne: false
@@ -380,6 +404,7 @@ export type Database = {
           credit_limit: number | null
           currency: Database["public"]["Enums"]["currency_type"]
           current_balance: number | null
+          deleted_at: string | null
           due_date: number | null
           id: string
           initial_balance: number | null
@@ -400,6 +425,7 @@ export type Database = {
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"]
           current_balance?: number | null
+          deleted_at?: string | null
           due_date?: number | null
           id?: string
           initial_balance?: number | null
@@ -420,6 +446,7 @@ export type Database = {
           credit_limit?: number | null
           currency?: Database["public"]["Enums"]["currency_type"]
           current_balance?: number | null
+          deleted_at?: string | null
           due_date?: number | null
           id?: string
           initial_balance?: number | null
@@ -437,6 +464,27 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -538,10 +586,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "cash_flow_history_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flow_history_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "cash_flow_history_card_id_fkey"
             columns: ["card_id"]
             isOneToOne: false
             referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flow_history_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
             referencedColumns: ["id"]
           },
           {
@@ -553,6 +622,69 @@ export type Database = {
           },
           {
             foreignKeyName: "cash_flow_history_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "active_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flow_history_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_transaction"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "active_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cashflow_transaction"
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
@@ -626,6 +758,13 @@ export type Database = {
             referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cash_flow_monthly_summary_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       categories: {
@@ -634,6 +773,7 @@ export type Database = {
           color: string | null
           created_at: string
           default_category_id: string | null
+          deleted_at: string | null
           description: string | null
           icon: string | null
           id: string
@@ -647,6 +787,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           default_category_id?: string | null
+          deleted_at?: string | null
           description?: string | null
           icon?: string | null
           id?: string
@@ -660,6 +801,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           default_category_id?: string | null
+          deleted_at?: string | null
           description?: string | null
           icon?: string | null
           id?: string
@@ -1176,6 +1318,7 @@ export type Database = {
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
           current_amount: number
+          deleted_at: string | null
           description: string | null
           id: string
           name: string
@@ -1189,6 +1332,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           current_amount?: number
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name: string
@@ -1202,6 +1346,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           current_amount?: number
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name?: string
@@ -1243,6 +1388,13 @@ export type Database = {
             foreignKeyName: "investment_performance_investment_id_fkey"
             columns: ["investment_id"]
             isOneToOne: false
+            referencedRelation: "active_investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_performance_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
             referencedRelation: "investments"
             referencedColumns: ["id"]
           },
@@ -1280,6 +1432,7 @@ export type Database = {
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
           current_value: number
+          deleted_at: string | null
           goal_id: string | null
           id: string
           is_shared: boolean | null
@@ -1301,6 +1454,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           current_value?: number
+          deleted_at?: string | null
           goal_id?: string | null
           id?: string
           is_shared?: boolean | null
@@ -1322,6 +1476,7 @@ export type Database = {
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
           current_value?: number
+          deleted_at?: string | null
           goal_id?: string | null
           id?: string
           is_shared?: boolean | null
@@ -1338,6 +1493,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_investments_goal"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "investment_goals"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "investments_goal_id_fkey"
             columns: ["goal_id"]
             isOneToOne: false
@@ -1351,6 +1513,7 @@ export type Database = {
           amount: number
           category_id: string | null
           created_at: string
+          deleted_at: string | null
           description: string
           due_date: string
           id: string
@@ -1369,6 +1532,7 @@ export type Database = {
           amount: number
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description: string
           due_date: string
           id?: string
@@ -1387,6 +1551,7 @@ export type Database = {
           amount?: number
           category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string
           due_date?: string
           id?: string
@@ -1403,6 +1568,41 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_future_expenses_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_expenses_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_expenses_recurring"
+            columns: ["recurring_expense_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_expenses_transaction"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "active_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_expenses_transaction"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "manual_future_expenses_recurring_expense_id_fkey"
             columns: ["recurring_expense_id"]
             isOneToOne: false
@@ -1418,6 +1618,7 @@ export type Database = {
           category_id: string | null
           created_at: string
           days_overdue: number | null
+          deleted_at: string | null
           description: string
           due_date: string
           id: string
@@ -1438,6 +1639,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           days_overdue?: number | null
+          deleted_at?: string | null
           description: string
           due_date: string
           id?: string
@@ -1458,6 +1660,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           days_overdue?: number | null
+          deleted_at?: string | null
           description?: string
           due_date?: string
           id?: string
@@ -1472,7 +1675,50 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_future_incomes_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_incomes_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_incomes_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_incomes_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_incomes_transaction"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "active_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_future_incomes_transaction"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manual_premium_access: {
         Row: {
@@ -1606,6 +1852,13 @@ export type Database = {
             foreignKeyName: "mileage_goals_source_card_id_fkey"
             columns: ["source_card_id"]
             isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_goals_source_card_id_fkey"
+            columns: ["source_card_id"]
+            isOneToOne: false
             referencedRelation: "cards"
             referencedColumns: ["id"]
           },
@@ -1653,6 +1906,13 @@ export type Database = {
             foreignKeyName: "mileage_history_card_id_fkey"
             columns: ["card_id"]
             isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_history_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
             referencedRelation: "cards"
             referencedColumns: ["id"]
           },
@@ -1661,6 +1921,13 @@ export type Database = {
             columns: ["rule_id"]
             isOneToOne: false
             referencedRelation: "card_mileage_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_history_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "active_transactions"
             referencedColumns: ["id"]
           },
           {
@@ -2084,6 +2351,7 @@ export type Database = {
           contract_duration_months: number | null
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
+          deleted_at: string | null
           frequency_days: number
           frequency_type: string | null
           id: string
@@ -2106,6 +2374,7 @@ export type Database = {
           contract_duration_months?: number | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          deleted_at?: string | null
           frequency_days?: number
           frequency_type?: string | null
           id?: string
@@ -2128,6 +2397,7 @@ export type Database = {
           contract_duration_months?: number | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          deleted_at?: string | null
           frequency_days?: number
           frequency_type?: string | null
           id?: string
@@ -2144,6 +2414,48 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_recurring_expenses_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_recurring_expenses_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_recurring_expenses_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_recurring_expenses_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_recurring_expenses_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_recurring_expenses_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "recurring_expenses_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
@@ -2151,10 +2463,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "recurring_expenses_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "recurring_expenses_card_id_fkey"
             columns: ["card_id"]
             isOneToOne: false
             referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
             referencedColumns: ["id"]
           },
           {
@@ -2393,6 +2726,13 @@ export type Database = {
             foreignKeyName: "subcategories_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
@@ -2551,6 +2891,13 @@ export type Database = {
             foreignKeyName: "tax_deduction_documents_transaction_id_fkey"
             columns: ["transaction_id"]
             isOneToOne: false
+            referencedRelation: "active_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_deduction_documents_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
             referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
@@ -2608,6 +2955,8 @@ export type Database = {
           new_values: Json | null
           old_values: Json | null
           performed_at: string | null
+          session_id: string | null
+          source_application: string | null
           transaction_id: string
           user_agent: string | null
           user_id: string
@@ -2621,6 +2970,8 @@ export type Database = {
           new_values?: Json | null
           old_values?: Json | null
           performed_at?: string | null
+          session_id?: string | null
+          source_application?: string | null
           transaction_id: string
           user_agent?: string | null
           user_id: string
@@ -2634,6 +2985,8 @@ export type Database = {
           new_values?: Json | null
           old_values?: Json | null
           performed_at?: string | null
+          session_id?: string | null
+          source_application?: string | null
           transaction_id?: string
           user_agent?: string | null
           user_id?: string
@@ -2649,6 +3002,7 @@ export type Database = {
           category_id: string | null
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
+          deleted_at: string | null
           description: string
           due_date: string | null
           expense_source_type: string | null
@@ -2675,6 +3029,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          deleted_at?: string | null
           description: string
           due_date?: string | null
           expense_source_type?: string | null
@@ -2701,6 +3056,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          deleted_at?: string | null
           description?: string
           due_date?: string | null
           expense_source_type?: string | null
@@ -2721,6 +3077,48 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
@@ -2728,10 +3126,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transactions_card_id_fkey"
             columns: ["card_id"]
             isOneToOne: false
             referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
             referencedColumns: ["id"]
           },
           {
@@ -2812,6 +3231,13 @@ export type Database = {
             foreignKeyName: "fk_category_tag_exclusions_category"
             columns: ["category_id"]
             isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_category_tag_exclusions_category"
+            columns: ["category_id"]
+            isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
@@ -2859,6 +3285,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_category_tags_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_category_tags_category_id_fkey"
             columns: ["category_id"]
@@ -3102,10 +3535,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "withdrawals_cash_account_id_fkey"
+            columns: ["cash_account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "withdrawals_source_account_id_fkey"
             columns: ["source_account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_source_account_id_fkey"
+            columns: ["source_account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_source_card_id_fkey"
+            columns: ["source_card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
             referencedColumns: ["id"]
           },
           {
@@ -3119,6 +3573,458 @@ export type Database = {
       }
     }
     Views: {
+      active_accounts: {
+        Row: {
+          account_model: string | null
+          account_type: Database["public"]["Enums"]["account_type"] | null
+          balance: number | null
+          created_at: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          deleted_at: string | null
+          id: string | null
+          is_active: boolean | null
+          is_cash_account: boolean | null
+          name: string | null
+          overdraft_limit: number | null
+          owner_user: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_model?: string | null
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          balance?: number | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          deleted_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_cash_account?: boolean | null
+          name?: string | null
+          overdraft_limit?: number | null
+          owner_user?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_model?: string | null
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          balance?: number | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          deleted_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_cash_account?: boolean | null
+          name?: string | null
+          overdraft_limit?: number | null
+          owner_user?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      active_cards: {
+        Row: {
+          account_id: string | null
+          allows_partial_payment: boolean | null
+          card_type: Database["public"]["Enums"]["card_type"] | null
+          closing_date: number | null
+          created_at: string | null
+          credit_limit: number | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          current_balance: number | null
+          deleted_at: string | null
+          due_date: number | null
+          id: string | null
+          initial_balance: number | null
+          initial_balance_original: number | null
+          last_four_digits: string | null
+          minimum_payment_amount: number | null
+          name: string | null
+          owner_user: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          allows_partial_payment?: boolean | null
+          card_type?: Database["public"]["Enums"]["card_type"] | null
+          closing_date?: number | null
+          created_at?: string | null
+          credit_limit?: number | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          current_balance?: number | null
+          deleted_at?: string | null
+          due_date?: number | null
+          id?: string | null
+          initial_balance?: number | null
+          initial_balance_original?: number | null
+          last_four_digits?: string | null
+          minimum_payment_amount?: number | null
+          name?: string | null
+          owner_user?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          allows_partial_payment?: boolean | null
+          card_type?: Database["public"]["Enums"]["card_type"] | null
+          closing_date?: number | null
+          created_at?: string | null
+          credit_limit?: number | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          current_balance?: number | null
+          deleted_at?: string | null
+          due_date?: number | null
+          id?: string | null
+          initial_balance?: number | null
+          initial_balance_original?: number | null
+          last_four_digits?: string | null
+          minimum_payment_amount?: number | null
+          name?: string | null
+          owner_user?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cards_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      active_categories: {
+        Row: {
+          category_type: string | null
+          color: string | null
+          created_at: string | null
+          default_category_id: string | null
+          deleted_at: string | null
+          description: string | null
+          icon: string | null
+          id: string | null
+          name: string | null
+          owner_user: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category_type?: string | null
+          color?: string | null
+          created_at?: string | null
+          default_category_id?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string | null
+          name?: string | null
+          owner_user?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category_type?: string | null
+          color?: string | null
+          created_at?: string | null
+          default_category_id?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string | null
+          name?: string | null
+          owner_user?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_categories_default_category"
+            columns: ["default_category_id"]
+            isOneToOne: false
+            referencedRelation: "default_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      active_investments: {
+        Row: {
+          amount: number | null
+          auto_calculate_yield: boolean | null
+          broker: string | null
+          created_at: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          current_value: number | null
+          deleted_at: string | null
+          goal_id: string | null
+          id: string | null
+          is_shared: boolean | null
+          last_yield_date: string | null
+          name: string | null
+          notes: string | null
+          owner_user: string | null
+          purchase_date: string | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+          yield_type: string | null
+          yield_value: number | null
+        }
+        Insert: {
+          amount?: number | null
+          auto_calculate_yield?: boolean | null
+          broker?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          current_value?: number | null
+          deleted_at?: string | null
+          goal_id?: string | null
+          id?: string | null
+          is_shared?: boolean | null
+          last_yield_date?: string | null
+          name?: string | null
+          notes?: string | null
+          owner_user?: string | null
+          purchase_date?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          yield_type?: string | null
+          yield_value?: number | null
+        }
+        Update: {
+          amount?: number | null
+          auto_calculate_yield?: boolean | null
+          broker?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          current_value?: number | null
+          deleted_at?: string | null
+          goal_id?: string | null
+          id?: string | null
+          is_shared?: boolean | null
+          last_yield_date?: string | null
+          name?: string | null
+          notes?: string | null
+          owner_user?: string | null
+          purchase_date?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          yield_type?: string | null
+          yield_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_investments_goal"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "investment_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investments_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "investment_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      active_transactions: {
+        Row: {
+          account_id: string | null
+          amount: number | null
+          card_id: string | null
+          card_transaction_type: string | null
+          category_id: string | null
+          created_at: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          deleted_at: string | null
+          description: string | null
+          due_date: string | null
+          expense_source_type: string | null
+          id: string | null
+          installment_number: number | null
+          is_installment: boolean | null
+          owner_user: string | null
+          payment_method: string | null
+          purchase_date: string | null
+          status: string | null
+          subcategory: string | null
+          tag_id: string | null
+          total_installments: number | null
+          transaction_date: string | null
+          type: Database["public"]["Enums"]["transaction_type"] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number | null
+          card_id?: string | null
+          card_transaction_type?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          deleted_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          expense_source_type?: string | null
+          id?: string | null
+          installment_number?: number | null
+          is_installment?: boolean | null
+          owner_user?: string | null
+          payment_method?: string | null
+          purchase_date?: string | null
+          status?: string | null
+          subcategory?: string | null
+          tag_id?: string | null
+          total_installments?: number | null
+          transaction_date?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number | null
+          card_id?: string | null
+          card_transaction_type?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          deleted_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          expense_source_type?: string | null
+          id?: string | null
+          installment_number?: number | null
+          is_installment?: boolean | null
+          owner_user?: string | null
+          payment_method?: string | null
+          purchase_date?: string | null
+          status?: string | null
+          subcategory?: string | null
+          tag_id?: string | null
+          total_installments?: number | null
+          transaction_date?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_account"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_card"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_financial_summary: {
         Row: {
           currency: Database["public"]["Enums"]["currency_type"] | null
