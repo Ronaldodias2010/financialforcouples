@@ -80,3 +80,13 @@ verify_jwt = true
 
 [functions.cleanup-rate-limits]
 verify_jwt = false
+
+# WhatsApp + N8N Integration
+[functions.whatsapp-input]
+verify_jwt = false
+
+[functions.process-financial-input]
+verify_jwt = false
+
+[functions.get-user-options]
+verify_jwt = false
