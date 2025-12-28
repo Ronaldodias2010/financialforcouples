@@ -306,13 +306,8 @@ export const useFinancialData = () => {
     }
     
     return transactions.filter(transaction => {
-      if (!coupleIds) {
-        return true;
-      }
-      const ownerUser: 'user1' | 'user2' = transaction.user_id === coupleIds.user1_id ? 'user1'
-        : transaction.user_id === coupleIds.user2_id ? 'user2'
-        : 'user1';
-      return ownerUser === viewMode;
+      // Use owner_user field directly - it already contains 'user1' or 'user2'
+      return (transaction.owner_user || 'user1') === viewMode;
     });
   };
 
@@ -527,7 +522,7 @@ export const useFinancialData = () => {
             t.payment_method === 'account_transfer' || 
             t.payment_method === 'account_investment' ||
             t.card_transaction_type === 'future_expense' ||
-            (coupleIds && t.user_id !== coupleIds.user1_id)) {
+            (t.owner_user || 'user1') !== 'user1') {
           return false;
         }
         
@@ -548,8 +543,7 @@ export const useFinancialData = () => {
             t.payment_method === 'account_transfer' || 
             t.payment_method === 'account_investment' ||
             t.card_transaction_type === 'future_expense' ||
-            !coupleIds ||
-            t.user_id !== coupleIds.user2_id) {
+            (t.owner_user || 'user1') !== 'user2') {
           return false;
         }
         
