@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,6 +61,13 @@ interface UseCashFlowOptions {
   movementType?: string | null;
 }
 
+interface CoupleInfo {
+  isPartOfCouple: boolean;
+  isUser1: boolean;
+  user1Id: string | null;
+  user2Id: string | null;
+}
+
 export function useCashFlowHistory(options: UseCashFlowOptions) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -68,6 +75,34 @@ export function useCashFlowHistory(options: UseCashFlowOptions) {
 
   const startDateStr = format(startDate, 'yyyy-MM-dd');
   const endDateStr = format(endDate, 'yyyy-MM-dd');
+
+  // Check if user is part of a couple
+  const { data: coupleInfo } = useQuery({
+    queryKey: ['couple-info', user?.id],
+    queryFn: async (): Promise<CoupleInfo> => {
+      if (!user?.id) return { isPartOfCouple: false, isUser1: false, user1Id: null, user2Id: null };
+
+      const { data, error } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .eq('status', 'active')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .maybeSingle();
+
+      if (error || !data) {
+        return { isPartOfCouple: false, isUser1: false, user1Id: null, user2Id: null };
+      }
+
+      return {
+        isPartOfCouple: true,
+        isUser1: data.user1_id === user.id,
+        user1Id: data.user1_id,
+        user2Id: data.user2_id
+      };
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
 
   // Fetch cash flow history entries
   const { data: cashFlowEntries, isLoading: entriesLoading, refetch: refetchEntries } = useQuery({
@@ -245,6 +280,9 @@ export function useCashFlowHistory(options: UseCashFlowOptions) {
     summary,
     consolidatedExpenses: consolidatedExpenses || [],
     consolidatedRevenues: consolidatedRevenues || [],
+    
+    // Couple info
+    coupleInfo: coupleInfo || { isPartOfCouple: false, isUser1: false, user1Id: null, user2Id: null },
     
     // Loading states
     isLoading: entriesLoading || summaryLoading || expensesLoading || revenuesLoading,
