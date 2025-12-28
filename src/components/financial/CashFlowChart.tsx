@@ -15,31 +15,41 @@ interface CashFlowChartProps {
 const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProps) {
-  // Calculate balance evolution data
+  // Calculate balance evolution data - using cumulative calculation from initial_balance
   const balanceEvolutionData = useMemo(() => {
-    if (entries.length === 0) return [];
+    if (!summary) return [];
 
-    // Group entries by date and get the last balance of each day
-    const dailyBalances = new Map<string, number>();
+    // Group entries by date and calculate daily deltas (income - expense)
+    const dailyDeltas = new Map<string, number>();
     
     entries.forEach(entry => {
       const dateKey = entry.movement_date;
-      dailyBalances.set(dateKey, entry.balance_after);
+      const currentDelta = dailyDeltas.get(dateKey) || 0;
+      
+      // Add for income/transfer_in, subtract for expense/transfer_out
+      if (entry.movement_type === 'income' || entry.movement_type === 'transfer_in' || entry.movement_type === 'initial_balance') {
+        dailyDeltas.set(dateKey, currentDelta + entry.amount);
+      } else if (entry.movement_type === 'expense' || entry.movement_type === 'transfer_out') {
+        dailyDeltas.set(dateKey, currentDelta - entry.amount);
+      }
     });
 
-    // Create data points for each day with running balance
-    let lastBalance = summary?.initial_balance || 0;
+    // Create data points for each day with cumulative balance starting from initial_balance
+    let runningBalance = summary.initial_balance || 0;
     const days = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
     
     return days.map(day => {
       const dateKey = format(day, 'yyyy-MM-dd');
-      if (dailyBalances.has(dateKey)) {
-        lastBalance = dailyBalances.get(dateKey)!;
+      
+      // Apply the day's delta if it exists
+      if (dailyDeltas.has(dateKey)) {
+        runningBalance += dailyDeltas.get(dateKey)!;
       }
+      
       return {
         date: format(day, 'dd/MM', { locale: ptBR }),
         fullDate: dateKey,
-        balance: lastBalance
+        balance: runningBalance
       };
     });
   }, [entries, summary, dateRange]);
