@@ -3016,6 +3016,7 @@ export type Database = {
           owner_user: string | null
           payment_method: string | null
           purchase_date: string
+          source: string | null
           status: string
           subcategory: string | null
           tag_id: string | null
@@ -3045,6 +3046,7 @@ export type Database = {
           owner_user?: string | null
           payment_method?: string | null
           purchase_date?: string
+          source?: string | null
           status?: string
           subcategory?: string | null
           tag_id?: string | null
@@ -3074,6 +3076,7 @@ export type Database = {
           owner_user?: string | null
           payment_method?: string | null
           purchase_date?: string
+          source?: string | null
           status?: string
           subcategory?: string | null
           tag_id?: string | null
