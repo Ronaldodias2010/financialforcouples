@@ -171,6 +171,7 @@ const translations = {
     'nav.categories': 'Categorias',
     'nav.recurring': 'Despesas Recorrentes',
     'nav.converter': 'Conversor',
+    'nav.cashFlow': 'Fluxo de Caixa',
     'nav.aiRecommendations': 'Recomendações da IA',
     
     // Navigation Short Labels (Mobile)
@@ -180,6 +181,7 @@ const translations = {
     'nav.short.categories': 'Categorias',
     'nav.short.recurring': 'Recorrentes',
     'nav.short.converter': 'Conversor',
+    'nav.short.cashFlow': 'Fluxo',
     'nav.short.aiRecommendations': 'IA',
     
     // Navigation Buttons
@@ -1995,6 +1997,7 @@ const translations = {
     'nav.categories': 'Categories',
     'nav.recurring': 'Recurring Expenses',
     'nav.converter': 'Converter',
+    'nav.cashFlow': 'Cash Flow',
     'nav.aiRecommendations': 'AI Recommendations',
     
     // Navigation Short Labels (Mobile)
@@ -2004,6 +2007,7 @@ const translations = {
     'nav.short.categories': 'Categories',
     'nav.short.recurring': 'Recurring',
     'nav.short.converter': 'Converter',
+    'nav.short.cashFlow': 'Cash Flow',
     'nav.short.aiRecommendations': 'AI',
     
     // Navigation Buttons
@@ -3822,6 +3826,7 @@ const translations = {
     'nav.categories': 'Categorías',
     'nav.recurring': 'Gastos Recurrentes',
     'nav.converter': 'Conversor',
+    'nav.cashFlow': 'Flujo de Caja',
     'nav.aiRecommendations': 'Recomendaciones de IA',
     
     // Navigation Short Labels (Mobile)
@@ -3831,6 +3836,7 @@ const translations = {
     'nav.short.categories': 'Categorías',
     'nav.short.recurring': 'Recurrentes',
     'nav.short.converter': 'Conversor',
+    'nav.short.cashFlow': 'Flujo',
     'nav.short.aiRecommendations': 'IA',
     
     // Navigation Buttons
