@@ -2434,6 +2434,170 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_assets: {
+        Row: {
+          acquisition_date: string | null
+          acquisition_value: number | null
+          asset_code: string | null
+          asset_type: string
+          created_at: string | null
+          description: string
+          id: string
+          ir_description: string | null
+          location: string | null
+          owner_user: string | null
+          source_id: string | null
+          source_table: string | null
+          tax_year: number
+          updated_at: string | null
+          user_id: string
+          value_at_year_end: number | null
+          value_at_year_start: number | null
+        }
+        Insert: {
+          acquisition_date?: string | null
+          acquisition_value?: number | null
+          asset_code?: string | null
+          asset_type: string
+          created_at?: string | null
+          description: string
+          id?: string
+          ir_description?: string | null
+          location?: string | null
+          owner_user?: string | null
+          source_id?: string | null
+          source_table?: string | null
+          tax_year: number
+          updated_at?: string | null
+          user_id: string
+          value_at_year_end?: number | null
+          value_at_year_start?: number | null
+        }
+        Update: {
+          acquisition_date?: string | null
+          acquisition_value?: number | null
+          asset_code?: string | null
+          asset_type?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          ir_description?: string | null
+          location?: string | null
+          owner_user?: string | null
+          source_id?: string | null
+          source_table?: string | null
+          tax_year?: number
+          updated_at?: string | null
+          user_id?: string
+          value_at_year_end?: number | null
+          value_at_year_start?: number | null
+        }
+        Relationships: []
+      }
+      tax_deduction_documents: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          document_name: string | null
+          document_url: string | null
+          id: string
+          notes: string | null
+          owner_user: string | null
+          provider_cpf_cnpj: string | null
+          provider_name: string | null
+          status: string | null
+          tax_year: number
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category: string
+          created_at?: string | null
+          document_name?: string | null
+          document_url?: string | null
+          id?: string
+          notes?: string | null
+          owner_user?: string | null
+          provider_cpf_cnpj?: string | null
+          provider_name?: string | null
+          status?: string | null
+          tax_year: number
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          document_name?: string | null
+          document_url?: string | null
+          id?: string
+          notes?: string | null
+          owner_user?: string | null
+          provider_cpf_cnpj?: string | null
+          provider_name?: string | null
+          status?: string | null
+          tax_year?: number
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_deduction_documents_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_report_config: {
+        Row: {
+          created_at: string | null
+          declaration_type: string
+          dependents: Json | null
+          id: string
+          notes: string | null
+          primary_declarant: string
+          progress_percentage: number | null
+          status: string
+          tax_year: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          declaration_type?: string
+          dependents?: Json | null
+          id?: string
+          notes?: string | null
+          primary_declarant?: string
+          progress_percentage?: number | null
+          status?: string
+          tax_year: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          declaration_type?: string
+          dependents?: Json | null
+          id?: string
+          notes?: string | null
+          primary_declarant?: string
+          progress_percentage?: number | null
+          status?: string
+          tax_year?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       transaction_audit_log: {
         Row: {
           action_type: string
