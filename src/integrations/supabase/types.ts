@@ -620,6 +620,13 @@ export type Database = {
             foreignKeyName: "fk_cash_flow_transaction"
             columns: ["transaction_id"]
             isOneToOne: false
+            referencedRelation: "ai_transactions_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_cash_flow_transaction"
+            columns: ["transaction_id"]
+            isOneToOne: false
             referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
@@ -1246,6 +1253,93 @@ export type Database = {
           },
         ]
       }
+      incoming_financial_inputs: {
+        Row: {
+          account_hint: string | null
+          amount: number | null
+          card_hint: string | null
+          category_hint: string | null
+          confidence_score: number | null
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          description_hint: string | null
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          owner_user: string | null
+          processed_at: string | null
+          raw_message: string
+          resolved_account_id: string | null
+          resolved_card_id: string | null
+          resolved_category_id: string | null
+          source: string
+          status: string
+          transaction_date: string | null
+          transaction_id: string | null
+          transaction_type: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+          whatsapp_message_id: string | null
+        }
+        Insert: {
+          account_hint?: string | null
+          amount?: number | null
+          card_hint?: string | null
+          category_hint?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description_hint?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          owner_user?: string | null
+          processed_at?: string | null
+          raw_message: string
+          resolved_account_id?: string | null
+          resolved_card_id?: string | null
+          resolved_category_id?: string | null
+          source?: string
+          status?: string
+          transaction_date?: string | null
+          transaction_id?: string | null
+          transaction_type?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+          whatsapp_message_id?: string | null
+        }
+        Update: {
+          account_hint?: string | null
+          amount?: number | null
+          card_hint?: string | null
+          category_hint?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description_hint?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          owner_user?: string | null
+          processed_at?: string | null
+          raw_message?: string
+          resolved_account_id?: string | null
+          resolved_card_id?: string | null
+          resolved_category_id?: string | null
+          source?: string
+          status?: string
+          transaction_date?: string | null
+          transaction_id?: string | null
+          transaction_type?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+          whatsapp_message_id?: string | null
+        }
+        Relationships: []
+      }
       investment_goals: {
         Row: {
           created_at: string
@@ -1858,6 +1952,13 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "active_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_history_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ai_transactions_view"
             referencedColumns: ["id"]
           },
           {
@@ -2780,6 +2881,13 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "active_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_deduction_documents_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ai_transactions_view"
             referencedColumns: ["id"]
           },
           {
@@ -3813,6 +3921,27 @@ export type Database = {
           },
         ]
       }
+      ai_transactions_view: {
+        Row: {
+          account_name: string | null
+          account_type: Database["public"]["Enums"]["account_type"] | null
+          amount: number | null
+          card_name: string | null
+          card_type: Database["public"]["Enums"]["card_type"] | null
+          category_color: string | null
+          category_name: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          description: string | null
+          id: string | null
+          owner_user: string | null
+          payment_method: string | null
+          status: string | null
+          transaction_date: string | null
+          type: Database["public"]["Enums"]["transaction_type"] | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       monthly_financial_summary: {
         Row: {
           currency: Database["public"]["Enums"]["currency_type"] | null
@@ -3862,6 +3991,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      create_transaction_from_input: {
+        Args: { p_input_id: string }
+        Returns: Json
       }
       determine_owner_user: { Args: { p_user_id: string }; Returns: string }
       find_tag_case_insensitive: {
@@ -4019,6 +4152,7 @@ export type Database = {
           tokens_used: number
         }[]
       }
+      get_user_financial_options: { Args: { p_user_id: string }; Returns: Json }
       get_users_near_expiration: {
         Args: { days_before: number }
         Returns: {
@@ -4113,6 +4247,7 @@ export type Database = {
       }
       recalculate_mileage_goals: { Args: never; Returns: undefined }
       regenerate_future_expenses: { Args: never; Returns: number }
+      resolve_financial_hints: { Args: { p_input_id: string }; Returns: Json }
       suggest_category_and_tag:
         | {
             Args: { description: string; language?: string }
