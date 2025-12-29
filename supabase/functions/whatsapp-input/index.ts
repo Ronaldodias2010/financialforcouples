@@ -349,45 +349,88 @@ serve(async (req) => {
         questions.push({ field: 'payment_method', question: 'Qual a forma de pagamento? (PIX, cartão de crédito, débito, dinheiro)' });
       }
 
+      // =====================================================
+      // REGRA DE INTEGRIDADE: Sem ID resolvido = SEMPRE perguntar
+      // Confidence influencia apenas COMO perguntar (UX), não SE pergunta
+      // =====================================================
+
       // Categoria - validação especial para WhatsApp
       if (isWhatsApp) {
         if (!category_hint) {
           missingFields.push('category_hint');
-          questions.push({ field: 'category_hint', question: 'Qual a categoria desse gasto?' });
-        } else if (categoryResolutionFailed && confidence_score < 0.85) {
+          questions.push({ field: 'category_hint', question: 'Qual a categoria desse gasto?', suggested: false });
+        } else if (categoryResolutionFailed) {
+          // SEM ID RESOLVIDO = SEMPRE PERGUNTAR (independente do confidence)
           missingFields.push('category_hint');
-          questions.push({ 
-            field: 'category_hint', 
-            question: `Não encontrei a categoria "${category_hint}". Qual categoria deseja usar?`,
-            hint: category_hint 
-          });
+          
+          if (confidence_score && confidence_score >= 0.85) {
+            // Alta confiança: sugerir confirmação (UX amigável)
+            questions.push({ 
+              field: 'category_hint', 
+              question: `Classifiquei como "${category_hint}". Está correto? (ou informe outra categoria)`,
+              hint: category_hint,
+              suggested: true
+            });
+          } else {
+            // Baixa confiança: perguntar abertamente
+            questions.push({ 
+              field: 'category_hint', 
+              question: `Não encontrei a categoria "${category_hint}". Qual categoria deseja usar?`,
+              hint: category_hint,
+              suggested: false
+            });
+          }
         }
       }
 
       // Cartão - se necessário
       if (needsCard && !card_hint) {
         missingFields.push('card_hint');
-        questions.push({ field: 'card_hint', question: 'Qual cartão de crédito foi usado?' });
-      } else if (needsCard && cardResolutionFailed && confidence_score < 0.85) {
+        questions.push({ field: 'card_hint', question: 'Qual cartão de crédito foi usado?', suggested: false });
+      } else if (needsCard && cardResolutionFailed) {
+        // SEM ID RESOLVIDO = SEMPRE PERGUNTAR
         missingFields.push('card_hint');
-        questions.push({ 
-          field: 'card_hint', 
-          question: `Não encontrei o cartão "${card_hint}". Qual cartão deseja usar?`,
-          hint: card_hint 
-        });
+        
+        if (confidence_score && confidence_score >= 0.85) {
+          questions.push({ 
+            field: 'card_hint', 
+            question: `Registrei no cartão "${card_hint}". Está correto?`,
+            hint: card_hint,
+            suggested: true
+          });
+        } else {
+          questions.push({ 
+            field: 'card_hint', 
+            question: `Não encontrei o cartão "${card_hint}". Qual cartão deseja usar?`,
+            hint: card_hint,
+            suggested: false
+          });
+        }
       }
 
       // Conta - se necessário
       if (needsAccount && !account_hint) {
         missingFields.push('account_hint');
-        questions.push({ field: 'account_hint', question: 'Qual conta foi usada?' });
-      } else if (needsAccount && accountResolutionFailed && confidence_score < 0.85) {
+        questions.push({ field: 'account_hint', question: 'Qual conta foi usada?', suggested: false });
+      } else if (needsAccount && accountResolutionFailed) {
+        // SEM ID RESOLVIDO = SEMPRE PERGUNTAR
         missingFields.push('account_hint');
-        questions.push({ 
-          field: 'account_hint', 
-          question: `Não encontrei a conta "${account_hint}". Qual conta deseja usar?`,
-          hint: account_hint 
-        });
+        
+        if (confidence_score && confidence_score >= 0.85) {
+          questions.push({ 
+            field: 'account_hint', 
+            question: `Registrei na conta "${account_hint}". Está correto?`,
+            hint: account_hint,
+            suggested: true
+          });
+        } else {
+          questions.push({ 
+            field: 'account_hint', 
+            question: `Não encontrei a conta "${account_hint}". Qual conta deseja usar?`,
+            hint: account_hint,
+            suggested: false
+          });
+        }
       }
 
       // Determinar status final
