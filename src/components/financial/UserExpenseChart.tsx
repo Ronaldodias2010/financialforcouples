@@ -118,22 +118,22 @@ export const UserExpenseChart = () => {
       const startStr = format(startDate, 'yyyy-MM-dd');
       const endStr = format(endDate, 'yyyy-MM-dd');
 
-      // Fetch expenses - incluir despesas parceladas do cartão filtradas por due_date
+      // REGRA 5: Dashboard mostra GASTOS REALIZADOS no mês
+      // - Para não-parceladas: transaction_date no mês, status completed
+      // - Para parceladas de cartão: purchase_date no mês, installment_number = 1 (compra original)
       const { data: expenseTransactions, error: expenseError } = await supabase
         .from('transactions')
-        .select('user_id, owner_user, amount, transaction_date, due_date, is_installment, created_at, payment_method, status, categories(name)')
+        .select('user_id, owner_user, amount, transaction_date, purchase_date, due_date, is_installment, installment_number, total_installments, created_at, payment_method, status, categories(name)')
         .in('user_id', userIds)
         .eq('type', 'expense')
         .not('payment_method', 'in', '(account_transfer,account_investment)')
-        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,due_date.gte.${startStr},due_date.lte.${endStr})`);
+        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,installment_number.eq.1,purchase_date.gte.${startStr},purchase_date.lte.${endStr})`);
 
       if (expenseError) throw expenseError;
 
-      // Filtrar transações de "Pagamento de Cartão de Crédito" em JavaScript
-      // O filtro .not() do Supabase não funciona corretamente com JOINs
+      // Filtrar transações de "Pagamento de Cartão de Crédito"
       const filteredExpenseTransactions = expenseTransactions?.filter((t: any) => {
         const categoryName = t.categories?.name?.toLowerCase() || '';
-        // Excluir transações de "Pagamento de Cartão de Crédito"
         const isCardPayment = 
           (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
           categoryName.includes('credit card payment');
@@ -174,6 +174,7 @@ export const UserExpenseChart = () => {
       });
 
       // Process expense transactions (usando lista filtrada)
+      // REGRA 5: Para parcelas, calcular valor TOTAL da compra
       filteredExpenseTransactions.forEach((transaction) => {
         let owner: 'user1' | 'user2';
         if (transaction.owner_user === 'user1' || transaction.owner_user === 'user2') {
@@ -183,7 +184,13 @@ export const UserExpenseChart = () => {
         } else {
           owner = 'user1';
         }
-        expenseByUser[owner] += Math.abs(Number(transaction.amount));
+        
+        // Para parcelas: calcular valor total (amount * total_installments)
+        const amount = transaction.is_installment && transaction.installment_number === 1
+          ? Math.abs(Number(transaction.amount)) * (transaction.total_installments || 1)
+          : Math.abs(Number(transaction.amount));
+        
+        expenseByUser[owner] += amount;
       });
 
       console.log('Processed expense by user:', expenseByUser);
@@ -235,8 +242,11 @@ export const UserExpenseChart = () => {
         });
 
         // Process expenses by month (usando lista filtrada)
+        // REGRA 5: Para parcelas, usar purchase_date e calcular valor total
         filteredExpenseTransactions.forEach(transaction => {
-          const dateForGrouping = transaction.is_installment ? transaction.due_date : transaction.transaction_date;
+          // Para parcelas: usar purchase_date (data da compra)
+          // Para não-parcelas: usar transaction_date
+          const dateForGrouping = transaction.is_installment ? transaction.purchase_date : transaction.transaction_date;
           const month = new Date(dateForGrouping).toLocaleDateString('pt-BR', { 
             month: 'short', 
             year: '2-digit' 
@@ -255,7 +265,12 @@ export const UserExpenseChart = () => {
             owner = 'user1';
           }
 
-          monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += Math.abs(Number(transaction.amount));
+          // Para parcelas: calcular valor total
+          const amount = transaction.is_installment && transaction.installment_number === 1
+            ? Math.abs(Number(transaction.amount)) * (transaction.total_installments || 1)
+            : Math.abs(Number(transaction.amount));
+
+          monthlyBreakdown[month][`${owner}Expense` as keyof typeof monthlyBreakdown[string]] += amount;
         });
 
         const monthlyChartData: MonthlyExpense[] = Object.entries(monthlyBreakdown).map(([month, data]) => ({

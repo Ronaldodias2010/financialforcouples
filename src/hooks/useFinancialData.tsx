@@ -23,6 +23,9 @@ interface Transaction {
   status?: 'pending' | 'completed' | 'cancelled';
   due_date?: string;
   is_installment?: boolean;
+  purchase_date?: string;
+  installment_number?: number;
+  total_installments?: number;
 }
 
 interface Account {
@@ -128,6 +131,10 @@ const useTransactionsQuery = (coupleIds: CoupleData | null) => {
         ? [coupleIds.user1_id, coupleIds.user2_id]
         : [user.id];
 
+      // REGRA 5 do Prompt Técnico: Dashboard mostra GASTOS REALIZADOS no mês
+      // - Para não-parceladas: transaction_date no mês, status completed
+      // - Para parceladas de cartão: purchase_date no mês, installment_number = 1 (compra original)
+      // Isso garante que a COMPRA apareça no mês da compra, não as parcelas
       const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -136,7 +143,7 @@ const useTransactionsQuery = (coupleIds: CoupleData | null) => {
           cards(name)
         `)
         .in('user_id', userIds)
-        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},transaction_date.lte.${format(endOfMonth, 'yyyy-MM-dd')}),and(is_installment.is.true,status.eq.pending,due_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},due_date.lte.${format(endOfMonth, 'yyyy-MM-dd')})`)
+        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},transaction_date.lte.${format(endOfMonth, 'yyyy-MM-dd')}),and(is_installment.is.true,installment_number.eq.1,purchase_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},purchase_date.lte.${format(endOfMonth, 'yyyy-MM-dd')})`)
         .order('transaction_date', { ascending: false });
 
       if (error) throw error;
@@ -333,19 +340,38 @@ export const useFinancialData = () => {
         return;
       }
 
-      // For installments, include only if due_date is in current month
-      if (transaction.is_installment && transaction.due_date) {
-        const dueDate = new Date(transaction.due_date);
-        const isCurrentMonth = dueDate >= startOfMonth && dueDate <= endOfMonth;
+      // REGRA 5: Excluir "Pagamento de Cartão de Crédito" do Dashboard
+      // Pagamentos de fatura afetam CAIXA, não CONTROLE mensal
+      const categoryName = (transaction.categories?.name || '').toLowerCase();
+      const isCardPayment = 
+        (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+        categoryName.includes('credit card payment');
+      if (isCardPayment) {
+        return;
+      }
+
+      // REGRA 5: Para parcelas, a query já filtra por installment_number=1 e purchase_date
+      // Aqui só processamos o que veio da query (compras do mês)
+      // Para parceladas: calcular valor TOTAL da compra (amount * total_installments)
+      if (transaction.is_installment && transaction.installment_number === 1) {
+        const totalAmount = transaction.amount * (transaction.total_installments || 1);
+        const amountInUserCurrency = convertCurrency(
+          totalAmount,
+          transaction.currency,
+          userPreferredCurrency
+        );
         
-        if (!isCurrentMonth) {
-          return;
+        if (transaction.type === 'income') {
+          incomeValues.push(amountInUserCurrency);
+        } else {
+          expenseValues.push(amountInUserCurrency);
         }
-      } else {
-        // For non-installments, skip pending transactions
-        if (transaction.status === 'pending') {
-          return;
-        }
+        return;
+      }
+
+      // For non-installments, skip pending transactions
+      if (transaction.status === 'pending') {
+        return;
       }
 
       const amountInUserCurrency = convertCurrency(
@@ -511,52 +537,50 @@ export const useFinancialData = () => {
   const getExpensesByUser = (viewMode: 'both' | 'user1' | 'user2') => {
     const allTransactions = viewMode === 'both' ? transactions : getTransactionsByUser(viewMode);
     
-    // Get current month range
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+    // REGRA 5: Para parcelas, a query já filtra por installment_number=1 e purchase_date
+    // Aqui calculamos o valor TOTAL da compra (amount * total_installments)
+    const calculateExpense = (t: Transaction): number => {
+      if (t.is_installment && t.installment_number === 1) {
+        const totalAmount = t.amount * (t.total_installments || 1);
+        return convertCurrency(totalAmount, t.currency, userPreferredCurrency);
+      }
+      return convertCurrency(t.amount, t.currency, userPreferredCurrency);
+    };
+
+    const filterExpense = (t: Transaction, owner: 'user1' | 'user2'): boolean => {
+      if (t.type !== 'expense' || 
+          t.payment_method === 'account_transfer' || 
+          t.payment_method === 'account_investment' ||
+          t.card_transaction_type === 'future_expense' ||
+          (t.owner_user || 'user1') !== owner) {
+        return false;
+      }
+      
+      // Excluir "Pagamento de Cartão de Crédito"
+      const categoryName = (t.categories?.name || '').toLowerCase();
+      const isCardPayment = 
+        (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+        categoryName.includes('credit card payment');
+      if (isCardPayment) {
+        return false;
+      }
+      
+      // Para parcelas: já vem filtrado da query (installment_number=1, purchase_date no mês)
+      if (t.is_installment) {
+        return t.installment_number === 1;
+      }
+      
+      // Para não-parcelas: excluir pending
+      return t.status !== 'pending';
+    };
     
     const user1Expenses = allTransactions
-      .filter(t => {
-        if (t.type !== 'expense' || 
-            t.payment_method === 'account_transfer' || 
-            t.payment_method === 'account_investment' ||
-            t.card_transaction_type === 'future_expense' ||
-            (t.owner_user || 'user1') !== 'user1') {
-          return false;
-        }
-        
-        // For installments, include if due_date is in current month
-        if (t.is_installment && t.due_date) {
-          const dueDate = new Date(t.due_date);
-          return dueDate >= startOfMonth && dueDate <= endOfMonth;
-        }
-        
-        // For non-installments, exclude pending
-        return t.status !== 'pending';
-      })
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
+      .filter(t => filterExpense(t, 'user1'))
+      .reduce((sum, t) => sum + calculateExpense(t), 0);
     
     const user2Expenses = allTransactions
-      .filter(t => {
-        if (t.type !== 'expense' || 
-            t.payment_method === 'account_transfer' || 
-            t.payment_method === 'account_investment' ||
-            t.card_transaction_type === 'future_expense' ||
-            (t.owner_user || 'user1') !== 'user2') {
-          return false;
-        }
-        
-        // For installments, include if due_date is in current month
-        if (t.is_installment && t.due_date) {
-          const dueDate = new Date(t.due_date);
-          return dueDate >= startOfMonth && dueDate <= endOfMonth;
-        }
-        
-        // For non-installments, exclude pending
-        return t.status !== 'pending';
-      })
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency, userPreferredCurrency), 0);
+      .filter(t => filterExpense(t, 'user2'))
+      .reduce((sum, t) => sum + calculateExpense(t), 0);
 
     return { user1Expenses, user2Expenses };
   };
@@ -604,11 +628,6 @@ export const useFinancialData = () => {
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
-    // Get current month range
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
-    
     const expenseOnly = filteredTransactions.filter(t => {
       // Skip transfers and investments
       if (t.type !== 'expense' || 
@@ -618,8 +637,7 @@ export const useFinancialData = () => {
         return false;
       }
       
-      // Excluir transações de "Pagamento de Cartão de Crédito"
-      // Garante consistência com o Fluxo de Caixa e outros componentes
+      // REGRA 5: Excluir "Pagamento de Cartão de Crédito"
       const categoryName = (t.categories?.name || '').toLowerCase();
       const isCardPayment = 
         (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
@@ -628,17 +646,24 @@ export const useFinancialData = () => {
         return false;
       }
       
-      // For installments, include if due_date is in current month (regardless of status)
-      if (t.is_installment && t.due_date) {
-        const dueDate = new Date(t.due_date);
-        return dueDate >= startOfMonth && dueDate <= endOfMonth;
+      // Para parcelas: apenas installment_number=1 (compra original)
+      if (t.is_installment) {
+        return t.installment_number === 1;
       }
       
-      // For non-installments, exclude pending transactions
+      // Para não-parcelas: excluir pending
       return t.status !== 'pending';
     });
     
-    const expenseValues = expenseOnly.map(t => convertCurrency(t.amount, t.currency, userPreferredCurrency));
+    // REGRA 5: Para parcelas, calcular valor TOTAL da compra
+    const expenseValues = expenseOnly.map(t => {
+      if (t.is_installment && t.installment_number === 1) {
+        const totalAmount = t.amount * (t.total_installments || 1);
+        return convertCurrency(totalAmount, t.currency, userPreferredCurrency);
+      }
+      return convertCurrency(t.amount, t.currency, userPreferredCurrency);
+    });
+    
     return sumMonetaryArray(expenseValues);
   };
 
