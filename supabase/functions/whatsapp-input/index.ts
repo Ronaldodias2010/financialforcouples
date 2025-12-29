@@ -202,7 +202,7 @@ serve(async (req) => {
         auto_confirm = true
       } = body;
 
-      console.log('[whatsapp-input] PATCH - Updating input:', { input_id, amount, confidence_score, payment_method });
+      console.log('[whatsapp-input] PATCH - Updating input:', { input_id, amount, confidence_score, payment_method, category_hint });
 
       if (!input_id) {
         return new Response(
@@ -214,7 +214,7 @@ serve(async (req) => {
       // Verificar se input existe e não foi processado
       const { data: existingInput, error: fetchError } = await supabase
         .from('incoming_financial_inputs')
-        .select('id, status, processed_at, transaction_id')
+        .select('id, status, processed_at, transaction_id, user_id, source')
         .eq('id', input_id)
         .single();
 
@@ -240,20 +240,183 @@ serve(async (req) => {
         );
       }
 
-      // Determinar novo status baseado na confiança e campos obrigatórios
+      // =====================================================
+      // RESOLUÇÃO ANTECIPADA DE HINTS (antes de determinar status)
+      // =====================================================
+      let resolved_category_id: string | null = null;
+      let resolved_account_id: string | null = null;
+      let resolved_card_id: string | null = null;
+      let categoryResolutionFailed = false;
+      let accountResolutionFailed = false;
+      let cardResolutionFailed = false;
+
+      // Tentar resolver category_hint → category_id
+      if (category_hint) {
+        const { data: category } = await supabase
+          .from('categories')
+          .select('id, name')
+          .eq('user_id', existingInput.user_id)
+          .is('deleted_at', null)
+          .ilike('name', `%${category_hint.trim()}%`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (category) {
+          resolved_category_id = category.id;
+          console.log('[whatsapp-input] Category resolved:', category_hint, '->', category.name);
+        } else {
+          categoryResolutionFailed = true;
+          console.log('[whatsapp-input] Category not found for hint:', category_hint);
+        }
+      }
+
+      // Tentar resolver account_hint → account_id
+      if (account_hint) {
+        const { data: account } = await supabase
+          .from('accounts')
+          .select('id, name')
+          .eq('user_id', existingInput.user_id)
+          .is('deleted_at', null)
+          .eq('is_active', true)
+          .ilike('name', `%${account_hint.trim()}%`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (account) {
+          resolved_account_id = account.id;
+          console.log('[whatsapp-input] Account resolved:', account_hint, '->', account.name);
+        } else {
+          accountResolutionFailed = true;
+          console.log('[whatsapp-input] Account not found for hint:', account_hint);
+        }
+      }
+
+      // Tentar resolver card_hint → card_id
+      if (card_hint) {
+        const { data: card } = await supabase
+          .from('cards')
+          .select('id, name')
+          .eq('user_id', existingInput.user_id)
+          .is('deleted_at', null)
+          .ilike('name', `%${card_hint.trim()}%`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (card) {
+          resolved_card_id = card.id;
+          console.log('[whatsapp-input] Card resolved:', card_hint, '->', card.name);
+        } else {
+          cardResolutionFailed = true;
+          console.log('[whatsapp-input] Card not found for hint:', card_hint);
+        }
+      }
+
+      // =====================================================
+      // DETERMINAR STATUS BASEADO EM CONFIDENCE E RESOLUÇÃO
+      // =====================================================
       let newStatus = existingInput.status;
       const hasRequiredFields = amount && transaction_type && payment_method;
+      const isWhatsApp = existingInput.source === 'whatsapp';
       
-      if (auto_confirm && confidence_score && confidence_score >= 0.85 && hasRequiredFields) {
+      // Para WhatsApp: categoria é obrigatória
+      const categoryRequired = isWhatsApp;
+      const hasCategoryResolved = resolved_category_id !== null;
+      const hasCategory = category_hint && (hasCategoryResolved || !categoryRequired);
+
+      // Verificar se cartão/conta foram resolvidos quando necessários
+      const needsCard = payment_method === 'credit_card';
+      const needsAccount = payment_method === 'debit_card' || payment_method === 'pix' || payment_method === 'cash';
+      const hasCardResolved = !needsCard || resolved_card_id !== null;
+      const hasAccountResolved = !needsAccount || resolved_account_id !== null;
+
+      // Construir lista de campos faltantes e perguntas
+      const missingFields: string[] = [];
+      const questions: { field: string; question: string; hint?: string }[] = [];
+
+      if (!amount) {
+        missingFields.push('amount');
+        questions.push({ field: 'amount', question: 'Qual o valor?' });
+      }
+      if (!transaction_type) {
+        missingFields.push('transaction_type');
+        questions.push({ field: 'transaction_type', question: 'É uma despesa ou receita?' });
+      }
+      if (!payment_method) {
+        missingFields.push('payment_method');
+        questions.push({ field: 'payment_method', question: 'Qual a forma de pagamento? (PIX, cartão de crédito, débito, dinheiro)' });
+      }
+
+      // Categoria - validação especial para WhatsApp
+      if (isWhatsApp) {
+        if (!category_hint) {
+          missingFields.push('category_hint');
+          questions.push({ field: 'category_hint', question: 'Qual a categoria desse gasto?' });
+        } else if (categoryResolutionFailed && confidence_score < 0.85) {
+          missingFields.push('category_hint');
+          questions.push({ 
+            field: 'category_hint', 
+            question: `Não encontrei a categoria "${category_hint}". Qual categoria deseja usar?`,
+            hint: category_hint 
+          });
+        }
+      }
+
+      // Cartão - se necessário
+      if (needsCard && !card_hint) {
+        missingFields.push('card_hint');
+        questions.push({ field: 'card_hint', question: 'Qual cartão de crédito foi usado?' });
+      } else if (needsCard && cardResolutionFailed && confidence_score < 0.85) {
+        missingFields.push('card_hint');
+        questions.push({ 
+          field: 'card_hint', 
+          question: `Não encontrei o cartão "${card_hint}". Qual cartão deseja usar?`,
+          hint: card_hint 
+        });
+      }
+
+      // Conta - se necessário
+      if (needsAccount && !account_hint) {
+        missingFields.push('account_hint');
+        questions.push({ field: 'account_hint', question: 'Qual conta foi usada?' });
+      } else if (needsAccount && accountResolutionFailed && confidence_score < 0.85) {
+        missingFields.push('account_hint');
+        questions.push({ 
+          field: 'account_hint', 
+          question: `Não encontrei a conta "${account_hint}". Qual conta deseja usar?`,
+          hint: account_hint 
+        });
+      }
+
+      // Determinar status final
+      const allFieldsComplete = missingFields.length === 0;
+      const canAutoConfirm = auto_confirm && confidence_score && confidence_score >= 0.85;
+
+      if (canAutoConfirm && allFieldsComplete && (!isWhatsApp || hasCategoryResolved)) {
         newStatus = 'confirmed';
-      } else if (hasRequiredFields) {
+      } else if (missingFields.length > 0) {
+        // Status especial para quando precisamos de input do usuário
+        newStatus = 'waiting_user_input';
+      } else if (hasRequiredFields && (!isWhatsApp || hasCategoryResolved)) {
         newStatus = 'needs_confirmation';
       } else {
-        // Campos faltando - aguardando input do usuário
         newStatus = 'pending';
       }
 
-      // Atualizar input
+      console.log('[whatsapp-input] Status decision:', { 
+        newStatus, 
+        confidence_score, 
+        hasRequiredFields, 
+        isWhatsApp, 
+        hasCategoryResolved,
+        missingFields 
+      });
+
+      // =====================================================
+      // ATUALIZAR INPUT COM DADOS E IDs RESOLVIDOS
+      // =====================================================
       const updateData: Record<string, unknown> = {
         status: newStatus,
         updated_at: new Date().toISOString()
@@ -270,12 +433,17 @@ serve(async (req) => {
       if (confidence_score !== undefined) updateData.confidence_score = confidence_score;
       if (payment_method !== undefined) updateData.payment_method = payment_method;
       if (owner_user !== undefined) updateData.owner_user = owner_user;
+      
+      // Salvar IDs resolvidos
+      if (resolved_category_id) updateData.resolved_category_id = resolved_category_id;
+      if (resolved_account_id) updateData.resolved_account_id = resolved_account_id;
+      if (resolved_card_id) updateData.resolved_card_id = resolved_card_id;
 
       const { data: updated, error: updateError } = await supabase
         .from('incoming_financial_inputs')
         .update(updateData)
         .eq('id', input_id)
-        .select('id, status, amount, transaction_type, confidence_score, payment_method')
+        .select('id, status, amount, transaction_type, confidence_score, payment_method, resolved_category_id, resolved_account_id, resolved_card_id')
         .single();
 
       if (updateError) {
@@ -285,27 +453,33 @@ serve(async (req) => {
 
       console.log('[whatsapp-input] Input updated:', updated);
 
-      // Retornar campos faltantes se não estiver completo
-      const missingFields: string[] = [];
-      if (!amount) missingFields.push('amount');
-      if (!transaction_type) missingFields.push('transaction_type');
-      if (!payment_method) missingFields.push('payment_method');
-      if (payment_method === 'credit_card' && !card_hint) missingFields.push('card_hint');
-      if ((payment_method === 'debit_card' || payment_method === 'pix') && !account_hint) missingFields.push('account_hint');
+      // Construir resposta
+      const responseData: Record<string, unknown> = { 
+        success: true, 
+        input: updated,
+        auto_confirmed: newStatus === 'confirmed',
+        complete: allFieldsComplete,
+        missing_fields: missingFields,
+        resolved: {
+          category_id: resolved_category_id,
+          account_id: resolved_account_id,
+          card_id: resolved_card_id
+        }
+      };
+
+      // Adicionar perguntas se houver campos faltantes
+      if (questions.length > 0) {
+        responseData.questions = questions;
+        responseData.next_question = questions[0].question;
+        responseData.message = questions[0].question;
+      } else if (newStatus === 'confirmed') {
+        responseData.message = 'Input confirmado automaticamente. Pronto para processamento.';
+      } else {
+        responseData.message = 'Input atualizado. Aguardando confirmação manual.';
+      }
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          input: updated,
-          auto_confirmed: newStatus === 'confirmed',
-          complete: missingFields.length === 0,
-          missing_fields: missingFields,
-          message: newStatus === 'confirmed' 
-            ? 'Input confirmado automaticamente. Pronto para processamento.'
-            : missingFields.length > 0
-              ? `Campos faltando: ${missingFields.join(', ')}`
-              : 'Input atualizado. Aguardando confirmação manual.'
-        }),
+        JSON.stringify(responseData),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
