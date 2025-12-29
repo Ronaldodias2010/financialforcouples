@@ -135,6 +135,13 @@ const useTransactionsQuery = (coupleIds: CoupleData | null) => {
       // - Para não-parceladas: transaction_date no mês, status completed
       // - Para parceladas de cartão: purchase_date no mês, installment_number = 1 (compra original)
       // Isso garante que a COMPRA apareça no mês da compra, não as parcelas
+      
+      const startDate = format(startOfMonth, 'yyyy-MM-dd');
+      const endDate = format(endOfMonth, 'yyyy-MM-dd');
+      
+      console.log('🔍 Dashboard Query - Date range:', startDate, 'to', endDate);
+      console.log('🔍 Dashboard Query - User IDs:', userIds);
+      
       const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -143,12 +150,22 @@ const useTransactionsQuery = (coupleIds: CoupleData | null) => {
           cards(name)
         `)
         .in('user_id', userIds)
-        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},transaction_date.lte.${format(endOfMonth, 'yyyy-MM-dd')}),and(is_installment.is.true,installment_number.eq.1,purchase_date.gte.${format(startOfMonth, 'yyyy-MM-dd')},purchase_date.lte.${format(endOfMonth, 'yyyy-MM-dd')})`)
+        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(is_installment.is.true,installment_number.eq.1,purchase_date.gte.${startDate},purchase_date.lte.${endDate})`)
         .order('transaction_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching transactions:', error);
+        throw error;
+      }
+      
+      // Debug: Log transactions by type
+      const installmentTransactions = (data || []).filter(t => t.is_installment && t.installment_number === 1);
+      const regularTransactions = (data || []).filter(t => !t.is_installment);
       
       console.log('✅ Transactions fetched via React Query:', data?.length || 0);
+      console.log('📊 Installment transactions (1st installment):', installmentTransactions.length, installmentTransactions.map(t => ({ desc: t.description, amount: t.amount, total: t.total_installments, purchase_date: t.purchase_date })));
+      console.log('📊 Regular transactions:', regularTransactions.length, regularTransactions.map(t => ({ desc: t.description, amount: t.amount, status: t.status })));
+      
       return data as Transaction[] || [];
     },
     enabled: !!user?.id,
@@ -628,6 +645,17 @@ export const useFinancialData = () => {
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
+    console.log('💰 getTransactionsExpenses - Total transactions:', filteredTransactions.length);
+    console.log('💰 getTransactionsExpenses - Transactions:', filteredTransactions.map(t => ({ 
+      desc: t.description, 
+      type: t.type, 
+      amount: t.amount, 
+      is_installment: t.is_installment, 
+      installment_number: t.installment_number,
+      total_installments: t.total_installments,
+      status: t.status 
+    })));
+    
     const expenseOnly = filteredTransactions.filter(t => {
       // Skip transfers and investments
       if (t.type !== 'expense' || 
@@ -655,16 +683,22 @@ export const useFinancialData = () => {
       return t.status !== 'pending';
     });
     
+    console.log('💰 getTransactionsExpenses - Expense only after filter:', expenseOnly.length, expenseOnly.map(t => ({ desc: t.description, amount: t.amount, total_installments: t.total_installments })));
+    
     // REGRA 5: Para parcelas, calcular valor TOTAL da compra
     const expenseValues = expenseOnly.map(t => {
       if (t.is_installment && t.installment_number === 1) {
         const totalAmount = t.amount * (t.total_installments || 1);
+        console.log(`💵 Installment expense: ${t.description} - ${t.amount} x ${t.total_installments} = ${totalAmount}`);
         return convertCurrency(totalAmount, t.currency, userPreferredCurrency);
       }
       return convertCurrency(t.amount, t.currency, userPreferredCurrency);
     });
     
-    return sumMonetaryArray(expenseValues);
+    const total = sumMonetaryArray(expenseValues);
+    console.log('💰 getTransactionsExpenses - Final total:', total);
+    
+    return total;
   };
 
   // No need for refreshData - React Query handles it automatically!
