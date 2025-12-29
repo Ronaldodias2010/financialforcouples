@@ -9,6 +9,17 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+// ============================================================
+// STATUS OFICIAIS (Contrato Semântico)
+// ============================================================
+// received           → input criado ou reutilizado, pronto para IA
+// waiting_user_input → faltam dados obrigatórios
+// confirmed          → todos os dados resolvidos, pronto para processar
+// processed          → transação já criada
+// duplicate          → mensagem duplicada sem ação necessária
+// error              → erro inesperado
+// ============================================================
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -19,7 +30,9 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
     
-    // POST: Criar novo input do WhatsApp (IDEMPOTENTE com UPSERT)
+    // =========================================================
+    // POST: Criar novo input do WhatsApp (IDEMPOTENTE)
+    // =========================================================
     if (req.method === 'POST') {
       const body = await req.json();
       const { 
@@ -38,14 +51,14 @@ serve(async (req) => {
       // Validações
       if (!phone_number) {
         return new Response(
-          JSON.stringify({ success: false, error: 'phone_number é obrigatório' }),
+          JSON.stringify({ success: false, status: 'error', error: 'phone_number é obrigatório' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       if (!raw_message) {
         return new Response(
-          JSON.stringify({ success: false, error: 'raw_message é obrigatório' }),
+          JSON.stringify({ success: false, status: 'error', error: 'raw_message é obrigatório' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -65,6 +78,7 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ 
             success: false, 
+            status: 'error',
             error: 'Número não cadastrado. Acesse o app para vincular seu WhatsApp.',
             code: 'PHONE_NOT_REGISTERED'
           }),
@@ -77,6 +91,7 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ 
             success: false, 
+            status: 'error',
             error: 'WhatsApp não verificado. Complete a verificação no app.',
             code: 'WHATSAPP_NOT_VERIFIED'
           }),
@@ -85,23 +100,9 @@ serve(async (req) => {
       }
 
       // =====================================================
-      // IDEMPOTÊNCIA: Usar UPSERT com onConflict
-      // Se whatsapp_message_id já existe, retorna o existente
+      // IDEMPOTÊNCIA: Se whatsapp_message_id já existe
       // =====================================================
-      
-      const inputData = {
-        user_id: profile.user_id,
-        raw_message,
-        whatsapp_message_id,
-        source,
-        status: 'pending',
-        ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
-        user_agent: req.headers.get('user-agent')
-      };
-
-      // Se tem whatsapp_message_id, usar UPSERT para idempotência
       if (whatsapp_message_id) {
-        // Primeiro verificar se já existe
         const { data: existing } = await supabase
           .from('incoming_financial_inputs')
           .select('id, status, created_at, processed_at, transaction_id')
@@ -110,25 +111,46 @@ serve(async (req) => {
           .single();
 
         if (existing) {
+          // Se já tem transaction_id → status "processed"
+          if (existing.transaction_id) {
+            console.log('[whatsapp-input] IDEMPOTENT: Already processed:', existing.id);
+            return new Response(
+              JSON.stringify({ 
+                success: true, 
+                status: 'processed',
+                input_id: existing.id,
+                transaction_id: existing.transaction_id
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
+          // Se não tem transaction_id → status "received" (pronto para IA)
           console.log('[whatsapp-input] IDEMPOTENT: Returning existing input:', existing.id);
           return new Response(
             JSON.stringify({ 
               success: true, 
+              status: 'received',
               input_id: existing.id,
               user_id: profile.user_id,
-              user_name: profile.display_name,
-              status: existing.status,
-              already_exists: true,
-              processed: !!existing.processed_at,
-              transaction_id: existing.transaction_id,
-              message: 'Input já existe. Retornando dados existentes.'
+              user_name: profile.display_name
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
       }
 
-      // Criar novo input
+      // Criar novo input com status "received"
+      const inputData = {
+        user_id: profile.user_id,
+        raw_message,
+        whatsapp_message_id,
+        source,
+        status: 'received',
+        ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+        user_agent: req.headers.get('user-agent')
+      };
+
       const { data: input, error: insertError } = await supabase
         .from('incoming_financial_inputs')
         .insert(inputData)
@@ -147,17 +169,26 @@ serve(async (req) => {
             .single();
 
           if (existing) {
+            // Se já processado → "processed"
+            if (existing.transaction_id) {
+              return new Response(
+                JSON.stringify({ 
+                  success: true, 
+                  status: 'processed',
+                  input_id: existing.id,
+                  transaction_id: existing.transaction_id
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+            // Se não processado → "received"
             return new Response(
               JSON.stringify({ 
                 success: true, 
+                status: 'received',
                 input_id: existing.id,
                 user_id: profile.user_id,
-                user_name: profile.display_name,
-                status: existing.status,
-                already_exists: true,
-                processed: !!existing.processed_at,
-                transaction_id: existing.transaction_id,
-                message: 'Input já existe. Retornando dados existentes.'
+                user_name: profile.display_name
               }),
               { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
@@ -172,18 +203,18 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: true, 
+          status: 'received',
           input_id: input.id,
           user_id: profile.user_id,
-          user_name: profile.display_name,
-          status: input.status,
-          already_exists: false,
-          message: 'Input criado com sucesso. Aguardando processamento da IA.'
+          user_name: profile.display_name
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // =========================================================
     // PATCH: Atualizar input com dados da IA
+    // =========================================================
     if (req.method === 'PATCH') {
       const body = await req.json();
       const { 
@@ -198,20 +229,19 @@ serve(async (req) => {
         transaction_date,
         confidence_score,
         payment_method,
-        owner_user,
-        auto_confirm = true
+        owner_user
       } = body;
 
       console.log('[whatsapp-input] PATCH - Updating input:', { input_id, amount, confidence_score, payment_method, category_hint });
 
       if (!input_id) {
         return new Response(
-          JSON.stringify({ success: false, error: 'input_id é obrigatório' }),
+          JSON.stringify({ success: false, status: 'error', error: 'input_id é obrigatório' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Verificar se input existe e não foi processado
+      // Verificar se input existe
       const { data: existingInput, error: fetchError } = await supabase
         .from('incoming_financial_inputs')
         .select('id, status, processed_at, transaction_id, user_id, source')
@@ -220,35 +250,31 @@ serve(async (req) => {
 
       if (fetchError || !existingInput) {
         return new Response(
-          JSON.stringify({ success: false, error: 'Input não encontrado' }),
+          JSON.stringify({ success: false, status: 'error', error: 'Input não encontrado' }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // IDEMPOTÊNCIA: Se já processado, retornar sucesso com dados existentes
-      if (existingInput.processed_at) {
+      // IDEMPOTÊNCIA: Se já processado, retornar "processed"
+      if (existingInput.transaction_id) {
         console.log('[whatsapp-input] IDEMPOTENT: Input already processed:', input_id);
         return new Response(
           JSON.stringify({ 
             success: true, 
-            input: existingInput,
-            already_processed: true,
-            transaction_id: existingInput.transaction_id,
-            message: 'Input já foi processado anteriormente.'
+            status: 'processed',
+            input_id: existingInput.id,
+            transaction_id: existingInput.transaction_id
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       // =====================================================
-      // RESOLUÇÃO ANTECIPADA DE HINTS (antes de determinar status)
+      // RESOLUÇÃO ANTECIPADA DE HINTS
       // =====================================================
       let resolved_category_id: string | null = null;
       let resolved_account_id: string | null = null;
       let resolved_card_id: string | null = null;
-      let categoryResolutionFailed = false;
-      let accountResolutionFailed = false;
-      let cardResolutionFailed = false;
 
       // Tentar resolver category_hint → category_id
       if (category_hint) {
@@ -266,7 +292,6 @@ serve(async (req) => {
           resolved_category_id = category.id;
           console.log('[whatsapp-input] Category resolved:', category_hint, '->', category.name);
         } else {
-          categoryResolutionFailed = true;
           console.log('[whatsapp-input] Category not found for hint:', category_hint);
         }
       }
@@ -288,7 +313,6 @@ serve(async (req) => {
           resolved_account_id = account.id;
           console.log('[whatsapp-input] Account resolved:', account_hint, '->', account.name);
         } else {
-          accountResolutionFailed = true;
           console.log('[whatsapp-input] Account not found for hint:', account_hint);
         }
       }
@@ -309,152 +333,92 @@ serve(async (req) => {
           resolved_card_id = card.id;
           console.log('[whatsapp-input] Card resolved:', card_hint, '->', card.name);
         } else {
-          cardResolutionFailed = true;
           console.log('[whatsapp-input] Card not found for hint:', card_hint);
         }
       }
 
       // =====================================================
-      // DETERMINAR STATUS BASEADO EM CONFIDENCE E RESOLUÇÃO
+      // DETERMINAR STATUS BASEADO EM RESOLUÇÃO
       // =====================================================
-      let newStatus = existingInput.status;
-      const hasRequiredFields = amount && transaction_type && payment_method;
       const isWhatsApp = existingInput.source === 'whatsapp';
       
-      // Para WhatsApp: categoria é obrigatória
-      const categoryRequired = isWhatsApp;
-      const hasCategoryResolved = resolved_category_id !== null;
-      const hasCategory = category_hint && (hasCategoryResolved || !categoryRequired);
-
-      // Verificar se cartão/conta foram resolvidos quando necessários
+      // Verificar campos obrigatórios
       const needsCard = payment_method === 'credit_card';
       const needsAccount = payment_method === 'debit_card' || payment_method === 'pix' || payment_method === 'cash';
-      const hasCardResolved = !needsCard || resolved_card_id !== null;
-      const hasAccountResolved = !needsAccount || resolved_account_id !== null;
 
       // Construir lista de campos faltantes e perguntas
-      const missingFields: string[] = [];
       const questions: { field: string; question: string; hint?: string }[] = [];
 
+      // Campos básicos obrigatórios
       if (!amount) {
-        missingFields.push('amount');
         questions.push({ field: 'amount', question: 'Qual o valor?' });
       }
       if (!transaction_type) {
-        missingFields.push('transaction_type');
         questions.push({ field: 'transaction_type', question: 'É uma despesa ou receita?' });
       }
       if (!payment_method) {
-        missingFields.push('payment_method');
         questions.push({ field: 'payment_method', question: 'Qual a forma de pagamento? (PIX, cartão de crédito, débito, dinheiro)' });
       }
 
       // =====================================================
-      // REGRA DE INTEGRIDADE: Sem ID resolvido = SEMPRE perguntar
-      // Confidence influencia apenas COMO perguntar (UX), não SE pergunta
+      // REGRA WHATSAPP: Categoria é OBRIGATÓRIA
+      // Sem resolved_category_id = SEMPRE waiting_user_input
       // =====================================================
-
-      // Categoria - validação especial para WhatsApp
       if (isWhatsApp) {
         if (!category_hint) {
-          missingFields.push('category_hint');
-          questions.push({ field: 'category_hint', question: 'Qual a categoria desse gasto?', suggested: false });
-        } else if (categoryResolutionFailed) {
-          // SEM ID RESOLVIDO = SEMPRE PERGUNTAR (independente do confidence)
-          missingFields.push('category_hint');
-          
-          if (confidence_score && confidence_score >= 0.85) {
-            // Alta confiança: sugerir confirmação (UX amigável)
-            questions.push({ 
-              field: 'category_hint', 
-              question: `Classifiquei como "${category_hint}". Está correto? (ou informe outra categoria)`,
-              hint: category_hint,
-              suggested: true
-            });
-          } else {
-            // Baixa confiança: perguntar abertamente
-            questions.push({ 
-              field: 'category_hint', 
-              question: `Não encontrei a categoria "${category_hint}". Qual categoria deseja usar?`,
-              hint: category_hint,
-              suggested: false
-            });
-          }
+          questions.push({ field: 'category', question: 'Qual a categoria desse gasto?' });
+        } else if (!resolved_category_id) {
+          // Categoria não resolvida = perguntar
+          const suggestedText = confidence_score && confidence_score >= 0.85 
+            ? `Classifiquei como "${category_hint}". Está correto? (ou informe outra categoria)`
+            : `Não encontrei a categoria "${category_hint}". Qual categoria deseja usar?`;
+          questions.push({ field: 'category', question: suggestedText, hint: category_hint });
         }
       }
 
       // Cartão - se necessário
-      if (needsCard && !card_hint) {
-        missingFields.push('card_hint');
-        questions.push({ field: 'card_hint', question: 'Qual cartão de crédito foi usado?', suggested: false });
-      } else if (needsCard && cardResolutionFailed) {
-        // SEM ID RESOLVIDO = SEMPRE PERGUNTAR
-        missingFields.push('card_hint');
-        
-        if (confidence_score && confidence_score >= 0.85) {
-          questions.push({ 
-            field: 'card_hint', 
-            question: `Registrei no cartão "${card_hint}". Está correto?`,
-            hint: card_hint,
-            suggested: true
-          });
-        } else {
-          questions.push({ 
-            field: 'card_hint', 
-            question: `Não encontrei o cartão "${card_hint}". Qual cartão deseja usar?`,
-            hint: card_hint,
-            suggested: false
-          });
+      if (needsCard) {
+        if (!card_hint) {
+          questions.push({ field: 'card', question: 'Qual cartão de crédito foi usado?' });
+        } else if (!resolved_card_id) {
+          const suggestedText = confidence_score && confidence_score >= 0.85 
+            ? `Registrei no cartão "${card_hint}". Está correto?`
+            : `Não encontrei o cartão "${card_hint}". Qual cartão deseja usar?`;
+          questions.push({ field: 'card', question: suggestedText, hint: card_hint });
         }
       }
 
-      // Conta - se necessário
-      if (needsAccount && !account_hint) {
-        missingFields.push('account_hint');
-        questions.push({ field: 'account_hint', question: 'Qual conta foi usada?', suggested: false });
-      } else if (needsAccount && accountResolutionFailed) {
-        // SEM ID RESOLVIDO = SEMPRE PERGUNTAR
-        missingFields.push('account_hint');
-        
-        if (confidence_score && confidence_score >= 0.85) {
-          questions.push({ 
-            field: 'account_hint', 
-            question: `Registrei na conta "${account_hint}". Está correto?`,
-            hint: account_hint,
-            suggested: true
-          });
-        } else {
-          questions.push({ 
-            field: 'account_hint', 
-            question: `Não encontrei a conta "${account_hint}". Qual conta deseja usar?`,
-            hint: account_hint,
-            suggested: false
-          });
+      // Conta - se necessária
+      if (needsAccount) {
+        if (!account_hint) {
+          questions.push({ field: 'account', question: 'Qual conta foi usada?' });
+        } else if (!resolved_account_id) {
+          const suggestedText = confidence_score && confidence_score >= 0.85 
+            ? `Registrei na conta "${account_hint}". Está correto?`
+            : `Não encontrei a conta "${account_hint}". Qual conta deseja usar?`;
+          questions.push({ field: 'account', question: suggestedText, hint: account_hint });
         }
       }
 
-      // Determinar status final
-      const allFieldsComplete = missingFields.length === 0;
-      const canAutoConfirm = auto_confirm && confidence_score && confidence_score >= 0.85;
-
-      if (canAutoConfirm && allFieldsComplete && (!isWhatsApp || hasCategoryResolved)) {
-        newStatus = 'confirmed';
-      } else if (missingFields.length > 0) {
-        // Status especial para quando precisamos de input do usuário
+      // =====================================================
+      // DETERMINAR STATUS FINAL
+      // =====================================================
+      let newStatus: string;
+      
+      if (questions.length > 0) {
+        // Faltam dados obrigatórios
         newStatus = 'waiting_user_input';
-      } else if (hasRequiredFields && (!isWhatsApp || hasCategoryResolved)) {
-        newStatus = 'needs_confirmation';
       } else {
-        newStatus = 'pending';
+        // Todos os dados completos e resolvidos
+        newStatus = 'confirmed';
       }
 
       console.log('[whatsapp-input] Status decision:', { 
         newStatus, 
-        confidence_score, 
-        hasRequiredFields, 
-        isWhatsApp, 
-        hasCategoryResolved,
-        missingFields 
+        questionsCount: questions.length,
+        resolved_category_id,
+        resolved_account_id,
+        resolved_card_id
       });
 
       // =====================================================
@@ -482,52 +446,48 @@ serve(async (req) => {
       if (resolved_account_id) updateData.resolved_account_id = resolved_account_id;
       if (resolved_card_id) updateData.resolved_card_id = resolved_card_id;
 
-      const { data: updated, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('incoming_financial_inputs')
         .update(updateData)
-        .eq('id', input_id)
-        .select('id, status, amount, transaction_type, confidence_score, payment_method, resolved_category_id, resolved_account_id, resolved_card_id')
-        .single();
+        .eq('id', input_id);
 
       if (updateError) {
         console.error('[whatsapp-input] Update error:', updateError);
         throw updateError;
       }
 
-      console.log('[whatsapp-input] Input updated:', updated);
+      console.log('[whatsapp-input] Input updated with status:', newStatus);
 
-      // Construir resposta
-      const responseData: Record<string, unknown> = { 
-        success: true, 
-        input: updated,
-        auto_confirmed: newStatus === 'confirmed',
-        complete: allFieldsComplete,
-        missing_fields: missingFields,
-        resolved: {
-          category_id: resolved_category_id,
-          account_id: resolved_account_id,
-          card_id: resolved_card_id
-        }
-      };
-
-      // Adicionar perguntas se houver campos faltantes
-      if (questions.length > 0) {
-        responseData.questions = questions;
-        responseData.next_question = questions[0].question;
-        responseData.message = questions[0].question;
-      } else if (newStatus === 'confirmed') {
-        responseData.message = 'Input confirmado automaticamente. Pronto para processamento.';
-      } else {
-        responseData.message = 'Input atualizado. Aguardando confirmação manual.';
+      // =====================================================
+      // RESPOSTA SIMPLIFICADA (Contrato Semântico)
+      // =====================================================
+      if (newStatus === 'waiting_user_input') {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            status: 'waiting_user_input',
+            input_id: input_id,
+            questions: questions,
+            next_question: questions[0]?.field
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
+      // Status: confirmed
       return new Response(
-        JSON.stringify(responseData),
+        JSON.stringify({ 
+          success: true, 
+          status: 'confirmed',
+          input_id: input_id
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // =========================================================
     // GET: Buscar status de um input
+    // =========================================================
     if (req.method === 'GET') {
       const input_id = url.searchParams.get('input_id');
       const phone_number = url.searchParams.get('phone_number');
@@ -535,28 +495,31 @@ serve(async (req) => {
       if (input_id) {
         const { data, error } = await supabase
           .from('incoming_financial_inputs')
-          .select('*')
+          .select('id, status, transaction_id')
           .eq('id', input_id)
           .single();
 
         if (error || !data) {
           return new Response(
-            JSON.stringify({ success: false, error: 'Input não encontrado' }),
+            JSON.stringify({ success: false, status: 'error', error: 'Input não encontrado' }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
         return new Response(
-          JSON.stringify({ success: true, input: data }),
+          JSON.stringify({ 
+            success: true, 
+            status: data.status,
+            input_id: data.id,
+            transaction_id: data.transaction_id
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       if (phone_number) {
-        // Normalizar número
         const normalizedPhone = phone_number.replace(/[\s\-\(\)]/g, '');
         
-        // Buscar inputs recentes do usuário via profiles
         const { data: profile } = await supabase
           .from('profiles')
           .select('user_id')
@@ -565,39 +528,39 @@ serve(async (req) => {
 
         if (!profile) {
           return new Response(
-            JSON.stringify({ success: false, error: 'Número não cadastrado' }),
+            JSON.stringify({ success: false, status: 'error', error: 'Número não cadastrado' }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
         const { data: inputs } = await supabase
           .from('incoming_financial_inputs')
-          .select('id, status, amount, transaction_type, payment_method, created_at, processed_at, transaction_id')
+          .select('id, status, transaction_id, created_at')
           .eq('user_id', profile.user_id)
           .order('created_at', { ascending: false })
           .limit(10);
 
         return new Response(
-          JSON.stringify({ success: true, inputs: inputs || [], user_id: profile.user_id }),
+          JSON.stringify({ success: true, inputs: inputs || [] }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       return new Response(
-        JSON.stringify({ success: false, error: 'input_id ou phone_number é obrigatório' }),
+        JSON.stringify({ success: false, status: 'error', error: 'input_id ou phone_number é obrigatório' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
-      JSON.stringify({ success: false, error: 'Método não suportado' }),
+      JSON.stringify({ success: false, status: 'error', error: 'Método não suportado' }),
       { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('[whatsapp-input] Error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, status: 'error', error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
