@@ -159,7 +159,18 @@ export function useCashFlowHistory(options: UseCashFlowOptions) {
         throw error;
       }
 
-      return data as CashFlowEntry[];
+      // Filtro único para excluir transações de "Pagamento de Cartão de Crédito"
+      // Aplicado aqui para garantir consistência em TODOS os componentes que usam cashFlowEntries
+      const filteredData = (data || []).filter((entry) => {
+        const categoryName = (entry.category_name || '').toLowerCase();
+        // Excluir pagamentos de cartão de crédito
+        const isCardPayment = 
+          (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+          categoryName.includes('credit card payment');
+        return !isCardPayment;
+      });
+
+      return filteredData as CashFlowEntry[];
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
