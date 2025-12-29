@@ -10,6 +10,11 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { translateCategoryName } from "@/utils/categoryTranslation";
 import { format } from 'date-fns';
+import { 
+  isDashboardExpense, 
+  getDashboardEffectiveAmount,
+  type DashboardTransaction 
+} from '@/utils/dashboardRules';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -48,27 +53,33 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       const startDate = `${year}-${month}-01`;
       const endDate = format(new Date(parseInt(year), parseInt(month), 0), 'yyyy-MM-dd');
       
+      // REGRA DASHBOARD: Buscar transações usando mesma lógica do useFinancialData
+      // - Não parceladas: transaction_date no mês
+      // - Parceladas: purchase_date no mês E installment_number = 1
       let query = supabase
         .from('transactions')
         .select(`
+          id,
+          type,
           amount,
+          currency,
+          description,
           user_id,
+          owner_user,
           payment_method,
           purchase_date,
           transaction_date,
           due_date,
           is_installment,
-          created_at,
+          installment_number,
+          total_installments,
+          status,
           categories!inner(name, color)
         `)
         .eq('type', 'expense')
-        .not('payment_method', 'in', '(account_transfer,account_investment)')
-        .not('categories.name', 'ilike', '%pagamento%cartão%')
-        .not('categories.name', 'ilike', '%pagamento%cartao%')
-        .not('categories.name', 'ilike', '%credit card payment%')
-        .or(`and(is_installment.is.false,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(is_installment.is.true,due_date.gte.${startDate},due_date.lte.${endDate})`);
+        .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startDate},transaction_date.lte.${endDate}),and(is_installment.is.true,installment_number.eq.1,purchase_date.gte.${startDate},purchase_date.lte.${endDate})`);
 
-      // Apply couple or individual user filter first
+      // Apply couple or individual user filter
       if (coupleData?.status === 'active') {
         const partnerId = coupleData.user1_id === user.id ? coupleData.user2_id : coupleData.user1_id;
         query = query.or(`user_id.eq.${user.id},user_id.eq.${partnerId}`);
@@ -84,17 +95,29 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
       }
 
       // Group by category and sum amounts for each user separately
+      // Usar as regras centralizadas do Dashboard
       const categoryMapUser1 = new Map<string, { amount: number; color: string }>();
       const categoryMapUser2 = new Map<string, { amount: number; color: string }>();
       const categoryMapBoth = new Map<string, { amount: number; color: string }>();
       
-        data?.forEach((transaction) => {
+      data?.forEach((transaction) => {
+        // Converter para DashboardTransaction e aplicar filtro centralizado
+        const dashTx = transaction as unknown as DashboardTransaction;
+        
+        // Usar regra centralizada para verificar se é despesa válida do Dashboard
+        if (!isDashboardExpense(dashTx)) {
+          return;
+        }
+        
         const originalCategoryName = transaction.categories?.name || t('categories.uncategorized');
         const categoryName = translateCategoryName(originalCategoryName, language);
         const categoryColor = transaction.categories?.color || '#6366f1';
-        const amount = Number(transaction.amount);
-        // Determine which user this transaction belongs to using user_id mapping
-        let ownerUser = 'user1';
+        
+        // USAR VALOR EFETIVO: para parceladas = amount * total_installments
+        const amount = getDashboardEffectiveAmount(dashTx);
+        
+        // Determine which user this transaction belongs to
+        let ownerUser = transaction.owner_user || 'user1';
         if (coupleData?.status === 'active') {
           if (transaction.user_id === coupleData.user1_id) {
             ownerUser = 'user1';

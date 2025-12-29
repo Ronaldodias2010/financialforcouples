@@ -5,6 +5,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
 import { format } from 'date-fns';
 import { sumMonetaryArray, subtractMonetaryValues } from '@/utils/monetary';
+import { 
+  isDashboardExpense, 
+  isDashboardIncome, 
+  getDashboardEffectiveAmount,
+  isInternalTransfer,
+  isCardPaymentTransaction,
+  type DashboardTransaction
+} from '@/utils/dashboardRules';
 
 interface Transaction {
   id: string;
@@ -338,69 +346,19 @@ export const useFinancialData = () => {
   const getFinancialSummary = (viewMode: 'both' | 'user1' | 'user2' = 'both'): FinancialSummary => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
-    // Get current month range
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
-    
     const incomeValues: number[] = [];
     const expenseValues: number[] = [];
 
     filteredTransactions.forEach((transaction) => {
-      // Skip internal transfers and investments
-      if (transaction.payment_method === 'account_transfer' || transaction.payment_method === 'account_investment') {
-        return;
-      }
-
-      // Skip legacy future expenses
-      if (transaction.card_transaction_type === 'future_expense') {
-        return;
-      }
-
-      // REGRA 5: Excluir "Pagamento de Cartão de Crédito" do Dashboard
-      // Pagamentos de fatura afetam CAIXA, não CONTROLE mensal
-      const categoryName = (transaction.categories?.name || '').toLowerCase();
-      const isCardPayment = 
-        (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
-        categoryName.includes('credit card payment');
-      if (isCardPayment) {
-        return;
-      }
-
-      // REGRA 5: Para parcelas, a query já filtra por installment_number=1 e purchase_date
-      // Aqui só processamos o que veio da query (compras do mês)
-      // Para parceladas: calcular valor TOTAL da compra (amount * total_installments)
-      if (transaction.is_installment && transaction.installment_number === 1) {
-        const totalAmount = transaction.amount * (transaction.total_installments || 1);
-        const amountInUserCurrency = convertCurrency(
-          totalAmount,
-          transaction.currency,
-          userPreferredCurrency
-        );
-        
-        if (transaction.type === 'income') {
-          incomeValues.push(amountInUserCurrency);
-        } else {
-          expenseValues.push(amountInUserCurrency);
-        }
-        return;
-      }
-
-      // For non-installments, skip pending transactions
-      if (transaction.status === 'pending') {
-        return;
-      }
-
-      const amountInUserCurrency = convertCurrency(
-        transaction.amount,
-        transaction.currency,
-        userPreferredCurrency
-      );
-
-      if (transaction.type === 'income') {
-        incomeValues.push(amountInUserCurrency);
-      } else {
-        expenseValues.push(amountInUserCurrency);
+      // Usar regras centralizadas do Dashboard
+      const dashTx = transaction as DashboardTransaction;
+      
+      if (isDashboardIncome(dashTx)) {
+        const effectiveAmount = getDashboardEffectiveAmount(dashTx);
+        incomeValues.push(convertCurrency(effectiveAmount, transaction.currency, userPreferredCurrency));
+      } else if (isDashboardExpense(dashTx)) {
+        const effectiveAmount = getDashboardEffectiveAmount(dashTx);
+        expenseValues.push(convertCurrency(effectiveAmount, transaction.currency, userPreferredCurrency));
       }
     });
 
@@ -554,50 +512,26 @@ export const useFinancialData = () => {
   const getExpensesByUser = (viewMode: 'both' | 'user1' | 'user2') => {
     const allTransactions = viewMode === 'both' ? transactions : getTransactionsByUser(viewMode);
     
-    // REGRA 5: Para parcelas, a query já filtra por installment_number=1 e purchase_date
-    // Aqui calculamos o valor TOTAL da compra (amount * total_installments)
-    const calculateExpense = (t: Transaction): number => {
-      if (t.is_installment && t.installment_number === 1) {
-        const totalAmount = t.amount * (t.total_installments || 1);
-        return convertCurrency(totalAmount, t.currency, userPreferredCurrency);
-      }
-      return convertCurrency(t.amount, t.currency, userPreferredCurrency);
-    };
-
-    const filterExpense = (t: Transaction, owner: 'user1' | 'user2'): boolean => {
-      if (t.type !== 'expense' || 
-          t.payment_method === 'account_transfer' || 
-          t.payment_method === 'account_investment' ||
-          t.card_transaction_type === 'future_expense' ||
-          (t.owner_user || 'user1') !== owner) {
-        return false;
-      }
-      
-      // Excluir "Pagamento de Cartão de Crédito"
-      const categoryName = (t.categories?.name || '').toLowerCase();
-      const isCardPayment = 
-        (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
-        categoryName.includes('credit card payment');
-      if (isCardPayment) {
-        return false;
-      }
-      
-      // Para parcelas: já vem filtrado da query (installment_number=1, purchase_date no mês)
-      if (t.is_installment) {
-        return t.installment_number === 1;
-      }
-      
-      // Para não-parcelas: excluir pending
-      return t.status !== 'pending';
-    };
-    
+    // Usar regras centralizadas do Dashboard
     const user1Expenses = allTransactions
-      .filter(t => filterExpense(t, 'user1'))
-      .reduce((sum, t) => sum + calculateExpense(t), 0);
+      .filter(t => {
+        const dashTx = t as DashboardTransaction;
+        return isDashboardExpense(dashTx) && (t.owner_user || 'user1') === 'user1';
+      })
+      .reduce((sum, t) => {
+        const dashTx = t as DashboardTransaction;
+        return sum + convertCurrency(getDashboardEffectiveAmount(dashTx), t.currency, userPreferredCurrency);
+      }, 0);
     
     const user2Expenses = allTransactions
-      .filter(t => filterExpense(t, 'user2'))
-      .reduce((sum, t) => sum + calculateExpense(t), 0);
+      .filter(t => {
+        const dashTx = t as DashboardTransaction;
+        return isDashboardExpense(dashTx) && (t.owner_user || 'user1') === 'user2';
+      })
+      .reduce((sum, t) => {
+        const dashTx = t as DashboardTransaction;
+        return sum + convertCurrency(getDashboardEffectiveAmount(dashTx), t.currency, userPreferredCurrency);
+      }, 0);
 
     return { user1Expenses, user2Expenses };
   };
@@ -645,60 +579,16 @@ export const useFinancialData = () => {
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
-    console.log('💰 getTransactionsExpenses - Total transactions:', filteredTransactions.length);
-    console.log('💰 getTransactionsExpenses - Transactions:', filteredTransactions.map(t => ({ 
-      desc: t.description, 
-      type: t.type, 
-      amount: t.amount, 
-      is_installment: t.is_installment, 
-      installment_number: t.installment_number,
-      total_installments: t.total_installments,
-      status: t.status 
-    })));
+    // Usar regras centralizadas do Dashboard
+    const expenseOnly = filteredTransactions.filter(t => isDashboardExpense(t as DashboardTransaction));
     
-    const expenseOnly = filteredTransactions.filter(t => {
-      // Skip transfers and investments
-      if (t.type !== 'expense' || 
-          t.payment_method === 'account_transfer' || 
-          t.payment_method === 'account_investment' ||
-          t.card_transaction_type === 'future_expense') {
-        return false;
-      }
-      
-      // REGRA 5: Excluir "Pagamento de Cartão de Crédito"
-      const categoryName = (t.categories?.name || '').toLowerCase();
-      const isCardPayment = 
-        (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
-        categoryName.includes('credit card payment');
-      if (isCardPayment) {
-        return false;
-      }
-      
-      // Para parcelas: apenas installment_number=1 (compra original)
-      if (t.is_installment) {
-        return t.installment_number === 1;
-      }
-      
-      // Para não-parcelas: excluir pending
-      return t.status !== 'pending';
-    });
-    
-    console.log('💰 getTransactionsExpenses - Expense only after filter:', expenseOnly.length, expenseOnly.map(t => ({ desc: t.description, amount: t.amount, total_installments: t.total_installments })));
-    
-    // REGRA 5: Para parcelas, calcular valor TOTAL da compra
     const expenseValues = expenseOnly.map(t => {
-      if (t.is_installment && t.installment_number === 1) {
-        const totalAmount = t.amount * (t.total_installments || 1);
-        console.log(`💵 Installment expense: ${t.description} - ${t.amount} x ${t.total_installments} = ${totalAmount}`);
-        return convertCurrency(totalAmount, t.currency, userPreferredCurrency);
-      }
-      return convertCurrency(t.amount, t.currency, userPreferredCurrency);
+      const dashTx = t as DashboardTransaction;
+      const effectiveAmount = getDashboardEffectiveAmount(dashTx);
+      return convertCurrency(effectiveAmount, t.currency, userPreferredCurrency);
     });
     
-    const total = sumMonetaryArray(expenseValues);
-    console.log('💰 getTransactionsExpenses - Final total:', total);
-    
-    return total;
+    return sumMonetaryArray(expenseValues);
   };
 
   // No need for refreshData - React Query handles it automatically!

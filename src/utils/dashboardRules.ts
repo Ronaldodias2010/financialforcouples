@@ -1,0 +1,233 @@
+/**
+ * Regras centralizadas para o Dashboard "GASTOS REALIZADOS"
+ * 
+ * DEFINIÇÃO TÉCNICA:
+ * - Dashboard mostra gastos realizados no mês da COMPRA, não da fatura
+ * - Para compras parceladas: valor TOTAL da compra no mês da compra
+ * - Exclui: transferências, aportes, pagamentos de fatura
+ */
+
+import { type CurrencyCode } from '@/hooks/useCurrencyConverter';
+
+export interface DashboardTransaction {
+  id: string;
+  type: 'income' | 'expense';
+  amount: number;
+  currency: CurrencyCode;
+  description: string;
+  transaction_date: string;
+  payment_method: string;
+  owner_user?: string;
+  user_id: string;
+  category_id?: string;
+  card_transaction_type?: string;
+  categories?: { name: string; color?: string };
+  cards?: { name: string };
+  status?: 'pending' | 'completed' | 'cancelled';
+  due_date?: string;
+  is_installment?: boolean;
+  purchase_date?: string;
+  installment_number?: number;
+  total_installments?: number;
+}
+
+/**
+ * Verifica se uma transação é um "Pagamento de Cartão de Crédito"
+ * (que NÃO deve entrar no Dashboard - vai para Fluxo de Caixa)
+ */
+export const isCardPaymentTransaction = (transaction: DashboardTransaction): boolean => {
+  const categoryName = (transaction.categories?.name || '').toLowerCase();
+  return (
+    (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+    categoryName.includes('credit card payment') ||
+    categoryName.includes('pago cartão') ||
+    categoryName.includes('pago cartao')
+  );
+};
+
+/**
+ * Verifica se uma transação é uma transferência/aporte interno
+ * (NÃO entra no Dashboard)
+ */
+export const isInternalTransfer = (transaction: DashboardTransaction): boolean => {
+  return transaction.payment_method === 'account_transfer' || 
+         transaction.payment_method === 'account_investment';
+};
+
+/**
+ * Verifica se uma transação de DESPESA deve aparecer no Dashboard
+ * 
+ * REGRA:
+ * ✅ Despesas do mês (cartão débito, PIX, dinheiro)
+ * ✅ Compras parceladas no cartão (pela data da compra, valor total)
+ * ❌ Transferências entre contas
+ * ❌ Aportes em investimentos
+ * ❌ Pagamento de fatura do cartão
+ * ❌ Parcelas de compras de meses anteriores
+ * ❌ Transações pending (não completadas)
+ */
+export const isDashboardExpense = (transaction: DashboardTransaction): boolean => {
+  // Deve ser despesa
+  if (transaction.type !== 'expense') {
+    return false;
+  }
+
+  // Excluir transferências e aportes
+  if (isInternalTransfer(transaction)) {
+    return false;
+  }
+
+  // Excluir pagamentos de fatura do cartão
+  if (isCardPaymentTransaction(transaction)) {
+    return false;
+  }
+
+  // Para parceladas: apenas a 1ª parcela (representa a compra original)
+  if (transaction.is_installment) {
+    return transaction.installment_number === 1;
+  }
+
+  // Para não-parceladas: excluir pending
+  return transaction.status !== 'pending';
+};
+
+/**
+ * Verifica se uma transação de RECEITA deve aparecer no Dashboard
+ */
+export const isDashboardIncome = (transaction: DashboardTransaction): boolean => {
+  // Deve ser receita
+  if (transaction.type !== 'income') {
+    return false;
+  }
+
+  // Excluir transferências internas
+  if (isInternalTransfer(transaction)) {
+    return false;
+  }
+
+  // Para parceladas: apenas a 1ª parcela
+  if (transaction.is_installment) {
+    return transaction.installment_number === 1;
+  }
+
+  // Para não-parceladas: excluir pending
+  return transaction.status !== 'pending';
+};
+
+/**
+ * Obtém a data efetiva para o Dashboard
+ * - Parceladas: usa purchase_date (data da compra)
+ * - Não-parceladas: usa transaction_date
+ */
+export const getDashboardEffectiveDate = (transaction: DashboardTransaction): string => {
+  if (transaction.is_installment && transaction.purchase_date) {
+    return transaction.purchase_date;
+  }
+  return transaction.transaction_date;
+};
+
+/**
+ * Calcula o valor efetivo para o Dashboard
+ * - Parceladas: valor total da compra (amount * total_installments)
+ * - Não-parceladas: valor normal
+ */
+export const getDashboardEffectiveAmount = (transaction: DashboardTransaction): number => {
+  if (transaction.is_installment && transaction.installment_number === 1) {
+    return transaction.amount * (transaction.total_installments || 1);
+  }
+  return transaction.amount;
+};
+
+/**
+ * Verifica se a data efetiva da transação está dentro do mês especificado
+ */
+export const isInMonth = (transaction: DashboardTransaction, startDate: string, endDate: string): boolean => {
+  const effectiveDate = getDashboardEffectiveDate(transaction);
+  return effectiveDate >= startDate && effectiveDate <= endDate;
+};
+
+/**
+ * Obtém o owner_user normalizado (default: 'user1')
+ */
+export const getTransactionOwner = (transaction: DashboardTransaction): 'user1' | 'user2' => {
+  return (transaction.owner_user || 'user1') as 'user1' | 'user2';
+};
+
+/**
+ * Filtra transações por viewMode
+ */
+export const filterByViewMode = (
+  transactions: DashboardTransaction[], 
+  viewMode: 'both' | 'user1' | 'user2'
+): DashboardTransaction[] => {
+  if (viewMode === 'both') {
+    return transactions;
+  }
+  return transactions.filter(t => getTransactionOwner(t) === viewMode);
+};
+
+/**
+ * Calcula o total de despesas do Dashboard para um array de transações
+ * Aplica todas as regras e soma os valores efetivos
+ */
+export const calculateDashboardExpenses = (
+  transactions: DashboardTransaction[],
+  convertCurrency: (amount: number, from: CurrencyCode, to: CurrencyCode) => number,
+  targetCurrency: CurrencyCode
+): number => {
+  return transactions
+    .filter(isDashboardExpense)
+    .reduce((sum, t) => {
+      const effectiveAmount = getDashboardEffectiveAmount(t);
+      return sum + convertCurrency(effectiveAmount, t.currency, targetCurrency);
+    }, 0);
+};
+
+/**
+ * Calcula o total de receitas do Dashboard para um array de transações
+ */
+export const calculateDashboardIncome = (
+  transactions: DashboardTransaction[],
+  convertCurrency: (amount: number, from: CurrencyCode, to: CurrencyCode) => number,
+  targetCurrency: CurrencyCode
+): number => {
+  return transactions
+    .filter(isDashboardIncome)
+    .reduce((sum, t) => {
+      const effectiveAmount = getDashboardEffectiveAmount(t);
+      return sum + convertCurrency(effectiveAmount, t.currency, targetCurrency);
+    }, 0);
+};
+
+/**
+ * Agrupa despesas por categoria para o gráfico de pizza
+ */
+export interface CategoryExpense {
+  categoryName: string;
+  amount: number;
+  color: string;
+}
+
+export const groupExpensesByCategory = (
+  transactions: DashboardTransaction[],
+  translateCategory: (name: string) => string
+): Map<string, CategoryExpense> => {
+  const categoryMap = new Map<string, CategoryExpense>();
+  
+  transactions
+    .filter(isDashboardExpense)
+    .forEach(t => {
+      const originalName = t.categories?.name || 'Sem categoria';
+      const categoryName = translateCategory(originalName);
+      const color = t.categories?.color || '#6366f1';
+      const amount = getDashboardEffectiveAmount(t);
+      
+      if (categoryMap.has(categoryName)) {
+        categoryMap.get(categoryName)!.amount += amount;
+      } else {
+        categoryMap.set(categoryName, { categoryName, amount, color });
+      }
+    });
+  
+  return categoryMap;
+};
