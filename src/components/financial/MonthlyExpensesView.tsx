@@ -250,9 +250,6 @@ const fetchCategories = async () => {
         .in('user_id', userIds)
         .eq('type', 'expense')
         .not('payment_method', 'in', '(account_transfer,account_investment)')
-        .not('categories.name', 'ilike', '%pagamento%cartão%')
-        .not('categories.name', 'ilike', '%pagamento%cartao%')
-        .not('categories.name', 'ilike', '%credit card payment%')
         .or(`and(purchase_date.gte.${startDate},purchase_date.lte.${endDate}),and(purchase_date.is.null,transaction_date.gte.${startDate},transaction_date.lte.${endDate})`)
         .order('purchase_date', { ascending: false, nullsFirst: false })
         .order('transaction_date', { ascending: false });
@@ -277,6 +274,16 @@ if (selectedCategory !== "all") {
       })));
       
       let filteredData = data || [];
+      
+      // Filtro para excluir transações de "Pagamento de Cartão de Crédito"
+      // Garante consistência com o Fluxo de Caixa e outros componentes
+      filteredData = filteredData.filter(t => {
+        const categoryName = (t.categories?.name || '').toLowerCase();
+        const isCardPayment = 
+          (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+          categoryName.includes('credit card payment');
+        return !isCardPayment;
+      });
       
       // Apply user filter based on viewMode using user_id mapping to couple
       if (viewMode !== "both" && couple) {
