@@ -618,6 +618,16 @@ export const useFinancialData = () => {
         return false;
       }
       
+      // Excluir transações de "Pagamento de Cartão de Crédito"
+      // Garante consistência com o Fluxo de Caixa e outros componentes
+      const categoryName = (t.categories?.name || '').toLowerCase();
+      const isCardPayment = 
+        (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+        categoryName.includes('credit card payment');
+      if (isCardPayment) {
+        return false;
+      }
+      
       // For installments, include if due_date is in current month (regardless of status)
       if (t.is_installment && t.due_date) {
         const dueDate = new Date(t.due_date);
