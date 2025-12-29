@@ -1713,23 +1713,41 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                 </RadioGroup>
 
                 {paymentPlan === "parcelado" && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="installments">Quantidade de Parcelas</Label>
-                      <Input
-                        id="installments"
-                        type="number"
-                        min={2}
-                        step={1}
-                        value={totalInstallments}
-                        onChange={(e) => setTotalInstallments(Math.max(2, parseInt(e.target.value || "2", 10)))}
-                      />
-                    </div>
-                    <div className="self-end">
-                      <div className="text-sm text-muted-foreground">Valor por Parcela</div>
-                      <div className="text-base font-medium">
-                        {formatCurrency(isFinite(installmentValue) ? installmentValue : 0, currency)}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="installments">Quantidade de Parcelas</Label>
+                        <Input
+                          id="installments"
+                          type="number"
+                          min={2}
+                          step={1}
+                          value={totalInstallments}
+                          onChange={(e) => setTotalInstallments(Math.max(2, parseInt(e.target.value || "2", 10)))}
+                        />
                       </div>
+                      <div className="self-end">
+                        <div className="text-sm text-muted-foreground">Valor por Parcela</div>
+                        <div className="text-base font-medium">
+                          {formatCurrency(isFinite(installmentValue) ? installmentValue : 0, currency)}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* REGRA 7 UX: Explicação clara sobre como a compra será registrada */}
+                    <div className="bg-muted/50 border border-border rounded-lg p-3 text-sm space-y-1">
+                      <p className="font-medium text-foreground">
+                        📊 Como esta compra será registrada:
+                      </p>
+                      <p className="text-muted-foreground">
+                        • <span className="font-medium">Controle mensal:</span> O valor total de {formatCurrency(parseFloat(amount || '0'), currency)} será contabilizado em {format(transactionDate, 'MMMM/yyyy', { locale: dateLocale })}
+                      </p>
+                      <p className="text-muted-foreground">
+                        • <span className="font-medium">Fatura do cartão:</span> Parcelas de {formatCurrency(isFinite(installmentValue) ? installmentValue : 0, currency)} aparecerão nas próximas {totalInstallments} faturas
+                      </p>
+                      <p className="text-muted-foreground">
+                        • <span className="font-medium">Fluxo de caixa:</span> O dinheiro sairá apenas quando você pagar cada fatura
+                      </p>
                     </div>
                   </div>
                 )}
