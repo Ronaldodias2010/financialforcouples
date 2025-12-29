@@ -125,12 +125,20 @@ export const UserExpenseChart = () => {
         .in('user_id', userIds)
         .eq('type', 'expense')
         .not('payment_method', 'in', '(account_transfer,account_investment)')
-        .not('categories.name', 'ilike', '%pagamento%cartão%')
-        .not('categories.name', 'ilike', '%pagamento%cartao%')
-        .not('categories.name', 'ilike', '%credit card payment%')
         .or(`and(is_installment.is.false,status.eq.completed,transaction_date.gte.${startStr},transaction_date.lte.${endStr}),and(is_installment.is.true,due_date.gte.${startStr},due_date.lte.${endStr})`);
 
       if (expenseError) throw expenseError;
+
+      // Filtrar transações de "Pagamento de Cartão de Crédito" em JavaScript
+      // O filtro .not() do Supabase não funciona corretamente com JOINs
+      const filteredExpenseTransactions = expenseTransactions?.filter((t: any) => {
+        const categoryName = t.categories?.name?.toLowerCase() || '';
+        // Excluir transações de "Pagamento de Cartão de Crédito"
+        const isCardPayment = 
+          (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+          categoryName.includes('credit card payment');
+        return !isCardPayment;
+      }) || [];
 
       // Fetch income using the same logic as MonthlyIncomeView  
       const { data: incomeTransactions, error: incomeError } = await supabase
@@ -144,7 +152,8 @@ export const UserExpenseChart = () => {
 
       if (incomeError) throw incomeError;
       
-      console.log('Chart expense transactions fetched:', expenseTransactions);
+      console.log('Chart expense transactions fetched:', expenseTransactions?.length);
+      console.log('Chart expense transactions after filter:', filteredExpenseTransactions.length);
       console.log('Chart income transactions fetched:', incomeTransactions);
 
       // Process data for combined chart
@@ -164,8 +173,8 @@ export const UserExpenseChart = () => {
         incomeByUser[owner] += Number(transaction.amount);
       });
 
-      // Process expense transactions (incluindo parcelas de cartão)
-      expenseTransactions?.forEach((transaction) => {
+      // Process expense transactions (usando lista filtrada)
+      filteredExpenseTransactions.forEach((transaction) => {
         let owner: 'user1' | 'user2';
         if (transaction.owner_user === 'user1' || transaction.owner_user === 'user2') {
           owner = transaction.owner_user;
@@ -225,8 +234,8 @@ export const UserExpenseChart = () => {
           monthlyBreakdown[month][`${owner}Income` as keyof typeof monthlyBreakdown[string]] += Number(transaction.amount);
         });
 
-        // Process expenses by month (incluindo parcelas)
-        expenseTransactions?.forEach(transaction => {
+        // Process expenses by month (usando lista filtrada)
+        filteredExpenseTransactions.forEach(transaction => {
           const dateForGrouping = transaction.is_installment ? transaction.due_date : transaction.transaction_date;
           const month = new Date(dateForGrouping).toLocaleDateString('pt-BR', { 
             month: 'short', 
