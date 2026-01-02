@@ -3174,6 +3174,84 @@ export type Database = {
           },
         ]
       }
+      user_2fa_codes: {
+        Row: {
+          code_hash: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          method: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          method: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          method?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_2fa_settings: {
+        Row: {
+          backup_codes: string[] | null
+          backup_codes_used: number | null
+          created_at: string | null
+          failed_attempts: number | null
+          id: string
+          is_enabled: boolean | null
+          last_verified_at: string | null
+          locked_until: string | null
+          method: string | null
+          phone_number: string | null
+          totp_secret: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          backup_codes_used?: number | null
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          is_enabled?: boolean | null
+          last_verified_at?: string | null
+          locked_until?: string | null
+          method?: string | null
+          phone_number?: string | null
+          totp_secret?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          backup_codes_used?: number | null
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          is_enabled?: boolean | null
+          last_verified_at?: string | null
+          locked_until?: string | null
+          method?: string | null
+          phone_number?: string | null
+          totp_secret?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_activity_tracking: {
         Row: {
           activity_count: number | null
@@ -4022,6 +4100,7 @@ export type Database = {
         Args: { p_promotion_id: string; p_user_id: string }
         Returns: boolean
       }
+      cleanup_expired_2fa_codes: { Args: never; Returns: number }
       cleanup_old_rate_limits: { Args: never; Returns: number }
       create_cash_accounts_for_user: {
         Args: { p_user_id: string }
