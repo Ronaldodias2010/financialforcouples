@@ -64,7 +64,7 @@ export function useTaxValidation({
     // 3. Medical expenses above average (15% of income)
     const medicalExpenses = deductibleExpenses
       .filter(e => e.category.toLowerCase().includes('saúde') || e.category.toLowerCase().includes('health'))
-      .reduce((sum, e) => sum + e.totalSpent, 0);
+      .reduce((sum, e) => sum + e.total, 0);
     
     if (summary.taxableIncome > 0 && medicalExpenses > summary.taxableIncome * 0.15) {
       const percentage = ((medicalExpenses / summary.taxableIncome) * 100).toFixed(1);
@@ -139,9 +139,9 @@ export function useTaxValidation({
     }
 
     // 8. High value transactions without source
-    const highValueUnidentified = taxableIncomes.filter(i => i.amount > 50000 && i.category === 'Outros');
+    const highValueUnidentified = taxableIncomes.filter(i => i.total > 50000 && i.category === 'Outros');
     if (highValueUnidentified.length > 0) {
-      const total = highValueUnidentified.reduce((sum, i) => sum + i.amount, 0);
+      const total = highValueUnidentified.reduce((sum, i) => sum + i.total, 0);
       results.push({
         id: 'high_income_unclassified',
         rule: 'high_income_unclassified',
@@ -156,7 +156,7 @@ export function useTaxValidation({
 
     // 9. Assets declared correctly
     if (taxAssets.length > 0) {
-      const assetsWithIssues = taxAssets.filter(a => a.currentValue === 0 && a.previousValue === 0);
+      const assetsWithIssues = taxAssets.filter(a => a.valueAtYearEnd === 0 && a.valueAtYearStart === 0);
       if (assetsWithIssues.length > 0) {
         results.push({
           id: 'assets_zero_value',
