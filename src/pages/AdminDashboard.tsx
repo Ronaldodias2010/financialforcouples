@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck, FileSpreadsheet, FileText, Gift, Clock } from "lucide-react";
+import { Search, Users, CreditCard, AlertTriangle, DollarSign, Eye, Mail, RotateCcw, Download, LogOut, ArrowLeft, Crown, UserCheck, FileSpreadsheet, FileText, Gift, Clock, MessageSquare } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { toast } from "@/hooks/use-toast";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
@@ -24,7 +24,7 @@ import { PromoCodesManager } from '@/components/admin/PromoCodesManager';
 import { UserListModal } from '@/components/admin/UserListModal';
 import { InactiveUsersSection } from '@/components/admin/InactiveUsersSection';
 import { SchemaAuditSection } from '@/components/admin/SchemaAuditSection';
-
+import TestimonialsManager from '@/components/admin/TestimonialsManager';
 
 interface SubscriptionMetrics {
   activeUsers: number;
@@ -969,10 +969,11 @@ const AdminDashboardContent = () => {
 
       {/* Main Admin Tabs */}
       <Tabs defaultValue="overview" className="w-full" onValueChange={(value) => setActiveMainTab(value)}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">📊 {t('admin.tabs.overview')}</TabsTrigger>
           <TabsTrigger value="users">👥 {t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="content">📚 {t('admin.tabs.content')}</TabsTrigger>
+          <TabsTrigger value="testimonials">💬 {t('admin.tabs.testimonials')}</TabsTrigger>
           <TabsTrigger value="ai-control">🤖 {t('admin.tabs.aiControl')}</TabsTrigger>
           <TabsTrigger value="schema-audit">🔍 Schema</TabsTrigger>
         </TabsList>
@@ -1327,6 +1328,10 @@ const AdminDashboardContent = () => {
 
         <TabsContent value="content">
           <EducationalContentManager />
+        </TabsContent>
+
+        <TabsContent value="testimonials">
+          <TestimonialsManager />
         </TabsContent>
 
         <TabsContent value="ai-control">

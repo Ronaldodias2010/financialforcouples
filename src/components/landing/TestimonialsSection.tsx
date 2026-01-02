@@ -3,19 +3,31 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useInView from "@/hooks/use-in-view";
 import { Quote, Heart, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import coupleMariaCarlos from "@/assets/testimonials/couple-maria-carlos.jpg";
 import coupleJoaoLucia from "@/assets/testimonials/couple-joao-lucia.jpg";
 import singleRafael from "@/assets/testimonials/single-rafael.jpg";
 import singleThiago from "@/assets/testimonials/single-thiago.jpg";
 import TestimonialInviteCard from "./TestimonialInviteCard";
 
+interface Testimonial {
+  id: string;
+  type: 'couple' | 'single';
+  names: string;
+  text: string;
+  image?: string;
+  rating: number;
+}
+
 const TestimonialsSection = () => {
   const { ref, inView } = useInView({ threshold: 0.2 });
   const { t } = useLanguage();
 
-  const testimonials = [
+  // Static testimonials (fallback)
+  const staticTestimonials: Testimonial[] = [
     {
-      id: 1,
+      id: 'static-1',
       type: 'couple',
       names: t('testimonials.couple1.names'),
       text: t('testimonials.couple1.text'),
@@ -23,7 +35,7 @@ const TestimonialsSection = () => {
       rating: 5
     },
     {
-      id: 2,
+      id: 'static-2',
       type: 'couple',
       names: t('testimonials.couple2.names'),
       text: t('testimonials.couple2.text'),
@@ -31,7 +43,7 @@ const TestimonialsSection = () => {
       rating: 5
     },
     {
-      id: 3,
+      id: 'static-3',
       type: 'single',
       names: t('testimonials.single1.name'),
       text: t('testimonials.single1.text'),
@@ -39,7 +51,7 @@ const TestimonialsSection = () => {
       rating: 5
     },
     {
-      id: 4,
+      id: 'static-4',
       type: 'single',
       names: t('testimonials.single2.name'),
       text: t('testimonials.single2.text'),
@@ -47,6 +59,41 @@ const TestimonialsSection = () => {
       rating: 5
     }
   ];
+
+  // Fetch approved testimonials from database
+  const { data: dbTestimonials } = useQuery({
+    queryKey: ['approved-testimonials'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('status', 'approved')
+        .order('approved_at', { ascending: false })
+        .limit(6);
+      
+      if (error) {
+        console.error('Error fetching testimonials:', error);
+        return [];
+      }
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Combine static and database testimonials
+  const allTestimonials: Testimonial[] = [
+    // First show database testimonials (most recent approved)
+    ...(dbTestimonials?.map(t => ({
+      id: t.id,
+      type: (t.type === 'couple' ? 'couple' : 'single') as 'couple' | 'single',
+      names: t.name,
+      text: t.testimonial_text,
+      image: t.photo_url || undefined,
+      rating: t.rating || 5
+    })) || []),
+    // Then fill with static testimonials if needed
+    ...staticTestimonials
+  ].slice(0, 6); // Limit to 6 total
 
   return (
     <section className="py-20 bg-muted/30" aria-labelledby="testimonials-heading">
@@ -61,7 +108,7 @@ const TestimonialsSection = () => {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {testimonials.map((testimonial, index) => (
+          {allTestimonials.map((testimonial, index) => (
             <Card key={testimonial.id} className={`relative border-2 bg-card hover:shadow-elegant transition-all duration-300 ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: `${index * 100}ms` }}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -69,18 +116,25 @@ const TestimonialsSection = () => {
                     {testimonial.type === 'couple' ? (
                       <div className="relative">
                         <Avatar className="w-16 h-16 border-2 border-background">
-                          <AvatarImage src={testimonial.image} alt={testimonial.names} className="object-cover" />
+                          {testimonial.image ? (
+                            <AvatarImage src={testimonial.image} alt={testimonial.names} className="object-cover" />
+                          ) : null}
                           <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                            {testimonial.names.split(' & ')[0][0]}{testimonial.names.split(' & ')[1][0]}
+                            {testimonial.names.includes('&') 
+                              ? `${testimonial.names.split(' & ')[0][0]}${testimonial.names.split(' & ')[1]?.[0] || ''}`
+                              : testimonial.names.slice(0, 2).toUpperCase()
+                            }
                           </AvatarFallback>
                         </Avatar>
                         <Heart className="absolute -bottom-1 -right-1 w-6 h-6 text-red-500 fill-red-500 bg-white rounded-full p-1" />
                       </div>
                     ) : (
                       <Avatar className="w-16 h-16 border-2 border-primary">
-                        <AvatarImage src={testimonial.image} alt={testimonial.names} className="object-cover" />
+                        {testimonial.image ? (
+                          <AvatarImage src={testimonial.image} alt={testimonial.names} className="object-cover" />
+                        ) : null}
                         <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                          {testimonial.names.split(' ')[0][0]}{testimonial.names.split(' ')[1][0]}
+                          {testimonial.names.split(' ').slice(0, 2).map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                     )}
@@ -108,7 +162,7 @@ const TestimonialsSection = () => {
           {/* Card de convite para enviar depoimento */}
           <TestimonialInviteCard 
             className={`${inView ? 'animate-fade-in' : 'opacity-0'}`}
-            style={{ animationDelay: `${testimonials.length * 100}ms` }}
+            style={{ animationDelay: `${allTestimonials.length * 100}ms` }}
           />
         </div>
       </div>

@@ -320,7 +320,7 @@ const TestimonialsManager = () => {
                 </Button>
                 <Button
                   size="sm"
-                  variant="destructive"
+                  variant="expense"
                   onClick={() => handleReject(testimonial.id)}
                   disabled={actionLoading === testimonial.id}
                 >
@@ -609,15 +609,16 @@ const TestimonialsManager = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
+            <Button
+              variant="outline"
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 border-destructive"
             >
               {actionLoading === testimonialToDelete ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : null}
               {t('common.delete')}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
