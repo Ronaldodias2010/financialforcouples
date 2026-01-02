@@ -17,6 +17,7 @@ import { ptBR } from 'date-fns/locale';
 interface TaxPendingSectionProps {
   items: PendingItem[];
   formatCurrency: (value: number) => string;
+  onResolve?: (item: PendingItem) => void;
 }
 
 const pendingIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -33,7 +34,7 @@ const pendingColors: Record<string, { color: string; bg: string }> = {
   unclassified: { color: 'text-gray-500', bg: 'bg-gray-500/10' }
 };
 
-export function TaxPendingSection({ items, formatCurrency }: TaxPendingSectionProps) {
+export function TaxPendingSection({ items, formatCurrency, onResolve }: TaxPendingSectionProps) {
   const { t } = useLanguage();
 
   const getPendingLabel = (type: PendingItem['type']) => {
@@ -97,7 +98,11 @@ export function TaxPendingSection({ items, formatCurrency }: TaxPendingSectionPr
                     </div>
                   </div>
 
-                  <Button variant="default" size="sm">
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => onResolve?.(item)}
+                  >
                     {t('tax.pending.resolveNow')}
                     <ArrowRight className="h-3 w-3 ml-1" />
                   </Button>

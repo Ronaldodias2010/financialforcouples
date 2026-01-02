@@ -11,3 +11,4 @@ export { TaxCountrySelector } from './TaxCountrySelector';
 export { TaxUnderConstruction } from './TaxUnderConstruction';
 export { TaxDocumentUpload } from './TaxDocumentUpload';
 export { TaxAIAssistant, TaxAIAssistantButton } from './TaxAIAssistant';
+export { TaxPendingResolver } from './TaxPendingResolver';

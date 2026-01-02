@@ -19,7 +19,7 @@ import {
   AlertCircle,
   Download
 } from 'lucide-react';
-import { useIncomeTaxReport, TaxStatus } from '@/hooks/useIncomeTaxReport';
+import { useIncomeTaxReport, TaxStatus, PendingItem } from '@/hooks/useIncomeTaxReport';
 import { useTaxCountry } from '@/hooks/useTaxCountry';
 import { useTaxCalculation } from '@/hooks/useTaxCalculation';
 import { TaxSummaryCards } from './TaxSummaryCards';
@@ -28,6 +28,7 @@ import { TaxIncomeSection } from './TaxIncomeSection';
 import { TaxDeductionsSection } from './TaxDeductionsSection';
 import { TaxAssetsSection } from './TaxAssetsSection';
 import { TaxPendingSection } from './TaxPendingSection';
+import { TaxPendingResolver } from './TaxPendingResolver';
 import { TaxExportSection } from './TaxExportSection';
 import { TaxEstimateCard } from './TaxEstimateCard';
 import { TaxCountrySelector } from './TaxCountrySelector';
@@ -44,6 +45,8 @@ const availableYears = [currentYear - 2, currentYear - 1, currentYear];
 export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
   const { t } = useLanguage();
   const [taxYear, setTaxYear] = useState(currentYear - 1); // Default to previous year
+  const [selectedPendingItem, setSelectedPendingItem] = useState<PendingItem | null>(null);
+  const [showResolver, setShowResolver] = useState(false);
 
   // Tax country check
   const { 
@@ -73,6 +76,16 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  };
+
+  const handleResolvePending = (item: PendingItem) => {
+    setSelectedPendingItem(item);
+    setShowResolver(true);
+  };
+
+  const handleCloseResolver = () => {
+    setShowResolver(false);
+    setSelectedPendingItem(null);
   };
 
   const getStatusIcon = (status: TaxStatus) => {
@@ -460,6 +473,7 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
                   <TaxPendingSection 
                     items={pendingItems}
                     formatCurrency={formatCurrency}
+                    onResolve={handleResolvePending}
                   />
                 </AccordionContent>
               </AccordionItem>
@@ -476,6 +490,15 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
         exemptIncomes={exemptIncomes}
         deductibleExpenses={deductibleExpenses}
         taxAssets={taxAssets}
+      />
+
+      {/* Pending Item Resolver Modal */}
+      <TaxPendingResolver
+        item={selectedPendingItem}
+        isOpen={showResolver}
+        onClose={handleCloseResolver}
+        taxYear={taxYear}
+        formatCurrency={formatCurrency}
       />
     </div>
   );
