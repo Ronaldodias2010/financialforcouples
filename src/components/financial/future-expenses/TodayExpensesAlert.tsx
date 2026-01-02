@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CreditCard, DollarSign } from 'lucide-react';
+import { AlertCircle, CreditCard, DollarSign, X } from 'lucide-react';
 import { useTodayFutureExpenses } from '@/hooks/useTodayFutureExpenses';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PayFutureExpenseModal } from '../PayFutureExpenseModal';
@@ -16,8 +16,24 @@ export const TodayExpensesAlert = ({ viewMode }: TodayExpensesAlertProps) => {
   const { todayExpenses, count, totalAmount, loading, refresh } = useTodayFutureExpenses();
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
+  const [isDismissed, setIsDismissed] = useState(false);
 
-  if (loading || count === 0) return null;
+  // Check localStorage for dismiss persistence per day
+  useEffect(() => {
+    const dismissedDate = localStorage.getItem('todayExpenses_dismissed_date');
+    const today = new Date().toISOString().split('T')[0];
+    if (dismissedDate === today) {
+      setIsDismissed(true);
+    }
+  }, []);
+
+  const handleDismiss = () => {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem('todayExpenses_dismissed_date', today);
+    setIsDismissed(true);
+  };
+
+  if (loading || count === 0 || isDismissed) return null;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -62,13 +78,24 @@ export const TodayExpensesAlert = ({ viewMode }: TodayExpensesAlertProps) => {
                 </CardDescription>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-muted-foreground">
-                {t('futureExpenses.todayAlert.totalDue')}
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm text-muted-foreground">
+                  {t('futureExpenses.todayAlert.totalDue')}
+                </div>
+                <div className="text-2xl font-bold text-amber-600">
+                  {formatCurrency(totalAmount)}
+                </div>
               </div>
-              <div className="text-2xl font-bold text-amber-600">
-                {formatCurrency(totalAmount)}
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDismiss}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                title={t('futureExpenses.todayAlert.dismiss')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CardHeader>
