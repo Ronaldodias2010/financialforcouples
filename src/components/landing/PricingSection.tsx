@@ -6,6 +6,7 @@ import useInView from "@/hooks/use-in-view";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import AIBetaModal from "@/components/landing/AIBetaModal";
+import { trackCtaClick } from "@/utils/analytics";
 const PricingSection = () => {
   const { t, language, inBrazil } = useLanguage();
   const isUSD = language !== 'pt' || !inBrazil;
@@ -137,7 +138,7 @@ const PricingSection = () => {
                   size="lg" 
                   className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
                 >
-                  <Link to="/auth?tab=signup">
+                  <Link to="/auth?tab=signup" onClick={() => trackCtaClick('plano_gratis', 'pricing_section')}>
                     <Download className="w-4 h-4" />
                     {plan.buttonText}
                   </Link>
@@ -149,7 +150,7 @@ const PricingSection = () => {
                   size="lg" 
                   className={`w-full mt-auto ${!plan.popular ? 'border-2 border-black' : ''}`}
                 >
-                  <Link to="/checkout-direto">
+                  <Link to="/checkout-direto" onClick={() => trackCtaClick('plano_premium', 'pricing_section')}>
                     <Sparkles className="w-4 h-4" />
                     {plan.buttonText}
                   </Link>

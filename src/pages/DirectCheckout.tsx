@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PasswordValidation, PasswordMatchValidation, validatePassword } from "@/components/ui/PasswordValidation";
+import { trackBeginCheckout, trackSignUp } from "@/utils/analytics";
 
 const DirectCheckout = () => {
   const { t, language, inBrazil } = useLanguage();
@@ -200,6 +201,11 @@ const DirectCheckout = () => {
 
     setLoading(true);
 
+    // Track begin_checkout event
+    const checkoutValue = selectedPlan === 'monthly' ? (isUSD ? 9.90 : 25.90) : (isUSD ? 67.10 : 217.10);
+    const checkoutCurrency = isUSD ? 'USD' : 'BRL';
+    trackBeginCheckout(checkoutValue, checkoutCurrency, selectedPlan);
+
     let createdToken: string | undefined;
 
     try {
@@ -264,6 +270,7 @@ const DirectCheckout = () => {
       }
 
       // Se a conta foi criada com sucesso, mostrar mensagem para verificar email
+      trackSignUp('email');
       toast({
         title: t('directCheckout.accountCreated'),
         description: t('directCheckout.checkEmailToContinue'),

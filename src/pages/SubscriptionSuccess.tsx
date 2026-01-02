@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { trackPurchase } from "@/utils/analytics";
 
 const SubscriptionSuccess = () => {
   const { checkSubscription } = useSubscription();
@@ -17,6 +18,10 @@ const SubscriptionSuccess = () => {
     const run = async () => {
       try {
         await checkSubscription();
+        
+        // Track purchase conversion for Google Ads
+        const transactionId = session?.user?.id || `purchase_${Date.now()}`;
+        trackPurchase(transactionId, 25.90, 'BRL'); // Default BRL price
         
         // Send welcome email after successful subscription
         try {
