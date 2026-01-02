@@ -38,6 +38,7 @@ const EmailTest = lazy(() => import("./pages/EmailTest"));
 const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
 const CleanupPastel = lazy(() => import("./pages/CleanupPastel"));
 const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m => ({ default: m.TestPartnerEmails })));
+const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -85,6 +86,8 @@ const AppRoutes = () => {
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
         <Route path="/cleanup-pastel" element={<ProtectedRoute><CleanupPastel /></ProtectedRoute>} />
+        <Route path="/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
+        <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
         <Route path="/test-emails" element={<TestPartnerEmails />} />
         
         <Route path="*" element={<NotFound />} />
