@@ -18,7 +18,7 @@ verify_jwt = false
 [functions.pdf-extractor]
 verify_jwt = true
 
-[functions.ocr-processor] 
+[functions.ocr-processor]
 verify_jwt = true
 
 [functions.ai-transaction-processor]
@@ -81,7 +81,6 @@ verify_jwt = true
 [functions.cleanup-rate-limits]
 verify_jwt = false
 
-# WhatsApp + N8N Integration
 [functions.whatsapp-input]
 verify_jwt = false
 
@@ -89,4 +88,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.get-user-options]
+verify_jwt = false
+
+[functions.send-2fa-email]
+verify_jwt = false
+
+[functions.generate-backup-codes]
 verify_jwt = false
