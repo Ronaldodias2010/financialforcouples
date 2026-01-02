@@ -1138,6 +1138,9 @@ const translations = {
     'testimonials.leaveTestimonial': 'Deixe seu Depoimento',
     'testimonials.emailSubject': 'Meu Depoimento - Couples Financials',
     'testimonials.emailBody': 'Olá equipe Couples Financials,\n\nGostaria de compartilhar minha experiência com a plataforma:\n\n[Escreva aqui seu depoimento]\n\n📷 SOLICITAÇÃO DE FOTO:\nPara tornar seu depoimento ainda mais autêntico, gostaríamos de incluir sua foto em nosso site. Por favor, anexe uma foto sua (ou do casal, se aplicável) neste email.\n\n✅ AUTORIZAÇÃO DE USO DE IMAGEM:\nAo enviar sua foto, você autoriza o uso da mesma no site Couples Financials para fins promocionais e de divulgação. Sua imagem será exposta publicamente junto com seu depoimento.\n\nObrigado!',
+    'testimonials.invite.title': 'Sua história aqui!',
+    'testimonials.invite.description': 'Compartilhe sua experiência e inspire outros usuários',
+    'testimonials.invite.button': 'Enviar Depoimento',
     
     // Final CTA Section
     'finalcta.free': 'Baixe Gratuitamente (PWA)',
@@ -3321,6 +3324,9 @@ const translations = {
     'testimonials.leaveTestimonial': 'Leave Your Testimonial',
     'testimonials.emailSubject': 'My Testimonial - Couples Financials',
     'testimonials.emailBody': 'Hello Couples Financials team,\n\nI would like to share my experience with the platform:\n\n[Write your testimonial here]\n\n📷 PHOTO REQUEST:\nTo make your testimonial even more authentic, we would like to include your photo on our website. Please attach a photo of yourself (or couple, if applicable) to this email.\n\n✅ IMAGE USE AUTHORIZATION:\nBy sending your photo, you authorize its use on the Couples Financials website for promotional and marketing purposes. Your image will be publicly displayed along with your testimonial.\n\nThank you!',
+    'testimonials.invite.title': 'Your story here!',
+    'testimonials.invite.description': 'Share your experience and inspire other users',
+    'testimonials.invite.button': 'Send Testimonial',
     
     // Final CTA Section
     'finalcta.free': 'Download for Free (PWA)',
@@ -5593,6 +5599,9 @@ const translations = {
     'testimonials.leaveTestimonial': 'Deja tu Testimonio',
     'testimonials.emailSubject': 'Mi Testimonio - Couples Financials',
     'testimonials.emailBody': 'Hola equipo de Couples Financials,\n\nMe gustaría compartir mi experiencia con la plataforma:\n\n[Escribe aquí tu testimonio]\n\n📷 SOLICITUD DE FOTO:\nPara hacer tu testimonio aún más auténtico, nos gustaría incluir tu foto en nuestro sitio web. Por favor, adjunta una foto tuya (o de la pareja, si aplica) a este email.\n\n✅ AUTORIZACIÓN DE USO DE IMAGEN:\nAl enviar tu foto, autorizas su uso en el sitio web de Couples Financials para fines promocionales y de marketing. Tu imagen será expuesta públicamente junto con tu testimonio.\n\n¡Gracias!',
+    'testimonials.invite.title': '¡Tu historia aquí!',
+    'testimonials.invite.description': 'Comparte tu experiencia e inspira a otros usuarios',
+    'testimonials.invite.button': 'Enviar Testimonio',
     
     // Final CTA Section
     'finalcta.free': 'Descargar Gratis (PWA)',
