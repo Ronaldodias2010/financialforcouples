@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Check, Crown, Zap, Shield, Star, BarChart3, Bot, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackBeginCheckout } from '@/utils/analytics';
 
 interface SubscriptionPageProps {
   onBack: () => void;
@@ -61,6 +62,13 @@ export const SubscriptionPage = ({ onBack }: SubscriptionPageProps) => {
   const handleUpgrade = async (priceId: string) => {
     try {
       setCreatingSession(true);
+      
+      // Track begin_checkout event
+      const isMonthly = priceId === monthlyPriceId;
+      const value = isMonthly ? (isEnglishPricing ? 9.90 : 25.90) : (isEnglishPricing ? 67.10 : 217.10);
+      const currency = isEnglishPricing ? 'USD' : 'BRL';
+      trackBeginCheckout(value, currency, isMonthly ? 'monthly' : 'yearly');
+      
       await createCheckoutSession(priceId, appliedPromo);
       toast.success(t('subscription.redirectingToPayment'));
     } catch (error) {

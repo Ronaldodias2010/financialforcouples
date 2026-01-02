@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import AIBetaModal from "@/components/landing/AIBetaModal";
+import { trackCtaClick } from "@/utils/analytics";
 const HeroSection = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -106,13 +107,13 @@ const HeroSection = () => {
             <div className="flex flex-col gap-3 sm:gap-4 justify-center lg:justify-start">
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Button asChild size="default" variant="secondary" className="group flex-1 sm:flex-none">
-                  <Link to="/auth">
+                  <Link to="/auth" onClick={() => trackCtaClick('comecar_gratis', 'hero_section')}>
                     <Download className="w-6 h-6 group-hover:animate-bounce" />
                     <span className="text-sm">{t('hero.cta.access')}</span>
                   </Link>
                 </Button>
                 <Button asChild size="default" variant="ctaGradient" className="group flex-1 sm:flex-none">
-                  <Link to="/checkout-direto">
+                  <Link to="/checkout-direto" onClick={() => trackCtaClick('assinar_premium', 'hero_section')}>
                     <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                     <span className="text-sm">{t('hero.cta.premium')}</span>
                   </Link>

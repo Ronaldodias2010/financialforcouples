@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PasswordValidation, PasswordMatchValidation, validatePassword } from '@/components/ui/PasswordValidation';
 import { translateAuthError } from '@/utils/authErrors';
+import { trackSignUp, trackLogin } from '@/utils/analytics';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -115,6 +116,7 @@ export default function Auth() {
       if (error) throw error;
       
       if (data.user) {
+        trackLogin('email');
         toast({
           title: t('auth.loginSuccessTitle'),
           description: t('auth.loginSuccessDesc'),
@@ -137,6 +139,7 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      trackSignUp('google'); // Track before redirect
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -237,6 +240,7 @@ export default function Auth() {
       }
       
       if (data.user) {
+        trackSignUp('email');
         // Mostrar toast com duração estendida de 20 segundos
         toast({
           title: `✅ ${t('auth.signupSuccessTitle')}`,
