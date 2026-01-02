@@ -278,16 +278,20 @@
                 <li><a href="#transacoes">4. Gerenciando Transações</a></li>
                 <li><a href="#contas">5. Gestão de Contas Bancárias</a></li>
                 <li><a href="#cartoes">6. Gestão de Cartões</a></li>
-                <li><a href="#investimentos">7. Controle de Investimentos</a></li>
+                <li><a href="#despesas-mensais">7. Despesas Mensais</a></li>
+                <li><a href="#despesas-recorrentes">8. Despesas Recorrentes</a></li>
+                <li><a href="#fluxo-caixa">9. Fluxo de Caixa</a></li>
             </div>
             <div class="toc-column">
-                <li><a href="#milhas">8. Sistema de Milhas</a></li>
-                <li><a href="#ai-features">9. Recursos de IA</a></li>
-                <li><a href="#casais">10. Funcionalidades para Casais</a></li>
-                <li><a href="#relatorios">11. Relatórios e Análises</a></li>
-                <li><a href="#configuracoes">12. Configurações e Perfil</a></li>
-                <li><a href="#parcerias">13. Programa de Parcerias</a></li>
-                <li><a href="#solucoes">14. Solução de Problemas</a></li>
+                <li><a href="#investimentos">10. Controle de Investimentos</a></li>
+                <li><a href="#milhas">11. Sistema de Milhas</a></li>
+                <li><a href="#imposto-renda">12. Imposto de Renda (Brasil)</a></li>
+                <li><a href="#ai-features">13. Recursos de IA</a></li>
+                <li><a href="#casais">14. Funcionalidades para Casais</a></li>
+                <li><a href="#relatorios">15. Relatórios e Análises</a></li>
+                <li><a href="#configuracoes">16. Configurações e Perfil</a></li>
+                <li><a href="#parcerias">17. Programa de Parcerias</a></li>
+                <li><a href="#solucoes">18. Solução de Problemas</a></li>
             </div>
         </div>
 
@@ -792,8 +796,307 @@
             </div>
         </section>
 
+        <!-- NOVA SEÇÃO: Despesas Mensais -->
+        <section id="despesas-mensais" class="section">
+            <h2>📅 7. Despesas Mensais</h2>
+            
+            <h3>📋 Visão Geral</h3>
+            <p>O módulo de Despesas Mensais organiza todos os seus compromissos financeiros em <strong>três abas principais</strong>, facilitando o controle e a visualização de suas obrigações:</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 Despesas Atuais</h4>
+                    <p>Gastos do mês selecionado que já foram realizados. Inclui compras à vista, cartão de crédito, PIX e dinheiro.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📅 Despesas Futuras</h4>
+                    <p>Compromissos programados que ainda vão vencer. Parcelas, recorrentes e faturas pendentes.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚠️ Despesas Atrasadas</h4>
+                    <p>Despesas que passaram da data de vencimento sem pagamento. Necessitam atenção imediata.</p>
+                </div>
+            </div>
+
+            <h3>📅 Aba: Despesas Atuais</h3>
+            <p>Aqui você visualiza todas as despesas do mês corrente que já foram efetivamente pagas ou realizadas:</p>
+            <ul>
+                <li><strong>Compras à vista:</strong> Gastos imediatos em dinheiro, PIX ou débito</li>
+                <li><strong>Compras no cartão:</strong> Despesas que entraram na fatura do mês</li>
+                <li><strong>Despesas recorrentes pagas:</strong> Mensalidades e assinaturas já quitadas</li>
+                <li><strong>Filtros disponíveis:</strong> Por categoria, método de pagamento e período</li>
+            </ul>
+
+            <h3>📅 Aba: Despesas Futuras</h3>
+            <p>Lista todos os compromissos ainda não pagos, organizados por data de vencimento:</p>
+            
+            <div class="tip-box">
+                <h4>💡 Origens das Despesas Futuras</h4>
+                <p>As despesas futuras são geradas automaticamente a partir de várias fontes:</p>
+                <ul>
+                    <li><strong>Parcelas de cartão de crédito:</strong> Compras parceladas distribuídas nas próximas faturas</li>
+                    <li><strong>Despesas recorrentes:</strong> Aluguel, condomínio, luz, internet, assinaturas</li>
+                    <li><strong>Pagamentos de faturas:</strong> Vencimentos programados de cartões de crédito</li>
+                    <li><strong>Despesas manuais futuras:</strong> Compromissos adicionados manualmente</li>
+                </ul>
+            </div>
+
+            <h4>🔔 Sistema de Alertas de Vencimento</h4>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Alerta no Dia do Vencimento</h4>
+                <p>No dia do vencimento de qualquer despesa futura, um <strong>alerta visual (tooltip)</strong> aparece na página principal do sistema, chamando sua atenção para o compromisso.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Ação Rápida de Pagamento</h4>
+                <p>Diretamente pelo alerta, você pode clicar em <strong>"Pagar"</strong> para registrar o pagamento da despesa sem precisar navegar para outras telas.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Atualização Automática</h4>
+                <p>Após o pagamento, a despesa é removida da lista de futuras e registrada como despesa realizada no mês.</p>
+            </div>
+
+            <h3>⚠️ Aba: Despesas Atrasadas</h3>
+            <p>Despesas que passaram da data de vencimento sem serem pagas aparecem nesta aba com destaque especial:</p>
+
+            <div class="warning-box">
+                <h4>⚠️ Regras Importantes para Despesas Atrasadas</h4>
+                <ul>
+                    <li><strong>Permanência na lista:</strong> Despesas permanecem listadas até serem efetivamente pagas</li>
+                    <li><strong>Exibição padrão:</strong> Por padrão, são exibidas despesas com até <strong>90 dias</strong> de atraso</li>
+                    <li><strong>Histórico completo:</strong> Opção para visualizar despesas com mais de 90 dias de atraso</li>
+                    <li><strong>Indicadores visuais:</strong> Cores e ícones indicam a gravidade do atraso</li>
+                </ul>
+            </div>
+
+            <h4>✅ Como Resolver Despesas Atrasadas</h4>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Identifique a Despesa</h4>
+                <p>Na aba "Atrasadas", localize a despesa pendente. O sistema mostra há quantos dias está atrasada.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Clique em "Pagar"</h4>
+                <p>Use o botão de pagamento para registrar a quitação. Escolha a conta ou cartão utilizado.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Confirmação</h4>
+                <p>Após confirmação, a despesa é removida da lista de atrasadas e registrada como paga.</p>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Dica de Organização</h4>
+                <p>Verifique a aba de Despesas Atrasadas semanalmente para manter suas finanças em dia. Configure notificações para receber alertas antes do vencimento e evitar que despesas entrem em atraso.</p>
+            </div>
+        </section>
+
+        <!-- NOVA SEÇÃO: Despesas Recorrentes -->
+        <section id="despesas-recorrentes" class="section">
+            <h2>🔄 8. Despesas Recorrentes</h2>
+            
+            <h3>📋 O que são Despesas Recorrentes?</h3>
+            <p>Despesas recorrentes são <strong>gastos fixos que se repetem periodicamente</strong>. São compromissos financeiros regulares que você paga em intervalos definidos:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🏠 Moradia</h4>
+                    <p>Aluguel, condomínio, IPTU, água, luz, gás, internet</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Assinaturas</h4>
+                    <p>Streaming (Netflix, Spotify), softwares, academias, clubes</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🚗 Transporte</h4>
+                    <p>Financiamento de veículo, seguro, IPVA parcelado</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💼 Serviços</h4>
+                    <p>Plano de saúde, seguros, previdência privada</p>
+                </div>
+            </div>
+
+            <h3>➕ Como Adicionar uma Despesa Recorrente</h3>
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Acesse o Menu</h4>
+                <p>No menu principal, vá em "Despesas Mensais" e selecione "Gerenciar Recorrentes" ou acesse pelo botão "Nova Despesa Recorrente".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Preencha as Informações</h4>
+                <p>Informe: descrição clara, valor, categoria apropriada, método de pagamento preferido e a quem pertence (você, parceiro ou casal).</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Defina a Frequência</h4>
+                <p>Escolha a periodicidade: <strong>diária, semanal, quinzenal, mensal ou anual</strong>. Para a maioria das contas, use "Mensal".</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Configure Datas</h4>
+                <p>Defina a <strong>data de início</strong> (quando começa), <strong>data de fim</strong> (opcional, para contratos temporários) ou <strong>número de parcelas</strong> (para parcelamentos fixos).</p>
+            </div>
+
+            <h3>🔄 Fluxo de Geração Automática</h3>
+            <p>Entenda como o sistema processa suas despesas recorrentes automaticamente:</p>
+
+            <div class="tip-box">
+                <h4>📊 Diagrama do Fluxo de Despesas</h4>
+                <p style="font-family: monospace; background: #f0f0f0; padding: 15px; border-radius: 8px; text-align: center;">
+                    <strong>[Despesa Recorrente]</strong><br>
+                    ↓ <em>(sistema gera automaticamente)</em><br>
+                    <strong>[Despesa Futura]</strong> — com data de vencimento<br>
+                    ↓ <em>(dia do vencimento = alerta exibido)</em><br>
+                    ↓ <em>(não paga após vencimento)</em><br>
+                    <strong>[Despesa Atrasada]</strong> — destaque vermelho<br>
+                    ↓ <em>(pagamento efetuado)</em><br>
+                    <strong>[Despesa Concluída]</strong> — removida das listas pendentes
+                </p>
+            </div>
+
+            <h4>Como Funciona na Prática:</h4>
+            <ul>
+                <li><strong>Criação:</strong> Você cadastra "Aluguel - R$ 2.000 - Mensal - Todo dia 10"</li>
+                <li><strong>Geração:</strong> O sistema cria uma despesa futura para o dia 10 de cada mês</li>
+                <li><strong>Alerta:</strong> No dia 10, um alerta aparece lembrando do pagamento</li>
+                <li><strong>Se pagar:</strong> A despesa some e uma nova é criada para o próximo mês</li>
+                <li><strong>Se não pagar:</strong> A partir do dia 11, vai para "Despesas Atrasadas"</li>
+            </ul>
+
+            <h3>⚙️ Gerenciando Despesas Recorrentes</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>✏️ Editar Valor</h4>
+                    <p>Atualize o valor quando houver reajuste. Afeta apenas as próximas ocorrências.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⏸️ Pausar</h4>
+                    <p>Suspenda temporariamente sem excluir. Útil para assinaturas em férias.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🗑️ Excluir</h4>
+                    <p>Remove a recorrência. Despesas já geradas permanecem pendentes.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Histórico</h4>
+                    <p>Veja todas as ocorrências pagas e pendentes desta recorrência.</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Atenção ao Excluir</h4>
+                <p>Ao excluir uma despesa recorrente, as despesas futuras já geradas permanecem no sistema e precisam ser pagas ou excluídas individualmente. A exclusão apenas para de gerar novas ocorrências.</p>
+            </div>
+        </section>
+
+        <!-- NOVA SEÇÃO: Fluxo de Caixa -->
+        <section id="fluxo-caixa" class="section">
+            <h2>💹 9. Fluxo de Caixa</h2>
+            
+            <h3>📋 O que é o Fluxo de Caixa?</h3>
+            <p>O Fluxo de Caixa oferece uma <strong>visão consolidada de todas as movimentações que afetam seu saldo bancário real</strong>. É diferente do dashboard de despesas porque foca no dinheiro que efetivamente entrou e saiu das suas contas.</p>
+
+            <div class="tip-box">
+                <h4>💡 Entenda a Diferença</h4>
+                <p><strong>Dashboard de Despesas:</strong> Mostra quanto você gastou (incluindo cartão de crédito)<br>
+                <strong>Fluxo de Caixa:</strong> Mostra quanto dinheiro movimentou nas suas contas bancárias</p>
+            </div>
+
+            <h3>📊 O que Entra no Fluxo de Caixa</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Entradas</h4>
+                    <ul>
+                        <li>Salários e pró-labore</li>
+                        <li>Receitas diversas</li>
+                        <li>Transferências recebidas</li>
+                        <li>Resgates de investimentos</li>
+                        <li>Reembolsos e devoluções</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>💸 Saídas</h4>
+                    <ul>
+                        <li>Pagamentos de faturas de cartão</li>
+                        <li>Transferências enviadas</li>
+                        <li>Saques em dinheiro</li>
+                        <li>Débitos automáticos</li>
+                        <li>Aplicações em investimentos</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>❌ O que NÃO Entra no Fluxo de Caixa</h3>
+            <ul>
+                <li><strong>Compras no cartão de crédito:</strong> Afetam o limite do cartão, não o saldo bancário</li>
+                <li><strong>Parcelas futuras:</strong> São compromissos, não movimentação real de dinheiro</li>
+                <li><strong>Despesas recorrentes não pagas:</strong> Só entram quando efetivamente pagas</li>
+            </ul>
+
+            <h3>📑 Abas do Fluxo de Caixa</h3>
+            <p>O módulo é organizado em <strong>5 abas principais</strong>:</p>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Visão Geral</h4>
+                <p>Gráficos e resumo consolidado do período selecionado. Mostra entradas x saídas, saldo líquido e tendências.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Histórico</h4>
+                <p>Lista detalhada de todas as movimentações ordenadas por data. Filtros por tipo, conta e categoria.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Despesas</h4>
+                <p>Despesas consolidadas por categoria. Análise de onde seu dinheiro está sendo gasto.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Receitas</h4>
+                <p>Receitas consolidadas por fonte. Visualização de todas as entradas de dinheiro.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">5</span>Imposto de Renda</h4>
+                <p>Acesso direto ao módulo de organização do Imposto de Renda (detalhado na seção 12).</p>
+            </div>
+
+            <h3>🔍 Filtros Disponíveis</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📅 Período</h4>
+                    <p>Mensal, Trimestral, Semestral, Anual ou intervalo personalizado</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📆 Ano</h4>
+                    <p>Selecione o ano específico para análises anuais</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏦 Conta</h4>
+                    <p>Filtre por conta bancária específica ou veja todas consolidadas</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📥 Exportação</h4>
+                    <p>Exporte relatórios em PDF ou Excel para análises externas</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Quando Usar o Fluxo de Caixa</h4>
+                <p>Use o Fluxo de Caixa para:</p>
+                <ul>
+                    <li>Verificar quanto dinheiro efetivamente entrou e saiu no mês</li>
+                    <li>Preparar dados para declaração de Imposto de Renda</li>
+                    <li>Analisar tendências de longo prazo</li>
+                    <li>Projetar saldos futuros com base no histórico</li>
+                </ul>
+            </div>
+        </section>
+
         <section id="investimentos" class="section">
-            <h2>📈 7. Controle de Investimentos</h2>
+            <h2>📈 10. Controle de Investimentos</h2>
             
             <h3>💼 Cadastrando Investimentos</h3>
             <div class="step-by-step">
@@ -878,7 +1181,7 @@
         </section>
 
         <section id="milhas" class="section">
-            <h2>✈️ 8. Sistema de Milhas</h2>
+            <h2>✈️ 11. Sistema de Milhas</h2>
             
             <h3>🎯 Configuração de Programas</h3>
             <div class="step-by-step">
@@ -971,8 +1274,152 @@
             </div>
         </section>
 
+        <!-- NOVA SEÇÃO: Imposto de Renda Brasil -->
+        <section id="imposto-renda" class="section">
+            <h2>🏛️ 12. Imposto de Renda (Brasil)</h2>
+            
+            <div class="warning-box">
+                <h4>🇧🇷 Versão Brasil</h4>
+                <p><strong>Esta funcionalidade está completa apenas para o Brasil.</strong> Versões para outros países (Estados Unidos, Portugal, Espanha e outros) estão <strong>em construção</strong> e serão lançadas em breve.</p>
+            </div>
+            
+            <h3>📋 O que é o Módulo de Imposto de Renda?</h3>
+            <p>O módulo de Imposto de Renda é uma <strong>ferramenta de organização</strong> que ajuda você a preparar toda a documentação necessária para sua declaração anual. Ele <strong>não substitui um contador</strong>, mas facilita muito o processo de coleta e organização de dados.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 Organização Automática</h4>
+                    <p>Seus dados financeiros são automaticamente categorizados para fins de declaração de IR.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📁 Gestão de Documentos</h4>
+                    <p>Upload e armazenamento de comprovantes organizados por categoria dedutível.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✅ Checklist de Pendências</h4>
+                    <p>Lista inteligente do que falta para completar sua declaração.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📥 Exportação Completa</h4>
+                    <p>PDF e planilha prontos para entregar ao contador ou usar na declaração.</p>
+                </div>
+            </div>
+
+            <h3>📑 Seções do Módulo de IR</h3>
+            
+            <div class="step-by-step">
+                <h4><span class="step-number">1</span>Identificação</h4>
+                <p>Informações pessoais para a declaração: CPF do titular e do cônjuge/parceiro (para declarações conjuntas). Edite diretamente clicando no botão de edição.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">2</span>Rendimentos Tributáveis</h4>
+                <p>Receitas sujeitas a imposto de renda. Inclui: salários, pró-labore, aluguéis recebidos, rendimentos de trabalho autônomo, pensões, aposentadorias e outros rendimentos tributáveis.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">3</span>Rendimentos Isentos</h4>
+                <p>Receitas que não são tributadas. Inclui: rendimentos de poupança, lucros e dividendos recebidos, indenizações, herança, doações e outros rendimentos isentos por lei.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">4</span>Despesas Dedutíveis</h4>
+                <p>Gastos que reduzem a base de cálculo do imposto:</p>
+                <ul>
+                    <li><strong>Saúde:</strong> Consultas, exames, internações, planos de saúde (sem limite)</li>
+                    <li><strong>Educação:</strong> Mensalidades escolares e universitárias (limite de R$ 3.561,50/pessoa)</li>
+                    <li><strong>Previdência Privada (PGBL):</strong> Até 12% da renda bruta tributável</li>
+                    <li><strong>Pensão Alimentícia:</strong> Valores pagos judicialmente</li>
+                    <li><strong>Dependentes:</strong> R$ 2.275,08 por dependente</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">5</span>Bens e Direitos</h4>
+                <p>Patrimônio a declarar: imóveis, veículos, investimentos, participações societárias, saldos bancários acima de R$ 140, aplicações financeiras e outros bens de valor.</p>
+            </div>
+
+            <div class="step-by-step">
+                <h4><span class="step-number">6</span>Pendências</h4>
+                <p>Lista de itens que precisam de atenção antes de finalizar:</p>
+                <ul>
+                    <li><strong>Transação sem categoria:</strong> Clique em "Resolver" para categorizar</li>
+                    <li><strong>Receita alta não classificada:</strong> Defina se é tributável ou isento</li>
+                    <li><strong>Documento faltando:</strong> Faça upload do comprovante necessário</li>
+                </ul>
+            </div>
+
+            <h3>📎 Upload de Comprovantes</h3>
+            <p>Para cada despesa dedutível, você pode anexar documentos comprobatórios:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📄 Formatos Aceitos</h4>
+                    <p>PDF, JPG, PNG até 10MB por arquivo</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📝 Informações do Documento</h4>
+                    <p>Nome do prestador, CPF/CNPJ, valor e observações</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🗂️ Organização Automática</h4>
+                    <p>Documentos são organizados por categoria dedutível</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔒 Armazenamento Seguro</h4>
+                    <p>Criptografia e backup automático dos arquivos</p>
+                </div>
+            </div>
+
+            <h3>📥 Exportação de Dados</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📑 PDF Completo</h4>
+                    <p>Relatório detalhado com todas as seções, valores e lista de documentos anexados. Ideal para entregar ao contador.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Planilha Excel</h4>
+                    <p>Dados organizados em abas separadas por categoria. Facilita importação em outros sistemas.</p>
+                </div>
+            </div>
+
+            <h3>📋 Tipos de Declaração</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📝 Declaração Simplificada</h4>
+                    <p>Desconto padrão de 20% sobre rendimentos tributáveis (limite de R$ 16.754,34). Recomendada quando suas deduções são baixas.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📋 Declaração Completa</h4>
+                    <p>Soma de todas as deduções comprovadas. Recomendada quando você tem muitas despesas dedutíveis (saúde, educação, etc.).</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <h4>💡 Qual Modelo Escolher?</h4>
+                <p>O sistema calcula automaticamente qual modelo é mais vantajoso para você. Na seção de exportação, você verá uma sugestão baseada nos seus dados reais. Geralmente, a declaração completa vale a pena quando suas deduções ultrapassam o limite do desconto simplificado.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Aviso Importante</h4>
+                <p><strong>Este módulo é uma ferramenta de organização e não constitui assessoria contábil ou tributária.</strong></p>
+                <p>Para a declaração oficial do Imposto de Renda:</p>
+                <ul>
+                    <li>Consulte um contador qualificado</li>
+                    <li>Use o programa oficial da Receita Federal</li>
+                    <li>Verifique os valores com os informes de rendimentos oficiais</li>
+                    <li>Guarde documentos originais por 5 anos</li>
+                </ul>
+            </div>
+
+            <div class="premium-box">
+                <h4>⭐ Recursos Premium de IR</h4>
+                <p>Análise automática de melhor modelo de declaração, alertas de pendências, OCR para extração automática de dados de documentos, e sincronização com dados de investimentos para cálculo de IR sobre operações em bolsa.</p>
+            </div>
+        </section>
+
         <section id="converter" class="section">
-            <h2>📄 9. Converter de Extratos (Premium)</h2>
+            <h2>📄 Converter de Extratos (Premium)</h2>
             
             <div class="premium-box">
                 <h4>⭐ Funcionalidade Exclusiva Premium</h4>
@@ -1047,7 +1494,7 @@
         </section>
 
         <section id="ai-features" class="section">
-            <h2>🤖 10. Recursos de IA</h2>
+            <h2>🤖 13. Recursos de IA</h2>
             
             <h3>💡 Recomendações Personalizadas</h3>
             <p>Nossa IA financeira analisa seus dados para fornecer insights valiosos:</p>
@@ -1145,7 +1592,7 @@
         </section>
 
         <section id="casais" class="section">
-            <h2>👫 10. Funcionalidades para Casais</h2>
+            <h2>👫 14. Funcionalidades para Casais</h2>
             
             <h3>🤝 Convite e Configuração</h3>
             <div class="step-by-step">
@@ -1254,7 +1701,7 @@
         </section>
 
         <section id="relatorios" class="section">
-            <h2>📊 11. Relatórios e Análises</h2>
+            <h2>📊 15. Relatórios e Análises</h2>
             
             <h3>📈 Relatórios Básicos</h3>
             <div class="feature-grid">
@@ -1357,7 +1804,7 @@
         </section>
 
         <section id="configuracoes" class="section">
-            <h2>⚙️ 12. Configurações e Perfil</h2>
+            <h2>⚙️ 16. Configurações e Perfil</h2>
             
             <h3>👤 Configurações Pessoais</h3>
             <div class="step-by-step">
@@ -1470,7 +1917,7 @@
         </section>
 
         <section id="parcerias" class="section">
-            <h2>🤝 13. Programa de Parcerias</h2>
+            <h2>🤝 17. Programa de Parcerias</h2>
             
             <h3>💼 Sistema de Afiliados</h3>
             <p>Monetize sua rede compartilhando o Couples Financials:</p>
@@ -1536,7 +1983,7 @@
         </section>
 
         <section id="solucoes" class="section">
-            <h2>🛠️ 14. Solução de Problemas</h2>
+            <h2>🛠️ 18. Solução de Problemas</h2>
             
             <h3>❓ Perguntas Frequentes (FAQ)</h3>
             <div class="feature-grid">
