@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Download, Sparkles, MessageSquare } from "lucide-react";
+import { Download, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSelector from "@/components/landing/LanguageSelector";
 import heroCouple from "@/assets/hero-couple.jpg";
@@ -11,7 +11,6 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import AIBetaModal from "@/components/landing/AIBetaModal";
 import { trackCtaClick } from "@/utils/analytics";
-import TestimonialFormModal from "@/components/landing/TestimonialFormModal";
 const HeroSection = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -19,7 +18,6 @@ const HeroSection = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [aiBetaOpen, setAiBetaOpen] = useState(false);
-  const [testimonialOpen, setTestimonialOpen] = useState(false);
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     toast({
@@ -44,15 +42,6 @@ const HeroSection = () => {
         <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageSelector />
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="bg-white/10 text-white border-white/30 hover:bg-white/20 gap-1"
-              onClick={() => setTestimonialOpen(true)}
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('testimonials.submitButton')}</span>
-            </Button>
             <Button asChild size="sm" variant="outline" className="bg-white text-black border-white hover:bg-gray-100">
               <Link to="/sobre-nos">{t('nav.aboutUs')}</Link>
             </Button>
@@ -61,8 +50,6 @@ const HeroSection = () => {
             </Button>
           </div>
         </div>
-        
-        <TestimonialFormModal open={testimonialOpen} onOpenChange={setTestimonialOpen} />
         
         {/* Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
