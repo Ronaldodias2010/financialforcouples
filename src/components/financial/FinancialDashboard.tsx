@@ -36,6 +36,8 @@ import { PremiumReminderCard } from "@/components/ui/premium-reminder-card";
 import { usePremiumReminder } from "@/hooks/usePremiumReminder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodayFutureIncomes } from "@/hooks/useTodayFutureIncomes";
+import { useTodayFutureExpenses } from "@/hooks/useTodayFutureExpenses";
+import { TodayExpensesAlert } from "./future-expenses/TodayExpensesAlert";
 
 interface Transaction {
   id: string;
@@ -60,6 +62,7 @@ export const FinancialDashboard = () => {
   const { shouldShow: shouldShowPremiumReminder, dismissReminder } = usePremiumReminder();
   const { isInstalled } = usePWA();
   const { count: todayIncomesCount } = useTodayFutureIncomes();
+  const { count: todayExpensesCount } = useTodayFutureExpenses();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
@@ -247,6 +250,9 @@ export const FinancialDashboard = () => {
       case "dashboard":
         return (
           <>
+            {/* Today Expenses Alert */}
+            <TodayExpensesAlert viewMode={isPartOfCouple ? 'couple' : 'individual'} />
+            
             {/* Financial Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FinancialCard

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { usePartnerNames } from '@/hooks/usePartnerNames';
@@ -8,10 +8,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { ExportUtils } from './ExportUtils';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Clock, Filter } from 'lucide-react';
 import { PayFutureExpenseModal } from './PayFutureExpenseModal';
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
 import { parseLocalDate } from '@/utils/date';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface OverdueExpense {
   id: string;
@@ -43,6 +51,18 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
   const [loading, setLoading] = useState(true);
   const [selectedExpense, setSelectedExpense] = useState<OverdueExpense | null>(null);
   const [showPayModal, setShowPayModal] = useState(false);
+  const [periodFilter, setPeriodFilter] = useState<'90days' | 'all'>('90days');
+
+  // Filter expenses based on period selection
+  const filteredExpenses = useMemo(() => {
+    if (periodFilter === 'all') return overdueExpenses;
+    return overdueExpenses.filter(expense => expense.daysOverdue <= 90);
+  }, [overdueExpenses, periodFilter]);
+
+  // Count expenses older than 90 days
+  const expensesOver90Days = useMemo(() => {
+    return overdueExpenses.filter(expense => expense.daysOverdue > 90);
+  }, [overdueExpenses]);
 
   useEffect(() => {
     if (user) {
@@ -258,12 +278,18 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
     t('monthlyExpenses.performedBy'),
   ];
 
-  const totalOverdue = overdueExpenses.reduce((sum, exp) => {
+  // Calculate totals based on filtered expenses
+  const totalOverdue = filteredExpenses.reduce((sum, exp) => {
     return sum + convertCurrency(exp.amount, exp.currency as any, 'BRL');
   }, 0);
 
-  // Group expenses by month
-  const groupedExpenses = overdueExpenses.reduce((acc, expense) => {
+  // Calculate total for expenses over 90 days
+  const totalOver90Days = expensesOver90Days.reduce((sum, exp) => {
+    return sum + convertCurrency(exp.amount, exp.currency as any, 'BRL');
+  }, 0);
+
+  // Group expenses by month (using filtered expenses)
+  const groupedExpenses = filteredExpenses.reduce((acc, expense) => {
     const date = new Date(expense.dueDate);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const monthLabel = date.toLocaleDateString(language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : 'en-US', {
@@ -300,7 +326,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
     );
   }
 
-  const formattedData = overdueExpenses.map(expense => ({
+  const formattedData = filteredExpenses.map(expense => ({
     id: expense.id,
     description: expense.description,
     amount: expense.amount,
@@ -313,36 +339,81 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
   return (
     <>
       <div className="space-y-4">
-        {/* Summary Card */}
+        {/* Filter and Summary Card */}
         <Card className="p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-destructive" />
-                {t('overdueExpenses.totalOverdue')}
-              </h3>
-              <p className="text-3xl font-bold text-destructive mt-2">
-                {formatCurrency(totalOverdue, 'BRL')}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {overdueExpenses.length} {t('overdueExpenses.expensesCount')}
-              </p>
+          <div className="flex flex-col gap-4">
+            {/* Period Filter */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3">
+                <Filter className="h-5 w-5 text-muted-foreground" />
+                <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as '90days' | 'all')}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="90days">{t('overdueExpenses.filter.90days')}</SelectItem>
+                    <SelectItem value="all">{t('overdueExpenses.filter.all')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <ExportUtils
+                data={formattedData}
+                filename={`${t('overdueExpenses.title')}`}
+                headers={exportHeaders}
+                formatRowForCSV={formatRowForCSV}
+                formatRowForPDF={formatRowForPDF}
+                title={t('overdueExpenses.pdfTitle')}
+                additionalInfo={exportAdditionalInfo}
+                disabled={filteredExpenses.length === 0}
+              />
             </div>
-            <ExportUtils
-              data={formattedData}
-              filename={`${t('overdueExpenses.title')}`}
-              headers={exportHeaders}
-              formatRowForCSV={formatRowForCSV}
-              formatRowForPDF={formatRowForPDF}
-              title={t('overdueExpenses.pdfTitle')}
-              additionalInfo={exportAdditionalInfo}
-              disabled={overdueExpenses.length === 0}
-            />
+
+            {/* Summary Info */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  {t('overdueExpenses.totalOverdue')}
+                </h3>
+                <p className="text-3xl font-bold text-destructive mt-2">
+                  {formatCurrency(totalOverdue, 'BRL')}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {filteredExpenses.length} {t('overdueExpenses.expensesCount')}
+                </p>
+              </div>
+
+              {/* Alert for expenses > 90 days when in 90days filter */}
+              {periodFilter === '90days' && expensesOver90Days.length > 0 && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                  <div className="flex items-center gap-2 text-amber-600">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      {t('overdueExpenses.olderThan90')}
+                    </span>
+                    <Badge variant="secondary" className="bg-amber-500/20 text-amber-700">
+                      {expensesOver90Days.length}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(totalOver90Days, 'BRL')} {t('overdueExpenses.hiddenExpenses')}
+                  </p>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="p-0 h-auto text-amber-600 mt-1"
+                    onClick={() => setPeriodFilter('all')}
+                  >
+                    {t('overdueExpenses.viewAll')}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </Card>
 
         {/* Expenses List Grouped by Month */}
-        {overdueExpenses.length === 0 ? (
+        {filteredExpenses.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-muted-foreground">{t('overdueExpenses.noOverdueExpenses')}</p>
           </Card>

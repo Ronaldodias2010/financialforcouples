@@ -350,6 +350,19 @@ const translations = {
     'futureIncomes.todayAlert.totalExpected': 'Total Esperado',
     'futureIncomes.todayAlert.confirmButton': 'Confirmar',
     'futureIncomes.todayAlert.badge': 'Hoje',
+    
+    // Future Expenses Today Alert
+    'futureExpenses.todayAlert.title': 'Despesas com Vencimento Hoje!',
+    'futureExpenses.todayAlert.description': 'Você tem despesas vencendo hoje. Efetue o pagamento para evitar atrasos.',
+    'futureExpenses.todayAlert.totalDue': 'Total a Pagar',
+    
+    // Overdue Expenses Filters
+    'overdueExpenses.filter.90days': 'Últimos 90 dias',
+    'overdueExpenses.filter.all': 'Todas (incluindo > 90 dias)',
+    'overdueExpenses.olderThan90': 'Despesas com mais de 90 dias',
+    'overdueExpenses.hiddenExpenses': 'em despesas ocultas',
+    'overdueExpenses.viewAll': 'Ver todas',
+    
     'nav.profile': 'Perfil',
     'nav.investments': 'Investimentos',
     'nav.mileage': 'Milhagem',
@@ -2371,6 +2384,19 @@ const translations = {
     'futureIncomes.todayAlert.totalExpected': 'Total Expected',
     'futureIncomes.todayAlert.confirmButton': 'Confirm',
     'futureIncomes.todayAlert.badge': 'Today',
+    
+    // Future Expenses Today Alert
+    'futureExpenses.todayAlert.title': 'Expenses Due Today!',
+    'futureExpenses.todayAlert.description': 'You have expenses due today. Make the payment to avoid delays.',
+    'futureExpenses.todayAlert.totalDue': 'Total Due',
+    
+    // Overdue Expenses Filters
+    'overdueExpenses.filter.90days': 'Last 90 days',
+    'overdueExpenses.filter.all': 'All (including > 90 days)',
+    'overdueExpenses.olderThan90': 'Expenses older than 90 days',
+    'overdueExpenses.hiddenExpenses': 'in hidden expenses',
+    'overdueExpenses.viewAll': 'View all',
+    
     'nav.profile': 'Profile',
     'nav.investments': 'Investments',
     'nav.mileage': 'Mileage',
@@ -4395,6 +4421,19 @@ const translations = {
     'futureIncomes.todayAlert.totalExpected': 'Total Esperado',
     'futureIncomes.todayAlert.confirmButton': 'Confirmar',
     'futureIncomes.todayAlert.badge': 'Hoy',
+    
+    // Future Expenses Today Alert
+    'futureExpenses.todayAlert.title': '¡Gastos que Vencen Hoy!',
+    'futureExpenses.todayAlert.description': 'Tienes gastos que vencen hoy. Realiza el pago para evitar retrasos.',
+    'futureExpenses.todayAlert.totalDue': 'Total a Pagar',
+    
+    // Overdue Expenses Filters
+    'overdueExpenses.filter.90days': 'Últimos 90 días',
+    'overdueExpenses.filter.all': 'Todos (incluyendo > 90 días)',
+    'overdueExpenses.olderThan90': 'Gastos con más de 90 días',
+    'overdueExpenses.hiddenExpenses': 'en gastos ocultos',
+    'overdueExpenses.viewAll': 'Ver todos',
+    
     'nav.profile': 'Perfil',
     'nav.investments': 'Inversiones',
     'nav.mileage': 'Millaje',
