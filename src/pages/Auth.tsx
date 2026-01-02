@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard, Eye, EyeOff, Mail } from 'lucide-react';
+import { Loader2, CreditCard, Eye, EyeOff, Mail, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PasswordValidation, PasswordMatchValidation, validatePassword } from '@/components/ui/PasswordValidation';
@@ -34,11 +34,23 @@ export default function Auth() {
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
 
+  // Listen for auth state changes (captures OAuth completion)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Redirect to callback to show 2FA wizard
+        window.location.href = '/auth/callback';
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   useEffect(() => {
     // Verificar se já está logado
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        window.location.href = '/app';
+        // Redirect to callback to check 2FA status
+        window.location.href = '/auth/callback';
       }
     });
 
@@ -470,6 +482,14 @@ export default function Auth() {
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t('auth.signIn')}
                 </Button>
+                {/* 2FA Recommendation Alert */}
+                <Alert className="border-blue-500/20 bg-blue-500/5">
+                  <Shield className="h-4 w-4 text-blue-500" />
+                  <AlertDescription className="text-sm text-blue-600 dark:text-blue-400">
+                    {t('auth.2faRecommendation')}
+                  </AlertDescription>
+                </Alert>
+                
                 <Button 
                   type="button" 
                   variant="outline" 

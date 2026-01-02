@@ -950,6 +950,14 @@ const translations = {
     'auth.resetEmailDesc': 'Verifique sua caixa de entrada.',
     'auth.resetEmailErrorTitle': 'Erro ao enviar email',
     'auth.resetEmailErrorDesc': 'Tente novamente mais tarde.',
+    'auth.2faRecommendation': 'Após entrar, recomendamos ativar a verificação em duas etapas (2FA) para proteger sua conta.',
+    
+    // 2FA Reset Prompt
+    '2fa.resetPrompt.title': 'Lembrete de 2FA',
+    '2fa.resetPrompt.description': 'Caso tenha dispensado o aviso de 2FA e queira vê-lo novamente.',
+    '2fa.resetPrompt.button': 'Reexibir lembrete',
+    '2fa.resetPrompt.success.title': 'Lembrete reativado',
+    '2fa.resetPrompt.success.description': 'O aviso de 2FA será exibido no próximo login.',
     
     // Partnership
     'partnership.form.paymentInfoLabel': 'Para compensações financeiras adicione seu PIX ou sua melhor C/C *',
@@ -3143,6 +3151,14 @@ const translations = {
     'auth.resetEmailDesc': 'Check your inbox.',
     'auth.resetEmailErrorTitle': 'Error sending email',
     'auth.resetEmailErrorDesc': 'Please try again later.',
+    'auth.2faRecommendation': 'After signing in, we recommend enabling two-factor authentication (2FA) to protect your account.',
+    
+    // 2FA Reset Prompt
+    '2fa.resetPrompt.title': '2FA Reminder',
+    '2fa.resetPrompt.description': 'If you dismissed the 2FA notice and want to see it again.',
+    '2fa.resetPrompt.button': 'Show reminder again',
+    '2fa.resetPrompt.success.title': 'Reminder reactivated',
+    '2fa.resetPrompt.success.description': 'The 2FA notice will be shown on your next login.',
     
     // Partnership
     'partnership.form.paymentInfoLabel': 'For financial compensation add your ZELLE or best checking account *',
@@ -5418,6 +5434,14 @@ const translations = {
     'auth.resetEmailDesc': 'Revisa tu bandeja de entrada.',
     'auth.resetEmailErrorTitle': 'Error al enviar email',
     'auth.resetEmailErrorDesc': 'Inténtalo nuevamente más tarde.',
+    'auth.2faRecommendation': 'Después de iniciar sesión, recomendamos activar la verificación en dos pasos (2FA) para proteger su cuenta.',
+    
+    // 2FA Reset Prompt
+    '2fa.resetPrompt.title': 'Recordatorio de 2FA',
+    '2fa.resetPrompt.description': 'Si descartó el aviso de 2FA y desea verlo nuevamente.',
+    '2fa.resetPrompt.button': 'Mostrar recordatorio',
+    '2fa.resetPrompt.success.title': 'Recordatorio reactivado',
+    '2fa.resetPrompt.success.description': 'El aviso de 2FA se mostrará en su próximo inicio de sesión.',
     
     // Partnership
     'partnership.form.paymentInfoLabel': 'Para compensación financiera añade tu ZELLE o mejor cuenta corriente *',
