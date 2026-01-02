@@ -11,10 +11,17 @@ import PDFConverterSection from "@/components/landing/PDFConverterSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
 import Footer from "@/components/landing/Footer";
+import IncomeTaxSection from "@/components/landing/IncomeTaxSection";
 import { useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import "@/styles/landing-theme.css";
 
 const Landing = () => {
+  const { language, inBrazil } = useLanguage();
+  
+  // Show Income Tax section only for Brazilian users or Portuguese language
+  const showIncomeTaxSection = language === 'pt' || inBrazil;
+
   useEffect(() => {
     // Force light mode for landing page
     document.documentElement.classList.remove('dark');
@@ -32,6 +39,7 @@ const Landing = () => {
         <SmartMileageSection />
         <AIRecommendationsSection />
         <PDFConverterSection />
+        {showIncomeTaxSection && <IncomeTaxSection />}
         <SecuritySection />
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-muted/30 h-32"></div>

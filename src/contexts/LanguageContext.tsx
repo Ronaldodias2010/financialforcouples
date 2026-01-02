@@ -2240,6 +2240,27 @@ const translations = {
     '2fa.optout.canEnable': 'Você pode ativar o 2FA a qualquer momento nas Configurações de Segurança.',
     '2fa.optout.goBack': 'Voltar e ativar 2FA',
     '2fa.optout.confirm': 'Continuar sem 2FA',
+    
+    // Landing - Income Tax Section (Brazil only)
+    'landing.incomeTax.badge': '🇧🇷 Exclusivo Brasil',
+    'landing.incomeTax.title': 'Declaração de Imposto de Renda Simplificada',
+    'landing.incomeTax.subtitle': 'Organize suas finanças durante o ano e facilite o preenchimento da sua declaração de IRPF com dados prontos e categorizados.',
+    'landing.incomeTax.feature1.title': 'Categorização Fiscal Automática',
+    'landing.incomeTax.feature1.description': 'Suas despesas são organizadas automaticamente nas categorias aceitas pela Receita Federal.',
+    'landing.incomeTax.feature2.title': 'Exportação para IRPF',
+    'landing.incomeTax.feature2.description': 'Gere relatórios prontos para auxiliar no preenchimento do programa da Receita Federal.',
+    'landing.incomeTax.feature3.title': 'Despesas Dedutíveis',
+    'landing.incomeTax.feature3.description': 'Acompanhe gastos com saúde, educação e outras despesas que reduzem seu imposto.',
+    'landing.incomeTax.feature4.title': 'Relatório para Contador',
+    'landing.incomeTax.feature4.description': 'Envie seus dados organizados para seu contador com apenas um clique.',
+    'landing.incomeTax.benefitsTitle': 'Por que usar nossa ferramenta de IR?',
+    'landing.incomeTax.benefit1': 'Economize horas na declaração com dados já organizados',
+    'landing.incomeTax.benefit2': 'Não perca deduções por falta de organização',
+    'landing.incomeTax.benefit3': 'Evite erros e inconsistências na sua declaração',
+    'landing.incomeTax.benefit4': 'Tenha controle total dos seus rendimentos e despesas',
+    'landing.incomeTax.tip.title': 'Dica',
+    'landing.incomeTax.tip.description': 'Comece a organizar suas finanças agora e tenha tudo pronto para a declaração de 2026!',
+    'landing.incomeTax.cta': 'Comece a Organizar seu IRPF',
   },
   
    en: {
