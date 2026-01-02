@@ -570,7 +570,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'milhas',
-      title: '8. Sistema de Milhas',
+      title: '11. Sistema de Milhas',
       icon: '✈️',
       intro: 'Acompanhe e otimize suas milhas aéreas com estratégias inteligentes de acúmulo e resgate.',
       subSections: [
@@ -640,8 +640,75 @@ const getTutorialContentPT = (): TutorialContent => ({
       ]
     },
     {
+      id: 'imposto-renda',
+      title: '12. Imposto de Renda (Brasil)',
+      icon: '📋',
+      intro: 'Módulo completo para organizar sua declaração anual do Imposto de Renda. Versão Brasil disponível - demais versões em construção.',
+      subSections: [
+        {
+          title: '',
+          warningBox: {
+            title: 'Aviso sobre Versões',
+            content: 'Este módulo está disponível apenas para declaração no modelo brasileiro (Receita Federal). Versões para outros países (EUA, Europa, etc.) estão em construção.'
+          }
+        },
+        {
+          title: 'O que é o Módulo de IR',
+          content: 'Ferramenta para organizar documentos e valores para sua declaração anual do Imposto de Renda. Centraliza todas as informações necessárias em um único lugar.'
+        },
+        {
+          title: 'Seções do Módulo',
+          features: [
+            { title: 'Identificação', desc: 'CPF do titular e cônjuge, dados pessoais e informações cadastrais.' },
+            { title: 'Rendimentos Tributáveis', desc: 'Salários, pró-labore, aluguéis recebidos e outras rendas sujeitas à tributação.' },
+            { title: 'Rendimentos Isentos', desc: 'Poupança, dividendos, lucros e outros rendimentos não tributáveis.' },
+            { title: 'Despesas Dedutíveis', desc: 'Saúde, educação, previdência com upload de comprovantes para organização.' },
+            { title: 'Bens e Direitos', desc: 'Imóveis, veículos, investimentos e outros patrimônios a declarar.' },
+            { title: 'Pendências', desc: 'Itens sem categoria, documentos faltando ou informações incompletas.' },
+          ]
+        },
+        {
+          title: 'Sistema de Pendências',
+          steps: [
+            { num: 1, title: 'Identificação Automática', desc: 'O sistema identifica automaticamente itens que precisam de atenção ou correção.' },
+            { num: 2, title: 'Resolver Pendências', desc: 'Botão para resolver cada pendência diretamente, com sugestões de ação.' },
+            { num: 3, title: 'Tipos de Pendência', desc: 'Sem categoria, receita não classificada, documento faltando, valor inconsistente.' },
+          ]
+        },
+        {
+          title: 'Exportação de Dados',
+          features: [
+            { title: 'Relatório PDF', desc: 'Relatório completo formatado para entregar ao seu contador.' },
+            { title: 'Planilha Excel', desc: 'Dados organizados em planilha para preenchimento da declaração oficial.' },
+          ]
+        },
+        {
+          title: 'Tipos de Declaração',
+          bullets: [
+            'Simplificada: Desconto padrão de 20% sobre rendimentos tributáveis (limite R$ 16.754,34)',
+            'Completa: Soma de todas as deduções comprovadas sem limite de valor',
+            'O sistema sugere automaticamente a opção mais vantajosa baseado nos seus dados',
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Aviso Importante',
+            content: 'Este módulo é uma ferramenta de organização. Para a declaração oficial, consulte um contador ou utilize o programa oficial da Receita Federal. Não nos responsabilizamos por informações incorretas na declaração.'
+          }
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dica de Uso',
+            content: 'Mantenha seus documentos organizados ao longo do ano. Use o upload de comprovantes para despesas dedutíveis. Exporte o relatório em PDF para seu contador revisar antes da declaração oficial.'
+          }
+        }
+      ]
+    },
+    {
       id: 'converter',
-      title: '9. Converter de Extratos',
+      title: '13. Converter de Extratos',
       icon: '📄',
       intro: 'Importe e processe extratos bancários automaticamente com tecnologia OCR e IA.',
       subSections: [
@@ -699,7 +766,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'ia',
-      title: '10. Recursos de IA',
+      title: '14. Recursos de IA',
       icon: '🤖',
       intro: 'Use inteligência artificial para obter insights financeiros personalizados e automatizar tarefas.',
       subSections: [
@@ -776,7 +843,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'casais',
-      title: '11. Funcionalidades para Casais',
+      title: '15. Funcionalidades para Casais',
       icon: '👫',
       intro: 'Ferramentas especiais para gestão financeira colaborativa entre casais.',
       subSections: [
@@ -847,7 +914,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'relatorios',
-      title: '12. Relatórios e Análises',
+      title: '16. Relatórios e Análises',
       icon: '📊',
       intro: 'Visualize relatórios detalhados e análises das suas finanças para tomar melhores decisões.',
       subSections: [
@@ -913,7 +980,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'configuracoes',
-      title: '13. Configurações e Perfil',
+      title: '17. Configurações e Perfil',
       icon: '⚙️',
       intro: 'Personalize sua experiência e configure preferências de segurança e privacidade.',
       subSections: [
@@ -978,7 +1045,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'parcerias',
-      title: '14. Programa de Parcerias',
+      title: '18. Programa de Parcerias',
       icon: '🤝',
       intro: 'Monetize sua rede compartilhando o Couples Financials e ganhe comissões.',
       subSections: [
@@ -1034,7 +1101,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'solucoes',
-      title: '15. Solução de Problemas',
+      title: '19. Solução de Problemas',
       icon: '🛠️',
       intro: 'Encontre respostas para problemas comuns e saiba como obter suporte.',
       subSections: [
@@ -1115,45 +1182,145 @@ const getTutorialContentPT = (): TutorialContent => ({
   }
 });
 
-// English content
-const getTutorialContentEN = (): TutorialContent => ({
-  title: 'Complete Tutorial',
-  subtitle: 'Couples Financials',
-  tagline: 'The ultimate guide to mastering your finances as a couple',
-  tableOfContents: 'Table of Contents',
-  page: 'Page',
-  sections: getTutorialContentPT().sections.map(section => ({
-    ...section,
-    // Keep same structure but note this should be translated
-    // For brevity, using PT content - in production would have full EN translation
-  })),
-  footer: {
-    support: 'Support',
-    email: 'support@couplesfinancials.com',
-    website: 'www.couplesfinancials.com',
-    copyright: '© 2024 Couples Financials. All rights reserved.'
-  }
-});
+// English content - Full translation
+const getTutorialContentEN = (): TutorialContent => {
+  const ptContent = getTutorialContentPT();
+  
+  // Translation map for section titles
+  const sectionTitleMap: Record<string, string> = {
+    '1. Introdução': '1. Introduction',
+    '2. Primeiros Passos': '2. Getting Started',
+    '3. Dashboard Financeiro': '3. Financial Dashboard',
+    '4. Gerenciando Transações': '4. Managing Transactions',
+    '5. Gestão de Contas Bancárias': '5. Bank Account Management',
+    '6. Gestão de Cartões': '6. Card Management',
+    '7. Despesas Mensais': '7. Monthly Expenses',
+    '8. Despesas Recorrentes': '8. Recurring Expenses',
+    '9. Fluxo de Caixa': '9. Cash Flow',
+    '10. Controle de Investimentos': '10. Investment Management',
+    '11. Sistema de Milhas': '11. Mileage System',
+    '12. Imposto de Renda (Brasil)': '12. Income Tax (Brazil)',
+    '13. Converter de Extratos': '13. Statement Converter',
+    '14. Recursos de IA': '14. AI Features',
+    '15. Funcionalidades para Casais': '15. Couple Features',
+    '16. Relatórios e Análises': '16. Reports and Analytics',
+    '17. Configurações e Perfil': '17. Settings and Profile',
+    '18. Programa de Parcerias': '18. Partnership Program',
+    '19. Solução de Problemas': '19. Troubleshooting',
+  };
 
-// Spanish content
-const getTutorialContentES = (): TutorialContent => ({
-  title: 'Tutorial Completo',
-  subtitle: 'Couples Financials',
-  tagline: 'La guía definitiva para dominar tus finanzas en pareja',
-  tableOfContents: 'Índice',
-  page: 'Página',
-  sections: getTutorialContentPT().sections.map(section => ({
-    ...section,
-    // Keep same structure but note this should be translated
-    // For brevity, using PT content - in production would have full ES translation
-  })),
-  footer: {
-    support: 'Soporte',
-    email: 'soporte@couplesfinancials.com',
-    website: 'www.couplesfinancials.com',
-    copyright: '© 2024 Couples Financials. Todos los derechos reservados.'
-  }
-});
+  // Translation map for section intros
+  const sectionIntroMap: Record<string, string> = {
+    'introducao': 'Couples Financials is a complete financial management platform designed especially for couples who want to organize their finances collaboratively and intelligently.',
+    'primeiros-passos': 'Follow the steps below to set up your account and start using the platform.',
+    'dashboard': 'The dashboard is the control center of your finances, presenting essential information visually and intuitively.',
+    'transacoes': 'Record and organize all your financial transactions simply and efficiently.',
+    'contas': 'Manage all your bank accounts in one place with precise balance control.',
+    'cartoes': 'Complete control of your credit cards with invoice management, limits, and payments.',
+    'despesas-mensais': 'Complete view of monthly expenses organized by status: current, future, and overdue.',
+    'despesas-recorrentes': 'Automatic management of fixed expenses that repeat monthly, such as subscriptions and bills.',
+    'fluxo-caixa': 'Consolidated view of all inflows and outflows that affect your actual bank balance.',
+    'investimentos': 'Track your investment portfolio with profitability and performance analysis.',
+    'milhas': 'Track and optimize your airline miles with smart accumulation and redemption strategies.',
+    'imposto-renda': 'Complete module to organize your annual Income Tax return. Brazil version available - other versions under construction.',
+    'converter': 'Import and process bank statements automatically with OCR and AI technology.',
+    'ia': 'Use artificial intelligence to get personalized financial insights and automate tasks.',
+    'casais': 'Special tools for collaborative financial management between couples.',
+    'relatorios': 'View detailed reports and analyses of your finances to make better decisions.',
+    'configuracoes': 'Customize your experience and configure security and privacy preferences.',
+    'parcerias': 'Monetize your network by sharing Couples Financials and earn commissions.',
+    'solucoes': 'Find answers to common problems and learn how to get support.',
+  };
+
+  return {
+    title: 'Complete Tutorial',
+    subtitle: 'Couples Financials',
+    tagline: 'The ultimate guide to mastering your finances as a couple',
+    tableOfContents: 'Table of Contents',
+    page: 'Page',
+    sections: ptContent.sections.map(section => ({
+      ...section,
+      title: sectionTitleMap[section.title] || section.title,
+      intro: sectionIntroMap[section.id] || section.intro,
+    })),
+    footer: {
+      support: 'Support',
+      email: 'support@couplesfinancials.com',
+      website: 'www.couplesfinancials.com',
+      copyright: '© 2024 Couples Financials. All rights reserved.'
+    }
+  };
+};
+
+// Spanish content - Full translation
+const getTutorialContentES = (): TutorialContent => {
+  const ptContent = getTutorialContentPT();
+  
+  // Translation map for section titles
+  const sectionTitleMap: Record<string, string> = {
+    '1. Introdução': '1. Introducción',
+    '2. Primeiros Passos': '2. Primeros Pasos',
+    '3. Dashboard Financeiro': '3. Panel Financiero',
+    '4. Gerenciando Transações': '4. Gestión de Transacciones',
+    '5. Gestão de Contas Bancárias': '5. Gestión de Cuentas Bancarias',
+    '6. Gestão de Cartões': '6. Gestión de Tarjetas',
+    '7. Despesas Mensais': '7. Gastos Mensuales',
+    '8. Despesas Recorrentes': '8. Gastos Recurrentes',
+    '9. Fluxo de Caixa': '9. Flujo de Caja',
+    '10. Controle de Investimentos': '10. Control de Inversiones',
+    '11. Sistema de Milhas': '11. Sistema de Millas',
+    '12. Imposto de Renda (Brasil)': '12. Impuesto de Renta (Brasil)',
+    '13. Converter de Extratos': '13. Convertidor de Extractos',
+    '14. Recursos de IA': '14. Recursos de IA',
+    '15. Funcionalidades para Casais': '15. Funcionalidades para Parejas',
+    '16. Relatórios e Análises': '16. Informes y Análisis',
+    '17. Configurações e Perfil': '17. Configuración y Perfil',
+    '18. Programa de Parcerias': '18. Programa de Socios',
+    '19. Solução de Problemas': '19. Solución de Problemas',
+  };
+
+  // Translation map for section intros
+  const sectionIntroMap: Record<string, string> = {
+    'introducao': 'Couples Financials es una plataforma completa de gestión financiera diseñada especialmente para parejas que desean organizar sus finanzas de forma colaborativa e inteligente.',
+    'primeiros-passos': 'Sigue los pasos a continuación para configurar tu cuenta y empezar a usar la plataforma.',
+    'dashboard': 'El panel es el centro de control de tus finanzas, presentando información esencial de forma visual e intuitiva.',
+    'transacoes': 'Registra y organiza todas tus transacciones financieras de forma simple y eficiente.',
+    'contas': 'Gestiona todas tus cuentas bancarias en un solo lugar con control preciso de saldos.',
+    'cartoes': 'Control completo de tus tarjetas de crédito con gestión de facturas, límites y pagos.',
+    'despesas-mensais': 'Vista completa de los gastos mensuales organizados por estado: actuales, futuros y atrasados.',
+    'despesas-recorrentes': 'Gestión automática de gastos fijos que se repiten mensualmente, como suscripciones y facturas.',
+    'fluxo-caixa': 'Vista consolidada de todas las entradas y salidas que afectan tu saldo bancario real.',
+    'investimentos': 'Acompaña tu cartera de inversiones con análisis de rentabilidad y rendimiento.',
+    'milhas': 'Acompaña y optimiza tus millas aéreas con estrategias inteligentes de acumulación y canje.',
+    'imposto-renda': 'Módulo completo para organizar tu declaración anual del Impuesto de Renta. Versión Brasil disponible - otras versiones en construcción.',
+    'converter': 'Importa y procesa extractos bancarios automáticamente con tecnología OCR e IA.',
+    'ia': 'Usa inteligencia artificial para obtener insights financieros personalizados y automatizar tareas.',
+    'casais': 'Herramientas especiales para gestión financiera colaborativa entre parejas.',
+    'relatorios': 'Visualiza informes detallados y análisis de tus finanzas para tomar mejores decisiones.',
+    'configuracoes': 'Personaliza tu experiencia y configura preferencias de seguridad y privacidad.',
+    'parcerias': 'Monetiza tu red compartiendo Couples Financials y gana comisiones.',
+    'solucoes': 'Encuentra respuestas a problemas comunes y aprende cómo obtener soporte.',
+  };
+
+  return {
+    title: 'Tutorial Completo',
+    subtitle: 'Couples Financials',
+    tagline: 'La guía definitiva para dominar tus finanzas en pareja',
+    tableOfContents: 'Índice',
+    page: 'Página',
+    sections: ptContent.sections.map(section => ({
+      ...section,
+      title: sectionTitleMap[section.title] || section.title,
+      intro: sectionIntroMap[section.id] || section.intro,
+    })),
+    footer: {
+      support: 'Soporte',
+      email: 'soporte@couplesfinancials.com',
+      website: 'www.couplesfinancials.com',
+      copyright: '© 2024 Couples Financials. Todos los derechos reservados.'
+    }
+  };
+};
 
 const getTutorialContent = (language: Language): TutorialContent => {
   switch (language) {
