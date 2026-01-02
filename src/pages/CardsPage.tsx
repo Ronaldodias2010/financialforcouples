@@ -15,6 +15,7 @@ import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 
 interface CardsPageProps {
   onBack: () => void;
+  onNavigateToAccounts?: () => void;
 }
 
 interface CardRow {
@@ -29,7 +30,7 @@ interface CardRow {
   initial_balance: number | null;
 }
 
-export const CardsPage = ({ onBack }: CardsPageProps) => {
+export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { t } = useLanguage();
   const { names } = usePartnerNames();
@@ -269,7 +270,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
           </Button>
           <h1 className="text-3xl font-bold">{t('cards.manage')}</h1>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/accounts')}>
+        <Button variant="outline" size="sm" onClick={() => onNavigateToAccounts ? onNavigateToAccounts() : navigate('/accounts')}>
           <Landmark className="h-4 w-4 mr-2" />
           {t('accounts.manage')}
         </Button>
