@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { trackEvent } from "@/utils/analytics";
 
 const Partnership = () => {
   const { t } = useLanguage();
@@ -107,6 +108,11 @@ const Partnership = () => {
       if (error) {
         throw error;
       }
+      
+      // Track partnership application for GTM
+      trackEvent('partnership_application', {
+        audience_type: formData.audienceType
+      });
       
       toast({
         title: "Sucesso!",

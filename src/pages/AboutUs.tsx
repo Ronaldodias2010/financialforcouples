@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
+import { trackCtaClick } from "@/utils/analytics";
 
 interface AboutUsProps {
   onBack?: () => void;
@@ -419,7 +420,10 @@ const AboutUs = ({ onBack }: AboutUsProps) => {
                 <Button 
                   size="lg" 
                   className="bg-primary hover:bg-primary/90"
-                  onClick={() => window.location.href = '/auth'}
+                  onClick={() => {
+                    trackCtaClick('cadastre_se_gratis', 'about_us');
+                    window.location.href = '/auth';
+                  }}
                 >
                   {currentContent.ctaButton}
                 </Button>

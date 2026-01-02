@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, ArrowLeft, Shield, Database, UserCheck, FileText, Scale, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import LanguageSelector from "@/components/landing/LanguageSelector";
+import { trackEvent } from "@/utils/analytics";
 
 const PrivacyPolicy = () => {
   const { language } = useLanguage();
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+
+  // Track page view for GTM
+  useEffect(() => {
+    trackEvent('page_view', { page_type: 'privacy' });
+  }, []);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => 
