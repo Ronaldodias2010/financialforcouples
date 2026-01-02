@@ -88,8 +88,8 @@ export function useTaxDiagnostic({ taxYear }: UseTaxDiagnosticParams) {
     return completedDate.getFullYear() === currentYear;
   }, [diagnosticData]);
 
-  const savedAnswers = diagnosticData?.diagnostic_answers as DiagnosticAnswers | null;
-  const savedSectionStatus = diagnosticData?.section_status as SectionStatus | null;
+  const savedAnswers = diagnosticData?.diagnostic_answers as unknown as DiagnosticAnswers | null;
+  const savedSectionStatus = diagnosticData?.section_status as unknown as SectionStatus | null;
 
   // Calculate section status based on answers
   const calculateSectionStatus = useCallback((ans: DiagnosticAnswers): SectionStatus => {
@@ -109,21 +109,43 @@ export function useTaxDiagnostic({ taxYear }: UseTaxDiagnosticParams) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { error } = await supabase
+      // Check if record exists
+      const { data: existing } = await supabase
         .from('tax_report_config')
-        .upsert({
-          user_id: user.id,
-          tax_year: taxYear,
-          diagnostic_answers: data.answers as unknown as Record<string, unknown>,
-          diagnostic_completed_at: new Date().toISOString(),
-          section_status: data.sectionStatus as unknown as Record<string, unknown>,
-          status: 'incomplete',
-          progress_percentage: 10
-        }, {
-          onConflict: 'user_id,tax_year'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('tax_year', taxYear)
+        .maybeSingle();
 
-      if (error) throw error;
+      const answersJson = JSON.parse(JSON.stringify(data.answers));
+      const statusJson = JSON.parse(JSON.stringify(data.sectionStatus));
+
+      if (existing) {
+        const { error } = await supabase
+          .from('tax_report_config')
+          .update({
+            diagnostic_answers: answersJson,
+            diagnostic_completed_at: new Date().toISOString(),
+            section_status: statusJson,
+            progress_percentage: 10
+          })
+          .eq('user_id', user.id)
+          .eq('tax_year', taxYear);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('tax_report_config')
+          .insert({
+            user_id: user.id,
+            tax_year: taxYear,
+            diagnostic_answers: answersJson,
+            diagnostic_completed_at: new Date().toISOString(),
+            section_status: statusJson,
+            status: 'incomplete',
+            progress_percentage: 10
+          });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tax-diagnostic', taxYear] });
