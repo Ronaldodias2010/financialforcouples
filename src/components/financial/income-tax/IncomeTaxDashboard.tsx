@@ -408,7 +408,6 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
                   taxYear={taxYear}
                 />
               </AccordionContent>
-              </AccordionContent>
             </AccordionItem>
 
             {/* Section 5: Assets and Debts */}
