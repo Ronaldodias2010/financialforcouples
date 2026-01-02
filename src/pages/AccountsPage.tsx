@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { AccountForm } from "@/components/accounts/AccountForm";
 import { AccountList } from "@/components/accounts/AccountList";
 import { Button } from "@/components/ui/button";
-
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
-import { ArrowLeft, Wallet, Eye } from "lucide-react";
+import { ArrowLeft, Wallet, Eye, CreditCard } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
@@ -34,6 +34,7 @@ export const AccountsPage = ({ onBack }: AccountsPageProps) => {
   const { t } = useLanguage();
   const { names } = usePartnerNames();
   const { convertCurrency } = useCurrencyConverter();
+  const navigate = useNavigate();
 
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [accountsData, setAccountsData] = useState<AccountRow[]>([]);
@@ -171,12 +172,18 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back')}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('back')}
+          </Button>
+          <h1 className="text-3xl font-bold">{t('accounts.manage')}</h1>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => navigate('/cards')}>
+          <CreditCard className="h-4 w-4 mr-2" />
+          {t('cards.manage')}
         </Button>
-        <h1 className="text-3xl font-bold">{t('accounts.manage')}</h1>
       </div>
 
       {/* Seletor de visualização + Card de Limite disponível das Contas */}
