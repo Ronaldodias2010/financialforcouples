@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -6,10 +6,13 @@ import {
   FileSpreadsheet, 
   Download,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
-import { TaxReportSummary, TaxableIncome, DeductibleExpense, TaxAsset } from '@/hooks/useIncomeTaxReport';
+import { TaxReportSummary, TaxableIncome, DeductibleExpense, TaxAsset, PendingItem } from '@/hooks/useIncomeTaxReport';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { exportTaxReportPDF, exportTaxReportExcel } from '@/utils/taxExportUtils';
+import { toast } from 'sonner';
 
 interface TaxExportSectionProps {
   taxYear: number;
@@ -18,6 +21,12 @@ interface TaxExportSectionProps {
   exemptIncomes: TaxableIncome[];
   deductibleExpenses: DeductibleExpense[];
   taxAssets: TaxAsset[];
+  pendingItems?: PendingItem[];
+  profile?: {
+    display_name?: string;
+    cpf?: string;
+  };
+  onReviewAll?: () => void;
 }
 
 export function TaxExportSection({ 
@@ -26,18 +35,62 @@ export function TaxExportSection({
   taxableIncomes,
   exemptIncomes,
   deductibleExpenses,
-  taxAssets
+  taxAssets,
+  pendingItems,
+  profile,
+  onReviewAll
 }: TaxExportSectionProps) {
   const { t } = useLanguage();
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
 
-  const handleExportPDF = () => {
-    // TODO: Implement PDF export
-    console.log('Exporting PDF...');
+  const exportData = {
+    taxYear,
+    summary,
+    taxableIncomes,
+    exemptIncomes,
+    deductibleExpenses,
+    taxAssets,
+    pendingItems,
+    profile
   };
 
-  const handleExportExcel = () => {
-    // TODO: Implement Excel export
-    console.log('Exporting Excel...');
+  const handleExportPDF = async () => {
+    setIsExportingPDF(true);
+    try {
+      await exportTaxReportPDF(exportData);
+      toast.success(t('tax.export.pdfSuccess') || 'PDF exportado com sucesso!');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error(t('tax.export.error') || 'Erro ao exportar');
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    setIsExportingExcel(true);
+    try {
+      await exportTaxReportExcel(exportData);
+      toast.success(t('tax.export.excelSuccess') || 'Excel exportado com sucesso!');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      toast.error(t('tax.export.error') || 'Erro ao exportar');
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
+
+  const handleReviewAll = () => {
+    if (onReviewAll) {
+      onReviewAll();
+    } else {
+      // Scroll to pending section
+      const pendingSection = document.getElementById('pending-section');
+      if (pendingSection) {
+        pendingSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   };
 
   return (
@@ -56,8 +109,13 @@ export function TaxExportSection({
             variant="outline" 
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={handleExportPDF}
+            disabled={isExportingPDF}
           >
-            <FileText className="h-8 w-8 text-red-500" />
+            {isExportingPDF ? (
+              <Loader2 className="h-8 w-8 text-red-500 animate-spin" />
+            ) : (
+              <FileText className="h-8 w-8 text-red-500" />
+            )}
             <div className="text-center">
               <div className="font-medium">{t('tax.export.pdf')}</div>
               <div className="text-xs text-muted-foreground">{t('tax.export.pdfDesc')}</div>
@@ -69,8 +127,13 @@ export function TaxExportSection({
             variant="outline" 
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={handleExportExcel}
+            disabled={isExportingExcel}
           >
-            <FileSpreadsheet className="h-8 w-8 text-green-500" />
+            {isExportingExcel ? (
+              <Loader2 className="h-8 w-8 text-green-500 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-8 w-8 text-green-500" />
+            )}
             <div className="text-center">
               <div className="font-medium">{t('tax.export.excel')}</div>
               <div className="text-xs text-muted-foreground">{t('tax.export.excelDesc')}</div>
@@ -96,6 +159,7 @@ export function TaxExportSection({
           <Button 
             variant="outline" 
             className="h-auto py-4 flex flex-col items-center gap-2"
+            onClick={handleReviewAll}
           >
             <RefreshCw className="h-8 w-8 text-purple-500" />
             <div className="text-center">
