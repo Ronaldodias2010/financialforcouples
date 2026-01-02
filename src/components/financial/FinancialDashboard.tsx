@@ -199,7 +199,10 @@ export const FinancialDashboard = () => {
   if (currentPage === "cards") {
     return (
       <div className="container mx-auto p-6">
-        <CardsPage onBack={() => setCurrentPage("dashboard")} />
+        <CardsPage 
+          onBack={() => setCurrentPage("dashboard")} 
+          onNavigateToAccounts={() => setCurrentPage("accounts")}
+        />
       </div>
     );
   }
@@ -207,7 +210,10 @@ export const FinancialDashboard = () => {
   if (currentPage === "accounts") {
     return (
       <div className="container mx-auto p-6">
-        <AccountsPage onBack={() => setCurrentPage("dashboard")} />
+        <AccountsPage 
+          onBack={() => setCurrentPage("dashboard")}
+          onNavigateToCards={() => setCurrentPage("cards")}
+        />
       </div>
     );
   }

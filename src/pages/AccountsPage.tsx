@@ -15,6 +15,7 @@ import { CashAccountCard } from "@/components/accounts/CashAccountCard";
 
 interface AccountsPageProps {
   onBack: () => void;
+  onNavigateToCards?: () => void;
 }
 
 interface AccountRow {
@@ -29,7 +30,7 @@ interface AccountRow {
   is_cash_account?: boolean | null;
 }
 
-export const AccountsPage = ({ onBack }: AccountsPageProps) => {
+export const AccountsPage = ({ onBack, onNavigateToCards }: AccountsPageProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { t } = useLanguage();
   const { names } = usePartnerNames();
@@ -180,7 +181,7 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
           </Button>
           <h1 className="text-3xl font-bold">{t('accounts.manage')}</h1>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/cards')}>
+        <Button variant="outline" size="sm" onClick={() => onNavigateToCards ? onNavigateToCards() : navigate('/cards')}>
           <CreditCard className="h-4 w-4 mr-2" />
           {t('cards.manage')}
         </Button>
