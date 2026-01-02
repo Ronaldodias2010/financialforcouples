@@ -311,8 +311,14 @@ export function useCashFlowHistory(options: UseCashFlowOptions) {
 }
 
 // Helper function to get date range for period type
-export function getDateRangeForPeriod(periodType: PeriodType, customStart?: Date, customEnd?: Date): { start: Date; end: Date } {
+export function getDateRangeForPeriod(
+  periodType: PeriodType, 
+  customStart?: Date, 
+  customEnd?: Date,
+  year?: number
+): { start: Date; end: Date } {
   const now = new Date();
+  const targetYear = year ?? now.getFullYear();
   
   switch (periodType) {
     case 'monthly':
@@ -327,8 +333,8 @@ export function getDateRangeForPeriod(periodType: PeriodType, customStart?: Date
       };
     case 'yearly':
       return {
-        start: startOfYear(now),
-        end: endOfYear(now)
+        start: new Date(targetYear, 0, 1),
+        end: new Date(targetYear, 11, 31)
       };
     case 'custom':
       return {

@@ -20,7 +20,9 @@ import {
   List,
   CheckCircle,
   AlertCircle,
-  Receipt
+  Receipt,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { format, subMonths } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
@@ -41,7 +43,9 @@ interface CashFlowDashboardProps {
 
 export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashboardProps) {
   const { t, language } = useLanguage();
+  const currentYear = new Date().getFullYear();
   const [periodType, setPeriodType] = useState<PeriodType>('monthly');
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [customStartDate, setCustomStartDate] = useState<Date>(subMonths(new Date(), 1));
   const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
@@ -49,6 +53,9 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
   const [selectedMovementType, setSelectedMovementType] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showExportDialog, setShowExportDialog] = useState(false);
+
+  // Generate available years (current year and past 10 years)
+  const availableYears = Array.from({ length: 11 }, (_, i) => currentYear - i);
 
   const getDateLocale = () => {
     switch (language) {
@@ -64,8 +71,8 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
     if (periodType === 'custom') {
       return { start: customStartDate, end: customEndDate };
     }
-    return getDateRangeForPeriod(periodType);
-  }, [periodType, customStartDate, customEndDate]);
+    return getDateRangeForPeriod(periodType, undefined, undefined, periodType === 'yearly' ? selectedYear : undefined);
+  }, [periodType, customStartDate, customEndDate, selectedYear]);
 
   const {
     cashFlowEntries,
@@ -126,6 +133,41 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
               <SelectItem value="custom">{t('cashFlow.period.custom')}</SelectItem>
             </SelectContent>
           </Select>
+
+          {periodType === 'yearly' && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setSelectedYear(prev => prev - 1)}
+                disabled={selectedYear <= currentYear - 10}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYears.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setSelectedYear(prev => prev + 1)}
+                disabled={selectedYear >= currentYear}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
           {periodType === 'custom' && (
             <>
