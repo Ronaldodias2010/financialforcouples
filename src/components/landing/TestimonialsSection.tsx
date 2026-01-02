@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/landing/ui/button";
 import useInView from "@/hooks/use-in-view";
 import { Quote, Heart, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -8,6 +7,7 @@ import coupleMariaCarlos from "@/assets/testimonials/couple-maria-carlos.jpg";
 import coupleJoaoLucia from "@/assets/testimonials/couple-joao-lucia.jpg";
 import singleRafael from "@/assets/testimonials/single-rafael.jpg";
 import singleThiago from "@/assets/testimonials/single-thiago.jpg";
+import TestimonialInviteCard from "./TestimonialInviteCard";
 
 const TestimonialsSection = () => {
   const { ref, inView } = useInView({ threshold: 0.2 });
@@ -60,7 +60,7 @@ const TestimonialsSection = () => {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <Card key={testimonial.id} className={`relative border-2 bg-card hover:shadow-elegant transition-all duration-300 ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: `${index * 100}ms` }}>
               <CardContent className="p-6">
@@ -104,20 +104,12 @@ const TestimonialsSection = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
-        
-        <div className="text-center mt-12">
-          <Button
-            onClick={() => {
-              const subject = encodeURIComponent(t('testimonials.emailSubject'));
-              const body = encodeURIComponent(t('testimonials.emailBody'));
-              window.open(`mailto:contato@couplesfinancials.com?subject=${subject}&body=${body}`);
-            }}
-            className="px-8 py-3 text-lg font-semibold bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            variant="hero"
-          >
-            {t('testimonials.leaveTestimonial')}
-          </Button>
+          
+          {/* Card de convite para enviar depoimento */}
+          <TestimonialInviteCard 
+            className={`${inView ? 'animate-fade-in' : 'opacity-0'}`}
+            style={{ animationDelay: `${testimonials.length * 100}ms` }}
+          />
         </div>
       </div>
     </section>

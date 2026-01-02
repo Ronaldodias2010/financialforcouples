@@ -2983,6 +2983,51 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          photo_url: string | null
+          rating: number | null
+          status: string | null
+          testimonial_text: string
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          photo_url?: string | null
+          rating?: number | null
+          status?: string | null
+          testimonial_text: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          photo_url?: string | null
+          rating?: number | null
+          status?: string | null
+          testimonial_text?: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       transaction_audit_log: {
         Row: {
           action_type: string
