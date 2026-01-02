@@ -352,9 +352,10 @@ const translations = {
     'futureIncomes.todayAlert.badge': 'Hoje',
     
     // Future Expenses Today Alert
-    'futureExpenses.todayAlert.title': 'Despesas com Vencimento Hoje!',
+'futureExpenses.todayAlert.title': 'Despesas com Vencimento Hoje!',
     'futureExpenses.todayAlert.description': 'Você tem despesas vencendo hoje. Efetue o pagamento para evitar atrasos.',
     'futureExpenses.todayAlert.totalDue': 'Total a Pagar',
+    'futureExpenses.todayAlert.dismiss': 'Dispensar alerta',
     
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Últimos 90 dias',
@@ -2386,9 +2387,10 @@ const translations = {
     'futureIncomes.todayAlert.badge': 'Today',
     
     // Future Expenses Today Alert
-    'futureExpenses.todayAlert.title': 'Expenses Due Today!',
+'futureExpenses.todayAlert.title': 'Expenses Due Today!',
     'futureExpenses.todayAlert.description': 'You have expenses due today. Make the payment to avoid delays.',
     'futureExpenses.todayAlert.totalDue': 'Total Due',
+    'futureExpenses.todayAlert.dismiss': 'Dismiss alert',
     
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Last 90 days',
@@ -4423,9 +4425,10 @@ const translations = {
     'futureIncomes.todayAlert.badge': 'Hoy',
     
     // Future Expenses Today Alert
-    'futureExpenses.todayAlert.title': '¡Gastos que Vencen Hoy!',
+'futureExpenses.todayAlert.title': '¡Gastos que Vencen Hoy!',
     'futureExpenses.todayAlert.description': 'Tienes gastos que vencen hoy. Realiza el pago para evitar retrasos.',
     'futureExpenses.todayAlert.totalDue': 'Total a Pagar',
+    'futureExpenses.todayAlert.dismiss': 'Descartar alerta',
     
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Últimos 90 días',
