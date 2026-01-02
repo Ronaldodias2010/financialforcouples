@@ -60,7 +60,7 @@ const TestimonialsSection = () => {
     }
   ];
 
-  // Fetch approved testimonials from database
+  // Fetch approved testimonials from database (limit 9, oldest first for rotation)
   const { data: dbTestimonials } = useQuery({
     queryKey: ['approved-testimonials'],
     queryFn: async () => {
@@ -68,8 +68,9 @@ const TestimonialsSection = () => {
         .from('testimonials')
         .select('*')
         .eq('status', 'approved')
-        .order('approved_at', { ascending: false })
-        .limit(6);
+        .not('photo_url', 'is', null) // Only testimonials with photos
+        .order('approved_at', { ascending: true }) // Oldest first (for rotation)
+        .limit(9);
       
       if (error) {
         console.error('Error fetching testimonials:', error);
@@ -80,9 +81,9 @@ const TestimonialsSection = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Combine static and database testimonials
+  // Combine static and database testimonials (limit to 9 total)
   const allTestimonials: Testimonial[] = [
-    // First show database testimonials (most recent approved)
+    // First show database testimonials (oldest approved first for rotation)
     ...(dbTestimonials?.map(t => ({
       id: t.id,
       type: (t.type === 'couple' ? 'couple' : 'single') as 'couple' | 'single',
@@ -93,7 +94,7 @@ const TestimonialsSection = () => {
     })) || []),
     // Then fill with static testimonials if needed
     ...staticTestimonials
-  ].slice(0, 6); // Limit to 6 total
+  ].slice(0, 9); // Limit to 9 total
 
   return (
     <section className="py-20 bg-muted/30" aria-labelledby="testimonials-heading">
