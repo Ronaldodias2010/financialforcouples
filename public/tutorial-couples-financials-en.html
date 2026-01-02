@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Couples Financials - Complete Tutorial</title>
     <style>
-        /* Complete styling from Portuguese version */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -214,6 +213,20 @@
             color: #856404;
         }
 
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-box h4 {
+            margin-top: 0;
+            color: #1565c0;
+        }
+
         .premium-feature {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -305,6 +318,45 @@
             background: #357abd;
         }
 
+        .flow-diagram {
+            background: #f8f9fa;
+            border: 2px dashed #4a90e2;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .flow-diagram .flow-step {
+            display: inline-block;
+            background: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 5px;
+        }
+
+        .flow-diagram .flow-arrow {
+            display: inline-block;
+            color: #4a90e2;
+            font-size: 1.5em;
+            margin: 0 10px;
+        }
+
+        .under-construction {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .under-construction h4 {
+            margin: 0;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             body { padding: 10px; }
             .header { padding: 30px 20px; }
@@ -313,6 +365,8 @@
             .toc { padding: 20px; }
             .feature-grid { grid-template-columns: 1fr; }
             .toc-grid { grid-template-columns: 1fr; }
+            .flow-diagram .flow-step { display: block; margin: 10px auto; }
+            .flow-diagram .flow-arrow { display: block; transform: rotate(90deg); }
         }
 
         @media print {
@@ -340,24 +394,28 @@
             <div class="toc-grid">
                 <div class="toc-column">
                     <ul>
-                        <li><a href="#introduction">1. General Introduction</a></li>
+                        <li><a href="#introduction">1. Introduction</a></li>
                         <li><a href="#getting-started">2. Getting Started</a></li>
                         <li><a href="#dashboard">3. Financial Dashboard</a></li>
-                        <li><a href="#transactions">4. Transaction Management</a></li>
+                        <li><a href="#transactions">4. Managing Transactions</a></li>
                         <li><a href="#accounts">5. Bank Account Management</a></li>
                         <li><a href="#cards">6. Card Management</a></li>
-                        <li><a href="#investments">7. Investment System</a></li>
+                        <li><a href="#monthly-expenses">7. Monthly Expenses</a></li>
+                        <li><a href="#recurring-expenses">8. Recurring Expenses</a></li>
+                        <li><a href="#cash-flow">9. Cash Flow</a></li>
                     </ul>
                 </div>
                 <div class="toc-column">
                     <ul>
-                        <li><a href="#miles">8. Miles System (Premium)</a></li>
-                        <li><a href="#ai">9. AI Features</a></li>
-                        <li><a href="#couples">10. Couple Management</a></li>
-                        <li><a href="#reports">11. Reports and Exports</a></li>
-                        <li><a href="#settings">12. Settings and Profile</a></li>
-                        <li><a href="#partnerships">13. Partnership Program</a></li>
-                        <li><a href="#troubleshooting">14. Troubleshooting</a></li>
+                        <li><a href="#investments">10. Investment Control</a></li>
+                        <li><a href="#miles">11. Miles System</a></li>
+                        <li><a href="#income-tax">12. Income Tax (Brazil)</a></li>
+                        <li><a href="#ai">13. AI Features</a></li>
+                        <li><a href="#couples">14. Couple Features</a></li>
+                        <li><a href="#reports">15. Reports and Analysis</a></li>
+                        <li><a href="#settings">16. Settings and Profile</a></li>
+                        <li><a href="#partnerships">17. Partnership Program</a></li>
+                        <li><a href="#troubleshooting">18. Troubleshooting</a></li>
                     </ul>
                 </div>
             </div>
@@ -366,7 +424,7 @@
         <div class="content">
             <!-- Section 1: Introduction -->
             <div class="section" id="introduction">
-                <h2>🏠 1. General Introduction</h2>
+                <h2>🏠 1. Introduction</h2>
                 
                 <h3>What is Couples Financials?</h3>
                 <p>Couples Financials is a comprehensive web application for financial management specially developed for couples who want to organize and track their finances collaboratively. The platform offers advanced tools for controlling income, expenses, investments, airline miles, and much more.</p>
@@ -398,92 +456,6 @@
                     <li><strong>Miles Optimization:</strong> Maximizing airline miles value</li>
                     <li><strong>Security:</strong> Data protected with advanced encryption</li>
                 </ul>
-
-                <h3>📋 Plan Comparison: Essential vs Premium</h3>
-                <p>Learn the differences between available plans:</p>
-                
-                <table class="commission-table">
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Essential (Free)</th>
-                            <th>Premium</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Financial Dashboard</td>
-                            <td>✅ Basic</td>
-                            <td>✅ Complete</td>
-                        </tr>
-                        <tr>
-                            <td>Accounts and Cards</td>
-                            <td>✅</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>Manual Transactions</td>
-                            <td>✅</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>Basic Reports</td>
-                            <td>✅</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>Couple Management</td>
-                            <td>✅ Basic</td>
-                            <td>✅ Complete</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Statement Converter</strong></td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>WhatsApp / Voice Commands</td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>AI-Powered Miles System</td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>AI Planning</td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>Investment Suggestions</td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>Custom Goals</td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>Advanced Analytics</td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                        <tr>
-                            <td>Priority Support</td>
-                            <td>❌</td>
-                            <td>✅</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="premium-feature">
-                    <span class="premium-badge">⭐ PREMIUM</span>
-                    <h4>Unlock Full Potential</h4>
-                    <p>The Premium plan offers complete access to all features, including the new <strong>Statement Converter</strong>, advanced financial AI, WhatsApp integration, and priority support.</p>
-                </div>
             </div>
 
             <!-- Section 2: Getting Started -->
@@ -498,1069 +470,693 @@
 
                 <div class="step-by-step">
                     <h4><span class="step-number">2</span>Create Account or Login</h4>
-                    <p>If it's your first access, click "Create Account" and fill in your details. If you already have an account, use "Login".</p>
+                    <p>Create a new account using your email and a secure password, or login if you already have an account.</p>
                 </div>
 
                 <div class="step-by-step">
                     <h4><span class="step-number">3</span>Initial Setup</h4>
-                    <p>Set your currency preferences, language, and configure your basic profile.</p>
-                </div>
-
-                <h3>Main Interface</h3>
-                <p>The interface is divided into main sections:</p>
-                <ul>
-                    <li><strong>Header:</strong> Main navigation, user settings</li>
-                    <li><strong>Dashboard:</strong> Financial overview</li>
-                    <li><strong>Side Menu:</strong> Quick access to features</li>
-                    <li><strong>Content Area:</strong> Information display and forms</li>
-                </ul>
-
-                <div class="tip-box">
-                    <h4>🚀 How to Get Started</h4>
-                    <p>To START using our platform: On the home screen, scroll down to "Accounts" and add your Checking Accounts, then add your Credit Cards. From this point on, you can already use our WhatsApp system, as it now has the necessary information to start interactions. However, the more information you add to our platform, the more it can help you. Fill in all financial information, add your investments, adjust the miles points process, and let the Magic happen - our AI will surprise you.</p>
+                    <p>Set your preferred currency, timezone, and basic profile information.</p>
                 </div>
 
                 <div class="tip-box">
-                    <h4>💡 Tip</h4>
-                    <p>We recommend starting by configuring your profile and adding your main bank accounts before recording transactions.</p>
+                    <h4>💡 How to Start</h4>
+                    <p>To START using our platform: On the home screen scroll down to "Accounts" and add your Bank Accounts, then add your Credit Cards. From this point you can already use our WhatsApp system, as it already has the necessary information to start interactions.</p>
                 </div>
             </div>
 
             <!-- Section 3: Dashboard -->
             <div class="section" id="dashboard">
                 <h2>📊 3. Financial Dashboard</h2>
-
-                <h3>Overview</h3>
-                <p>The Dashboard is the application's control center, providing a consolidated view of your finances through informative cards and interactive charts.</p>
-
-                <h4>Main Cards</h4>
+                <p>The dashboard is your financial control center, presenting essential information visually and intuitively. View consolidated balances, interactive charts, and smart alerts about your finances.</p>
+                
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h4>💰 Total Balance</h4>
-                        <p>Sum of all active bank accounts, converted to your preferred currency.</p>
+                        <h4>📈 Balance Summary</h4>
+                        <p>Real-time visualization of all accounts, cards, and investments balances.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>📈 Monthly Income</h4>
-                        <p>Total financial inflows for the current period.</p>
+                        <h4>📊 Interactive Charts</h4>
+                        <p>Income vs expenses charts, wealth evolution, and category distribution.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>📉 Monthly Expenses</h4>
-                        <p>Total expenses incurred in the current period.</p>
+                        <h4>📅 Financial Calendar</h4>
+                        <p>Calendar with card due dates, installments, and future financial commitments.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>💎 Net Balance</h4>
-                        <p>Difference between income and expenses (Income - Expenses).</p>
+                        <h4>🎯 Goals and Objectives</h4>
+                        <p>Visual progress of your savings and investment goals.</p>
                     </div>
-                </div>
-
-                <h3>View Modes (For Couples)</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>"Both" View</h4>
-                    <p>Displays consolidated financial data for the couple.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Individual View</h4>
-                    <p>Allows filtering data by specific user (User 1 or User 2).</p>
-                </div>
-
-                <h3>Charts and Analysis</h3>
-                <ul>
-                    <li><strong>Pie Chart:</strong> Distribution of expenses by category</li>
-                    <li><strong>Bar Chart:</strong> Monthly evolution of income vs expenses</li>
-                    <li><strong>Monthly Comparison:</strong> Percentage variation compared to previous month</li>
-                </ul>
-
-                <div class="tip-box">
-                    <h4>💡 Usage Tip</h4>
-                    <p>Use the "Refresh" button in the top right corner to sync data in real time.</p>
                 </div>
             </div>
 
             <!-- Section 4: Transactions -->
             <div class="section" id="transactions">
-                <h2>💳 4. Transaction Management</h2>
+                <h2>💸 4. Managing Transactions</h2>
+                <p>Record and organize all your financial movements simply and efficiently.</p>
 
-                <h3>Add New Transaction</h3>
+                <h3>Adding Income</h3>
                 <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Access Form</h4>
-                    <p>In the Dashboard, click the "New Transaction" button or access the "Transactions" tab.</p>
+                    <h4><span class="step-number">1</span>New Income</h4>
+                    <p>Click "Add Transaction" and select "Income". Enter value, date, category (salary, freelance, sales, etc.) and receiving method.</p>
                 </div>
 
+                <h3>Recording Expenses</h3>
                 <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Transaction Type</h4>
-                    <p>Select between "Income" (money inflow) or "Expense" (spending).</p>
+                    <h4><span class="step-number">1</span>New Expense</h4>
+                    <p>Select "Expense", enter the value, choose the appropriate category, payment method (cash, card, account, PIX) and add a description.</p>
                 </div>
 
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Basic Information</h4>
-                    <ul>
-                        <li><strong>Amount:</strong> Transaction amount</li>
-                        <li><strong>Description:</strong> Expense/income details</li>
-                        <li><strong>Date:</strong> Transaction date</li>
-                        <li><strong>Category:</strong> Classification (Food, Transportation, etc.)</li>
-                    </ul>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">4</span>Payment Method</h4>
-                    <p>Select the bank account or card used in the transaction.</p>
-                </div>
-
-                <h3>Available Categories</h3>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>🍔 Food</h4>
-                        <p>Restaurants, supermarket, delivery</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🚗 Transportation</h4>
-                        <p>Fuel, public transport, Uber</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🏠 Housing</h4>
-                        <p>Rent, property tax, condo fees</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🎯 Entertainment</h4>
-                        <p>Movies, travel, entertainment</p>
-                    </div>
-                </div>
-
-                <h3>Managing Existing Transactions</h3>
-                <ul>
-                    <li><strong>View:</strong> Complete list with filters by date and category</li>
-                    <li><strong>Edit:</strong> Click the edit icon to modify transactions</li>
-                    <li><strong>Delete:</strong> Remove incorrect transactions with confirmation</li>
-                    <li><strong>Search:</strong> Find specific transactions using the search bar</li>
-                </ul>
-
-                <div class="warning-box">
-                    <h4>⚠️ Warning</h4>
-                    <p>Transaction deletions are permanent. Always confirm data before deleting.</p>
+                <div class="tip-box">
+                    <h4>💡 Best Practices</h4>
+                    <p>Always correctly select the payment method - this directly affects available balances. Use clear descriptions to facilitate future queries and analysis.</p>
                 </div>
             </div>
 
             <!-- Section 5: Accounts -->
             <div class="section" id="accounts">
                 <h2>🏦 5. Bank Account Management</h2>
+                <p>Manage all your bank accounts in one place with precise balance control.</p>
 
-                <h3>Add New Account</h3>
+                <h3>Adding Accounts</h3>
                 <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Access Accounts Section</h4>
-                    <p>In the main menu, click "Accounts" or access via Dashboard.</p>
+                    <h4><span class="step-number">1</span>Account Menu Access</h4>
+                    <p>Navigate to "Accounts" in the main menu and click "Add New Account".</p>
                 </div>
 
                 <div class="step-by-step">
                     <h4><span class="step-number">2</span>Account Information</h4>
-                    <ul>
-                        <li><strong>Account Name:</strong> Custom identification</li>
-                        <li><strong>Bank:</strong> Financial institution</li>
-                        <li><strong>Type:</strong> Checking Account, Savings, etc.</li>
-                        <li><strong>Initial Balance:</strong> Current amount in account</li>
-                        <li><strong>Currency:</strong> BRL, USD, EUR, etc.</li>
-                    </ul>
+                    <p>Fill in: bank name, account type (checking/savings), initial balance and overdraft limit if applicable.</p>
                 </div>
 
-                <h3>Supported Banks</h3>
-                <p>The application offers visual support for major banks:</p>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>🇧🇷 Brazilian Banks</h4>
-                        <p>Nubank, Itaú, Bradesco, Banco do Brasil, Caixa, Santander, Inter, C6 Bank, Avenue, Sicredi</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🇺🇸 American Banks</h4>
-                        <p>Chase, Bank of America, Wells Fargo, Capital One</p>
-                    </div>
-                </div>
-
-                <h3>Account Features</h3>
+                <h3>Cash Account Management</h3>
+                <p>The cash account works independently from other accounts:</p>
                 <ul>
-                    <li><strong>Updated Balance:</strong> Automatic reflection of transactions</li>
-                    <li><strong>Currency Conversion:</strong> Values converted to preferred currency</li>
-                    <li><strong>History:</strong> Movements linked to account</li>
-                    <li><strong>Status:</strong> Activate/deactivate accounts</li>
+                    <li><strong>Cash Income:</strong> Record only when receiving physical cash</li>
+                    <li><strong>Cash Expenses:</strong> You can only spend if there's sufficient balance</li>
+                    <li><strong>Connection via Withdrawals:</strong> Withdrawal deducts from bank account and adds to cash account</li>
                 </ul>
-
-                <div class="tip-box">
-                    <h4>💡 Organization</h4>
-                    <p>Keep only active accounts visible for better dashboard organization.</p>
-                </div>
             </div>
 
             <!-- Section 6: Cards -->
             <div class="section" id="cards">
                 <h2>💳 6. Card Management</h2>
+                <p>Complete control of your credit cards with invoice management, limits, and payments.</p>
 
-                <h3>Add New Card</h3>
+                <h3>Adding Cards</h3>
                 <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Basic Information</h4>
-                    <ul>
-                        <li><strong>Card Name:</strong> Custom identification</li>
-                        <li><strong>Type:</strong> Credit or Debit</li>
-                        <li><strong>Brand:</strong> Visa, Mastercard, Elo, etc.</li>
-                        <li><strong>Bank:</strong> Issuing institution</li>
-                    </ul>
+                    <h4><span class="step-number">1</span>Initial Setup</h4>
+                    <p>Access "Cards" and add a new card with name, brand, type (credit/debit), and issuing bank.</p>
                 </div>
 
                 <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Advanced Settings</h4>
-                    <ul>
-                        <li><strong>Limit:</strong> Card limit amount (if credit)</li>
-                        <li><strong>Due Date:</strong> Bill due day</li>
-                        <li><strong>Linked Account:</strong> Bank account for debit</li>
-                        <li><strong>Status:</strong> Active or inactive</li>
-                    </ul>
+                    <h4><span class="step-number">2</span>Credit Cards</h4>
+                    <p>Set total limit, closing date, due date, and best purchase day to maximize the term.</p>
                 </div>
 
-                <h3>Card Spending Management</h3>
+                <h3>Invoice Management</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>💰 Limit Control</h4>
+                        <p>Track available limit, current invoice value, and projection for next invoices.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📆 Due Calendar</h4>
+                        <p>View all due dates in an integrated calendar with automatic alerts.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Monthly Expenses -->
+            <div class="section" id="monthly-expenses">
+                <h2>📅 7. Monthly Expenses</h2>
+                <p>The monthly expenses module organizes all your expenses into 3 main tabs for complete and efficient control.</p>
+
+                <h3>7.1 Current Expenses</h3>
+                <div class="feature-card">
+                    <h4>What are Current Expenses?</h4>
+                    <p>These are expenses from the selected month that have already been made. They include cash purchases, credit card purchases, PIX, and other payments already completed.</p>
+                </div>
                 <ul>
-                    <li><strong>Limit vs Spending:</strong> Track limit usage</li>
-                    <li><strong>Current Bill:</strong> Amount accumulated in period</li>
-                    <li><strong>History:</strong> Transactions made with card</li>
-                    <li><strong>Alerts:</strong> Near-limit notifications</li>
+                    <li>Expenses already paid and recorded</li>
+                    <li>Filter by month and category</li>
+                    <li>Detailed view with amounts and dates</li>
                 </ul>
 
-                <div class="premium-feature">
-                    <div class="premium-badge">Premium</div>
-                    <h4>🎯 Premium Card Features</h4>
-                    <ul>
-                        <li><strong>Miles Integration:</strong> Automatic miles calculation per spending</li>
-                        <li><strong>Smart Alerts:</strong> Best card notifications for each purchase</li>
-                        <li><strong>Benefits Analysis:</strong> Benefits comparison per card</li>
-                    </ul>
+                <h3>7.2 Future Expenses</h3>
+                <div class="feature-card">
+                    <h4>What are Future Expenses?</h4>
+                    <p>Scheduled expenses that haven't been paid yet. They include credit card installments, recurring expenses, card invoice payments, and manual future expenses.</p>
                 </div>
 
-                <h3>🔄 Payments as Internal Transfers</h3>
+                <h4>Sources of Future Expenses:</h4>
+                <ul>
+                    <li><strong>Credit Card Installments:</strong> Future installments of purchases already made</li>
+                    <li><strong>Recurring Expenses:</strong> Bills like rent, electricity, internet</li>
+                    <li><strong>Card Invoice Payments:</strong> Payment due dates</li>
+                    <li><strong>Manual Future Expenses:</strong> Expenses you add manually</li>
+                </ul>
+
                 <div class="tip-box">
-                    <h4>💡 Understand How Card Payments Work</h4>
-                    <p>When you make a credit card payment in the system, it is registered as an <strong>internal transfer</strong>. This means the system automatically creates two movements:</p>
+                    <h4>⚠️ Due Date Alert System</h4>
+                    <p>On the due date, an alert (tooltip) appears on the main page. You can pay directly through the alert!</p>
                 </div>
 
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Withdrawal from Bank Account</h4>
-                    <p>If you pay using a bank account, the system records an <strong>expense (outflow)</strong> transaction in the selected account, debiting the paid amount from the available balance.</p>
+                <h3>7.3 Overdue Expenses</h3>
+                <div class="feature-card">
+                    <h4>What are Overdue Expenses?</h4>
+                    <p>Expenses that passed the due date without payment. They need attention and resolution.</p>
                 </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Virtual Entry to Card</h4>
-                    <p>Simultaneously, an <strong>income (virtual inflow)</strong> transaction is created linked to the card, reducing the debt and proportionally increasing the available limit.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>View in Transfers</h4>
-                    <p>These movements automatically appear in the <strong>"Transfers"</strong> tab within <strong>"Monthly Income"</strong>, allowing you to track all card payments made.</p>
-                </div>
-
-                <h4>🎯 Benefits of This Approach</h4>
-                <ul>
-                    <li><strong>Total Transparency:</strong> You see exactly where the money came from and where it went</li>
-                    <li><strong>Flow Control:</strong> Internal transfers don't affect your monthly income/expense balances</li>
-                    <li><strong>Complete History:</strong> All payments are recorded in multiple locations (card history + transfers)</li>
-                    <li><strong>Traceability:</strong> Easy audit of payments made over time</li>
-                </ul>
 
                 <div class="warning-box">
-                    <h4>⚠️ Important - Payment Currency</h4>
-                    <p>You can choose the <strong>payment currency</strong> when making a card payment. For example: if you have a card in Dollars but pay using Euros, the system automatically converts. The amount debited from your account will be in Euros, but the card debt will be reduced by the equivalent in Dollars.</p>
-                    <p>This conversion is recorded in the transaction notes for complete traceability.</p>
+                    <h4>📌 Important Rules:</h4>
+                    <ul>
+                        <li>Expenses remain on the list until paid</li>
+                        <li>Default display: last 90 days</li>
+                        <li>Option to view expenses with more than 90 days overdue</li>
+                        <li>After payment, the expense disappears from the overdue list</li>
+                    </ul>
                 </div>
 
-                <h4>📍 Where to Find Payments</h4>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>💳 On the Card</h4>
-                        <p>Go to "Cards" > Select the card > "Payment History" to see all payments made.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🔄 In Transfers</h4>
-                        <p>Go to "Monthly Income" > "Transfers" tab to view movements between accounts and cards.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🏦 In Bank Account</h4>
-                        <p>In the bank account statement, you'll see the card payment expense with the description "Card Payment: [Card Name]".</p>
-                    </div>
+                <h4>How to Resolve:</h4>
+                <div class="step-by-step">
+                    <h4><span class="step-number">1</span>Identify the Expense</h4>
+                    <p>In the "Overdue" tab, identify the expense that needs to be paid.</p>
+                </div>
+                <div class="step-by-step">
+                    <h4><span class="step-number">2</span>Click "Pay"</h4>
+                    <p>Click the "Pay" button to settle the expense.</p>
+                </div>
+                <div class="step-by-step">
+                    <h4><span class="step-number">3</span>Confirm Payment</h4>
+                    <p>After payment, the expense is automatically removed from the overdue list.</p>
                 </div>
             </div>
 
-            <!-- Section 7: Investments -->
+            <!-- Section 8: Recurring Expenses -->
+            <div class="section" id="recurring-expenses">
+                <h2>🔄 8. Recurring Expenses</h2>
+                <p>Recurring expenses are fixed costs that repeat periodically. Learn how to configure and manage them.</p>
+
+                <h3>8.1 What are Recurring Expenses</h3>
+                <div class="feature-card">
+                    <h4>Definition</h4>
+                    <p>Fixed expenses that repeat with defined frequency. Examples: rent, utilities, internet, subscriptions, loan payments.</p>
+                </div>
+
+                <h3>8.2 How to Add</h3>
+                <div class="step-by-step">
+                    <h4><span class="step-number">1</span>Access Menu</h4>
+                    <p>Navigate to "Recurring Expenses" or access through Cash Flow.</p>
+                </div>
+                <div class="step-by-step">
+                    <h4><span class="step-number">2</span>Fill in Details</h4>
+                    <p>Enter: description, amount, category, frequency (daily, weekly, biweekly, monthly, annual), start and end date (optional).</p>
+                </div>
+                <div class="step-by-step">
+                    <h4><span class="step-number">3</span>Configure Installments</h4>
+                    <p>For fixed installment plans, define the total number of installments.</p>
+                </div>
+
+                <h3>8.3 Automatic Generation Flow</h3>
+                <p>The system automatically creates entries in "Future Expenses":</p>
+
+                <div class="flow-diagram">
+                    <div class="flow-step">Recurring Expense</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">Future Expense</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">Due Date Alert</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">Overdue Expense</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">Completed/Removed</div>
+                </div>
+
+                <div class="info-box">
+                    <h4>ℹ️ How it works:</h4>
+                    <ul>
+                        <li><strong>Automatic generation:</strong> System creates future expense with due date</li>
+                        <li><strong>On due date:</strong> Alert is displayed</li>
+                        <li><strong>If not paid:</strong> Goes to "Overdue Expenses"</li>
+                        <li><strong>After payment:</strong> Expense is completed/removed</li>
+                    </ul>
+                </div>
+
+                <h3>8.4 Management</h3>
+                <ul>
+                    <li><strong>Edit:</strong> Change amount, frequency, or dates</li>
+                    <li><strong>Pause:</strong> Temporarily suspend generation</li>
+                    <li><strong>Cancel:</strong> Permanently stop the recurrence</li>
+                    <li><strong>History:</strong> View all generated occurrences</li>
+                </ul>
+            </div>
+
+            <!-- Section 9: Cash Flow -->
+            <div class="section" id="cash-flow">
+                <h2>💰 9. Cash Flow</h2>
+                <p>The Cash Flow module provides a consolidated view of all inflows and outflows that affect your bank balance.</p>
+
+                <h3>9.1 What is Cash Flow</h3>
+                <div class="feature-card">
+                    <h4>Definition</h4>
+                    <p>Consolidated view of all entries and exits that affect bank balance. Different from the expense dashboard (which shows made expenses).</p>
+                </div>
+
+                <h4>What enters Cash Flow:</h4>
+                <ul>
+                    <li><strong>Inflows:</strong> Salaries, income, received transfers, investment redemptions</li>
+                    <li><strong>Outflows:</strong> Card invoice payments, sent transfers, withdrawals, automatic debits</li>
+                </ul>
+
+                <h4>What does NOT enter Cash Flow:</h4>
+                <ul>
+                    <li>Credit card purchases (affect limit, not balance)</li>
+                    <li>Future installments (are commitments, not real movement)</li>
+                </ul>
+
+                <h3>9.2 Cash Flow Tabs</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📊 Overview</h4>
+                        <p>Charts and period summary. View balance evolution and movement trends.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📜 History</h4>
+                        <p>Detailed list of all movements with filters and search.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📤 Expenses</h4>
+                        <p>Expenses consolidated by category with detailed analysis.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📥 Revenues</h4>
+                        <p>Revenues consolidated by category with detailed view.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🧾 Income Tax</h4>
+                        <p>Direct access to the Income Tax module.</p>
+                    </div>
+                </div>
+
+                <h3>9.3 Available Filters</h3>
+                <ul>
+                    <li><strong>Period:</strong> Monthly, Quarterly, Annual, Custom</li>
+                    <li><strong>Specific Year:</strong> For annual view</li>
+                    <li><strong>Categories:</strong> Filter by expense/income category</li>
+                    <li><strong>Accounts:</strong> Filter by specific account</li>
+                </ul>
+
+                <h3>9.4 Export</h3>
+                <p>Export your data in PDF or Excel format for external analysis or filing.</p>
+            </div>
+
+            <!-- Section 10: Investments -->
             <div class="section" id="investments">
-                <h2>📈 7. Investment System</h2>
+                <h2>📈 10. Investment Control</h2>
+                <p>Track your investment portfolio with profitability and performance analysis.</p>
 
-                <h3>Add New Investment</h3>
+                <h3>Registering Investments</h3>
                 <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Basic Information</h4>
-                    <ul>
-                        <li><strong>Name:</strong> Investment identification</li>
-                        <li><strong>Type:</strong> CDB, LCI, Stocks, Funds, etc.</li>
-                        <li><strong>Invested Amount:</strong> Initial amount applied</li>
-                        <li><strong>Application Date:</strong> Investment date</li>
-                    </ul>
+                    <h4><span class="step-number">1</span>New Investment</h4>
+                    <p>Access "Investments" and add with product name, type (CD, stocks, funds, etc.), invested value, application date, and financial institution.</p>
                 </div>
 
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Financial Details</h4>
-                    <ul>
-                        <li><strong>Yield:</strong> Rate or return percentage</li>
-                        <li><strong>Maturity:</strong> Redemption date (if applicable)</li>
-                        <li><strong>Institution:</strong> Bank or brokerage</li>
-                        <li><strong>Risk:</strong> Low, Medium, or High</li>
-                    </ul>
-                </div>
-
-                <h3>Investment Dashboard</h3>
+                <h3>Supported Investment Types</h3>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h4>💰 Total Invested Amount</h4>
-                        <p>Sum of all contributions made</p>
+                        <h4>📊 Fixed Income</h4>
+                        <p>CDs, Treasury bonds with automatic profitability calculation.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>📊 Current Value</h4>
-                        <p>Value updated with yields</p>
+                        <h4>📈 Variable Income</h4>
+                        <p>Stocks, REITs, ETFs with quote tracking and received dividends.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>🎯 Profitability</h4>
-                        <p>Total gain and return percentage</p>
+                        <h4>💼 Investment Funds</h4>
+                        <p>Multi-market, DI, stock funds with share control.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>📈 Distribution</h4>
-                        <p>Allocation by investment type</p>
+                        <h4>🌍 International</h4>
+                        <p>REITs, American stocks, bonds with automatic currency conversion.</p>
                     </div>
-                </div>
-
-                <h3>Investment Goals Management</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Create Goal</h4>
-                    <p>Define specific objectives like "Own Home" or "Retirement".</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Set Values</h4>
-                    <p>Establish target value, deadline, and planned monthly contribution.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Track Progress</h4>
-                    <p>View progress through progress bars and charts.</p>
-                </div>
-
-                <h3>Profitability Simulator</h3>
-                <p>Tool for investment projection:</p>
-                <ul>
-                    <li><strong>Initial Value:</strong> Amount to be invested</li>
-                    <li><strong>Monthly Contribution:</strong> Regular contribution</li>
-                    <li><strong>Return Rate:</strong> Expected yield</li>
-                    <li><strong>Period:</strong> Investment time</li>
-                    <li><strong>Result:</strong> Projected final value</li>
-                </ul>
-
-                <div class="tip-box">
-                    <h4>💡 Investment Tip</h4>
-                    <p>Diversify your portfolio among different types of investments to reduce risks.</p>
                 </div>
             </div>
 
-            <!-- Section 8: Miles -->
+            <!-- Section 11: Miles -->
             <div class="section" id="miles">
-                <h2>✈️ 8. Miles System (Premium)</h2>
+                <h2>✈️ 11. Miles System</h2>
+                <p>Track and optimize your airline miles with smart accumulation and redemption strategies.</p>
 
-                <div class="premium-feature">
-                    <div class="premium-badge">Premium Feature</div>
-                    <p>The miles system is an advanced feature available for Premium users.</p>
-                </div>
-
-                <h3>Card Configuration for Miles</h3>
+                <h3>Program Setup</h3>
                 <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Add Miles Rule</h4>
-                    <ul>
-                        <li><strong>Card:</strong> Select the card that generates miles</li>
-                        <li><strong>Program:</strong> TAM, GOL, LATAM, etc.</li>
-                        <li><strong>Ratio:</strong> Miles per dollar spent</li>
-                        <li><strong>Minimum Limit:</strong> Minimum value to generate miles</li>
-                    </ul>
+                    <h4><span class="step-number">1</span>Adding Programs</h4>
+                    <p>Register your loyalty programs. Enter initial balance and points validity.</p>
                 </div>
 
                 <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Existing Miles</h4>
-                    <p>Register the current balance of already accumulated miles.</p>
+                    <h4><span class="step-number">2</span>Accumulation Goals</h4>
+                    <p>Set specific objectives with deadline and desired ticket value.</p>
                 </div>
 
-                <h3>Miles Goals</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Create Goal</h4>
-                    <ul>
-                        <li><strong>Name:</strong> "Trip to Europe"</li>
-                        <li><strong>Required Miles:</strong> Target amount</li>
-                        <li><strong>Deadline:</strong> Timeline to achieve</li>
-                        <li><strong>Main Card:</strong> Focus card for accumulation</li>
-                    </ul>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Track Progress</h4>
-                    <p>View how many miles are missing and projections based on current usage.</p>
-                </div>
-
-                <h3>Premium Features</h3>
+                <h3>Accumulation Strategies</h3>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h4>🎯 Active Promotions</h4>
-                        <p>Automatic monitoring of airline offers</p>
+                        <h4>🔄 Recurring Expenses</h4>
+                        <p>Use miles cards for fixed payments: utilities, subscriptions, fuel.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>🔔 Smart Alerts</h4>
-                        <p>Notifications about expiration and opportunities</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>📊 Redemption Comparator</h4>
-                        <p>Analysis of best redemption opportunities</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🤖 AI for Miles</h4>
-                        <p>Personalized accumulation recommendations</p>
+                        <h4>🎁 Special Promotions</h4>
+                        <p>Monitor bonus campaigns: multiplied points, buy and earn.</p>
                     </div>
                 </div>
 
-                <h3>Miles History</h3>
-                <ul>
-                    <li><strong>Earnings:</strong> Miles obtained per transaction</li>
-                    <li><strong>Redemptions:</strong> Miles used for travel</li>
-                    <li><strong>Expirations:</strong> Validity control</li>
-                    <li><strong>Current Balance:</strong> Total available for use</li>
-                </ul>
-            </div>
-
-            <!-- Section 9: Statement Converter -->
-            <div class="section" id="converter">
-                <h2>📄 9. Statement Converter (Premium)</h2>
-                
                 <div class="premium-feature">
                     <span class="premium-badge">⭐ PREMIUM</span>
-                    <h4>Exclusive Premium Feature</h4>
-                    <p>The Statement Converter is an advanced tool exclusively for Premium subscribers that allows you to import and process bank and card statements automatically.</p>
+                    <h4>Premium Miles Features</h4>
+                    <p>Automatic sync with program sites, personalized promotion alerts, advanced CPM calculator, and AI-optimized strategy suggestions.</p>
                 </div>
+            </div>
+
+            <!-- Section 12: Income Tax Brazil -->
+            <div class="section" id="income-tax">
+                <h2>🧾 12. Income Tax (Brazil)</h2>
                 
-                <h3>📁 What is the Converter?</h3>
-                <p>The Statement Converter transforms bank statement files into organized transactions within the platform, eliminating the need to manually type each transaction.</p>
-
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>📄 Multiple Formats</h4>
-                        <p>Supports PDF, CSV, OFX, and statement images. Intelligent recognition of different bank layouts.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🔍 Smart OCR</h4>
-                        <p>Optical recognition technology for scanned image statements or PDFs.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🏷️ Auto Categorization</h4>
-                        <p>AI identifies and categorizes transactions automatically based on patterns and history.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🔄 Duplicate Detection</h4>
-                        <p>Intelligent system that identifies and alerts about possibly duplicate transactions.</p>
-                    </div>
-                </div>
-
-                <h3>🎯 How to Use the Converter</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>File Upload</h4>
-                    <p>Access the "Converter" menu and upload your statement in PDF, CSV, OFX, or image format.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Preview and Validation</h4>
-                    <p>View detected transactions and confirm values, dates, and descriptions before importing.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Reconciliation</h4>
-                    <p>Compare with existing transactions and resolve possible duplicates or conflicts.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">4</span>Import Rules</h4>
-                    <p>Configure custom rules for automatic categorization of recurring transactions.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">5</span>Export and Integration</h4>
-                    <p>Export to Excel/CSV or send directly to your transactions on the platform.</p>
-                </div>
-
-                <h3>🏦 Supported Banks</h3>
-                <p>The Converter automatically recognizes statements from major Brazilian and international banks:</p>
-                <ul>
-                    <li><strong>Brazilian Banks:</strong> Itaú, Bradesco, Santander, Banco do Brasil, Caixa, Nubank, Inter, C6 Bank, BTG</li>
-                    <li><strong>Cards:</strong> Mastercard, Visa, Amex, Elo</li>
-                    <li><strong>Universal Format:</strong> OFX files are compatible with any institution</li>
-                </ul>
-
-                <div class="tip-box">
-                    <h4>💡 Tips for Best Results</h4>
-                    <p>For PDFs, prefer statements downloaded directly from internet banking (not scanned). For images, ensure good lighting and legible text. Configure categorization rules for recurring transactions and save time on future imports.</p>
-                </div>
-
                 <div class="warning-box">
-                    <h4>⚠️ Privacy and Security</h4>
-                    <p>Your files are processed with encryption and are not stored on our servers after processing. All imported transactions are protected by the same platform security standards.</p>
-                </div>
-            </div>
-
-            <!-- Section 10: AI -->
-            <div class="section" id="ai">
-                <h2>🤖 10. AI Features</h2>
-
-                <h3>Personalized Financial Recommendations</h3>
-                <p>Artificial Intelligence analyzes your spending and offers personalized insights:</p>
-
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>📊 Pattern Analysis</h4>
-                        <p>Identification of spending trends and saving opportunities</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>💡 Saving Suggestions</h4>
-                        <p>Personalized tips based on your financial profile</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🎯 Investment Optimization</h4>
-                        <p>Allocation and diversification recommendations</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>⚠️ Preventive Alerts</h4>
-                        <p>Warnings about excessive spending or at-risk goals</p>
-                    </div>
+                    <h4>🇧🇷 Brazil Version Only</h4>
+                    <p>This module is currently complete only for Brazil, based on Receita Federal (Brazilian IRS) rules. Other country versions are under construction.</p>
                 </div>
 
-                <h3>Smart WhatsApp (Premium)</h3>
-                <div class="premium-feature">
-                    <div class="premium-badge">Premium</div>
-                    <h4>Expense Recording via WhatsApp</h4>
-                    <div class="step-by-step">
-                        <h4><span class="step-number">1</span>Setup</h4>
-                        <p>Connect your WhatsApp number in the settings section.</p>
-                    </div>
-                    
-                    <div class="step-by-step">
-                        <h4><span class="step-number">2</span>Usage</h4>
-                        <p>Send messages like "Spent $45 at restaurant" and AI automatically records.</p>
-                    </div>
-                    
-                    <div class="step-by-step">
-                        <h4><span class="step-number">3</span>Confirmation</h4>
-                        <p>Receive instant confirmation and possibility for adjustments.</p>
-                    </div>
+                <div class="under-construction">
+                    <h4>🚧 Other versions (US, EU, etc.) - Under Construction</h4>
                 </div>
 
-                <h3>Predictive Analysis</h3>
+                <h3>12.1 What is the Income Tax Module</h3>
+                <div class="feature-card">
+                    <h4>Purpose</h4>
+                    <p>Tool to organize documents and values for annual declaration. Does not replace an accountant, but facilitates organization throughout the year.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>⚠️ Important Disclaimer</h4>
+                    <p>This module is an organization tool. For the official declaration, consult an accountant or use the official Receita Federal program.</p>
+                </div>
+
+                <h3>12.2 Module Sections</h3>
+
+                <h4>📋 Identification</h4>
+                <p>CPF (Brazilian tax ID) of holder and spouse/partner. Inline editing for quick updates.</p>
+
+                <h4>💰 Taxable Income</h4>
                 <ul>
-                    <li><strong>Expense Projection:</strong> Future spending prediction based on history</li>
-                    <li><strong>Saving Goal:</strong> Automatic calculation of realistic goals</li>
-                    <li><strong>Debt Risk:</strong> Preventive alerts about critical situations</li>
-                    <li><strong>Opportunities:</strong> Identification of ideal investment moments</li>
+                    <li>Salaries and wages</li>
+                    <li>Pro-labore</li>
+                    <li>Received rent</li>
+                    <li>Other taxable income</li>
                 </ul>
 
-                <h3>AI Financial Consultant</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Ask Question</h4>
-                    <p>Type questions about your finances: "How can I save this month?"</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Receive Analysis</h4>
-                    <p>AI analyzes your data and provides personalized response.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Implement Suggestions</h4>
-                    <p>Apply recommendations directly on the platform.</p>
-                </div>
-            </div>
-
-            <!-- Section 10: Couples -->
-            <div class="section" id="couples">
-                <h2>👥 10. Couple Management</h2>
-
-                <h3>How to Invite Your Partner</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Access Settings</h4>
-                    <p>In the main menu, click "Profile" or "Settings".</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Send Invitation</h4>
-                    <p>Enter your partner's email and click "Invite".</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Partner Accepts</h4>
-                    <p>Your partner will receive an email and must accept the invitation.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">4</span>Link Accounts</h4>
-                    <p>Both accounts become visible with privacy control.</p>
-                </div>
-
-                <h3>View Modes</h3>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>👥 Joint View</h4>
-                        <p>Consolidated couple data for shared decisions</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>👤 Individual View</h4>
-                        <p>User filter for personal analysis</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🔄 Quick Toggle</h4>
-                        <p>Buttons to easily switch between views</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🔒 Privacy Control</h4>
-                        <p>Choose what data to share</p>
-                    </div>
-                </div>
-
-                <h3>Collaborative Features</h3>
+                <h4>✅ Exempt Income</h4>
                 <ul>
-                    <li><strong>Shared Goals:</strong> Joint financial objectives</li>
-                    <li><strong>Family Budget:</strong> Joint spending planning</li>
-                    <li><strong>Comparative Reports:</strong> Individual vs joint analysis</li>
-                    <li><strong>Notifications:</strong> Shared alerts about goals and spending</li>
+                    <li>Savings account yields</li>
+                    <li>Profits and dividends</li>
+                    <li>Other exempt income</li>
                 </ul>
 
-                <h3>Permission Management</h3>
+                <h4>📝 Deductible Expenses</h4>
                 <ul>
-                    <li><strong>Administrator:</strong> Account creator has full control</li>
-                    <li><strong>Partner:</strong> Can view and add own data</li>
-                    <li><strong>Private Data:</strong> Transactions marked as private</li>
-                    <li><strong>Unlinking:</strong> Option to undo partnership</li>
+                    <li><strong>Health:</strong> Consultations, exams, health plans</li>
+                    <li><strong>Education:</strong> Tuition, courses</li>
+                    <li><strong>Private Pension:</strong> PGBL contributions</li>
+                    <li><strong>Alimony:</strong> Court-ordered payments</li>
                 </ul>
-
-                <div class="warning-box">
-                    <h4>⚠️ Important</h4>
-                    <p>Couple unlinking is permanent and requires confirmation from both users.</p>
-                </div>
-            </div>
-
-            <!-- Section 11: Reports -->
-            <div class="section" id="reports">
-                <h2>📋 11. Reports and Exports</h2>
-
-                <h3>Available Report Types</h3>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>📊 Monthly Report</h4>
-                        <p>Complete summary of income, expenses, and monthly balance</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>📈 Trend Analysis</h4>
-                        <p>Comparison between periods and financial evolution</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🏷️ Expenses by Category</h4>
-                        <p>Breakdown of expenses by expense type</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>💳 Card Report</h4>
-                        <p>Credit card spending analysis</p>
-                    </div>
-                </div>
-
-                <h3>Export Formats</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>PDF</h4>
-                    <p>Formatted reports for printing with charts and tables.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Excel (XLSX)</h4>
-                    <p>Editable spreadsheets with detailed data for advanced analysis.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>CSV</h4>
-                    <p>Simple format for importing into other tools.</p>
-                </div>
-
-                <h3>How to Generate Reports</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Select Period</h4>
-                    <p>Choose the date range for the report.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Filter Data</h4>
-                    <p>Select categories, cards, or specific types.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Choose Format</h4>
-                    <p>Click the export button and select the desired format.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">4</span>Download</h4>
-                    <p>The file will be generated and downloaded automatically.</p>
-                </div>
-
-                <h3>Interactive Charts</h3>
-                <ul>
-                    <li><strong>Pie Chart:</strong> Percentage distribution by category</li>
-                    <li><strong>Bar Chart:</strong> Temporal comparison of values</li>
-                    <li><strong>Line Chart:</strong> Evolution over time</li>
-                    <li><strong>Area Chart:</strong> Accumulated income vs expenses</li>
-                </ul>
-
+                
                 <div class="tip-box">
-                    <h4>💡 Report Tip</h4>
-                    <p>Export reports monthly to track evolution and facilitate tax returns.</p>
+                    <h4>📎 Document Upload</h4>
+                    <p>Upload supporting documents (receipts, invoices) directly in each expense. Keep everything organized for the declaration!</p>
                 </div>
-            </div>
 
-            <!-- Section 12: Settings -->
-            <div class="section" id="settings">
-                <h2>⚙️ 12. Settings and Profile</h2>
+                <h4>🏠 Assets and Rights</h4>
+                <ul>
+                    <li>Real estate</li>
+                    <li>Vehicles</li>
+                    <li>Investments</li>
+                    <li>Other assets</li>
+                </ul>
 
-                <h3>User Settings</h3>
+                <h4>⚠️ Pending Items</h4>
+                <div class="feature-card">
+                    <h4>Items Needing Attention</h4>
+                    <p>List of items that need review: undefined categories, high unclassified income, missing documents. Each has a "Resolve" button.</p>
+                </div>
+
+                <h3>12.3 Export</h3>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h4>👤 Personal Profile</h4>
-                        <ul>
-                            <li>Display name</li>
-                            <li>Email</li>
-                            <li>Profile picture</li>
-                            <li>Personal information</li>
-                        </ul>
+                        <h4>📄 PDF</h4>
+                        <p>Complete report to deliver to your accountant. Includes all sections and uploaded documents.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>🌍 Regional Preferences</h4>
-                        <ul>
-                            <li>Language (Portuguese, English, Spanish)</li>
-                            <li>Main currency</li>
-                            <li>Date format</li>
-                            <li>Time zone</li>
-                        </ul>
+                        <h4>📊 Spreadsheet</h4>
+                        <p>Organized data for filling. Separate sheets for each section.</p>
                     </div>
                 </div>
 
-                <h3>Security Settings</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Change Password</h4>
-                    <p>Update your password regularly for security.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Two-Factor Authentication</h4>
-                    <p>Enable 2FA for additional account protection.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Active Sessions</h4>
-                    <p>Monitor and end sessions from other devices.</p>
-                </div>
-
-                <h3>Notification Settings</h3>
-                <ul>
-                    <li><strong>Email:</strong> Reports, alerts, and updates</li>
-                    <li><strong>Push:</strong> Browser notifications</li>
-                    <li><strong>WhatsApp:</strong> WhatsApp alerts (Premium)</li>
-                    <li><strong>Frequency:</strong> Daily, weekly, or monthly</li>
-                </ul>
-
-                <h3>Privacy Settings</h3>
-                <ul>
-                    <li><strong>Shared Data:</strong> What partner can see</li>
-                    <li><strong>Private Transactions:</strong> Personal non-shared expenses</li>
-                    <li><strong>Data Backup:</strong> Automatic export</li>
-                    <li><strong>Account Deletion:</strong> Complete data removal</li>
-                </ul>
-
-                <h3>Currency Settings</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Main Currency</h4>
-                    <p>Set the currency for displaying consolidated totals.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Automatic Conversion</h4>
-                    <p>Values in other currencies are automatically converted.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Exchange Rate</h4>
-                    <p>Automatic rate updates for precise conversion.</p>
-                </div>
-            </div>
-
-            <!-- Section 13: Partnerships -->
-            <div class="section" id="partnerships">
-                <h2>🤝 13. Partnership Program</h2>
-
-                <h3>What is the Partnership Program?</h3>
-                <p>The Couples Financials Partnership Program is an opportunity for influencers, content creators, and financial professionals to monetize their audience by referring our platform.</p>
-
-                <h3>How It Works</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Application</h4>
-                    <p>Fill out the application form with your information and audience data.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Review</h4>
-                    <p>Our team analyzes your profile and audience for approval.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Approval</h4>
-                    <p>Approved partners receive exclusive code and marketing materials.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">4</span>Promotion</h4>
-                    <p>Share your code with audience through social media, blog, or videos.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">5</span>Earnings</h4>
-                    <p>Receive commissions for each subscription generated through your code.</p>
-                </div>
-
-                <h3>Commission System</h3>
-                <p>Our commission structure is progressive and based on the number of generated subscriptions:</p>
-
+                <h3>12.4 Declaration Types</h3>
                 <table class="commission-table">
                     <thead>
                         <tr>
-                            <th>Level</th>
-                            <th>Subscriptions/Month</th>
-                            <th>Commission per Subscription</th>
-                            <th>Performance Bonus</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>When to Use</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>Beginner</strong></td>
-                            <td>1-10</td>
-                            <td>$5</td>
-                            <td>-</td>
+                            <td><strong>Simplified</strong></td>
+                            <td>Standard 20% discount</td>
+                            <td>When deductions are less than 20% of income</td>
                         </tr>
                         <tr>
-                            <td><strong>Partner</strong></td>
-                            <td>11-25</td>
-                            <td>$7</td>
-                            <td>$50 per goal achieved</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Expert</strong></td>
-                            <td>26-50</td>
-                            <td>$10</td>
-                            <td>$150 per goal achieved</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Ambassador</strong></td>
-                            <td>51+</td>
-                            <td>$12</td>
-                            <td>$300 per goal achieved</td>
+                            <td><strong>Complete</strong></td>
+                            <td>Sum of all deductions</td>
+                            <td>When deductions exceed 20% of income</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h3>Partner Benefits</h3>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>🎁 Benefits for You</h4>
-                        <p>Recurring commissions from <strong>$5 USD</strong> to <strong>$12 USD</strong> per ANNUAL subscription made with your code. Bonuses for goals and seasonal campaigns. Early access to news and features. Payment within 45 days after your code is used.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>📊 Exclusive Dashboard</h4>
-                        <p>Track your metrics and earnings in real time</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🎯 Marketing Materials</h4>
-                        <p>Visual assets, templates, and scripts for promotion</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🚀 Early Access</h4>
-                        <p>Test new features before launch</p>
-                    </div>
-                </div>
-
-                <h3>Benefits for Your Followers</h3>
-                <ul>
-                    <li><strong>Exclusive Discount:</strong> <span class="highlight">20% OFF</span> on first subscription</li>
-                    <li><strong>Special Content:</strong> Access to exclusive financial guides</li>
-                    <li><strong>Priority Support:</strong> Preferential service</li>
-                    <li><strong>Free Workshops:</strong> Participation in exclusive events</li>
-                </ul>
-
-                <h3>Approval Criteria</h3>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>👥 Engaged Audience</h4>
-                        <p>Minimum 1000 followers with active engagement</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>💼 Relevant Niche</h4>
-                        <p>Content related to finance, lifestyle, or relationships</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>📱 Digital Presence</h4>
-                        <p>Active social media profiles or own channel</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🎯 Commitment</h4>
-                        <p>Willingness to actively promote the product</p>
-                    </div>
-                </div>
-
-                <h3>Payments</h3>
-                <ul>
-                    <li><strong>Frequency:</strong> Monthly payments</li>
-                    <li><strong>Methods:</strong> PIX, bank transfer, or PayPal</li>
-                    <li><strong>Receipt:</strong> Detailed commission report</li>
-                    <li><strong>Taxes:</strong> Partner responsibility according to local legislation</li>
-                </ul>
-
                 <div class="tip-box">
-                    <h4>💡 Success Tip</h4>
-                    <p>Partners who create educational content about personal finance have 3x more conversions than direct promotions only.</p>
-                </div>
-
-                <h3>How to Apply</h3>
-                <div class="step-by-step">
-                    <h4><span class="step-number">1</span>Access Form</h4>
-                    <p>Click "Partnership Program" in the main application menu.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">2</span>Fill Data</h4>
-                    <ul>
-                        <li>Personal and contact information</li>
-                        <li>Social media links</li>
-                        <li>Audience type and engagement</li>
-                        <li>Payment data (PIX or bank account)</li>
-                    </ul>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">3</span>Await Review</h4>
-                    <p>Our team reviews applications within 48 hours.</p>
-                </div>
-
-                <div class="step-by-step">
-                    <h4><span class="step-number">4</span>Receive Approval</h4>
-                    <p>Approved partners receive email with code and instructions.</p>
+                    <h4>💡 Automatic Suggestion</h4>
+                    <p>The system calculates and suggests the most advantageous option based on your data!</p>
                 </div>
             </div>
 
-            <!-- Section 14: Troubleshooting -->
+            <!-- Section 13: AI -->
+            <div class="section" id="ai">
+                <h2>🤖 13. AI Features</h2>
+                <p>Use artificial intelligence to get personalized financial insights and automate tasks.</p>
+
+                <h3>Personalized Recommendations</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📊 Pattern Analysis</h4>
+                        <p>Identifies spending trends and savings opportunities based on your history.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>💳 Card Optimization</h4>
+                        <p>Suggests which card to use in each situation to maximize benefits.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎯 Smart Goals</h4>
+                        <p>Proposes realistic goals based on your financial capacity.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>⚠️ Predictive Alerts</h4>
+                        <p>Warns about possible future financial problems.</p>
+                    </div>
+                </div>
+
+                <div class="premium-feature">
+                    <span class="premium-badge">⭐ PREMIUM</span>
+                    <h4>WhatsApp Smart</h4>
+                    <p>Access your financial information via WhatsApp: balance queries, spending by period, reminders, and quick analysis.</p>
+                </div>
+            </div>
+
+            <!-- Section 14: Couples -->
+            <div class="section" id="couples">
+                <h2>👥 14. Couple Features</h2>
+                <p>Features designed specifically for couples who share their financial lives.</p>
+
+                <h3>Couple Setup</h3>
+                <div class="step-by-step">
+                    <h4><span class="step-number">1</span>Send Invitation</h4>
+                    <p>In settings, invite your partner via email to join your account.</p>
+                </div>
+
+                <div class="step-by-step">
+                    <h4><span class="step-number">2</span>Accept Invitation</h4>
+                    <p>Partner receives the invitation and creates their account using the same email.</p>
+                </div>
+
+                <h3>Shared Features</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🔗 Shared Accounts</h4>
+                        <p>Manage joint accounts with visibility for both.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎯 Joint Goals</h4>
+                        <p>Set and track shared financial objectives.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📊 Consolidated Reports</h4>
+                        <p>View combined finances or individual breakdowns.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>👤 Ownership Tracking</h4>
+                        <p>Track which partner made each transaction.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 15: Reports -->
+            <div class="section" id="reports">
+                <h2>📊 15. Reports and Analysis</h2>
+                <p>Generate detailed reports to understand your financial situation and make better decisions.</p>
+
+                <h3>Available Reports</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📈 Monthly Summary</h4>
+                        <p>Overview of income, expenses, and balance for each month.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🏷️ By Category</h4>
+                        <p>Detailed breakdown of spending by category.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📅 Annual Report</h4>
+                        <p>Year-over-year comparison and trends.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>💳 Card Analysis</h4>
+                        <p>Card usage patterns and optimization opportunities.</p>
+                    </div>
+                </div>
+
+                <h3>Export Options</h3>
+                <ul>
+                    <li><strong>PDF:</strong> Formatted reports ready to print or share</li>
+                    <li><strong>Excel:</strong> Data for external analysis</li>
+                    <li><strong>CSV:</strong> Raw data export</li>
+                </ul>
+            </div>
+
+            <!-- Section 16: Settings -->
+            <div class="section" id="settings">
+                <h2>⚙️ 16. Settings and Profile</h2>
+                <p>Customize your experience and configure security and privacy preferences.</p>
+
+                <h3>Personal Settings</h3>
+                <ul>
+                    <li><strong>Profile Information:</strong> Name, email, phone, profile picture</li>
+                    <li><strong>Regional Preferences:</strong> Language, currency, timezone</li>
+                    <li><strong>Theme:</strong> Light/dark mode</li>
+                </ul>
+
+                <h3>Security</h3>
+                <ul>
+                    <li><strong>Password Management:</strong> Change password regularly</li>
+                    <li><strong>Two-Factor Authentication:</strong> Add extra security layer</li>
+                    <li><strong>Access History:</strong> Monitor recent logins</li>
+                </ul>
+
+                <h3>Notifications</h3>
+                <ul>
+                    <li><strong>Due Date Alerts:</strong> Card and bill reminders</li>
+                    <li><strong>Goal Notifications:</strong> Progress updates</li>
+                    <li><strong>Unusual Activity:</strong> Spending alerts</li>
+                </ul>
+            </div>
+
+            <!-- Section 17: Partnerships -->
+            <div class="section" id="partnerships">
+                <h2>🤝 17. Partnership Program</h2>
+                <p>Monetize your network by sharing Couples Financials and earn commissions.</p>
+
+                <h3>Affiliate System</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>💰 Your Benefits</h4>
+                        <p>Recurring commissions of $5 to $12 per ANNUAL subscription made with your code.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔗 Personalized Link</h4>
+                        <p>Receive your unique affiliate link to track conversions transparently.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📊 Affiliate Dashboard</h4>
+                        <p>Monitor clicks, conversions, and commissions in real-time.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>💳 Monthly Payments</h4>
+                        <p>Receive commissions monthly via bank transfer or PayPal.</p>
+                    </div>
+                </div>
+
+                <div class="premium-feature">
+                    <span class="premium-badge">⭐ VIP</span>
+                    <h4>VIP Program for Super Partners</h4>
+                    <p>High-performance partners get access to: product decisions, beta testing, exclusive events, special commissions, and personalized co-marketing.</p>
+                </div>
+            </div>
+
+            <!-- Section 18: Troubleshooting -->
             <div class="section" id="troubleshooting">
-                <h2>🔧 14. Troubleshooting</h2>
+                <h2>🛠️ 18. Troubleshooting</h2>
+                <p>Find answers to common problems and learn how to get support.</p>
 
-                <h3>Common Problems and Solutions</h3>
-
-                <h4>🔐 Login Problems</h4>
+                <h3>Frequently Asked Questions</h3>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h4>Forgot my password</h4>
-                        <p><strong>Solution:</strong> Click "Forgot password" on login screen and follow instructions sent by email.</p>
+                        <h4>🔑 Forgot Password</h4>
+                        <p>Use "Forgot Password" on login screen. Check spam folder if you don't receive email.</p>
                     </div>
                     <div class="feature-card">
-                        <h4>Email not confirmed</h4>
-                        <p><strong>Solution:</strong> Check your spam folder and click the confirmation link. If not received, request new email.</p>
+                        <h4>💰 Balances Don't Match</h4>
+                        <p>Verify all transactions are correctly recorded. Compare with bank statements.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔄 App Not Syncing</h4>
+                        <p>Check internet connection. Force close and reopen app. Logout/login if needed.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>👥 Couple Invitation Issues</h4>
+                        <p>Verify email is correct. Partner must use the same email from invitation to create account.</p>
                     </div>
                 </div>
 
-                <h4>💾 Data Problems</h4>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>Transaction doesn't appear</h4>
-                        <p><strong>Solution:</strong> Check if date is in current month and no filters are active. Click "Refresh" on dashboard.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>Incorrect balance</h4>
-                        <p><strong>Solution:</strong> Confirm all transactions were recorded correctly and accounts are active.</p>
-                    </div>
-                </div>
-
-                <h4>👥 Couple Problems</h4>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>Invitation didn't arrive</h4>
-                        <p><strong>Solution:</strong> Check if email is correct and ask partner to check spam. Try sending again.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>Data doesn't sync</h4>
-                        <p><strong>Solution:</strong> Both users should logout and login again. Wait a few minutes for synchronization.</p>
-                    </div>
-                </div>
-
-                <h3>Performance Tips</h3>
+                <h3>Support Channels</h3>
                 <ul>
-                    <li><strong>Internet:</strong> Maintain stable connection for better experience</li>
-                    <li><strong>Browser:</strong> Use updated versions of Chrome, Firefox, or Safari</li>
-                    <li><strong>Cache:</strong> Clear browser cache if experiencing slowness</li>
-                    <li><strong>JavaScript:</strong> Make sure JavaScript is enabled</li>
+                    <li><strong>Online Chat:</strong> Available 24/7 for Premium users</li>
+                    <li><strong>Email:</strong> support@couplesfinancials.com</li>
+                    <li><strong>WhatsApp Business:</strong> For Premium users</li>
+                    <li><strong>Help Center:</strong> Complete knowledge base with tutorials</li>
                 </ul>
 
-                <h3>Technical Support</h3>
-                <div class="tip-box">
-                    <h4>📧 How to Get Help</h4>
-                    <ul>
-                        <li><strong>Email:</strong> Contact through support email</li>
-                        <li><strong>FAQ:</strong> Check frequently asked questions section</li>
-                        <li><strong>Chat:</strong> Use online chat during business hours</li>
-                        <li><strong>Status:</strong> Check for scheduled maintenance</li>
-                    </ul>
-                </div>
-
-                <h3>Data Security</h3>
                 <div class="warning-box">
-                    <h4>🔒 Security Recommendations</h4>
-                    <ul>
-                        <li>Use strong, unique passwords</li>
-                        <li>Enable two-factor authentication</li>
-                        <li>Don't share login credentials</li>
-                        <li>Regularly update your password</li>
-                        <li>Access only from trusted devices</li>
-                    </ul>
-                </div>
-
-                <h3>Application Updates</h3>
-                <p>The application is automatically updated. New features and improvements are deployed regularly. If you experience issues after an update:</p>
-                <ul>
-                    <li>Clear your browser cache</li>
-                    <li>Refresh the page completely</li>
-                    <li>Check our status page for announcements</li>
-                    <li>Contact support if problems persist</li>
-                </ul>
-
-                <div class="tip-box">
-                    <h4>💡 Final Tip</h4>
-                    <p>Keep the tutorial saved for future reference. You can print it or save as PDF for offline access.</p>
+                    <h4>⚠️ Suspicious Activity</h4>
+                    <p>If you suspect unauthorized access: Change password immediately, review access history, disconnect all devices, enable two-factor authentication, contact us urgently.</p>
                 </div>
             </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
+            <p><strong>Couples Financials</strong> - Complete Financial Management for Couples</p>
+            <p>Support: <a href="mailto:support@couplesfinancials.com">support@couplesfinancials.com</a></p>
+            <p style="color: #6c757d; font-size: 0.9em;">© 2024 Couples Financials. All rights reserved.</p>
         </div>
     </div>
-
-    <script>
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
 </body>
 </html>

@@ -400,8 +400,145 @@ const getTutorialContentPT = (): TutorialContent => ({
       ]
     },
     {
+      id: 'despesas-mensais',
+      title: '7. Despesas Mensais',
+      icon: '📅',
+      intro: 'O módulo de despesas mensais organiza todos os seus gastos em 3 abas principais para controle completo e eficiente.',
+      subSections: [
+        {
+          title: 'Despesas Atuais',
+          content: 'Despesas do mês selecionado que já foram realizadas:',
+          bullets: [
+            'Gastos já pagos e registrados no sistema',
+            'Compras à vista, cartão de crédito, PIX, dinheiro',
+            'Filtros por mês e categoria',
+            'Visualização detalhada com valores e datas',
+          ]
+        },
+        {
+          title: 'Despesas Futuras',
+          content: 'Despesas programadas que ainda não foram pagas:',
+          features: [
+            { title: 'Parcelas de Cartão', desc: 'Parcelas futuras de compras já realizadas distribuídas nas próximas faturas.' },
+            { title: 'Despesas Recorrentes', desc: 'Contas fixas como aluguel, luz, internet geradas automaticamente.' },
+            { title: 'Pagamentos de Faturas', desc: 'Datas de vencimento de faturas de cartão de crédito.' },
+            { title: 'Despesas Manuais', desc: 'Despesas futuras que você adiciona manualmente no sistema.' },
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Sistema de Alertas de Vencimento',
+            content: 'No dia do vencimento, aparece um alerta (tooltip) na página principal. Você pode pagar diretamente pelo alerta! Isso facilita não esquecer de nenhum compromisso financeiro.'
+          }
+        },
+        {
+          title: 'Despesas Atrasadas',
+          content: 'Despesas que passaram da data de vencimento sem pagamento:',
+          bullets: [
+            'Despesas permanecem na lista até serem pagas',
+            'Exibição padrão: últimos 90 dias',
+            'Opção para ver despesas com mais de 90 dias de atraso',
+            'Botão "Pagar" para quitar a despesa',
+            'Após pagamento, a despesa some da lista de atrasadas',
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Como Resolver Despesas Atrasadas',
+            content: 'Na aba "Atrasadas", identifique a despesa, clique em "Pagar" para quitar. Após o pagamento, ela é automaticamente removida da lista e registrada como paga.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'despesas-recorrentes',
+      title: '8. Despesas Recorrentes',
+      icon: '🔄',
+      intro: 'Despesas recorrentes são gastos fixos que se repetem periodicamente. Configure-as para automatizar seu controle financeiro.',
+      subSections: [
+        {
+          title: 'O que são Despesas Recorrentes',
+          content: 'Gastos fixos que se repetem com frequência definida:',
+          bullets: [
+            'Aluguel, condomínio, IPTU',
+            'Luz, água, gás, internet',
+            'Assinaturas (streaming, apps, academia)',
+            'Financiamentos e empréstimos',
+          ]
+        },
+        {
+          title: 'Como Adicionar',
+          steps: [
+            { num: 1, title: 'Acessar Menu', desc: 'Navegue até "Despesas Recorrentes" ou acesse pelo Fluxo de Caixa.' },
+            { num: 2, title: 'Preencher Dados', desc: 'Informe: descrição, valor, categoria, frequência (diária, semanal, quinzenal, mensal, anual).' },
+            { num: 3, title: 'Configurar Período', desc: 'Defina data de início, fim (opcional) e número de parcelas se aplicável.' },
+          ]
+        },
+        {
+          title: 'Fluxo de Geração Automática',
+          content: 'O sistema cria automaticamente entradas em Despesas Futuras:',
+          bullets: [
+            'Despesa Recorrente → gera automaticamente → Despesa Futura',
+            'No dia do vencimento → aparece alerta na tela principal',
+            'Se não pagar → vai para Despesas Atrasadas',
+            'Após pagamento → despesa concluída/removida',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Gestão de Recorrências',
+            content: 'Você pode editar valores, pausar temporariamente, ou cancelar permanentemente uma despesa recorrente. O histórico de todas as ocorrências geradas fica disponível para consulta.'
+          }
+        }
+      ]
+    },
+    {
+      id: 'fluxo-caixa',
+      title: '9. Fluxo de Caixa',
+      icon: '💰',
+      intro: 'Visão consolidada de todas as entradas e saídas que afetam o saldo bancário real.',
+      subSections: [
+        {
+          title: 'O que é o Fluxo de Caixa',
+          content: 'Diferente do dashboard de despesas, o Fluxo de Caixa mostra apenas movimentações reais:',
+          features: [
+            { title: 'Entradas', desc: 'Salários, receitas, transferências recebidas, resgates de investimentos.' },
+            { title: 'Saídas', desc: 'Pagamentos de faturas de cartão, transferências enviadas, saques, débitos automáticos.' },
+          ]
+        },
+        {
+          title: 'O que NÃO entra no Fluxo de Caixa',
+          bullets: [
+            'Compras no cartão de crédito (afetam o limite, não o saldo)',
+            'Parcelas futuras (são compromissos, não movimentação real)',
+          ]
+        },
+        {
+          title: 'Abas do Fluxo de Caixa',
+          features: [
+            { title: 'Visão Geral', desc: 'Gráficos e resumo do período com evolução de saldo e tendências.' },
+            { title: 'Histórico', desc: 'Lista detalhada de todas as movimentações com filtros e busca.' },
+            { title: 'Despesas', desc: 'Despesas consolidadas por categoria com análise detalhada.' },
+            { title: 'Receitas', desc: 'Receitas consolidadas por categoria com visão detalhada.' },
+            { title: 'Imposto de Renda', desc: 'Acesso direto ao módulo de IR para organização da declaração.' },
+          ]
+        },
+        {
+          title: 'Filtros e Exportação',
+          bullets: [
+            'Período: Mensal, Trimestral, Anual, Personalizado',
+            'Ano específico para visão anual',
+            'Exportação em PDF ou Excel',
+          ]
+        }
+      ]
+    },
+    {
       id: 'investimentos',
-      title: '7. Controle de Investimentos',
+      title: '10. Controle de Investimentos',
       icon: '📈',
       intro: 'Acompanhe sua carteira de investimentos com análises de rentabilidade e performance.',
       subSections: [
@@ -423,47 +560,10 @@ const getTutorialContentPT = (): TutorialContent => ({
           ]
         },
         {
-          title: 'Metas e Objetivos',
-          steps: [
-            { num: 1, title: 'Definindo Metas', desc: 'Estabeleça objetivos claros: valor total desejado, prazo para atingir e propósito específico (aposentadoria, casa própria, viagem, etc.).' },
-            { num: 2, title: 'Estratégias de Aporte', desc: 'Configure aportes mensais automáticos e simule diferentes cenários de investimento.' },
-          ]
-        },
-        {
-          title: 'Análises de Portfólio',
-          bullets: [
-            'Diversificação: Gráficos mostrando distribuição por tipo, prazo e risco',
-            'Performance: Comparação com CDI, IPCA e outros benchmarks',
-            'Rentabilidade: Cálculos de juros compostos e projeções futuras',
-            'Liquidez: Análise de quanto do patrimônio está disponível rapidamente',
-          ]
-        },
-        {
-          title: 'Gestão de Resgates',
-          steps: [
-            { num: 1, title: 'Planejamento de Resgates', desc: 'Simule diferentes cenários de resgate considerando impostos, taxas e impacto no portfólio.' },
-            { num: 2, title: 'Registro de Resgates', desc: 'Registre retiradas com valor bruto, descontos de IR e taxas, valor líquido recebido.' },
-          ]
-        },
-        {
           title: '',
           tipBox: {
             title: 'Estratégia de Diversificação',
             content: 'Use o sistema para manter uma carteira diversificada: 20-40% renda fixa, 40-60% renda variável, 10-20% reserva de emergência. Reavalie periodicamente e rebalanceie conforme necessário. Para casais, considere objetivos individuais e conjuntos.'
-          }
-        },
-        {
-          title: '',
-          premiumBox: {
-            title: 'Recursos Premium de Investimentos',
-            content: 'Integração com APIs de cotações em tempo real, recomendações personalizadas de IA, análise de risco automatizada, alertas de oportunidades e comparação automática com carteiras de referência.'
-          }
-        },
-        {
-          title: '',
-          warningBox: {
-            title: 'Considerações Importantes',
-            content: 'Lembre-se de considerar impostos (IR progressivo para renda fixa, 15% para ações após 6 meses), taxas de administração e custódia. Mantenha sempre uma reserva de emergência antes de investir. Diversifique entre diferentes tipos e prazos de investimento.'
           }
         }
       ]
