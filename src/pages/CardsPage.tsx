@@ -3,7 +3,8 @@ import { CardForm } from "@/components/cards/CardForm";
 import { CardList } from "@/components/cards/CardList";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
-import { ArrowLeft, CreditCard, TrendingUp, Wallet, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, CreditCard, TrendingUp, Wallet, Eye, Landmark } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
@@ -33,6 +34,7 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
   const { t } = useLanguage();
   const { names } = usePartnerNames();
   const { convertCurrency } = useCurrencyConverter();
+  const navigate = useNavigate();
   
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [cardsData, setCardsData] = useState<CardRow[]>([]);
@@ -259,12 +261,18 @@ export const CardsPage = ({ onBack }: CardsPageProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back')}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('back')}
+          </Button>
+          <h1 className="text-3xl font-bold">{t('cards.manage')}</h1>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => navigate('/accounts')}>
+          <Landmark className="h-4 w-4 mr-2" />
+          {t('accounts.manage')}
         </Button>
-        <h1 className="text-3xl font-bold">{t('cards.manage')}</h1>
       </div>
 
       {/* View selector + summary card (Limite disponível) */}
