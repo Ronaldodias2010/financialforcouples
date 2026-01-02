@@ -2,7 +2,7 @@ import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ import { PremiumExpirationWarning } from "@/components/subscription/PremiumExpir
 import { downloadTutorialPDF, openTutorialHTML } from "@/utils/tutorialUtils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CurrencyRatesDisplay } from "@/components/financial/CurrencyRatesDisplay";
+import TestimonialFormModal from "@/components/landing/TestimonialFormModal";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
@@ -19,7 +21,7 @@ const AppDashboard = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
   const [displayName, setDisplayName] = useState<string>('');
-
+  const [testimonialOpen, setTestimonialOpen] = useState(false);
   // Check if user is admin (simplified - in production use proper role system)
   const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email?.includes('admin');
 
@@ -110,6 +112,16 @@ const AppDashboard = () => {
                 </Button>
               </>
             )}
+            <LanguageSwitcher />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setTestimonialOpen(true)}
+              title={t('testimonials.submitButton')}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">{t('testimonials.submitButton')}</span>
+            </Button>
             <ThemeSwitcher />
             <Button 
               variant="outline" 
@@ -122,6 +134,8 @@ const AppDashboard = () => {
           </div>
         </div>
       </header>
+      
+      <TestimonialFormModal open={testimonialOpen} onOpenChange={setTestimonialOpen} />
       <main>
         {currentPage === 'dashboard' ? (
           <div>
