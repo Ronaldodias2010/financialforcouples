@@ -490,6 +490,17 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
         exemptIncomes={exemptIncomes}
         deductibleExpenses={deductibleExpenses}
         taxAssets={taxAssets}
+        pendingItems={pendingItems}
+        profile={profile ? {
+          display_name: profile.display_name || undefined,
+          cpf: profile.cpf || undefined
+        } : undefined}
+        onReviewAll={() => {
+          const pendingSection = document.getElementById('pending-section');
+          if (pendingSection) {
+            pendingSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
       />
 
       {/* Pending Item Resolver Modal */}

@@ -2073,6 +2073,9 @@ const translations = {
     'tax.export.review': 'Revisar Tudo',
     'tax.export.reviewDesc': 'Verificar todos os dados',
     'tax.export.disclaimer': 'Este relatório é apenas um resumo para apoio. Consulte um contador para orientação profissional.',
+    'tax.export.pdfSuccess': 'PDF exportado com sucesso!',
+    'tax.export.excelSuccess': 'Excel exportado com sucesso!',
+    'tax.export.error': 'Erro ao exportar. Tente novamente.',
     
     // Tax Documents
     'tax.documents.uploadTitle': 'Anexar Documento',
@@ -4169,6 +4172,9 @@ const translations = {
     'tax.export.review': 'Review All',
     'tax.export.reviewDesc': 'Verify all data',
     'tax.export.disclaimer': 'This report is only a summary for support. Consult an accountant for professional guidance.',
+    'tax.export.pdfSuccess': 'PDF exported successfully!',
+    'tax.export.excelSuccess': 'Excel exported successfully!',
+    'tax.export.error': 'Error exporting. Please try again.',
     
     // Tax Country Selector
     'tax.countrySelector.title': 'Select your tax residence country',
@@ -6292,6 +6298,9 @@ const translations = {
     'tax.export.review': 'Revisar Todo',
     'tax.export.reviewDesc': 'Verificar todos los datos',
     'tax.export.disclaimer': 'Este informe es solo un resumen de apoyo. Consulta a un contador para orientación profesional.',
+    'tax.export.pdfSuccess': '¡PDF exportado con éxito!',
+    'tax.export.excelSuccess': '¡Excel exportado con éxito!',
+    'tax.export.error': 'Error al exportar. Inténtalo de nuevo.',
     
     // Tax Country Selector
     'tax.countrySelector.title': 'Selecciona tu país de residencia fiscal',
