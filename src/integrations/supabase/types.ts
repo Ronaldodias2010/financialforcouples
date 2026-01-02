@@ -2907,13 +2907,22 @@ export type Database = {
       }
       tax_report_config: {
         Row: {
+          accepted_suggestions: Json | null
           created_at: string | null
           declaration_type: string
+          declared_at: string | null
           dependents: Json | null
+          diagnostic_answers: Json | null
+          diagnostic_completed_at: string | null
+          final_summary: Json | null
           id: string
           notes: string | null
+          notes_next_year: string | null
           primary_declarant: string
           progress_percentage: number | null
+          receita_status: string | null
+          rejected_suggestions: Json | null
+          section_status: Json | null
           status: string
           tax_country: string | null
           tax_year: number
@@ -2921,13 +2930,22 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accepted_suggestions?: Json | null
           created_at?: string | null
           declaration_type?: string
+          declared_at?: string | null
           dependents?: Json | null
+          diagnostic_answers?: Json | null
+          diagnostic_completed_at?: string | null
+          final_summary?: Json | null
           id?: string
           notes?: string | null
+          notes_next_year?: string | null
           primary_declarant?: string
           progress_percentage?: number | null
+          receita_status?: string | null
+          rejected_suggestions?: Json | null
+          section_status?: Json | null
           status?: string
           tax_country?: string | null
           tax_year: number
@@ -2935,13 +2953,22 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accepted_suggestions?: Json | null
           created_at?: string | null
           declaration_type?: string
+          declared_at?: string | null
           dependents?: Json | null
+          diagnostic_answers?: Json | null
+          diagnostic_completed_at?: string | null
+          final_summary?: Json | null
           id?: string
           notes?: string | null
+          notes_next_year?: string | null
           primary_declarant?: string
           progress_percentage?: number | null
+          receita_status?: string | null
+          rejected_suggestions?: Json | null
+          section_status?: Json | null
           status?: string
           tax_country?: string | null
           tax_year?: number
