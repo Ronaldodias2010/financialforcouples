@@ -2237,6 +2237,15 @@ const translations = {
     '2fa.wizard.start': 'Começar',
     '2fa.wizard.configure': 'Configurar método',
     
+    // 2FA Method Names
+    '2fa.method.totp': 'App Autenticador',
+    '2fa.method.totp.description': 'Use aplicativos como Google Authenticator ou Authy para gerar códigos',
+    '2fa.method.sms': 'SMS',
+    '2fa.method.sms.description': 'Receba códigos de verificação via mensagem de texto',
+    '2fa.method.email': 'E-mail',
+    '2fa.method.email.description': 'Receba códigos de verificação no seu e-mail cadastrado',
+    '2fa.method.none': 'Nenhum',
+    
     // 2FA Opt-out
     '2fa.optout.title': 'Continuar sem 2FA?',
     '2fa.optout.description': 'Você está escolhendo não usar autenticação de dois fatores.',
@@ -4463,6 +4472,15 @@ const translations = {
     '2fa.wizard.start': 'Get Started',
     '2fa.wizard.configure': 'Configure method',
     
+    // 2FA Method Names
+    '2fa.method.totp': 'Authenticator App',
+    '2fa.method.totp.description': 'Use apps like Google Authenticator or Authy to generate codes',
+    '2fa.method.sms': 'SMS',
+    '2fa.method.sms.description': 'Receive verification codes via text message',
+    '2fa.method.email': 'Email',
+    '2fa.method.email.description': 'Receive verification codes at your registered email',
+    '2fa.method.none': 'None',
+    
     // 2FA Opt-out
     '2fa.optout.title': 'Continue without 2FA?',
     '2fa.optout.description': 'You are choosing not to use two-factor authentication.',
@@ -6656,6 +6674,15 @@ const translations = {
     '2fa.wizard.skip': 'Saltar por ahora',
     '2fa.wizard.start': 'Comenzar',
     '2fa.wizard.configure': 'Configurar método',
+    
+    // 2FA Method Names
+    '2fa.method.totp': 'App Autenticador',
+    '2fa.method.totp.description': 'Usa apps como Google Authenticator o Authy para generar códigos',
+    '2fa.method.sms': 'SMS',
+    '2fa.method.sms.description': 'Recibe códigos de verificación por mensaje de texto',
+    '2fa.method.email': 'Correo',
+    '2fa.method.email.description': 'Recibe códigos de verificación en tu correo registrado',
+    '2fa.method.none': 'Ninguno',
     
     // 2FA Opt-out
     '2fa.optout.title': '¿Continuar sin 2FA?',
