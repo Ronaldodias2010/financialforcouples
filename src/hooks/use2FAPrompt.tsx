@@ -4,14 +4,17 @@ const STORAGE_KEY = '2fa_prompt_dismissed';
 
 export function use2FAPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState<boolean | null>(null); // null = loading
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const dismissed = localStorage.getItem(STORAGE_KEY);
     setIsDismissed(dismissed === 'true');
+    setIsLoaded(true);
   }, []);
 
-  const shouldShowPrompt = !isDismissed;
+  // Only show prompt if loaded AND not dismissed
+  const shouldShowPrompt = isLoaded && isDismissed === false;
 
   const dismissPrompt = (dontAskAgain: boolean) => {
     setShowPrompt(false);
@@ -22,7 +25,7 @@ export function use2FAPrompt() {
   };
 
   const openPrompt = () => {
-    if (!isDismissed) {
+    if (isDismissed === false) {
       setShowPrompt(true);
     }
   };
@@ -39,6 +42,7 @@ export function use2FAPrompt() {
     dismissPrompt,
     openPrompt,
     resetPrompt,
-    isDismissed,
+    isDismissed: isDismissed === true,
+    isLoaded,
   };
 }

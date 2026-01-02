@@ -20,9 +20,12 @@ export default function AuthCallback() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { shouldShowPrompt, dismissPrompt } = use2FAPrompt();
+  const { shouldShowPrompt, dismissPrompt, isLoaded } = use2FAPrompt();
 
   useEffect(() => {
+    // Wait for localStorage to be loaded before making decisions
+    if (!isLoaded) return;
+
     const handleCallback = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -33,11 +36,15 @@ export default function AuthCallback() {
           return;
         }
 
+        console.log('AuthCallback: Session found, checking 2FA status...');
+
         // Verificar se usuário tem 2FA habilitado
         try {
           const { data: tfaResponse } = await supabase.functions.invoke('check-2fa-status', {
             body: { userId: session.user.id }
           });
+
+          console.log('AuthCallback: 2FA status response:', tfaResponse);
 
           if (tfaResponse?.is_enabled && tfaResponse?.method && tfaResponse.method !== 'none') {
             // Enviar código se for SMS ou Email
@@ -54,6 +61,7 @@ export default function AuthCallback() {
           }
 
           // Usuário não tem 2FA - mostrar wizard se não foi dispensado
+          console.log('AuthCallback: shouldShowPrompt =', shouldShowPrompt);
           if (shouldShowPrompt) {
             setShowWizard(true);
             setIsLoading(false);
@@ -61,6 +69,12 @@ export default function AuthCallback() {
           }
         } catch (tfaError) {
           console.log('2FA check skipped:', tfaError);
+          // Se falhou a verificação, ainda mostrar wizard se não foi dispensado
+          if (shouldShowPrompt) {
+            setShowWizard(true);
+            setIsLoading(false);
+            return;
+          }
         }
 
         // Sem 2FA e wizard dispensado, redirecionar para app
@@ -72,7 +86,7 @@ export default function AuthCallback() {
     };
 
     handleCallback();
-  }, [shouldShowPrompt]);
+  }, [shouldShowPrompt, isLoaded]);
 
   const handle2FAVerified = () => {
     toast({
