@@ -18,6 +18,7 @@ const TermsOfUse = lazy(() => import("./components/landing/TermsOfUse"));
 const AboutUs = lazy(() => import("./pages/AboutUs"));
 const Partnership = lazy(() => import("./pages/Partnership"));
 import Auth from "./pages/Auth";
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 import Landing from "./pages/Landing";
 const DirectCheckout = lazy(() => import("./pages/DirectCheckout"));
 const CheckoutEmailConfirmation = lazy(() => import("./pages/CheckoutEmailConfirmation"));
@@ -62,6 +63,7 @@ const AppRoutes = () => {
         <Route path="/checkout-email-confirmation" element={<CheckoutEmailConfirmation />} />
         <Route path="/landing-simple" element={<LandingSimple />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />

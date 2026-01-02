@@ -12,6 +12,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { PasswordValidation, PasswordMatchValidation, validatePassword } from '@/components/ui/PasswordValidation';
 import { translateAuthError } from '@/utils/authErrors';
 import { trackSignUp, trackLogin } from '@/utils/analytics';
+import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
+import { TwoFactorMethod } from '@/hooks/use2FA';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +29,8 @@ export default function Auth() {
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [show2FAVerification, setShow2FAVerification] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<TwoFactorMethod>('none');
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
 
@@ -117,6 +121,30 @@ export default function Auth() {
       
       if (data.user) {
         trackLogin('email');
+        
+        // Verificar se usuário tem 2FA habilitado
+        try {
+          const { data: tfaResponse } = await supabase.functions.invoke('check-2fa-status', {
+            body: { userId: data.user.id }
+          });
+
+          if (tfaResponse?.is_enabled && tfaResponse?.method && tfaResponse.method !== 'none') {
+            // Enviar código se for SMS ou Email
+            if (tfaResponse.method === 'sms' || tfaResponse.method === 'email') {
+              await supabase.functions.invoke('send-2fa-email', {
+                body: { userId: data.user.id, method: tfaResponse.method }
+              });
+            }
+            
+            setTwoFactorMethod(tfaResponse.method as TwoFactorMethod);
+            setShow2FAVerification(true);
+            setIsLoading(false);
+            return; // Não redirecionar ainda
+          }
+        } catch (tfaError) {
+          console.log('2FA check skipped:', tfaError);
+        }
+          
         toast({
           title: t('auth.loginSuccessTitle'),
           description: t('auth.loginSuccessDesc'),
@@ -143,7 +171,7 @@ export default function Auth() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`
+          redirectTo: `${window.location.origin}/auth/callback`
         }
       });
       
@@ -158,6 +186,20 @@ export default function Auth() {
       });
       setIsLoading(false);
     }
+  };
+
+  const handle2FAVerified = () => {
+    toast({
+      title: t('auth.loginSuccessTitle'),
+      description: t('auth.loginSuccessDesc'),
+    });
+    window.location.href = '/app';
+  };
+
+  const handle2FACancel = async () => {
+    await supabase.auth.signOut();
+    setShow2FAVerification(false);
+    setTwoFactorMethod('none');
   };
 
 
@@ -581,6 +623,14 @@ export default function Auth() {
           </Tabs>
         </CardContent>
       </Card>
+      
+      <TwoFactorVerification
+        open={show2FAVerification}
+        onOpenChange={setShow2FAVerification}
+        method={twoFactorMethod}
+        onVerified={handle2FAVerified}
+        onCancel={handle2FACancel}
+      />
     </div>
   );
 }
