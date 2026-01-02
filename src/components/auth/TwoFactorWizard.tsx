@@ -131,7 +131,7 @@ export function TwoFactorWizard({ open, onOpenChange, onSelectMethod, onSkip }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
@@ -147,7 +147,7 @@ export function TwoFactorWizard({ open, onOpenChange, onSelectMethod, onSkip }: 
           <Progress value={progress} className="h-1" />
         </DialogHeader>
 
-        <div className="py-4 min-h-[300px]">
+        <div className="py-2 sm:py-4 min-h-[250px] sm:min-h-[300px]">
           {/* Step 0: Introduction */}
           {step === 0 && (
             <div className="space-y-6">
@@ -217,16 +217,16 @@ export function TwoFactorWizard({ open, onOpenChange, onSelectMethod, onSkip }: 
                         : 'border-border hover:border-primary/50 hover:bg-muted/50'
                     }`}
                   >
-                    <div className="flex items-start gap-4">
-                      <div className={`p-2 rounded-full bg-muted ${method.color}`}>
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className={`p-1.5 sm:p-2 rounded-full bg-muted ${method.color} flex-shrink-0`}>
                         {method.icon}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium">{t(`2fa.method.${method.id}`)}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="font-medium text-sm sm:text-base">{t(`2fa.method.${method.id}`)}</span>
                           {getSecurityBadge(method.security)}
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">
                           {t(`2fa.method.${method.id}.description`)}
                         </p>
                         
