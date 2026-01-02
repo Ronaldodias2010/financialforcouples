@@ -275,6 +275,36 @@ export default function SecuritySettings() {
           </CardContent>
         </Card>
 
+        {/* Reset 2FA Prompt - Only show when 2FA is disabled */}
+        {!isEnabled && (
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{t('2fa.resetPrompt.title')}</p>
+                    <p className="text-sm text-muted-foreground">{t('2fa.resetPrompt.description')}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    resetPrompt();
+                    toast({
+                      title: t('2fa.resetPrompt.success.title'),
+                      description: t('2fa.resetPrompt.success.description'),
+                    });
+                  }}
+                >
+                  {t('2fa.resetPrompt.button')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Backup Codes */}
         {isEnabled && (
           <Card>
