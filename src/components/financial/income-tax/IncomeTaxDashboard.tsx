@@ -20,6 +20,7 @@ import {
   Download
 } from 'lucide-react';
 import { useIncomeTaxReport, TaxStatus } from '@/hooks/useIncomeTaxReport';
+import { useTaxCountry } from '@/hooks/useTaxCountry';
 import { TaxSummaryCards } from './TaxSummaryCards';
 import { TaxIdentificationSection } from './TaxIdentificationSection';
 import { TaxIncomeSection } from './TaxIncomeSection';
@@ -27,6 +28,8 @@ import { TaxDeductionsSection } from './TaxDeductionsSection';
 import { TaxAssetsSection } from './TaxAssetsSection';
 import { TaxPendingSection } from './TaxPendingSection';
 import { TaxExportSection } from './TaxExportSection';
+import { TaxCountrySelector } from './TaxCountrySelector';
+import { TaxUnderConstruction } from './TaxUnderConstruction';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface IncomeTaxDashboardProps {
@@ -39,6 +42,16 @@ const availableYears = [currentYear - 2, currentYear - 1, currentYear];
 export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
   const { t } = useLanguage();
   const [taxYear, setTaxYear] = useState(currentYear - 1); // Default to previous year
+
+  // Tax country check
+  const { 
+    taxCountry, 
+    isLoading: isLoadingCountry, 
+    shouldAskCountry, 
+    isDetectedUS, 
+    saveCountry, 
+    resetCountry 
+  } = useTaxCountry();
 
   const {
     declarationType,
@@ -93,11 +106,32 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
     }
   };
 
-  if (isLoading) {
+  // Loading state
+  if (isLoading || isLoadingCountry) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
+    );
+  }
+
+  // Country selection required
+  if (shouldAskCountry) {
+    return (
+      <TaxCountrySelector 
+        onSelect={saveCountry} 
+        isDetectedUS={isDetectedUS} 
+      />
+    );
+  }
+
+  // Non-Brazil users see under construction
+  if (taxCountry && taxCountry !== 'BR') {
+    return (
+      <TaxUnderConstruction 
+        country={taxCountry} 
+        onChangeCountry={resetCountry} 
+      />
     );
   }
 

@@ -2915,6 +2915,7 @@ export type Database = {
           primary_declarant: string
           progress_percentage: number | null
           status: string
+          tax_country: string | null
           tax_year: number
           updated_at: string | null
           user_id: string
@@ -2928,6 +2929,7 @@ export type Database = {
           primary_declarant?: string
           progress_percentage?: number | null
           status?: string
+          tax_country?: string | null
           tax_year: number
           updated_at?: string | null
           user_id: string
@@ -2941,6 +2943,7 @@ export type Database = {
           primary_declarant?: string
           progress_percentage?: number | null
           status?: string
+          tax_country?: string | null
           tax_year?: number
           updated_at?: string | null
           user_id?: string

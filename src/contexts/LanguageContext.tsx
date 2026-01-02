@@ -2051,6 +2051,24 @@ const translations = {
     'tax.export.review': 'Revisar Tudo',
     'tax.export.reviewDesc': 'Verificar todos os dados',
     'tax.export.disclaimer': 'Este relatório é apenas um resumo para apoio. Consulte um contador para orientação profissional.',
+    
+    // Tax Country Selector
+    'tax.countrySelector.title': 'Selecione seu país de residência fiscal',
+    'tax.countrySelector.subtitle': 'Isso nos ajudará a personalizar sua experiência de declaração',
+    'tax.countrySelector.brazil': 'Brasil',
+    'tax.countrySelector.usa': 'Estados Unidos',
+    'tax.countrySelector.other': 'Outros Países',
+    'tax.countrySelector.confirm': 'Confirmar',
+    'tax.countrySelector.detected': 'Detectamos que você está acessando dos EUA. Confirme seu país de residência fiscal.',
+    'tax.countrySelector.detectedBadge': 'Detectado',
+    
+    // Tax Under Construction
+    'tax.underConstruction.title': 'Módulo em Construção',
+    'tax.underConstruction.description': 'O módulo de declaração de impostos para {country} está em desenvolvimento.',
+    'tax.underConstruction.usa': 'Estados Unidos',
+    'tax.underConstruction.other': 'outros países',
+    'tax.underConstruction.comingSoon': 'Em breve você poderá gerenciar sua declaração aqui!',
+    'tax.underConstruction.changeCountry': 'Alterar País',
   },
   
    en: {
@@ -4053,8 +4071,25 @@ const translations = {
     'tax.export.review': 'Review All',
     'tax.export.reviewDesc': 'Verify all data',
     'tax.export.disclaimer': 'This report is only a summary for support. Consult an accountant for professional guidance.',
+    
+    // Tax Country Selector
+    'tax.countrySelector.title': 'Select your tax residence country',
+    'tax.countrySelector.subtitle': 'This will help us personalize your declaration experience',
+    'tax.countrySelector.brazil': 'Brazil',
+    'tax.countrySelector.usa': 'United States',
+    'tax.countrySelector.other': 'Other Countries',
+    'tax.countrySelector.confirm': 'Confirm',
+    'tax.countrySelector.detected': 'We detected you are accessing from the US. Please confirm your tax residence country.',
+    'tax.countrySelector.detectedBadge': 'Detected',
+    
+    // Tax Under Construction
+    'tax.underConstruction.title': 'Module Under Construction',
+    'tax.underConstruction.description': 'The tax declaration module for {country} is under development.',
+    'tax.underConstruction.usa': 'United States',
+    'tax.underConstruction.other': 'other countries',
+    'tax.underConstruction.comingSoon': 'Soon you will be able to manage your declaration here!',
+    'tax.underConstruction.changeCountry': 'Change Country',
 
-    // Smart Mileage Section
     'smartMileage.badge': 'Exclusive',
      'smartMileage.title': 'Automated Mileage',
      'smartMileage.title.highlight': 'Management',
@@ -6115,6 +6150,24 @@ const translations = {
     'tax.export.review': 'Revisar Todo',
     'tax.export.reviewDesc': 'Verificar todos los datos',
     'tax.export.disclaimer': 'Este informe es solo un resumen de apoyo. Consulta a un contador para orientación profesional.',
+    
+    // Tax Country Selector
+    'tax.countrySelector.title': 'Selecciona tu país de residencia fiscal',
+    'tax.countrySelector.subtitle': 'Esto nos ayudará a personalizar tu experiencia de declaración',
+    'tax.countrySelector.brazil': 'Brasil',
+    'tax.countrySelector.usa': 'Estados Unidos',
+    'tax.countrySelector.other': 'Otros Países',
+    'tax.countrySelector.confirm': 'Confirmar',
+    'tax.countrySelector.detected': 'Detectamos que estás accediendo desde EE.UU. Confirma tu país de residencia fiscal.',
+    'tax.countrySelector.detectedBadge': 'Detectado',
+    
+    // Tax Under Construction
+    'tax.underConstruction.title': 'Módulo en Construcción',
+    'tax.underConstruction.description': 'El módulo de declaración de impuestos para {country} está en desarrollo.',
+    'tax.underConstruction.usa': 'Estados Unidos',
+    'tax.underConstruction.other': 'otros países',
+    'tax.underConstruction.comingSoon': '¡Pronto podrás gestionar tu declaración aquí!',
+    'tax.underConstruction.changeCountry': 'Cambiar País',
    },
 };
 
