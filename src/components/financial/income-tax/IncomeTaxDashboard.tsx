@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useIncomeTaxReport, TaxStatus } from '@/hooks/useIncomeTaxReport';
 import { useTaxCountry } from '@/hooks/useTaxCountry';
+import { useTaxCalculation } from '@/hooks/useTaxCalculation';
 import { TaxSummaryCards } from './TaxSummaryCards';
 import { TaxIdentificationSection } from './TaxIdentificationSection';
 import { TaxIncomeSection } from './TaxIncomeSection';
@@ -28,6 +29,7 @@ import { TaxDeductionsSection } from './TaxDeductionsSection';
 import { TaxAssetsSection } from './TaxAssetsSection';
 import { TaxPendingSection } from './TaxPendingSection';
 import { TaxExportSection } from './TaxExportSection';
+import { TaxEstimateCard } from './TaxEstimateCard';
 import { TaxCountrySelector } from './TaxCountrySelector';
 import { TaxUnderConstruction } from './TaxUnderConstruction';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -263,6 +265,13 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
         formatCurrency={formatCurrency}
       />
 
+      {/* Tax Estimate Card */}
+      <TaxEstimateCardWrapper 
+        summary={summary}
+        deductibleExpenses={deductibleExpenses}
+        taxYear={taxYear}
+      />
+
       {/* Guided Sections (Accordion) */}
       <Card>
         <CardHeader>
@@ -469,4 +478,24 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
       />
     </div>
   );
+}
+
+// Wrapper component for TaxEstimateCard to use the hook
+interface TaxEstimateCardWrapperProps {
+  summary: ReturnType<typeof useIncomeTaxReport>['summary'];
+  deductibleExpenses: ReturnType<typeof useIncomeTaxReport>['deductibleExpenses'];
+  taxYear: number;
+}
+
+function TaxEstimateCardWrapper({ summary, deductibleExpenses, taxYear }: TaxEstimateCardWrapperProps) {
+  const calculation = useTaxCalculation({
+    summary,
+    deductibleExpenses,
+    dependentsCount: 0,
+    inssContribution: 0,
+    alimonyPaid: 0,
+    taxYear,
+  });
+
+  return <TaxEstimateCard calculation={calculation} />;
 }

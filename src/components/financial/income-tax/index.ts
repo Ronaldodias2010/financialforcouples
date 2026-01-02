@@ -6,3 +6,6 @@ export { TaxDeductionsSection } from './TaxDeductionsSection';
 export { TaxAssetsSection } from './TaxAssetsSection';
 export { TaxPendingSection } from './TaxPendingSection';
 export { TaxExportSection } from './TaxExportSection';
+export { TaxEstimateCard } from './TaxEstimateCard';
+export { TaxCountrySelector } from './TaxCountrySelector';
+export { TaxUnderConstruction } from './TaxUnderConstruction';
