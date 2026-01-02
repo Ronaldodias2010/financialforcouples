@@ -2189,6 +2189,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           checkout_session_id: string | null
+          cpf: string | null
+          cpf_partner: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -2207,6 +2209,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           checkout_session_id?: string | null
+          cpf?: string | null
+          cpf_partner?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -2225,6 +2229,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           checkout_session_id?: string | null
+          cpf?: string | null
+          cpf_partner?: string | null
           created_at?: string
           display_name?: string | null
           id?: string

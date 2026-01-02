@@ -2052,6 +2052,38 @@ const translations = {
     'tax.export.reviewDesc': 'Verificar todos os dados',
     'tax.export.disclaimer': 'Este relatório é apenas um resumo para apoio. Consulte um contador para orientação profissional.',
     
+    // Tax Documents
+    'tax.documents.uploadTitle': 'Anexar Documento',
+    'tax.documents.uploadDesc': 'Adicione comprovantes para suas despesas dedutíveis',
+    'tax.documents.dropZone': 'Arraste um arquivo ou clique para selecionar',
+    'tax.documents.providerName': 'Nome do Prestador',
+    'tax.documents.providerNamePlaceholder': 'Ex: Hospital São Lucas',
+    'tax.documents.providerCpfCnpj': 'CPF/CNPJ do Prestador',
+    'tax.documents.amount': 'Valor (R$)',
+    'tax.documents.notes': 'Observações',
+    'tax.documents.notesPlaceholder': 'Observações adicionais...',
+    'tax.documents.uploading': 'Enviando...',
+    'tax.documents.upload': 'Anexar Documento',
+    'tax.documents.more': 'documentos adicionais',
+    
+    // Tax CPF
+    'tax.cpf.invalid': 'CPF inválido',
+    'tax.cpf.invalidPartner': 'CPF do parceiro inválido',
+    'tax.cpf.saved': 'CPF salvo com sucesso',
+    'tax.cpf.saveError': 'Erro ao salvar CPF',
+    
+    // Tax AI Assistant
+    'tax.ai.title': 'Assistente IR',
+    'tax.ai.subtitle': 'Tire suas dúvidas sobre a declaração',
+    'tax.ai.welcomeMessage': 'Olá! Sou seu assistente para o Imposto de Renda. Como posso ajudar você hoje?',
+    'tax.ai.inputPlaceholder': 'Digite sua pergunta...',
+    'tax.ai.quickActions.deductions': 'Deduções',
+    'tax.ai.quickActions.documents': 'Documentos',
+    'tax.ai.quickActions.exempt': 'Isentos',
+    'tax.ai.queries.deductions': 'Quais despesas posso deduzir do imposto?',
+    'tax.ai.queries.documents': 'Quais documentos preciso guardar?',
+    'tax.ai.queries.exempt': 'O que são rendimentos isentos?',
+    
     // Tax Country Selector
     'tax.countrySelector.title': 'Selecione seu país de residência fiscal',
     'tax.countrySelector.subtitle': 'Isso nos ajudará a personalizar sua experiência de declaração',

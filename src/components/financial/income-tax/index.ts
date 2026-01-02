@@ -9,3 +9,5 @@ export { TaxExportSection } from './TaxExportSection';
 export { TaxEstimateCard } from './TaxEstimateCard';
 export { TaxCountrySelector } from './TaxCountrySelector';
 export { TaxUnderConstruction } from './TaxUnderConstruction';
+export { TaxDocumentUpload } from './TaxDocumentUpload';
+export { TaxAIAssistant, TaxAIAssistantButton } from './TaxAIAssistant';

@@ -405,7 +405,9 @@ export function IncomeTaxDashboard({ viewMode }: IncomeTaxDashboardProps) {
                 <TaxDeductionsSection 
                   deductions={deductibleExpenses}
                   formatCurrency={formatCurrency}
+                  taxYear={taxYear}
                 />
+              </AccordionContent>
               </AccordionContent>
             </AccordionItem>
 
