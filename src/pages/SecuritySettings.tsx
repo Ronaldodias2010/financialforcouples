@@ -14,11 +14,14 @@ import {
   Check, 
   AlertTriangle,
   Lock,
-  Loader2
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { use2FA, TwoFactorMethod } from '@/hooks/use2FA';
+import { use2FAPrompt } from '@/hooks/use2FAPrompt';
 import { useLanguage } from '@/hooks/useLanguage';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
+import { TwoFactorWizard } from '@/components/auth/TwoFactorWizard';
 import { BackupCodes } from '@/components/auth/BackupCodes';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,8 +37,10 @@ export default function SecuritySettings() {
     disable2FA,
     fetchSettings 
   } = use2FA();
+  const { resetPrompt } = use2FAPrompt();
 
   const [showSetup, setShowSetup] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<TwoFactorMethod>('totp');
   const [isDisabling, setIsDisabling] = useState(false);
@@ -113,11 +118,14 @@ export default function SecuritySettings() {
 
         {/* Security Recommendation Alert */}
         {!isEnabled && (
-          <Alert className="mb-6 border-amber-500/50 bg-amber-500/10">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <Alert className="mb-6 border-amber-500/50 bg-amber-500/10 cursor-pointer hover:bg-amber-500/15 transition-colors" onClick={() => setShowWizard(true)}>
+            <Sparkles className="h-4 w-4 text-amber-500" />
             <AlertTitle className="text-amber-600">{t('2fa.recommendation.title')}</AlertTitle>
             <AlertDescription className="text-amber-600/80">
               {t('2fa.recommendation.description')}
+              <span className="block mt-2 text-amber-600 font-medium underline">
+                {t('2fa.wizard.start')} →
+              </span>
             </AlertDescription>
           </Alert>
         )}
@@ -306,6 +314,18 @@ export default function SecuritySettings() {
           onOpenChange={setShowSetup}
           method={selectedMethod}
           onComplete={handleSetupComplete}
+        />
+
+        {/* Wizard Modal */}
+        <TwoFactorWizard
+          open={showWizard}
+          onOpenChange={setShowWizard}
+          onSelectMethod={(m) => {
+            setSelectedMethod(m);
+            setShowWizard(false);
+            setShowSetup(true);
+          }}
+          onSkip={() => setShowWizard(false)}
         />
 
         {/* Backup Codes Modal */}
