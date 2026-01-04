@@ -2,7 +2,7 @@ import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,10 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { PremiumExpirationWarning } from "@/components/subscription/PremiumExpirationWarning";
 import { downloadTutorialPDF, openTutorialHTML } from "@/utils/tutorialUtils";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { CurrencyRatesDisplay } from "@/components/financial/CurrencyRatesDisplay";
 import TestimonialFormModal from "@/components/landing/TestimonialFormModal";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
@@ -49,87 +48,151 @@ const AppDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-end items-center">
-            <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
-            {isAdmin && (
+        <div className="container mx-auto px-4 py-3 flex justify-end items-center">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Nome do usuário - sempre visível */}
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
+              <User className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate max-w-[80px] sm:max-w-[120px]">{displayName}</span>
+            </div>
+
+            {/* Botões visíveis apenas em desktop */}
+            <div className="hidden md:flex items-center gap-2">
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/')}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Voltar à Landing
+                </Button>
+              )}
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    {!inBrazil ? tFor('en','nav.tutorial') : t('nav.tutorial')}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover border border-border shadow-lg z-50">
+                  <DropdownMenuItem onClick={() => openTutorialHTML(language as 'pt' | 'en' | 'es')}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Visualizar Online
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadTutorialPDF(language as 'pt' | 'en' | 'es')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => navigate('/')}
-                className="hidden sm:flex"
+                onClick={() => setCurrentPage('subscription')}
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar à Landing
+                <Crown className="h-4 w-4 mr-2" />
+                {!inBrazil ? tFor('en','nav.subscription') : t('nav.subscription')}
               </Button>
-            )}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
-              <User className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate max-w-[100px] sm:max-w-none">{displayName}</span>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setTestimonialOpen(true)}
+                title={t('testimonials.submitButton')}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                {t('testimonials.submitButton')}
+              </Button>
+
+              {isAdmin && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate('/admin')}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    {t('nav.admin')}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate('/email-test')}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {t('nav.testEmail')}
+                  </Button>
+                </>
+              )}
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                 <Button variant="outline" size="sm">
-                   <BookOpen className="h-4 w-4 mr-2 hidden sm:block" />
-                   {!inBrazil ? tFor('en','nav.tutorial') : t('nav.tutorial')}
-                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => openTutorialHTML(language as 'pt' | 'en' | 'es')}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Visualizar Online
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => downloadTutorialPDF(language as 'pt' | 'en' | 'es')}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar PDF
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-             <Button 
-               variant="outline" 
-               size="sm" 
-               onClick={() => setCurrentPage('subscription')}
-             >
-               <Crown className="h-4 w-4 mr-2 hidden sm:block" />
-               {!inBrazil ? tFor('en','nav.subscription') : t('nav.subscription')}
-             </Button>
-            {isAdmin && (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => navigate('/admin')}
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  {t('nav.admin')}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => navigate('/email-test')}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {t('nav.testEmail')}
-                </Button>
-              </>
-            )}
-            <LanguageSwitcher />
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setTestimonialOpen(true)}
-              title={t('testimonials.submitButton')}
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">{t('testimonials.submitButton')}</span>
-            </Button>
+
+            {/* Menu dropdown para mobile */}
+            <div className="md:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover border border-border shadow-lg z-50 min-w-[200px]">
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/')}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Voltar à Landing
+                    </DropdownMenuItem>
+                  )}
+                  
+                  <DropdownMenuItem onClick={() => openTutorialHTML(language as 'pt' | 'en' | 'es')}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    {!inBrazil ? tFor('en','nav.tutorial') : t('nav.tutorial')} - Online
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadTutorialPDF(language as 'pt' | 'en' | 'es')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    {!inBrazil ? tFor('en','nav.tutorial') : t('nav.tutorial')} - PDF
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem onClick={() => setCurrentPage('subscription')}>
+                    <Crown className="h-4 w-4 mr-2" />
+                    {!inBrazil ? tFor('en','nav.subscription') : t('nav.subscription')}
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem onClick={() => setTestimonialOpen(true)}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    {t('testimonials.submitButton')}
+                  </DropdownMenuItem>
+
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        {t('nav.admin')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/email-test')}>
+                        <Mail className="h-4 w-4 mr-2" />
+                        {t('nav.testEmail')}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* ThemeSwitcher e Logout - sempre visíveis */}
             <ThemeSwitcher />
             <Button 
               variant="outline" 
               size="sm" 
               onClick={signOut}
+              title={t('nav.logout')}
             >
-              <LogOut className="h-4 w-4 mr-2" />
-              {t('nav.logout')}
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">{t('nav.logout')}</span>
             </Button>
           </div>
         </div>
