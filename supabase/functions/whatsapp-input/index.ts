@@ -276,23 +276,72 @@ serve(async (req) => {
       let resolved_account_id: string | null = null;
       let resolved_card_id: string | null = null;
 
-      // Tentar resolver category_hint → category_id
+      // =====================================================
+      // RESOLVER CATEGORIA POR TAGS (KEYWORDS) OU NOME
+      // =====================================================
       if (category_hint) {
-        const { data: category } = await supabase
-          .from('categories')
-          .select('id, name')
-          .eq('user_id', existingInput.user_id)
-          .is('deleted_at', null)
-          .ilike('name', `%${category_hint.trim()}%`)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+        const searchTerm = category_hint.trim().toLowerCase();
+        console.log('[whatsapp-input] Resolving category from hint:', searchTerm);
+        
+        // 1) BUSCAR TAG que contenha o termo (ex: "livro" → tag "livros")
+        const { data: tagMatches } = await supabase
+          .from('category_tags')
+          .select('id, name_pt')
+          .ilike('name_pt', `%${searchTerm}%`);
+        
+        if (tagMatches && tagMatches.length > 0) {
+          console.log('[whatsapp-input] Found matching tags:', tagMatches.map((t: { name_pt: string }) => t.name_pt));
+          
+          // 2) Buscar category_tag_relations para encontrar default_category_id
+          const tagIds = tagMatches.map((t: { id: string }) => t.id);
+          const { data: relations } = await supabase
+            .from('category_tag_relations')
+            .select('category_id')
+            .in('tag_id', tagIds)
+            .eq('is_active', true)
+            .limit(1);
+          
+          if (relations && relations.length > 0) {
+            const defaultCategoryId = relations[0].category_id;
+            console.log('[whatsapp-input] Found default category via tag:', defaultCategoryId);
+            
+            // 3) Mapear para categoria do usuário via default_category_id
+            const { data: userCategory } = await supabase
+              .from('categories')
+              .select('id, name')
+              .eq('user_id', existingInput.user_id)
+              .eq('default_category_id', defaultCategoryId)
+              .is('deleted_at', null)
+              .limit(1)
+              .single();
+            
+            if (userCategory) {
+              resolved_category_id = userCategory.id;
+              console.log('[whatsapp-input] Category resolved via TAG:', searchTerm, '->', userCategory.name);
+            }
+          }
+        }
+        
+        // 4) FALLBACK: Busca direta pelo nome da categoria
+        if (!resolved_category_id) {
+          console.log('[whatsapp-input] Tag search failed, trying direct name match...');
+          
+          const { data: category } = await supabase
+            .from('categories')
+            .select('id, name')
+            .eq('user_id', existingInput.user_id)
+            .is('deleted_at', null)
+            .ilike('name', `%${category_hint.trim()}%`)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
 
-        if (category) {
-          resolved_category_id = category.id;
-          console.log('[whatsapp-input] Category resolved:', category_hint, '->', category.name);
-        } else {
-          console.log('[whatsapp-input] Category not found for hint:', category_hint);
+          if (category) {
+            resolved_category_id = category.id;
+            console.log('[whatsapp-input] Category resolved by NAME:', category_hint, '->', category.name);
+          } else {
+            console.log('[whatsapp-input] Category not found for hint:', category_hint);
+          }
         }
       }
 
@@ -322,7 +371,7 @@ serve(async (req) => {
       // =====================================================
       const { data: userCards } = await supabase
         .from('cards')
-        .select('id, name')
+        .select('id, name, card_type, account_id')
         .eq('user_id', existingInput.user_id)
         .is('deleted_at', null);
       
@@ -356,11 +405,13 @@ serve(async (req) => {
         .map(([name]) => name);
 
       // =====================================================
-      // Tentar resolver card_hint → card_id (busca inteligente)
+      // Tentar resolver card_hint → card_id (busca inteligente COM PRIORIZAÇÃO)
       // =====================================================
+      type CardWithType = { id: string; name: string; card_type: string; account_id: string | null };
+      
       if (card_hint && userCards && userCards.length > 0) {
         // Palavras genéricas a ignorar na busca
-        const stopWords = ['banco', 'cartão', 'cartao', 'card', 'de', 'do', 'da', 'credito', 'crédito'];
+        const stopWords = ['banco', 'cartão', 'cartao', 'card', 'de', 'do', 'da', 'credito', 'crédito', 'debito', 'débito'];
         
         // Extrair palavras relevantes do hint
         const words = card_hint.trim().toLowerCase().split(/\s+/)
@@ -368,42 +419,91 @@ serve(async (req) => {
         
         console.log('[whatsapp-input] Card search keywords:', words);
         
-        // Primeiro: busca exata
-        let match = userCards.find((card: { id: string; name: string }) => 
-          card.name.toLowerCase() === card_hint.trim().toLowerCase()
-        );
+        // Separar cartões por tipo
+        const creditCards = userCards.filter((c: CardWithType) => c.card_type === 'credit');
+        const debitCards = userCards.filter((c: CardWithType) => c.card_type === 'debit');
         
-        // Segundo: busca por substring completa (hint no nome)
-        if (!match) {
-          match = userCards.find((card: { id: string; name: string }) => 
-            card.name.toLowerCase().includes(card_hint.trim().toLowerCase())
+        console.log('[whatsapp-input] Cards by type - Credit:', creditCards.length, 'Debit:', debitCards.length);
+        
+        // Função de busca reutilizável
+        const findCardInList = (cardList: typeof userCards) => {
+          // Primeiro: busca exata
+          let match = cardList.find((card: CardWithType) => 
+            card.name.toLowerCase() === card_hint.trim().toLowerCase()
           );
-        }
+          
+          // Segundo: busca por substring completa (hint no nome)
+          if (!match) {
+            match = cardList.find((card: CardWithType) => 
+              card.name.toLowerCase().includes(card_hint.trim().toLowerCase())
+            );
+          }
+          
+          // Terceiro: hint dentro do nome do cartão
+          if (!match) {
+            match = cardList.find((card: CardWithType) => 
+              card_hint.trim().toLowerCase().includes(card.name.toLowerCase())
+            );
+          }
+          
+          // Quarto: busca por palavras-chave do hint no nome do cartão
+          if (!match && words.length > 0) {
+            match = cardList.find((card: CardWithType) => {
+              const cardName = card.name.toLowerCase();
+              return words.some((word: string) => cardName.includes(word));
+            });
+          }
+          
+          return match;
+        };
         
-        // Terceiro: busca por palavras-chave do hint no nome do cartão
-        if (!match && words.length > 0) {
-          match = userCards.find((card: { id: string; name: string }) => {
-            const cardName = card.name.toLowerCase();
-            return words.some((word: string) => cardName.includes(word));
-          });
-        }
+        let match: CardWithType | undefined;
         
-        // Quarto: busca reversa - nome do cartão contido no hint
-        if (!match && words.length > 0) {
-          match = userCards.find((card: { id: string; name: string }) => {
-            const cardWords = card.name.toLowerCase().split(/\s+/)
-              .filter((w: string) => w.length > 2 && !stopWords.includes(w));
-            const hintLower = card_hint.trim().toLowerCase();
-            // Verificar se alguma palavra significativa do cartão está no hint
-            return cardWords.some((word: string) => hintLower.includes(word));
-          });
+        // LÓGICA BASEADA EM payment_method
+        if (payment_method === 'credit_card') {
+          // Priorizar cartões de crédito
+          match = findCardInList(creditCards);
+          if (!match) {
+            match = findCardInList(debitCards);
+            if (match) {
+              console.log('[whatsapp-input] WARNING: Only found DEBIT card for credit payment:', match.name);
+            }
+          }
+        } else if (payment_method === 'debit_card') {
+          // Priorizar cartões de débito
+          match = findCardInList(debitCards);
+          if (!match) {
+            match = findCardInList(creditCards);
+            if (match) {
+              console.log('[whatsapp-input] WARNING: Only found CREDIT card for debit payment:', match.name);
+            }
+          }
+        } else {
+          // payment_method indefinido - buscar em todos mas verificar ambiguidade
+          const creditMatch = findCardInList(creditCards);
+          const debitMatch = findCardInList(debitCards);
+          
+          // Se encontrou match em ambos tipos, temos ambiguidade
+          if (creditMatch && debitMatch) {
+            console.log('[whatsapp-input] AMBIGUITY: Found cards in both types:', creditMatch.name, '(credit)', debitMatch.name, '(debit)');
+            // NÃO resolver - deixar para perguntar ao usuário
+            match = undefined;
+          } else {
+            match = creditMatch || debitMatch;
+          }
         }
         
         if (match) {
           resolved_card_id = match.id;
-          console.log('[whatsapp-input] Card resolved:', card_hint, '->', match.name);
+          console.log('[whatsapp-input] Card resolved:', card_hint, '->', match.name, '(', match.card_type, ')');
+          
+          // Se for cartão de débito, resolver conta associada
+          if (match.card_type === 'debit' && match.account_id) {
+            resolved_account_id = match.account_id;
+            console.log('[whatsapp-input] Debit card linked account:', resolved_account_id);
+          }
         } else {
-          console.log('[whatsapp-input] Card not found for hint:', card_hint, 'Available:', userCards.map((c: { name: string }) => c.name));
+          console.log('[whatsapp-input] Card not found or ambiguous for hint:', card_hint, 'Available:', userCards.map((c: CardWithType) => `${c.name} (${c.card_type})`));
         }
       } else if (card_hint && (!userCards || userCards.length === 0)) {
         console.log('[whatsapp-input] No cards found for user');
@@ -446,7 +546,44 @@ serve(async (req) => {
           type: 'selection'
         });
       }
-      if (!payment_method) {
+      // =====================================================
+      // LÓGICA PARA CARTÃO AMBÍGUO (sem payment_method definido)
+      // =====================================================
+      if (card_hint && !payment_method && !resolved_card_id && userCards && userCards.length > 0) {
+        // Verificar se existem cartões de ambos tipos que correspondem ao hint
+        const creditCards = userCards.filter((c: CardWithType) => c.card_type === 'credit');
+        const debitCards = userCards.filter((c: CardWithType) => c.card_type === 'debit');
+        
+        // Função de busca simplificada para verificar match
+        const hasMatchInList = (cardList: typeof userCards) => {
+          const searchLower = card_hint.trim().toLowerCase();
+          return cardList.some((card: CardWithType) => 
+            card.name.toLowerCase().includes(searchLower) ||
+            searchLower.includes(card.name.toLowerCase())
+          );
+        };
+        
+        const hasCreditMatch = hasMatchInList(creditCards);
+        const hasDebitMatch = hasMatchInList(debitCards);
+        
+        if (hasCreditMatch && hasDebitMatch) {
+          console.log('[whatsapp-input] Card type ambiguity detected - need to ask user');
+          questions.push({ 
+            field: 'payment_method', 
+            question: `"${card_hint}" - é cartão de crédito ou débito?`,
+            options: ['cartão de crédito', 'cartão de débito'],
+            type: 'selection'
+          });
+        } else if (!hasCreditMatch && !hasDebitMatch) {
+          // Sem match, perguntar forma de pagamento
+          questions.push({ 
+            field: 'payment_method', 
+            question: 'Qual a forma de pagamento?',
+            options: ['PIX', 'cartão de crédito', 'cartão de débito', 'dinheiro'],
+            type: 'selection'
+          });
+        }
+      } else if (!payment_method) {
         questions.push({ 
           field: 'payment_method', 
           question: 'Qual a forma de pagamento?',
