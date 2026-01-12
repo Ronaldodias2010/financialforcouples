@@ -78,14 +78,12 @@ const CleanupPastel: React.FC = () => {
           if (txErr) throw txErr;
 
           const expenseSum = (txRows || []).reduce((acc, t: any) => acc + Number(t.amount || 0), 0);
-          const creditLimit = Number(cardRows.credit_limit || 0);
-          const initOriginal = Number(cardRows.initial_balance_original || 0);
+          // current_balance = saldo devedor (soma das despesas)
           const newCurrent = expenseSum;
-          const newAvailable = Math.max(0, creditLimit - initOriginal - expenseSum);
 
           const { error: upErr } = await supabase
             .from("cards")
-            .update({ current_balance: newCurrent, initial_balance: newAvailable })
+            .update({ current_balance: newCurrent })
             .eq("id", cardId as string);
           if (upErr) throw upErr;
           cardsUpdated += 1;
