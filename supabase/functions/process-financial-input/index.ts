@@ -363,7 +363,7 @@ serve(async (req) => {
     const transactionDate = input.transaction_date || new Date().toISOString().split('T')[0];
     const description = input.description_hint || input.raw_message || 'Transação via WhatsApp';
 
-    // Criar transação
+    // Criar transação (owner_user é definido automaticamente pelo trigger set_owner_user_on_insert)
     const transactionData: any = {
       user_id: input.user_id,
       amount: Math.abs(input.amount),
@@ -373,8 +373,7 @@ serve(async (req) => {
       category_id: resolved_category_id,
       payment_method: input.payment_method || 'pix',
       currency: input.currency || 'BRL',
-      status: 'completed',
-      owner_user: input.owner_user || 'user1'
+      status: 'completed'
     };
 
     // Adicionar card_id ou account_id conforme o tipo
