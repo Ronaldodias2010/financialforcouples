@@ -69,7 +69,10 @@ export const isCardPaymentTransaction = (transaction: DashboardTransaction): boo
   // Critério 4: Por tipo de transação de cartão
   const isCardPaymentType = transaction.card_transaction_type === 'card_payment';
   
-  return isCategoryPayment || isDescriptionPayment || isPaymentMethod || isCardPaymentType;
+  // Critério 5: Por descrição "Pagamento de Cartão (Dinheiro)" - transações duplicadas antigas
+  const isDescriptionCashPayment = description.includes('pagamento de cartão (dinheiro)');
+  
+  return isCategoryPayment || isDescriptionPayment || isPaymentMethod || isCardPaymentType || isDescriptionCashPayment;
 };
 
 /**

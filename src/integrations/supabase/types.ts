@@ -4448,30 +4448,17 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
-      process_card_payment:
-        | {
-            Args: {
-              p_account_id: string
-              p_card_id: string
-              p_notes?: string
-              p_payment_amount: number
-              p_payment_date: string
-              p_user_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_account_id?: string
-              p_card_id: string
-              p_notes?: string
-              p_payment_amount: number
-              p_payment_date?: string
-              p_payment_method?: string
-              p_user_id: string
-            }
-            Returns: Json
-          }
+      process_card_payment: {
+        Args: {
+          p_account_id: string
+          p_card_id: string
+          p_notes?: string
+          p_payment_amount: number
+          p_payment_date: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       process_future_expense_payment: {
         Args: {
           p_account_id?: string
