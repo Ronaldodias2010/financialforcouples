@@ -29,20 +29,47 @@ export interface DashboardTransaction {
   purchase_date?: string;
   installment_number?: number;
   total_installments?: number;
+  card_id?: string;
 }
 
 /**
  * Verifica se uma transação é um "Pagamento de Cartão de Crédito"
  * (que NÃO deve entrar no Dashboard - vai para Fluxo de Caixa)
+ * 
+ * Detecção por múltiplos critérios:
+ * 1. Nome da categoria
+ * 2. Descrição da transação
+ * 3. Método de pagamento específico
+ * 4. Tipo de transação de cartão (card_transaction_type)
  */
 export const isCardPaymentTransaction = (transaction: DashboardTransaction): boolean => {
+  // Critério 1: Por nome de categoria
   const categoryName = (transaction.categories?.name || '').toLowerCase();
-  return (
+  const isCategoryPayment = (
     (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
     categoryName.includes('credit card payment') ||
     categoryName.includes('pago cartão') ||
     categoryName.includes('pago cartao')
   );
+  
+  // Critério 2: Por descrição da transação
+  const description = (transaction.description || '').toLowerCase();
+  const isDescriptionPayment = (
+    description.includes('pagamento de cartão') ||
+    description.includes('pagamento de cartao') ||
+    description.includes('pagamento cartão') ||
+    description.includes('pagamento cartao') ||
+    description.includes('credit card payment') ||
+    description.includes('card payment')
+  );
+  
+  // Critério 3: Por método de pagamento específico
+  const isPaymentMethod = transaction.payment_method === 'card_payment';
+  
+  // Critério 4: Por tipo de transação de cartão
+  const isCardPaymentType = transaction.card_transaction_type === 'card_payment';
+  
+  return isCategoryPayment || isDescriptionPayment || isPaymentMethod || isCardPaymentType;
 };
 
 /**
