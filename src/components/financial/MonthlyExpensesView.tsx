@@ -557,6 +557,12 @@ if (selectedCategory !== "all") {
                             {t('installment')} {transaction.installment_number}/{transaction.total_installments}
                           </Badge>
                         ) : null}
+                        {/* Badge para pagamentos de cartão de crédito */}
+                        {isCardPaymentTx(transaction) && (
+                          <Badge variant="outline" className="text-xs whitespace-nowrap bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                            💳 {language === 'en' ? 'Debt Payment' : language === 'es' ? 'Pago de Deuda' : 'Quitação de Dívida'}
+                          </Badge>
+                        )}
                       </div>
                       
                       <div className="text-sm text-muted-foreground space-y-1">
