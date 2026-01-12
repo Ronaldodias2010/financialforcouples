@@ -11,50 +11,96 @@ const SmartMileageSection = () => {
     <section 
       className="py-20 relative overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, hsl(var(--blue-soft) / 0.15), hsl(var(--blue-soft) / 0.08), hsl(var(--background) / 0.95))"
+        background: "linear-gradient(135deg, hsl(var(--cherry-light) / 0.08), hsl(var(--blue-soft) / 0.15), hsl(var(--primary) / 0.1), hsl(var(--background) / 0.95))"
       }}
     >
-      {/* Decorative elements */}
+      {/* Decorative elements - mais vibrantes */}
       <div 
-        className="absolute top-20 left-10 w-32 h-32 rounded-full opacity-30"
+        className="absolute top-10 left-10 w-40 h-40 rounded-full opacity-40"
         style={{
-          background: "radial-gradient(circle, hsl(var(--cherry-light) / 0.1), transparent)"
+          background: "radial-gradient(circle, hsl(var(--cherry-light) / 0.25), transparent)"
         }}
       />
       <div 
-        className="absolute bottom-20 right-10 w-24 h-24 rounded-full opacity-20"
+        className="absolute top-1/2 right-0 w-64 h-64 rounded-full opacity-25"
         style={{
-          background: "radial-gradient(circle, hsl(var(--blue-soft) / 0.15), transparent)"
+          background: "radial-gradient(circle, hsl(var(--primary) / 0.3), transparent)"
+        }}
+      />
+      <div 
+        className="absolute bottom-10 left-1/4 w-32 h-32 rounded-full opacity-30"
+        style={{
+          background: "radial-gradient(circle, hsl(var(--blue-soft) / 0.3), transparent)"
+        }}
+      />
+      <div 
+        className="absolute bottom-20 right-20 w-24 h-24 rounded-full opacity-35"
+        style={{
+          background: "radial-gradient(circle, hsl(142 76% 36% / 0.25), transparent)"
         }}
       />
       
       <div className="container mx-auto px-4 relative">
-        <div className="mx-auto max-w-6xl bg-card rounded-3xl shadow-elegant p-6 md:p-12">
+        <div 
+          className="mx-auto max-w-6xl rounded-3xl shadow-elegant p-6 md:p-12 border"
+          style={{
+            background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--cherry-light) / 0.03), hsl(var(--blue-soft) / 0.05))",
+            borderColor: "hsl(var(--cherry-light) / 0.15)"
+          }}
+        >
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge 
                   variant="secondary" 
-                  className="border"
+                  className="border animate-pulse"
                   style={{
-                    backgroundColor: "hsl(var(--cherry-light) / 0.1)",
-                    borderColor: "hsl(var(--cherry-light) / 0.3)",
+                    backgroundColor: "hsl(var(--cherry-light) / 0.15)",
+                    borderColor: "hsl(var(--cherry-light) / 0.4)",
                     color: "hsl(var(--cherry-light))"
                   }}
                 >
                   <Target className="w-4 h-4 mr-2" />
                   {t('smartMileage.badge')}
                 </Badge>
-                <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-                  {t('smartMileage.title')}{" "}
-                  <span className="bg-hero-gradient bg-clip-text text-transparent font-extrabold">
-                    {t('smartMileage.title.highlight')}
+                
+                {/* Nova Headline impactante */}
+                <h2 className="text-3xl md:text-5xl font-bold text-foreground leading-tight">
+                  Você sonha com a{" "}
+                  <span 
+                    className="bg-clip-text text-transparent font-extrabold"
+                    style={{
+                      backgroundImage: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--primary)), hsl(var(--blue-soft)))"
+                    }}
+                  >
+                    viagem
                   </span>
-                  <span className="text-primary font-extrabold"> com IA</span>
+                  .<br />
+                  <span className="text-foreground">A </span>
+                  <span 
+                    className="bg-clip-text text-transparent font-extrabold"
+                    style={{
+                      backgroundImage: "linear-gradient(135deg, hsl(var(--primary)), hsl(142 76% 36%), hsl(var(--blue-soft)))"
+                    }}
+                  >
+                    IA
+                  </span>
+                  <span className="text-foreground"> cuida das </span>
+                  <span 
+                    className="bg-clip-text text-transparent font-extrabold"
+                    style={{
+                      backgroundImage: "linear-gradient(135deg, hsl(45 93% 47%), hsl(var(--cherry-light)), hsl(var(--primary)))"
+                    }}
+                  >
+                    milhas
+                  </span>
+                  .
                 </h2>
-                <p className="text-xl text-muted-foreground">
-                  {t('smartMileage.subtitle')}
+                
+                {/* Nova Subheadline */}
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  Chega de perder promoções. <span className="font-medium text-foreground">Acompanhe, otimize e use suas milhas</span> no melhor momento — <span style={{ color: "hsl(var(--primary))" }} className="font-semibold">automaticamente</span>.
                 </p>
               </div>
 
@@ -62,10 +108,10 @@ const SmartMileageSection = () => {
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
                   <div 
-                    className="p-3 rounded-lg border"
+                    className="p-3 rounded-xl border shadow-sm"
                     style={{
-                      backgroundColor: "hsl(var(--cherry-light) / 0.1)",
-                      borderColor: "hsl(var(--cherry-light) / 0.2)"
+                      background: "linear-gradient(135deg, hsl(var(--cherry-light) / 0.15), hsl(var(--cherry-light) / 0.05))",
+                      borderColor: "hsl(var(--cherry-light) / 0.3)"
                     }}
                   >
                     <Bell 
@@ -81,10 +127,10 @@ const SmartMileageSection = () => {
 
                 <div className="flex items-start space-x-4">
                   <div 
-                    className="p-3 rounded-lg border"
+                    className="p-3 rounded-xl border shadow-sm"
                     style={{
-                      backgroundColor: "hsl(var(--blue-soft) / 0.1)",
-                      borderColor: "hsl(var(--blue-soft) / 0.3)"
+                      background: "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--blue-soft) / 0.1))",
+                      borderColor: "hsl(var(--primary) / 0.3)"
                     }}
                   >
                     <Plane 
@@ -100,13 +146,16 @@ const SmartMileageSection = () => {
 
                 <div className="flex items-start space-x-4">
                   <div 
-                    className="p-3 rounded-lg border"
+                    className="p-3 rounded-xl border shadow-sm"
                     style={{
-                      backgroundColor: "hsl(var(--primary) / 0.1)",
-                      borderColor: "hsl(var(--primary) / 0.2)"
+                      background: "linear-gradient(135deg, hsl(142 76% 36% / 0.15), hsl(142 76% 36% / 0.05))",
+                      borderColor: "hsl(142 76% 36% / 0.3)"
                     }}
                   >
-                    <Coins className="w-6 h-6 text-primary" />
+                    <Coins 
+                      className="w-6 h-6"
+                      style={{ color: "hsl(142 76% 36%)" }}
+                    />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">{t('smartMileage.benefit3.title')}</h3>
@@ -116,10 +165,10 @@ const SmartMileageSection = () => {
               </div>
 
               <Button 
-                className="px-8 py-3 text-lg text-white border-0"
+                className="px-8 py-4 text-lg text-white border-0 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 style={{
-                  background: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--blue-soft) / 0.9), hsl(var(--primary)))",
-                  boxShadow: "0 8px 24px hsl(var(--cherry-light) / 0.25)"
+                  background: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--primary)), hsl(142 76% 36%))",
+                  boxShadow: "0 10px 30px hsl(var(--cherry-light) / 0.3)"
                 }}
               >
                 {t('smartMileage.cta')}
@@ -128,27 +177,42 @@ const SmartMileageSection = () => {
 
             {/* Right Column - Visual Mockup */}
             <div className="relative">
+              {/* Decorative glow behind card */}
+              <div 
+                className="absolute inset-0 blur-3xl opacity-30"
+                style={{
+                  background: "radial-gradient(ellipse at center, hsl(var(--cherry-light) / 0.4), hsl(var(--primary) / 0.2), transparent)"
+                }}
+              />
+              
               <div className="relative mx-auto max-w-sm">
                 {/* Notification Card */}
                 <Card 
-                  className="p-6 relative overflow-hidden border"
+                  className="p-6 relative overflow-hidden border-2 shadow-xl"
                   style={{
-                    background: "linear-gradient(135deg, hsl(var(--cherry-light) / 0.08), hsl(var(--blue-soft) / 0.12), hsl(var(--background)))",
-                    borderColor: "hsl(var(--cherry-light) / 0.3)"
+                    background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--cherry-light) / 0.08), hsl(var(--blue-soft) / 0.1))",
+                    borderColor: "hsl(var(--cherry-light) / 0.4)"
                   }}
                 >
                   <div 
-                    className="absolute top-0 right-0 w-20 h-20 rounded-full -translate-y-10 translate-x-10"
+                    className="absolute top-0 right-0 w-24 h-24 rounded-full -translate-y-12 translate-x-12"
                     style={{
-                      background: "radial-gradient(circle, hsl(var(--blue-soft) / 0.15), transparent)"
+                      background: "radial-gradient(circle, hsl(var(--primary) / 0.2), transparent)"
                     }}
                   />
+                  <div 
+                    className="absolute bottom-0 left-0 w-16 h-16 rounded-full translate-y-8 -translate-x-8"
+                    style={{
+                      background: "radial-gradient(circle, hsl(142 76% 36% / 0.15), transparent)"
+                    }}
+                  />
+                  
                   <div className="relative space-y-4">
                     <div className="flex items-center space-x-3">
                       <div 
-                        className="p-2 rounded-full"
+                        className="p-2.5 rounded-full shadow-sm"
                         style={{
-                          backgroundColor: "hsl(var(--cherry-light) / 0.15)"
+                          background: "linear-gradient(135deg, hsl(var(--cherry-light) / 0.2), hsl(var(--cherry-light) / 0.1))"
                         }}
                       >
                         <Bell 
@@ -158,29 +222,29 @@ const SmartMileageSection = () => {
                       </div>
                       <div>
                         <h4 className="font-semibold text-sm">{t('smartMileage.notification.title')}</h4>
-                        <p className="text-xs text-muted-foreground">{t('smartMileage.notification.subtitle')}</p>
+                        <p className="text-xs" style={{ color: "hsl(142 76% 36%)" }}>{t('smartMileage.notification.subtitle')}</p>
                       </div>
                     </div>
                     
                     <div 
-                      className="rounded-lg p-4 space-y-3 border"
+                      className="rounded-xl p-4 space-y-3 border shadow-sm"
                       style={{
-                        background: "linear-gradient(135deg, hsl(var(--background)), hsl(var(--blue-soft) / 0.05))",
-                        borderColor: "hsl(var(--blue-soft) / 0.2)"
+                        background: "linear-gradient(145deg, hsl(var(--background)), hsl(var(--blue-soft) / 0.08))",
+                        borderColor: "hsl(var(--primary) / 0.2)"
                       }}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-sm">{t('smartMileage.notification.promotion')}</span>
                         <Plane 
-                          className="w-4 h-4"
+                          className="w-5 h-5"
                           style={{ color: "hsl(var(--primary))" }}
                         />
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{t('smartMileage.notification.miles')}</span>
+                        <span className="text-muted-foreground font-medium">{t('smartMileage.notification.miles')}</span>
                         <span 
-                          className="font-semibold"
-                          style={{ color: "hsl(var(--success))" }}
+                          className="font-bold text-base"
+                          style={{ color: "hsl(142 76% 36%)" }}
                         >
                           {t('smartMileage.notification.savings')}
                         </span>
@@ -189,11 +253,12 @@ const SmartMileageSection = () => {
                   </div>
                 </Card>
 
-                {/* Floating indicator */}
+                {/* Floating indicator - mais vibrante */}
                 <div 
-                  className="absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded-full animate-pulse"
+                  className="absolute -top-3 -right-3 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse shadow-lg"
                   style={{
-                    background: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--primary)))"
+                    background: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--primary)))",
+                    boxShadow: "0 4px 15px hsl(var(--cherry-light) / 0.5)"
                   }}
                 >
                   NEW
