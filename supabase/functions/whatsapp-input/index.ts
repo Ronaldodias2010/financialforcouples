@@ -593,10 +593,13 @@ serve(async (req) => {
       }
 
       // =====================================================
-      // REGRA WHATSAPP: Categoria é OBRIGATÓRIA
+      // REGRA CRÍTICA: Categoria OBRIGATÓRIA
       // Sem resolved_category_id = SEMPRE waiting_user_input
+      // NUNCA usar "Outros" como fallback automático
       // =====================================================
-      if (isWhatsApp) {
+      if (!resolved_category_id) {
+        console.log('[whatsapp-input] CATEGORY NOT RESOLVED - will ask user (no "Outros" fallback)');
+        
         if (!category_hint) {
           // Sem hint da IA - inferir do contexto ou perguntar com sugestões
           const rawLower = body.raw_message?.toLowerCase() || '';
@@ -615,6 +618,12 @@ serve(async (req) => {
           if (/farmácia|remédio|médico|consulta|hospital/i.test(rawLower)) {
             contextHints.push('Saúde');
           }
+          if (/livro|curso|escola|faculdade|estudo|aula/i.test(rawLower)) {
+            contextHints.push('Educação');
+          }
+          if (/netflix|spotify|cinema|show|teatro|lazer|diversão/i.test(rawLower)) {
+            contextHints.push('Entretenimento');
+          }
           
           const allSuggestions = [...new Set([...contextHints, ...frequentCategories])].slice(0, 5);
           
@@ -626,19 +635,20 @@ serve(async (req) => {
             suggestions: allSuggestions,
             type: allSuggestions.length > 0 ? 'selection' : 'text'
           });
-        } else if (!resolved_category_id) {
-          // Categoria não resolvida = perguntar com sugestões
-          const suggestedText = confidence_score && confidence_score >= 0.85 
-            ? `Classifiquei como "${category_hint}". Está correto?`
-            : `Não encontrei "${category_hint}". ${frequentCategories.length > 0 ? 'Sugestões: ' + frequentCategories.join(', ') : 'Qual categoria deseja usar?'}`;
+        } else {
+          // Tinha hint mas não resolveu = perguntar com sugestões
+          console.log('[whatsapp-input] Category hint provided but not resolved:', category_hint);
+          const suggestedText = `Não encontrei a categoria "${category_hint}" nas suas tags. ${frequentCategories.length > 0 ? 'Escolha uma: ' + frequentCategories.join(', ') : 'Qual categoria deseja usar?'}`;
           questions.push({ 
             field: 'category', 
             question: suggestedText, 
             hint: category_hint,
             suggestions: frequentCategories,
-            type: confidence_score && confidence_score >= 0.85 ? 'confirmation' : 'selection'
+            type: frequentCategories.length > 0 ? 'selection' : 'text'
           });
         }
+      } else {
+        console.log('[whatsapp-input] Category resolved successfully:', resolved_category_id);
       }
 
       // Cartão - se necessário
