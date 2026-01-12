@@ -19,7 +19,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 // TEMPORARIAMENTE REMOVIDO: import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain, MessageCircle, ArrowLeftRight, Banknote } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain, MessageCircle, ArrowLeftRight, Banknote, Info } from "lucide-react";
 import { CashFlowDashboard } from "./CashFlowDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { openWhatsApp } from "@/utils/whatsapp";
@@ -258,6 +258,14 @@ export const FinancialDashboard = () => {
           <>
             {/* Today Expenses Alert */}
             <TodayExpensesAlert viewMode={isPartOfCouple ? 'couple' : 'individual'} />
+            
+            {/* Dashboard Info Notice */}
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                {t('dashboard.infoNotice')}
+              </p>
+            </div>
             
             {/* Financial Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -357,6 +357,9 @@ const translations = {
     'futureExpenses.todayAlert.totalDue': 'Total a Pagar',
     'futureExpenses.todayAlert.dismiss': 'Dispensar alerta',
     
+    // Dashboard Info Notice
+    'dashboard.infoNotice': 'O Dashboard Principal apresenta todos os gastos que foram realizados no mês: compras no cartão de crédito, pagamentos de fatura, débito e dinheiro.',
+    
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Últimos 90 dias',
     'overdueExpenses.filter.all': 'Todas (incluindo > 90 dias)',
@@ -2709,6 +2712,9 @@ const translations = {
     'futureExpenses.todayAlert.totalDue': 'Total Due',
     'futureExpenses.todayAlert.dismiss': 'Dismiss alert',
     
+    // Dashboard Info Notice
+    'dashboard.infoNotice': 'The Main Dashboard shows all expenses made this month: credit card purchases, card payments, debit and cash transactions.',
+    
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Last 90 days',
     'overdueExpenses.filter.all': 'All (including > 90 days)',
@@ -5030,6 +5036,9 @@ const translations = {
     'futureExpenses.todayAlert.description': 'Tienes gastos que vencen hoy. Realiza el pago para evitar retrasos.',
     'futureExpenses.todayAlert.totalDue': 'Total a Pagar',
     'futureExpenses.todayAlert.dismiss': 'Descartar alerta',
+    
+    // Dashboard Info Notice
+    'dashboard.infoNotice': 'El Panel Principal muestra todos los gastos realizados este mes: compras con tarjeta de crédito, pagos de tarjeta, débito y efectivo.',
     
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Últimos 90 días',
