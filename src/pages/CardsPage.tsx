@@ -49,13 +49,16 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
   const computeAvailable = (c: CardRow) => {
     if (c.card_type !== "credit") return 0;
     
-    // initial_balance já representa o limite disponível calculado pelo trigger
-    // (credit_limit - initial_balance_original - gastos_realizados)
-    const availableLimit = Number(c.initial_balance ?? 0);
+    // Limite disponível = credit_limit - current_balance (saldo devedor)
+    const creditLimit = Number(c.credit_limit ?? 0);
+    const currentBalance = Number(c.current_balance ?? 0);
+    const availableLimit = creditLimit - currentBalance;
     
     console.log(`Card available limit calculation:`, {
       cardType: c.card_type,
       currency: c.currency,
+      creditLimit,
+      currentBalance,
       availableLimit,
       userId: c.user_id
     });
