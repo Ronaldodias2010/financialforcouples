@@ -157,7 +157,7 @@ serve(async (req) => {
       }
     }
 
-    // 2.2 Resolver CARTÃO se payment_method = credit_card (busca inteligente)
+    // 2.2 Resolver CARTÃO se payment_method = credit_card (busca inteligente COM PRIORIZAÇÃO POR TIPO)
     if (input.payment_method === 'credit_card') {
       if (!isValidUUID(resolved_card_id) && input.card_hint) {
         console.log('[process-financial-input] Resolving card from hint:', input.card_hint);
@@ -171,50 +171,81 @@ serve(async (req) => {
         
         console.log('[process-financial-input] Card search keywords:', words);
         
-        // Buscar todos os cartões do usuário
+        // Buscar todos os cartões do usuário COM TIPO
         const { data: cards } = await supabase
           .from('cards')
-          .select('id, name')
+          .select('id, name, card_type')
           .eq('user_id', input.user_id)
           .is('deleted_at', null);
         
         if (cards && cards.length > 0) {
-          // Primeiro: busca exata
-          let match = cards.find((card: { id: string; name: string }) => 
-            card.name.toLowerCase() === input.card_hint.trim().toLowerCase()
-          );
+          // Separar cartões por tipo
+          const creditCards = cards.filter((c: { card_type: string }) => c.card_type === 'credit');
+          const debitCards = cards.filter((c: { card_type: string }) => c.card_type === 'debit');
           
-          // Segundo: busca por substring completa
-          if (!match) {
-            match = cards.find((card: { id: string; name: string }) => 
-              card.name.toLowerCase().includes(input.card_hint.trim().toLowerCase())
+          console.log('[process-financial-input] Cards by type - Credit:', creditCards.length, 'Debit:', debitCards.length);
+          
+          // Função de busca reutilizável
+          const findCardInList = (cardList: typeof cards) => {
+            // Primeiro: busca exata
+            let match = cardList.find((card: { id: string; name: string; card_type: string }) => 
+              card.name.toLowerCase() === input.card_hint.trim().toLowerCase()
             );
-          }
+            
+            // Segundo: busca por substring completa
+            if (!match) {
+              match = cardList.find((card: { id: string; name: string; card_type: string }) => 
+                card.name.toLowerCase().includes(input.card_hint.trim().toLowerCase())
+              );
+            }
+            
+            // Terceiro: hint dentro do nome do cartão
+            if (!match) {
+              match = cardList.find((card: { id: string; name: string; card_type: string }) => 
+                input.card_hint.trim().toLowerCase().includes(card.name.toLowerCase())
+              );
+            }
+            
+            // Quarto: busca por palavras-chave
+            if (!match && words.length > 0) {
+              match = cardList.find((card: { id: string; name: string; card_type: string }) => {
+                const cardName = card.name.toLowerCase();
+                return words.some((word: string) => cardName.includes(word));
+              });
+            }
+            
+            return match;
+          };
           
-          // Terceiro: busca por palavras-chave
-          if (!match && words.length > 0) {
-            match = cards.find((card: { id: string; name: string }) => {
-              const cardName = card.name.toLowerCase();
-              return words.some((word: string) => cardName.includes(word));
-            });
+          // PRIORIZAR CARTÕES DE CRÉDITO (já que payment_method é credit_card)
+          let match = findCardInList(creditCards);
+          
+          if (match) {
+            console.log('[process-financial-input] Found CREDIT card match:', match.name);
+          } else {
+            // Se não encontrar crédito, tentar débito como fallback
+            match = findCardInList(debitCards);
+            if (match) {
+              console.log('[process-financial-input] WARNING: Only found DEBIT card match:', match.name, '(payment_method is credit_card)');
+            }
           }
           
           if (match) {
             resolved_card_id = match.id;
-            console.log('[process-financial-input] Card resolved:', input.card_hint, '->', match.name);
+            console.log('[process-financial-input] Card resolved:', input.card_hint, '->', match.name, '(type:', match.card_type, ')');
           } else {
-            console.log('[process-financial-input] Card not found for hint:', input.card_hint, 'Available:', cards.map((c: { name: string }) => c.name));
+            console.log('[process-financial-input] Card not found for hint:', input.card_hint, 'Available:', cards.map((c: { name: string; card_type: string }) => `${c.name} (${c.card_type})`));
           }
         }
       }
 
-      // Se ainda não tem card_id, buscar cartão padrão
+      // Se ainda não tem card_id, buscar cartão padrão (apenas crédito)
       if (!isValidUUID(resolved_card_id)) {
-        console.log('[process-financial-input] No card found, searching default card...');
+        console.log('[process-financial-input] No card found, searching default CREDIT card...');
         
         const { data: defaultCard } = await supabase
           .from('cards')
-          .select('id')
+          .select('id, name')
           .eq('user_id', input.user_id)
           .eq('card_type', 'credit')
           .is('deleted_at', null)
@@ -223,7 +254,7 @@ serve(async (req) => {
 
         if (defaultCard?.id) {
           resolved_card_id = defaultCard.id;
-          console.log('[process-financial-input] Default card used:', resolved_card_id);
+          console.log('[process-financial-input] Default credit card used:', defaultCard.name, resolved_card_id);
         }
       }
     }
