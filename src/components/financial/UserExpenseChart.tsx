@@ -131,10 +131,15 @@ export const UserExpenseChart = () => {
 
       if (expenseError) throw expenseError;
 
-      // Filtrar transações de "Pagamento de Cartão de Crédito"
+      // Filtrar transações de "Quitação Dívida Crédito"
       const filteredExpenseTransactions = expenseTransactions?.filter((t: any) => {
         const categoryName = t.categories?.name?.toLowerCase() || '';
         const isCardPayment = 
+          // Novo nome: Quitação Dívida Crédito
+          ((categoryName.includes('quitação') || categoryName.includes('quitacao')) && 
+           (categoryName.includes('dívida') || categoryName.includes('divida'))) ||
+          categoryName.includes('credit debt settlement') ||
+          // Compatibilidade com nome antigo
           (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
           categoryName.includes('credit card payment');
         return !isCardPayment;

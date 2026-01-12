@@ -79,8 +79,9 @@ const categoryTranslations: CategoryTranslations = {
   'beleza': { pt: 'Beleza', en: 'Beauty', es: 'Belleza' },
   'doacao': { pt: 'Doação', en: 'Donation', es: 'Donación' },
   'farmacia': { pt: 'Farmácia', en: 'Pharmacy', es: 'Farmacia' },
-  'pagamento_cartao_credito': { pt: 'Pagamento de Cartão de Crédito', en: 'Credit Card Payment', es: 'Pago de Tarjeta de Crédito' },
-  'pagamento_de_cartao_de_credito': { pt: 'Pagamento de Cartão de Crédito', en: 'Credit Card Payment', es: 'Pago de Tarjeta de Crédito' },
+  'quitacao_divida_credito': { pt: 'Quitação Dívida Crédito', en: 'Credit Debt Settlement', es: 'Liquidación Deuda Crédito' },
+  'pagamento_cartao_credito': { pt: 'Quitação Dívida Crédito', en: 'Credit Debt Settlement', es: 'Liquidación Deuda Crédito' },
+  'pagamento_de_cartao_de_credito': { pt: 'Quitação Dívida Crédito', en: 'Credit Debt Settlement', es: 'Liquidación Deuda Crédito' },
   'restaurante': { pt: 'Restaurante', en: 'Restaurant', es: 'Restaurante' },
   'telefone': { pt: 'Telefone', en: 'Phone', es: 'Teléfono' },
   'supermercado': { pt: 'Supermercado', en: 'Supermarket', es: 'Supermercado' },
@@ -245,9 +246,14 @@ const categoryDescriptionTranslations: CategoryDescriptionTranslations = {
     es: 'Total'
   },
   'pagamento_de_cartao_de_credito': {
-    pt: 'Pagamento de Cartão de Crédito',
-    en: 'Credit Card Payment',
-    es: 'Pago de Tarjeta de Crédito'
+    pt: 'Quitação Dívida Crédito',
+    en: 'Credit Debt Settlement',
+    es: 'Liquidación Deuda Crédito'
+  },
+  'quitacao_divida_credito': {
+    pt: 'Quitação Dívida Crédito',
+    en: 'Credit Debt Settlement',
+    es: 'Liquidación Deuda Crédito'
   },
   'financas_e_servicos': {
     pt: 'Finanças & Serviços',

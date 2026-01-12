@@ -57,7 +57,7 @@ interface Card {
   due_date?: number;
   currency?: CurrencyCode;
 }
-const CREDIT_CARD_PAYMENT_NAMES = { pt: "Pagamento de Cartão de Crédito", en: "Credit Card Payment" } as const;
+const CREDIT_CARD_PAYMENT_NAMES = { pt: "Quitação Dívida Crédito", en: "Credit Debt Settlement" } as const;
 interface Account {
   id: string;
   user_id: string;
@@ -91,7 +91,7 @@ const CATEGORY_TRANSLATIONS: Record<string, string> = {
   'salario': 'Salary',
   'comissao': 'Commission',
   'renda extra': 'Extra Income',
-  'pagamento de cartao de credito': 'Credit Card Payment',
+  'quitacao divida credito': 'Credit Debt Settlement',
   'transferencia': 'Transfer',
   'transferencia entre contas': 'Account Transfer',
   'aposentadoria': 'Retirement',

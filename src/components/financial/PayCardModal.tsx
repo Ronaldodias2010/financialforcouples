@@ -137,7 +137,7 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
       return;
     }
 
-    // Pagamento de cartão de crédito SEMPRE usa 'card_payment'
+    // Quitação de dívida do cartão de crédito SEMPRE usa 'card_payment'
     // A origem do recurso (conta ou dinheiro) é controlada via accountId
     const mappedPaymentMethod = 'card_payment';
     
