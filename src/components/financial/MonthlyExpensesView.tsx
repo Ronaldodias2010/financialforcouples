@@ -275,15 +275,9 @@ if (selectedCategory !== "all") {
       
       let filteredData = data || [];
       
-      // Filtro para excluir transações de "Pagamento de Cartão de Crédito"
-      // Garante consistência com o Fluxo de Caixa e outros componentes
-      filteredData = filteredData.filter(t => {
-        const categoryName = (t.categories?.name || '').toLowerCase();
-        const isCardPayment = 
-          (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
-          categoryName.includes('credit card payment');
-        return !isCardPayment;
-      });
+      // NÃO EXCLUIR pagamentos de cartão da listagem
+      // Eles devem aparecer para visibilidade, mas não entram no total de despesas
+      // Isso foi movido para o cálculo do total, não para o filtro de exibição
       
       // Apply user filter based on viewMode using user_id mapping to couple
       if (viewMode !== "both" && couple) {
@@ -362,8 +356,32 @@ if (selectedCategory !== "all") {
     return ownerUser === 'user1' ? names.user1Name : ownerUser === 'user2' ? names.user2Name : ownerUser;
   };
 
+  // Função auxiliar para detectar pagamento de cartão
+  const isCardPaymentTx = (t: Transaction): boolean => {
+    const categoryName = (t.categories?.name || '').toLowerCase();
+    const isCategoryPayment = 
+      (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
+      categoryName.includes('credit card payment') ||
+      categoryName.includes('pago cartão') ||
+      categoryName.includes('pago cartao');
+    
+    const description = (t.description || '').toLowerCase();
+    const isDescriptionPayment = 
+      description.includes('pagamento de cartão') ||
+      description.includes('pagamento de cartao') ||
+      description.includes('pagamento cartão') ||
+      description.includes('pagamento cartao') ||
+      description.includes('credit card payment');
+    
+    const isPaymentMethod = t.payment_method === 'card_payment';
+    
+    return isCategoryPayment || isDescriptionPayment || isPaymentMethod;
+  };
+
+  // Total de despesas EXCLUI pagamentos de cartão (não são consumo real)
   const totalExpenses = transactions
     .filter(t => t.type === 'expense')
+    .filter(t => !isCardPaymentTx(t))
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (

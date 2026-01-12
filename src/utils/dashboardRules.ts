@@ -82,40 +82,49 @@ export const isInternalTransfer = (transaction: DashboardTransaction): boolean =
 };
 
 /**
- * Verifica se uma transação de DESPESA deve aparecer no Dashboard
+ * Verifica se uma transação representa SAÍDA DE CAIXA
+ * INCLUI pagamentos de cartão (são saídas reais de dinheiro)
+ * 
+ * REGRA:
+ * ✅ Todas as despesas que tiram dinheiro da conta
+ * ✅ Pagamentos de cartão de crédito
+ * ❌ Transferências entre contas
+ * ❌ Aportes em investimentos
+ * ❌ Transações pending
+ */
+export const isCashOutflow = (transaction: DashboardTransaction): boolean => {
+  if (transaction.type !== 'expense') return false;
+  if (isInternalTransfer(transaction)) return false;
+  if (transaction.status === 'pending') return false;
+  
+  // Parceladas: apenas 1ª parcela
+  if (transaction.is_installment && transaction.installment_number !== 1) {
+    return false;
+  }
+  
+  return true; // INCLUI pagamentos de cartão
+};
+
+/**
+ * Verifica se uma transação de DESPESA é CONSUMO REAL (impacta DRE)
+ * EXCLUI pagamentos de cartão (não são consumo, são quitação de dívida)
  * 
  * REGRA:
  * ✅ Despesas do mês (cartão débito, PIX, dinheiro)
  * ✅ Compras parceladas no cartão (pela data da compra, valor total)
  * ❌ Transferências entre contas
  * ❌ Aportes em investimentos
- * ❌ Pagamento de fatura do cartão
+ * ❌ Pagamento de fatura do cartão (quitação de dívida, não consumo)
  * ❌ Parcelas de compras de meses anteriores
  * ❌ Transações pending (não completadas)
  */
 export const isDashboardExpense = (transaction: DashboardTransaction): boolean => {
-  // Deve ser despesa
-  if (transaction.type !== 'expense') {
-    return false;
-  }
-
-  // Excluir transferências e aportes
-  if (isInternalTransfer(transaction)) {
-    return false;
-  }
-
-  // Excluir pagamentos de fatura do cartão
-  if (isCardPaymentTransaction(transaction)) {
-    return false;
-  }
-
-  // Para parceladas: apenas a 1ª parcela (representa a compra original)
-  if (transaction.is_installment) {
-    return transaction.installment_number === 1;
-  }
-
-  // Para não-parceladas: excluir pending
-  return transaction.status !== 'pending';
+  if (!isCashOutflow(transaction)) return false;
+  
+  // Excluir pagamentos de cartão do DRE (são quitação de dívida, não consumo)
+  if (isCardPaymentTransaction(transaction)) return false;
+  
+  return true;
 };
 
 /**
@@ -194,8 +203,25 @@ export const filterByViewMode = (
 };
 
 /**
- * Calcula o total de despesas do Dashboard para um array de transações
- * Aplica todas as regras e soma os valores efetivos
+ * Calcula TODAS as saídas de caixa (para o Dashboard Principal)
+ * Inclui pagamentos de cartão - tudo que sai da conta
+ */
+export const calculateTotalCashOutflows = (
+  transactions: DashboardTransaction[],
+  convertCurrency: (amount: number, from: CurrencyCode, to: CurrencyCode) => number,
+  targetCurrency: CurrencyCode
+): number => {
+  return transactions
+    .filter(isCashOutflow)
+    .reduce((sum, t) => {
+      const effectiveAmount = getDashboardEffectiveAmount(t);
+      return sum + convertCurrency(effectiveAmount, t.currency, targetCurrency);
+    }, 0);
+};
+
+/**
+ * Calcula o total de despesas REAIS (consumo, impacta DRE)
+ * Exclui pagamentos de cartão - apenas consumo real
  */
 export const calculateDashboardExpenses = (
   transactions: DashboardTransaction[],
