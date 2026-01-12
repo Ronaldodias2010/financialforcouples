@@ -157,23 +157,54 @@ serve(async (req) => {
       }
     }
 
-    // 2.2 Resolver CARTÃO se payment_method = credit_card
+    // 2.2 Resolver CARTÃO se payment_method = credit_card (busca inteligente)
     if (input.payment_method === 'credit_card') {
       if (!isValidUUID(resolved_card_id) && input.card_hint) {
         console.log('[process-financial-input] Resolving card from hint:', input.card_hint);
         
-        const { data: card } = await supabase
+        // Palavras genéricas a ignorar na busca
+        const stopWords = ['banco', 'cartão', 'cartao', 'card', 'de', 'do', 'da', 'credito', 'crédito'];
+        
+        // Extrair palavras relevantes do hint
+        const words = input.card_hint.trim().toLowerCase().split(/\s+/)
+          .filter((w: string) => w.length > 2 && !stopWords.includes(w));
+        
+        console.log('[process-financial-input] Card search keywords:', words);
+        
+        // Buscar todos os cartões do usuário
+        const { data: cards } = await supabase
           .from('cards')
-          .select('id')
+          .select('id, name')
           .eq('user_id', input.user_id)
-          .ilike('name', `%${input.card_hint}%`)
-          .is('deleted_at', null)
-          .limit(1)
-          .single();
-
-        if (card?.id) {
-          resolved_card_id = card.id;
-          console.log('[process-financial-input] Card resolved:', resolved_card_id);
+          .is('deleted_at', null);
+        
+        if (cards && cards.length > 0) {
+          // Primeiro: busca exata
+          let match = cards.find((card: { id: string; name: string }) => 
+            card.name.toLowerCase() === input.card_hint.trim().toLowerCase()
+          );
+          
+          // Segundo: busca por substring completa
+          if (!match) {
+            match = cards.find((card: { id: string; name: string }) => 
+              card.name.toLowerCase().includes(input.card_hint.trim().toLowerCase())
+            );
+          }
+          
+          // Terceiro: busca por palavras-chave
+          if (!match && words.length > 0) {
+            match = cards.find((card: { id: string; name: string }) => {
+              const cardName = card.name.toLowerCase();
+              return words.some((word: string) => cardName.includes(word));
+            });
+          }
+          
+          if (match) {
+            resolved_card_id = match.id;
+            console.log('[process-financial-input] Card resolved:', input.card_hint, '->', match.name);
+          } else {
+            console.log('[process-financial-input] Card not found for hint:', input.card_hint, 'Available:', cards.map((c: { name: string }) => c.name));
+          }
         }
       }
 
