@@ -11,6 +11,7 @@ import {
   getDashboardEffectiveAmount,
   isInternalTransfer,
   isCardPaymentTransaction,
+  isCashOutflow,
   type DashboardTransaction
 } from '@/utils/dashboardRules';
 
@@ -579,7 +580,7 @@ export const useFinancialData = () => {
   const getTransactionsExpenses = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
     const filteredTransactions = getTransactionsByUser(viewMode);
     
-    // Usar regras centralizadas do Dashboard
+    // Usar regras centralizadas do Dashboard - consumo real (exclui pagamentos de cartão)
     const expenseOnly = filteredTransactions.filter(t => isDashboardExpense(t as DashboardTransaction));
     
     const expenseValues = expenseOnly.map(t => {
@@ -589,6 +590,38 @@ export const useFinancialData = () => {
     });
     
     return sumMonetaryArray(expenseValues);
+  };
+
+  /**
+   * Calcula TODAS as saídas de caixa para o Dashboard Principal
+   * INCLUI pagamentos de cartão de crédito - tudo que sai da conta
+   * 
+   * Usado exclusivamente no Dashboard Principal para mostrar quanto
+   * REALMENTE saiu do bolso no mês.
+   */
+  const getTransactionsTotalOutflows = (viewMode: 'both' | 'user1' | 'user2' = 'both') => {
+    const filteredTransactions = getTransactionsByUser(viewMode);
+    
+    // Usar isCashOutflow que INCLUI pagamentos de cartão
+    const outflows = filteredTransactions.filter(t => isCashOutflow(t as DashboardTransaction));
+    
+    const outflowValues = outflows.map(t => {
+      const dashTx = t as DashboardTransaction;
+      const effectiveAmount = getDashboardEffectiveAmount(dashTx);
+      return convertCurrency(effectiveAmount, t.currency, userPreferredCurrency);
+    });
+    
+    console.log('💰 [Dashboard Principal] Total Outflows calculated:', {
+      count: outflows.length,
+      transactions: outflows.map(t => ({
+        desc: t.description,
+        amount: t.amount,
+        type: t.card_transaction_type,
+        method: t.payment_method
+      }))
+    });
+    
+    return sumMonetaryArray(outflowValues);
   };
 
   // No need for refreshData - React Query handles it automatically!
@@ -607,6 +640,7 @@ export const useFinancialData = () => {
     getAccountsBalance,
     getTransactionsIncome,
     getTransactionsExpenses,
+    getTransactionsTotalOutflows,
     refreshData
   };
 };

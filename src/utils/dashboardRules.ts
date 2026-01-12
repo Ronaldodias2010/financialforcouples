@@ -75,8 +75,17 @@ export const isCardPaymentTransaction = (transaction: DashboardTransaction): boo
 /**
  * Verifica se uma transação é uma transferência/aporte interno
  * (NÃO entra no Dashboard)
+ * 
+ * IMPORTANTE: Pagamentos de cartão usam account_transfer, mas NÃO são
+ * transferências internas - são saídas de caixa reais.
  */
 export const isInternalTransfer = (transaction: DashboardTransaction): boolean => {
+  // Pagamentos de cartão usam account_transfer mas NÃO são transferências internas
+  // São saídas reais de dinheiro que devem aparecer no Dashboard Principal
+  if (transaction.card_transaction_type === 'card_payment') {
+    return false;
+  }
+  
   return transaction.payment_method === 'account_transfer' || 
          transaction.payment_method === 'account_investment';
 };
