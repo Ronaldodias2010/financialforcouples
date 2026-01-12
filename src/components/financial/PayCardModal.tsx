@@ -137,8 +137,9 @@ export const PayCardModal: React.FC<PayCardModalProps> = ({
       return;
     }
 
-    // Map 'account' to 'deposit' for transaction validation
-    const mappedPaymentMethod = paymentMethod === 'account' ? 'deposit' : paymentMethod;
+    // Pagamento de cartão de crédito SEMPRE usa 'card_payment'
+    // A origem do recurso (conta ou dinheiro) é controlada via accountId
+    const mappedPaymentMethod = 'card_payment';
     
     // Enviar valor CONVERTIDO para a moeda do cartão
     const result = await processCardPayment({
