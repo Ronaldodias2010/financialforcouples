@@ -138,22 +138,67 @@ serve(async (req) => {
     let resolved_card_id: string | null = input.resolved_card_id;
     let resolved_account_id: string | null = input.resolved_account_id;
 
-    // 2.1 Resolver CATEGORIA se não tiver UUID válido
+    // 2.1 Resolver CATEGORIA se não tiver UUID válido (BUSCAR POR TAGS PRIMEIRO)
     if (!isValidUUID(resolved_category_id) && input.category_hint) {
       console.log('[process-financial-input] Resolving category from hint:', input.category_hint);
+      const searchTerm = input.category_hint.trim().toLowerCase();
       
-      const { data: category } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('user_id', input.user_id)
-        .ilike('name', `%${input.category_hint}%`)
-        .is('deleted_at', null)
-        .limit(1)
-        .single();
+      // 1) BUSCAR TAG que contenha o termo (ex: "livro" → tag "livros")
+      const { data: tagMatches } = await supabase
+        .from('category_tags')
+        .select('id, name_pt')
+        .ilike('name_pt', `%${searchTerm}%`);
+      
+      if (tagMatches && tagMatches.length > 0) {
+        console.log('[process-financial-input] Found matching tags:', tagMatches.map((t: { name_pt: string }) => t.name_pt));
+        
+        // 2) Buscar category_tag_relations para encontrar default_category_id
+        const tagIds = tagMatches.map((t: { id: string }) => t.id);
+        const { data: relations } = await supabase
+          .from('category_tag_relations')
+          .select('category_id')
+          .in('tag_id', tagIds)
+          .eq('is_active', true)
+          .limit(1);
+        
+        if (relations && relations.length > 0) {
+          const defaultCategoryId = relations[0].category_id;
+          console.log('[process-financial-input] Found default category via tag:', defaultCategoryId);
+          
+          // 3) Mapear para categoria do usuário via default_category_id
+          const { data: userCategory } = await supabase
+            .from('categories')
+            .select('id, name')
+            .eq('user_id', input.user_id)
+            .eq('default_category_id', defaultCategoryId)
+            .is('deleted_at', null)
+            .limit(1)
+            .single();
+          
+          if (userCategory) {
+            resolved_category_id = userCategory.id;
+            console.log('[process-financial-input] Category resolved via TAG:', searchTerm, '->', userCategory.name);
+          }
+        }
+      }
+      
+      // 4) FALLBACK: Busca direta pelo nome da categoria
+      if (!resolved_category_id) {
+        console.log('[process-financial-input] Tag search failed, trying direct name match...');
+        
+        const { data: category } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('user_id', input.user_id)
+          .ilike('name', `%${input.category_hint}%`)
+          .is('deleted_at', null)
+          .limit(1)
+          .single();
 
-      if (category?.id) {
-        resolved_category_id = category.id;
-        console.log('[process-financial-input] Category resolved:', resolved_category_id);
+        if (category?.id) {
+          resolved_category_id = category.id;
+          console.log('[process-financial-input] Category resolved by NAME:', resolved_category_id);
+        }
       }
     }
 
