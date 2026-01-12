@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Badge } from "@/components/landing/ui/badge";
 import { Button } from "@/components/landing/ui/button";
 import { Card } from "@/components/landing/ui/card";
 import { Bell, Plane, Target, Coins } from "lucide-react";
+import { UpgradeModal } from "@/components/subscription/UpgradeModal";
 
 const SmartMileageSection = () => {
   const { t } = useLanguage();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   return (
     <section 
@@ -170,9 +173,16 @@ const SmartMileageSection = () => {
                   background: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--primary)), hsl(142 76% 36%))",
                   boxShadow: "0 10px 30px hsl(var(--cherry-light) / 0.3)"
                 }}
+                onClick={() => setShowUpgradeModal(true)}
               >
                 {t('smartMileage.cta')}
               </Button>
+
+              <UpgradeModal 
+                isOpen={showUpgradeModal} 
+                onClose={() => setShowUpgradeModal(false)}
+                feature="smartMileage"
+              />
             </div>
 
             {/* Right Column - Visual Mockup */}
