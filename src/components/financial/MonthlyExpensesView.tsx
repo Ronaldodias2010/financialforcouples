@@ -65,7 +65,8 @@ const normalizeCategory = (s: string) =>
 
 const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, Record<string, string>> = {
   'en': {
-    'pagamento de cartao de credito': 'Credit Card Payment',
+    'quitacao divida credito': 'Credit Debt Settlement',
+    'pagamento de cartao de credito': 'Credit Debt Settlement',
     'transferencia': 'Transfer',
     'alimentacao': 'Food',
     'transporte': 'Transportation',
@@ -85,7 +86,8 @@ const EXPENSE_CATEGORY_TRANSLATIONS: Record<string, Record<string, string>> = {
     'reembolso': 'Refund',
   },
   'es': {
-    'pagamento de cartao de credito': 'Pago de Tarjeta de Crédito',
+    'quitacao divida credito': 'Liquidación Deuda Crédito',
+    'pagamento de cartao de credito': 'Liquidación Deuda Crédito',
     'transferencia': 'Transferencia',
     'alimentacao': 'Alimentación',
     'transporte': 'Transporte',

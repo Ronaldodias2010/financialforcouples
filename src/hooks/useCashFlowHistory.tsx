@@ -159,12 +159,18 @@ export function useCashFlowHistory(options: UseCashFlowOptions) {
         throw error;
       }
 
-      // Filtro para excluir transações de "Pagamento de Cartão de Crédito" por categoria
+      // Filtro para excluir transações de "Quitação Dívida Crédito" por categoria
       // E deduplicação de card_payment para evitar duplicatas legadas
       const filteredData = (data || []).filter((entry) => {
         const categoryName = (entry.category_name || '').toLowerCase();
-        // Excluir pagamentos de cartão de crédito por categoria
+        // Excluir quitação de dívida de crédito por categoria (novo nome + compatibilidade)
         const isCardPaymentByCategory = 
+          // Novo nome: Quitação Dívida Crédito
+          ((categoryName.includes('quitação') || categoryName.includes('quitacao')) && 
+           (categoryName.includes('dívida') || categoryName.includes('divida'))) ||
+          categoryName.includes('credit debt settlement') ||
+          categoryName.includes('liquidación deuda') ||
+          // Compatibilidade com nome antigo
           (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
           categoryName.includes('credit card payment');
         return !isCardPaymentByCategory;

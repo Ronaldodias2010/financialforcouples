@@ -33,7 +33,7 @@ export interface DashboardTransaction {
 }
 
 /**
- * Verifica se uma transação é um "Pagamento de Cartão de Crédito"
+ * Verifica se uma transação é uma "Quitação Dívida Crédito"
  * (que NÃO deve entrar no Dashboard - vai para Fluxo de Caixa)
  * 
  * Detecção por múltiplos critérios:
@@ -46,6 +46,12 @@ export const isCardPaymentTransaction = (transaction: DashboardTransaction): boo
   // Critério 1: Por nome de categoria
   const categoryName = (transaction.categories?.name || '').toLowerCase();
   const isCategoryPayment = (
+    // Novo nome: Quitação Dívida Crédito
+    (categoryName.includes('quitação') || categoryName.includes('quitacao')) && 
+    (categoryName.includes('dívida') || categoryName.includes('divida')) ||
+    categoryName.includes('credit debt settlement') ||
+    categoryName.includes('liquidación deuda') ||
+    // Compatibilidade com nome antigo
     (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
     categoryName.includes('credit card payment') ||
     categoryName.includes('pago cartão') ||
@@ -55,6 +61,11 @@ export const isCardPaymentTransaction = (transaction: DashboardTransaction): boo
   // Critério 2: Por descrição da transação
   const description = (transaction.description || '').toLowerCase();
   const isDescriptionPayment = (
+    // Novo nome
+    description.includes('quitação dívida') ||
+    description.includes('quitacao divida') ||
+    description.includes('credit debt settlement') ||
+    // Compatibilidade com nome antigo
     description.includes('pagamento de cartão') ||
     description.includes('pagamento de cartao') ||
     description.includes('pagamento cartão') ||
@@ -126,14 +137,14 @@ export const isCashOutflow = (transaction: DashboardTransaction): boolean => {
  * ✅ Compras parceladas no cartão (pela data da compra, valor total)
  * ❌ Transferências entre contas
  * ❌ Aportes em investimentos
- * ❌ Pagamento de fatura do cartão (quitação de dívida, não consumo)
+ * ❌ Quitação de dívida do cartão (não é consumo)
  * ❌ Parcelas de compras de meses anteriores
  * ❌ Transações pending (não completadas)
  */
 export const isDashboardExpense = (transaction: DashboardTransaction): boolean => {
   if (!isCashOutflow(transaction)) return false;
   
-  // Excluir pagamentos de cartão do DRE (são quitação de dívida, não consumo)
+  // Excluir quitação de dívida do cartão do DRE (não é consumo)
   if (isCardPaymentTransaction(transaction)) return false;
   
   return true;
