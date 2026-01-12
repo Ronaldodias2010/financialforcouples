@@ -55,7 +55,7 @@ interface Transaction {
 export const FinancialDashboard = () => {
   const { user } = useAuth();
   const { t, language } = useLanguage();
-  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsBalance, getTransactionsIncome, getTransactionsExpenses } = useFinancialData();
+  const { getFinancialSummary, getFinancialComparison, userPreferredCurrency, refreshData, getAccountsBalance, getTransactionsIncome, getTransactionsExpenses, getTransactionsTotalOutflows } = useFinancialData();
   const { isPartOfCouple, couple, loading: coupleLoading, refreshCoupleData } = useCouple();
   const { names, loading: namesLoading } = usePartnerNames();
   const { hasAccess, checkSubscription, subscriptionTier, subscribed } = useSubscription();
@@ -267,11 +267,11 @@ export const FinancialDashboard = () => {
               </p>
             </div>
             
-            {/* Financial Cards */}
+            {/* Financial Cards - Dashboard Principal: TODAS as saídas de caixa */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FinancialCard
                 title={t('dashboard.balance')}
-                amount={getTransactionsIncome(viewMode) - getTransactionsExpenses(viewMode)}
+                amount={getTransactionsIncome(viewMode) - getTransactionsTotalOutflows(viewMode)}
                 currency={financialSummary.currency}
                 icon={Wallet}
                 type="balance"
@@ -287,7 +287,7 @@ export const FinancialDashboard = () => {
               />
               <FinancialCard
                 title={t('dashboard.expenses')}
-                amount={getTransactionsExpenses(viewMode)}
+                amount={getTransactionsTotalOutflows(viewMode)}
                 currency={financialSummary.currency}
                 icon={TrendingDown}
                 type="expense"
