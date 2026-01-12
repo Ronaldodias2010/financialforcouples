@@ -1087,11 +1087,9 @@ function generateIndividualContext(
   
   // Function to calculate card payment amount like FutureExpensesView.tsx
   const calculateCardPaymentAmount = (card: any): number => {
-    // For credit cards, calculate: Total Limit - Available Limit
+    // For credit cards, the payment amount is current_balance (outstanding balance)
     if (card.card_type === 'credit') {
-      const totalLimit = Number(card.credit_limit || 0);
-      const availableLimit = Number(card.initial_balance || 0);
-      return totalLimit - availableLimit;
+      return Number(card.current_balance || 0);
     }
     
     // For other card types, use current balance
