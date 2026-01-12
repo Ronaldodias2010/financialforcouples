@@ -317,23 +317,53 @@ serve(async (req) => {
         }
       }
 
-      // Tentar resolver card_hint → card_id
+      // Tentar resolver card_hint → card_id (busca inteligente por palavras-chave)
       if (card_hint) {
-        const { data: card } = await supabase
+        // Palavras genéricas a ignorar na busca
+        const stopWords = ['banco', 'cartão', 'cartao', 'card', 'de', 'do', 'da', 'credito', 'crédito'];
+        
+        // Extrair palavras relevantes do hint
+        const words = card_hint.trim().toLowerCase().split(/\s+/)
+          .filter((w: string) => w.length > 2 && !stopWords.includes(w));
+        
+        console.log('[whatsapp-input] Card search keywords:', words);
+        
+        // Buscar todos os cartões do usuário
+        const { data: cards } = await supabase
           .from('cards')
           .select('id, name')
           .eq('user_id', existingInput.user_id)
-          .is('deleted_at', null)
-          .ilike('name', `%${card_hint.trim()}%`)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (card) {
-          resolved_card_id = card.id;
-          console.log('[whatsapp-input] Card resolved:', card_hint, '->', card.name);
+          .is('deleted_at', null);
+        
+        if (cards && cards.length > 0) {
+          // Primeiro: busca exata
+          let match = cards.find((card: { id: string; name: string }) => 
+            card.name.toLowerCase() === card_hint.trim().toLowerCase()
+          );
+          
+          // Segundo: busca por substring completa
+          if (!match) {
+            match = cards.find((card: { id: string; name: string }) => 
+              card.name.toLowerCase().includes(card_hint.trim().toLowerCase())
+            );
+          }
+          
+          // Terceiro: busca por palavras-chave
+          if (!match && words.length > 0) {
+            match = cards.find((card: { id: string; name: string }) => {
+              const cardName = card.name.toLowerCase();
+              return words.some((word: string) => cardName.includes(word));
+            });
+          }
+          
+          if (match) {
+            resolved_card_id = match.id;
+            console.log('[whatsapp-input] Card resolved:', card_hint, '->', match.name);
+          } else {
+            console.log('[whatsapp-input] Card not found for hint:', card_hint, 'Available:', cards.map((c: { name: string }) => c.name));
+          }
         } else {
-          console.log('[whatsapp-input] Card not found for hint:', card_hint);
+          console.log('[whatsapp-input] No cards found for user');
         }
       }
 
