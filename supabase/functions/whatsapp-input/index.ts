@@ -317,8 +317,48 @@ serve(async (req) => {
         }
       }
 
-      // Tentar resolver card_hint → card_id (busca inteligente por palavras-chave)
-      if (card_hint) {
+      // =====================================================
+      // Buscar dados auxiliares para melhorar perguntas
+      // =====================================================
+      const { data: userCards } = await supabase
+        .from('cards')
+        .select('id, name')
+        .eq('user_id', existingInput.user_id)
+        .is('deleted_at', null);
+      
+      const { data: userAccounts } = await supabase
+        .from('accounts')
+        .select('id, name')
+        .eq('user_id', existingInput.user_id)
+        .is('deleted_at', null)
+        .eq('is_active', true);
+
+      // Buscar categorias frequentes do usuário (últimas 50 transações)
+      const { data: recentTransactions } = await supabase
+        .from('transactions')
+        .select('category_id, categories!inner(name)')
+        .eq('user_id', existingInput.user_id)
+        .not('category_id', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      // Extrair top 5 categorias mais usadas
+      const categoryFrequency: Record<string, number> = {};
+      recentTransactions?.forEach((t: { categories: { name: string } }) => {
+        const catName = t.categories?.name;
+        if (catName) {
+          categoryFrequency[catName] = (categoryFrequency[catName] || 0) + 1;
+        }
+      });
+      const frequentCategories = Object.entries(categoryFrequency)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name]) => name);
+
+      // =====================================================
+      // Tentar resolver card_hint → card_id (busca inteligente)
+      // =====================================================
+      if (card_hint && userCards && userCards.length > 0) {
         // Palavras genéricas a ignorar na busca
         const stopWords = ['banco', 'cartão', 'cartao', 'card', 'de', 'do', 'da', 'credito', 'crédito'];
         
@@ -328,43 +368,45 @@ serve(async (req) => {
         
         console.log('[whatsapp-input] Card search keywords:', words);
         
-        // Buscar todos os cartões do usuário
-        const { data: cards } = await supabase
-          .from('cards')
-          .select('id, name')
-          .eq('user_id', existingInput.user_id)
-          .is('deleted_at', null);
+        // Primeiro: busca exata
+        let match = userCards.find((card: { id: string; name: string }) => 
+          card.name.toLowerCase() === card_hint.trim().toLowerCase()
+        );
         
-        if (cards && cards.length > 0) {
-          // Primeiro: busca exata
-          let match = cards.find((card: { id: string; name: string }) => 
-            card.name.toLowerCase() === card_hint.trim().toLowerCase()
+        // Segundo: busca por substring completa (hint no nome)
+        if (!match) {
+          match = userCards.find((card: { id: string; name: string }) => 
+            card.name.toLowerCase().includes(card_hint.trim().toLowerCase())
           );
-          
-          // Segundo: busca por substring completa
-          if (!match) {
-            match = cards.find((card: { id: string; name: string }) => 
-              card.name.toLowerCase().includes(card_hint.trim().toLowerCase())
-            );
-          }
-          
-          // Terceiro: busca por palavras-chave
-          if (!match && words.length > 0) {
-            match = cards.find((card: { id: string; name: string }) => {
-              const cardName = card.name.toLowerCase();
-              return words.some((word: string) => cardName.includes(word));
-            });
-          }
-          
-          if (match) {
-            resolved_card_id = match.id;
-            console.log('[whatsapp-input] Card resolved:', card_hint, '->', match.name);
-          } else {
-            console.log('[whatsapp-input] Card not found for hint:', card_hint, 'Available:', cards.map((c: { name: string }) => c.name));
-          }
-        } else {
-          console.log('[whatsapp-input] No cards found for user');
         }
+        
+        // Terceiro: busca por palavras-chave do hint no nome do cartão
+        if (!match && words.length > 0) {
+          match = userCards.find((card: { id: string; name: string }) => {
+            const cardName = card.name.toLowerCase();
+            return words.some((word: string) => cardName.includes(word));
+          });
+        }
+        
+        // Quarto: busca reversa - nome do cartão contido no hint
+        if (!match && words.length > 0) {
+          match = userCards.find((card: { id: string; name: string }) => {
+            const cardWords = card.name.toLowerCase().split(/\s+/)
+              .filter((w: string) => w.length > 2 && !stopWords.includes(w));
+            const hintLower = card_hint.trim().toLowerCase();
+            // Verificar se alguma palavra significativa do cartão está no hint
+            return cardWords.some((word: string) => hintLower.includes(word));
+          });
+        }
+        
+        if (match) {
+          resolved_card_id = match.id;
+          console.log('[whatsapp-input] Card resolved:', card_hint, '->', match.name);
+        } else {
+          console.log('[whatsapp-input] Card not found for hint:', card_hint, 'Available:', userCards.map((c: { name: string }) => c.name));
+        }
+      } else if (card_hint && (!userCards || userCards.length === 0)) {
+        console.log('[whatsapp-input] No cards found for user');
       }
 
       // =====================================================
@@ -376,18 +418,41 @@ serve(async (req) => {
       const needsCard = payment_method === 'credit_card';
       const needsAccount = payment_method === 'debit_card' || payment_method === 'pix' || payment_method === 'cash';
 
-      // Construir lista de campos faltantes e perguntas
-      const questions: { field: string; question: string; hint?: string }[] = [];
+      // Interface melhorada para perguntas
+      interface QuestionItem {
+        field: string;
+        question: string;
+        hint?: string;
+        options?: string[];
+        suggestions?: string[];
+        type?: 'text' | 'selection' | 'confirmation';
+      }
+      
+      const questions: QuestionItem[] = [];
 
       // Campos básicos obrigatórios
       if (!amount) {
-        questions.push({ field: 'amount', question: 'Qual o valor?' });
+        questions.push({ 
+          field: 'amount', 
+          question: 'Qual o valor da transação?',
+          type: 'text'
+        });
       }
       if (!transaction_type) {
-        questions.push({ field: 'transaction_type', question: 'É uma despesa ou receita?' });
+        questions.push({ 
+          field: 'transaction_type', 
+          question: 'É uma despesa ou receita?',
+          options: ['despesa', 'receita'],
+          type: 'selection'
+        });
       }
       if (!payment_method) {
-        questions.push({ field: 'payment_method', question: 'Qual a forma de pagamento? (PIX, cartão de crédito, débito, dinheiro)' });
+        questions.push({ 
+          field: 'payment_method', 
+          question: 'Qual a forma de pagamento?',
+          options: ['PIX', 'cartão de crédito', 'cartão de débito', 'dinheiro'],
+          type: 'selection'
+        });
       }
 
       // =====================================================
@@ -396,37 +461,100 @@ serve(async (req) => {
       // =====================================================
       if (isWhatsApp) {
         if (!category_hint) {
-          questions.push({ field: 'category', question: 'Qual a categoria desse gasto?' });
+          // Sem hint da IA - inferir do contexto ou perguntar com sugestões
+          const rawLower = body.raw_message?.toLowerCase() || '';
+          const contextHints: string[] = [];
+          
+          // Inferência básica do contexto da mensagem
+          if (/lanchonete|padaria|restaurante|almoço|jantar|pizza|hamburguer|comida/i.test(rawLower)) {
+            contextHints.push('Alimentação');
+          }
+          if (/uber|99|taxi|gasolina|combustível|estacionamento|onibus|metrô/i.test(rawLower)) {
+            contextHints.push('Transporte');
+          }
+          if (/mercado|supermercado|açougue|feira|hortifruti/i.test(rawLower)) {
+            contextHints.push('Compras');
+          }
+          if (/farmácia|remédio|médico|consulta|hospital/i.test(rawLower)) {
+            contextHints.push('Saúde');
+          }
+          
+          const allSuggestions = [...new Set([...contextHints, ...frequentCategories])].slice(0, 5);
+          
+          questions.push({ 
+            field: 'category', 
+            question: allSuggestions.length > 0 
+              ? `Em qual categoria classificar? Sugestões: ${allSuggestions.join(', ')}`
+              : 'Qual a categoria desse gasto?',
+            suggestions: allSuggestions,
+            type: allSuggestions.length > 0 ? 'selection' : 'text'
+          });
         } else if (!resolved_category_id) {
-          // Categoria não resolvida = perguntar
+          // Categoria não resolvida = perguntar com sugestões
           const suggestedText = confidence_score && confidence_score >= 0.85 
-            ? `Classifiquei como "${category_hint}". Está correto? (ou informe outra categoria)`
-            : `Não encontrei a categoria "${category_hint}". Qual categoria deseja usar?`;
-          questions.push({ field: 'category', question: suggestedText, hint: category_hint });
+            ? `Classifiquei como "${category_hint}". Está correto?`
+            : `Não encontrei "${category_hint}". ${frequentCategories.length > 0 ? 'Sugestões: ' + frequentCategories.join(', ') : 'Qual categoria deseja usar?'}`;
+          questions.push({ 
+            field: 'category', 
+            question: suggestedText, 
+            hint: category_hint,
+            suggestions: frequentCategories,
+            type: confidence_score && confidence_score >= 0.85 ? 'confirmation' : 'selection'
+          });
         }
       }
 
       // Cartão - se necessário
       if (needsCard) {
+        const cardNames = userCards?.map((c: { name: string }) => c.name) || [];
+        
         if (!card_hint) {
-          questions.push({ field: 'card', question: 'Qual cartão de crédito foi usado?' });
+          questions.push({ 
+            field: 'card', 
+            question: cardNames.length > 0 
+              ? `Qual cartão de crédito? Opções: ${cardNames.join(', ')}`
+              : 'Qual cartão de crédito foi usado?',
+            options: cardNames,
+            type: cardNames.length > 0 ? 'selection' : 'text'
+          });
         } else if (!resolved_card_id) {
-          const suggestedText = confidence_score && confidence_score >= 0.85 
-            ? `Registrei no cartão "${card_hint}". Está correto?`
+          const suggestedText = cardNames.length > 0
+            ? `Não encontrei "${card_hint}". Seus cartões: ${cardNames.join(', ')}. Qual usar?`
             : `Não encontrei o cartão "${card_hint}". Qual cartão deseja usar?`;
-          questions.push({ field: 'card', question: suggestedText, hint: card_hint });
+          questions.push({ 
+            field: 'card', 
+            question: suggestedText, 
+            hint: card_hint,
+            options: cardNames,
+            type: cardNames.length > 0 ? 'selection' : 'text'
+          });
         }
       }
 
       // Conta - se necessária
       if (needsAccount) {
+        const accountNames = userAccounts?.map((a: { name: string }) => a.name) || [];
+        
         if (!account_hint) {
-          questions.push({ field: 'account', question: 'Qual conta foi usada?' });
+          questions.push({ 
+            field: 'account', 
+            question: accountNames.length > 0
+              ? `Qual conta foi usada? Opções: ${accountNames.join(', ')}`
+              : 'Qual conta foi usada?',
+            options: accountNames,
+            type: accountNames.length > 0 ? 'selection' : 'text'
+          });
         } else if (!resolved_account_id) {
-          const suggestedText = confidence_score && confidence_score >= 0.85 
-            ? `Registrei na conta "${account_hint}". Está correto?`
+          const suggestedText = accountNames.length > 0
+            ? `Não encontrei "${account_hint}". Suas contas: ${accountNames.join(', ')}. Qual usar?`
             : `Não encontrei a conta "${account_hint}". Qual conta deseja usar?`;
-          questions.push({ field: 'account', question: suggestedText, hint: account_hint });
+          questions.push({ 
+            field: 'account', 
+            question: suggestedText, 
+            hint: account_hint,
+            options: accountNames,
+            type: accountNames.length > 0 ? 'selection' : 'text'
+          });
         }
       }
 
@@ -443,12 +571,24 @@ serve(async (req) => {
         newStatus = 'confirmed';
       }
 
-      console.log('[whatsapp-input] Status decision:', { 
-        newStatus, 
-        questionsCount: questions.length,
-        resolved_category_id,
-        resolved_account_id,
-        resolved_card_id
+      // =====================================================
+      // LOG DETALHADO DE RESOLUÇÃO
+      // =====================================================
+      console.log('[whatsapp-input] Resolution summary:', {
+        input_id,
+        hints: { category_hint, card_hint, account_hint },
+        resolved: { 
+          category: resolved_category_id ? 'OK' : (category_hint ? 'FAILED' : 'NO_HINT'),
+          card: resolved_card_id ? 'OK' : (needsCard ? (card_hint ? 'FAILED' : 'NO_HINT') : 'N/A'),
+          account: resolved_account_id ? 'OK' : (needsAccount ? (account_hint ? 'FAILED' : 'NO_HINT') : 'N/A')
+        },
+        availableOptions: {
+          cards: userCards?.length || 0,
+          accounts: userAccounts?.length || 0,
+          frequentCategories: frequentCategories.length
+        },
+        questions: questions.map(q => ({ field: q.field, hasOptions: !!q.options?.length })),
+        finalStatus: newStatus
       });
 
       // =====================================================
@@ -492,13 +632,21 @@ serve(async (req) => {
       // RESPOSTA SIMPLIFICADA (Contrato Semântico)
       // =====================================================
       if (newStatus === 'waiting_user_input') {
+        const firstQuestion = questions[0];
         return new Response(
           JSON.stringify({ 
             success: true, 
             status: 'waiting_user_input',
             input_id: input_id,
             questions: questions,
-            next_question: questions[0]?.field
+            next_question: firstQuestion ? {
+              field: firstQuestion.field,
+              question: firstQuestion.question,
+              type: firstQuestion.type || 'text',
+              options: firstQuestion.options,
+              suggestions: firstQuestion.suggestions,
+              priority: 1
+            } : null
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
