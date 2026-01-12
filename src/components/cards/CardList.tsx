@@ -261,17 +261,19 @@ const getOwnerNameForCard = (card: CardData) => {
                         )}
                       </p>
                     )}
-                    <p className={cn(
-                      "text-sm",
-                      Number(card.initial_balance ?? 0) < 0 ? "text-destructive font-semibold" : ""
-                    )}>
-                      Limite Disponível: {formatCurrency(getConvertedValue(Number(card.initial_balance ?? 0), card.currency), getDisplayCurrency(card.currency))}
-                      {card.currency !== getDisplayCurrency(card.currency) && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          (orig: {formatCurrency(Number(card.initial_balance ?? 0), card.currency)})
-                        </span>
-                      )}
-                    </p>
+                    {card.card_type === "credit" && card.credit_limit && (
+                      <p className={cn(
+                        "text-sm",
+                        (card.credit_limit - (card.current_balance ?? 0)) < 0 ? "text-destructive font-semibold" : ""
+                      )}>
+                        Limite Disponível: {formatCurrency(getConvertedValue(card.credit_limit - (card.current_balance ?? 0), card.currency), getDisplayCurrency(card.currency))}
+                        {card.currency !== getDisplayCurrency(card.currency) && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            (orig: {formatCurrency(card.credit_limit - (card.current_balance ?? 0), card.currency)})
+                          </span>
+                        )}
+                      </p>
+                    )}
                     {card.closing_date && card.card_type === "credit" && (
                       <p className="text-sm text-muted-foreground">
                         Fechamento: dia {card.closing_date}
