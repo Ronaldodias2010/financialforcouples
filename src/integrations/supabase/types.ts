@@ -4248,6 +4248,18 @@ export type Database = {
           }
       generate_referral_code: { Args: never; Returns: string }
       generate_temp_password: { Args: never; Returns: string }
+      get_accounts_breakdown: {
+        Args: { p_user_id: string; p_view_mode?: string }
+        Returns: {
+          account_id: string
+          account_name: string
+          account_type: string
+          balance: number
+          category: string
+          is_asset: boolean
+          is_cash_account: boolean
+        }[]
+      }
       get_active_tags_for_category: {
         Args: { p_category_id: string; p_user_id?: string }
         Returns: {
@@ -4273,6 +4285,31 @@ export type Database = {
           income_count: number
           initial_balance: number
           net_result: number
+          total_expense: number
+          total_income: number
+          transaction_count: number
+        }[]
+      }
+      get_cash_flow_summary_v2: {
+        Args: {
+          p_account_id?: string
+          p_end_date: string
+          p_start_date: string
+          p_user_id: string
+          p_view_mode?: string
+        }
+        Returns: {
+          assets_bank: number
+          assets_cash: number
+          cash_available: number
+          expense_count: number
+          final_balance: number
+          income_count: number
+          initial_balance: number
+          liabilities_credit_limit: number
+          net_position: number
+          net_result: number
+          total_debt: number
           total_expense: number
           total_income: number
           transaction_count: number
@@ -4318,6 +4355,18 @@ export type Database = {
           transaction_count: number
         }[]
       }
+      get_financial_position: {
+        Args: { p_date?: string; p_user_id: string; p_view_mode?: string }
+        Returns: {
+          available_cash: number
+          bank_balance: number
+          cash_balance: number
+          credit_limit_used: number
+          net_position: number
+          total_assets: number
+          total_liabilities: number
+        }[]
+      }
       get_inactive_users: {
         Args: never
         Returns: {
@@ -4331,15 +4380,24 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_period_initial_balance: {
-        Args: {
-          p_account_id?: string
-          p_start_date: string
-          p_user_id: string
-          p_view_mode?: string
-        }
-        Returns: number
-      }
+      get_period_initial_balance:
+        | {
+            Args: {
+              p_account_id?: string
+              p_start_date: string
+              p_user_id: string
+              p_view_mode?: string
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              p_start_date: string
+              p_user_id: string
+              p_view_mode?: string
+            }
+            Returns: number
+          }
       get_temp_password_for_invite: {
         Args: { p_record_id: string }
         Returns: string

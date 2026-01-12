@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
@@ -15,7 +14,6 @@ import {
   Download,
   RefreshCw,
   FileText,
-  PieChart,
   BarChart3,
   List,
   CheckCircle,
@@ -27,11 +25,13 @@ import {
 import { format, subMonths } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useCashFlowHistory, PeriodType, ViewMode, getDateRangeForPeriod } from '@/hooks/useCashFlowHistory';
+import { useCashFlowSummaryV2, useFinancialPosition } from '@/hooks/useFinancialPosition';
 import { CashFlowChart } from './CashFlowChart';
 import { CashFlowTable } from './CashFlowTable';
 import { ConsolidatedExpensesView } from './ConsolidatedExpensesView';
 import { ConsolidatedRevenuesView } from './ConsolidatedRevenuesView';
 import { ExportCashFlowDialog } from './ExportCashFlowDialog';
+import { FinancialPositionCards } from './FinancialPositionCards';
 import { IncomeTaxDashboard } from './income-tax';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -90,6 +90,20 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
     accountId: selectedAccountId,
     categoryId: selectedCategoryId,
     movementType: selectedMovementType
+  });
+
+  // Novo: Usar resumo v2 com posição financeira detalhada
+  const { summary: summaryV2 } = useCashFlowSummaryV2({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+    viewMode,
+    accountId: selectedAccountId
+  });
+
+  // Novo: Obter breakdown de contas
+  const { accountsBreakdown } = useFinancialPosition({
+    viewMode,
+    date: dateRange.end
   });
 
   const formatCurrency = (value: number) => {
@@ -244,7 +258,20 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
         </Card>
       )}
 
-      {/* Summary Cards */}
+      {/* Financial Position Cards - NEW: Ativos vs Passivos */}
+      {summaryV2 && (
+        <FinancialPositionCards
+          cashAvailable={summaryV2.cash_available}
+          totalDebt={summaryV2.total_debt}
+          netPosition={summaryV2.net_position}
+          assetsCash={summaryV2.assets_cash}
+          assetsBank={summaryV2.assets_bank}
+          liabilitiesCreditLimit={summaryV2.liabilities_credit_limit}
+          accountsBreakdown={accountsBreakdown}
+        />
+      )}
+
+      {/* Summary Cards - Fluxo do Período */}
       {summary && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card>
@@ -253,7 +280,7 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(summary.initial_balance)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(summaryV2?.initial_balance ?? summary.initial_balance)}</div>
               <p className="text-xs text-muted-foreground">
                 {t('cashFlow.periodStart')}
               </p>
@@ -307,7 +334,7 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t('cashFlow.finalBalance')}</CardTitle>
-              {summary.final_balance >= summary.initial_balance ? (
+              {(summaryV2?.final_balance ?? summary.final_balance) >= (summaryV2?.initial_balance ?? summary.initial_balance) ? (
                 <CheckCircle className="h-4 w-4 text-green-500" />
               ) : (
                 <AlertCircle className="h-4 w-4 text-amber-500" />
@@ -316,9 +343,9 @@ export function CashFlowDashboard({ viewMode, onViewModeChange }: CashFlowDashbo
             <CardContent>
               <div className={cn(
                 "text-2xl font-bold",
-                summary.final_balance >= 0 ? "text-foreground" : "text-red-600"
+                (summaryV2?.final_balance ?? summary.final_balance) >= 0 ? "text-foreground" : "text-red-600"
               )}>
-                {formatCurrency(summary.final_balance)}
+                {formatCurrency(summaryV2?.final_balance ?? summary.final_balance)}
               </div>
               <p className="text-xs text-muted-foreground">
                 {summary.transaction_count} {t('cashFlow.movements')}
