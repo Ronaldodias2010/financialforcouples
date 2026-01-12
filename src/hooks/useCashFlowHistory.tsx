@@ -159,18 +159,32 @@ export function useCashFlowHistory(options: UseCashFlowOptions) {
         throw error;
       }
 
-      // Filtro único para excluir transações de "Pagamento de Cartão de Crédito"
-      // Aplicado aqui para garantir consistência em TODOS os componentes que usam cashFlowEntries
+      // Filtro para excluir transações de "Pagamento de Cartão de Crédito" por categoria
+      // E deduplicação de card_payment para evitar duplicatas legadas
       const filteredData = (data || []).filter((entry) => {
         const categoryName = (entry.category_name || '').toLowerCase();
-        // Excluir pagamentos de cartão de crédito
-        const isCardPayment = 
+        // Excluir pagamentos de cartão de crédito por categoria
+        const isCardPaymentByCategory = 
           (categoryName.includes('pagamento') && (categoryName.includes('cartão') || categoryName.includes('cartao'))) ||
           categoryName.includes('credit card payment');
-        return !isCardPayment;
+        return !isCardPaymentByCategory;
       });
 
-      return filteredData as CashFlowEntry[];
+      // Deduplicação de entradas card_payment (segurança contra duplicatas legadas)
+      const seenCardPayments = new Set<string>();
+      const deduplicatedData = filteredData.filter((entry) => {
+        if (entry.movement_type === 'card_payment') {
+          // Criar chave única baseada em data, valor absoluto e descrição normalizada
+          const key = `${entry.movement_date}|${Math.abs(entry.amount)}|${(entry.card_name || entry.description || '').toLowerCase().substring(0, 20)}`;
+          if (seenCardPayments.has(key)) {
+            return false; // Duplicata, ignorar
+          }
+          seenCardPayments.add(key);
+        }
+        return true;
+      });
+
+      return deduplicatedData as CashFlowEntry[];
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
