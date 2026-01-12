@@ -930,12 +930,11 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         // Para método de pagamento de cartão ou categoria de Pagamento de Cartão de Crédito, usar função unificada
         if (type === "expense" && (paymentMethod === "card_payment" || isCreditCardPaymentCategory) && cardId) {
           const { data, error } = await supabase.rpc('process_card_payment', {
-            p_user_id: user.id,
             p_card_id: cardId,
+            p_user_id: user.id,
+            p_account_id: accountId || null,
             p_payment_amount: transactionAmount,
             p_payment_date: format(transactionDate, 'yyyy-MM-dd'),
-            p_payment_method: paymentMethod === 'card_payment' ? 'deposit' : paymentMethod === 'deposit' ? 'deposit' : paymentMethod === 'transfer' ? 'payment_transfer' : 'cash',
-            p_account_id: accountId || null,
             p_notes: description,
           });
 
