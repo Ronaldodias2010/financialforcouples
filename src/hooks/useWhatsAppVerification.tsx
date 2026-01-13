@@ -63,8 +63,9 @@ export const useWhatsAppVerification = () => {
         return;
       }
 
-      const isVerified = !!profile?.whatsapp_verified_at;
       const hasPhone = !!profile?.phone_number && profile.phone_number.length > 0;
+      // Se tem telefone preenchido, considerar verificado automaticamente
+      const isVerified = !!profile?.whatsapp_verified_at || hasPhone;
 
       setStatus({
         isVerified,
@@ -72,7 +73,7 @@ export const useWhatsAppVerification = () => {
         verifiedAt: profile?.whatsapp_verified_at || null
       });
 
-      // Mostrar modal se não verificado E estiver em rota protegida
+      // Mostrar modal APENAS se não tem telefone E não está em rota excluída
       const isExcludedRoute = excludedRoutes.some(route => 
         location.pathname === route || location.pathname.startsWith(route + '/')
       );
