@@ -46,7 +46,7 @@ export const usePWA = () => {
     // Register service worker
     if ('serviceWorker' in navigator) {
       // Bump querystring to force SW refresh and avoid stale cached chunks causing white screens
-      navigator.serviceWorker.register('/sw.js?v=15')
+      navigator.serviceWorker.register('/sw.js?v=16')
         .then((reg) => {
           setRegistration(reg);
           // Proactively check for updates
@@ -135,6 +135,19 @@ export const usePWA = () => {
     }
   };
 
+  // Detectar tipo de dispositivo
+  const getDeviceType = (): 'android' | 'ios' | 'desktop' => {
+    const ua = navigator.userAgent.toLowerCase();
+    if (/android/i.test(ua)) return 'android';
+    if (/iphone|ipad|ipod/i.test(ua)) return 'ios';
+    return 'desktop';
+  };
+
+  // Verificar se é mobile
+  const isMobile = (): boolean => {
+    return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
   return {
     isInstallable,
     isInstalled,
@@ -143,6 +156,8 @@ export const usePWA = () => {
     updateApp,
     checkForUpdates,
     refreshApp,
-    forceRefresh
+    forceRefresh,
+    getDeviceType,
+    isMobile: isMobile(),
   };
 };

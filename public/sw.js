@@ -1,23 +1,28 @@
-const CACHE_NAME = 'couples-financials-v15';
-const STATIC_CACHE_NAME = 'couples-financials-static-v15';
-const API_CACHE_NAME = 'couples-financials-api-v15';
+const CACHE_NAME = 'couples-financials-v16';
+const STATIC_CACHE_NAME = 'couples-financials-static-v16';
+const API_CACHE_NAME = 'couples-financials-api-v16';
+
+// Contador de erros para auto-limpeza
+let errorCount = 0;
+const MAX_ERRORS_BEFORE_CLEANUP = 3;
 
 const urlsToCache = [
   '/',
   '/auth',
   '/app',
+  '/install',
   '/sobre-nos',
   '/privacy',
   '/terms',
-  '/icons/icon-512x512.png?v=15',
-  '/icons/icon-384x384.png?v=15',
-  '/icons/icon-256x256.png?v=15',
-  '/icons/icon-192x192.png?v=15',
-  '/icons/icon-144x144.png?v=15',
-  '/icons/icon-96x96.png?v=15',
-  '/icons/icon-48x48.png?v=15',
-  '/icons/favicon-32x32.png?v=15',
-  '/icons/favicon-16x16.png?v=15',
+  '/icons/icon-512x512.png?v=16',
+  '/icons/icon-384x384.png?v=16',
+  '/icons/icon-256x256.png?v=16',
+  '/icons/icon-192x192.png?v=16',
+  '/icons/icon-144x144.png?v=16',
+  '/icons/icon-96x96.png?v=16',
+  '/icons/icon-48x48.png?v=16',
+  '/icons/favicon-32x32.png?v=16',
+  '/icons/favicon-16x16.png?v=16',
   '/lovable-uploads/7334c1f2-b2ea-42c6-8031-74d75d699133.png',
   '/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png'
 ];
@@ -28,25 +33,33 @@ const API_URLS = [
 
 // Install service worker
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing v16...');
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
       .then(() => self.skipWaiting())
+      .catch((err) => {
+        console.error('[SW] Install failed:', err);
+      })
   );
 });
 
-// Activate service worker
+// Activate service worker with aggressive cleanup
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating v16...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME && cacheName !== API_CACHE_NAME) {
+          // Limpar TODOS os caches antigos
+          if (!cacheName.includes('v16')) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
+      console.log('[SW] Claiming clients...');
       return self.clients.claim();
     })
   );
