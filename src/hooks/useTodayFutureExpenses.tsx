@@ -37,7 +37,7 @@ export const useTodayFutureExpenses = () => {
 
       const expenses: TodayFutureExpense[] = [];
 
-      // Fetch manual future expenses due today
+      // Fetch manual future expenses due today (only UNPAID ones)
       const { data: manualData, error: manualError } = await supabase
         .from('manual_future_expenses')
         .select(`
@@ -45,7 +45,7 @@ export const useTodayFutureExpenses = () => {
           category:categories(id, name)
         `)
         .in('user_id', userIds)
-        .eq('is_paid', false)
+        .eq('is_paid', false) // ⭐ Somente não pagas
         .eq('due_date', today)
         .is('deleted_at', null);
 

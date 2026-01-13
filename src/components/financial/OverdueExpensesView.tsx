@@ -108,13 +108,13 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         throw recurringError;
       }
 
-      // Fetch overdue manual future expenses
+      // Fetch overdue manual future expenses (only UNPAID ones)
       const { data: manualFutureData, error: manualFutureError } = await supabase
         .from('manual_future_expenses')
         .select('*')
         .in('user_id', userIds)
-        .eq('is_overdue', true)
-        .eq('is_paid', false)
+        .eq('is_paid', false) // ⭐ CRITICAL: Somente não pagas
+        .lt('due_date', todayStr) // ⭐ Buscar por due_date < hoje ao invés de is_overdue
         .is('deleted_at', null);
 
       if (manualFutureError) {
