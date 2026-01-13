@@ -16,6 +16,20 @@ function isValidUUID(str: string | null | undefined): boolean {
   return uuidRegex.test(str);
 }
 
+// ============================================================
+// FUNÇÃO DE NORMALIZAÇÃO DE TEXTO (REMOVE ACENTOS E ESPECIAIS)
+// Converte "Itaú Pão de Açúcar" → "itau pao de acucar"
+// ============================================================
+function normalizeText(text: string): string {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
+    .replace(/[^a-z0-9\s]/g, '')     // Remove caracteres especiais
+    .trim();
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -247,32 +261,35 @@ serve(async (req) => {
           
           console.log('[process-financial-input] Cards by type - Credit:', creditCards.length, 'Debit:', debitCards.length);
           
-          // Função de busca reutilizável
+          // Função de busca reutilizável COM NORMALIZAÇÃO DE ACENTOS
           const findCardInList = (cardList: typeof cards) => {
-            // Primeiro: busca exata
+            const normalizedHint = normalizeText(input.card_hint);
+            
+            // Primeiro: busca exata normalizada
             let match = cardList.find((card: { id: string; name: string; card_type: string }) => 
-              card.name.toLowerCase() === input.card_hint.trim().toLowerCase()
+              normalizeText(card.name) === normalizedHint
             );
             
-            // Segundo: busca por substring completa
+            // Segundo: busca por substring completa normalizada
             if (!match) {
               match = cardList.find((card: { id: string; name: string; card_type: string }) => 
-                card.name.toLowerCase().includes(input.card_hint.trim().toLowerCase())
+                normalizeText(card.name).includes(normalizedHint)
               );
             }
             
-            // Terceiro: hint dentro do nome do cartão
+            // Terceiro: hint normalizado contém nome normalizado do cartão
             if (!match) {
               match = cardList.find((card: { id: string; name: string; card_type: string }) => 
-                input.card_hint.trim().toLowerCase().includes(card.name.toLowerCase())
+                normalizedHint.includes(normalizeText(card.name))
               );
             }
             
-            // Quarto: busca por palavras-chave
+            // Quarto: busca por palavras-chave normalizadas
             if (!match && words.length > 0) {
+              const normalizedWords = words.map((w: string) => normalizeText(w));
               match = cardList.find((card: { id: string; name: string; card_type: string }) => {
-                const cardName = card.name.toLowerCase();
-                return words.some((word: string) => cardName.includes(word));
+                const cardName = normalizeText(card.name);
+                return normalizedWords.some((word: string) => cardName.includes(word));
               });
             }
             
