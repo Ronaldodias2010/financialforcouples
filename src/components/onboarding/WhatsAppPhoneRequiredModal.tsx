@@ -100,6 +100,7 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, onSkip, userId 
       success: 'WhatsApp configurado com sucesso!',
       error: 'Erro ao salvar telefone',
       invalidPhone: 'Por favor, insira um telefone válido',
+      phoneAlreadyExists: 'Este número de telefone já está cadastrado em outra conta',
       skipConfirmTitle: '⚠️ Deseja pular o cadastro do WhatsApp?',
       skipConfirmDescription: 'Sem o número cadastrado, você não poderá usar o assistente financeiro via WhatsApp. Você pode cadastrar depois em Configurações > Perfil.',
       skipConfirmNote: '💡 Lembre-se: mesmo com o WhatsApp cadastrado, apenas usuários com assinatura ativa podem utilizar o serviço.',
@@ -121,6 +122,7 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, onSkip, userId 
       success: 'WhatsApp configured successfully!',
       error: 'Error saving phone',
       invalidPhone: 'Please enter a valid phone number',
+      phoneAlreadyExists: 'This phone number is already registered to another account',
       skipConfirmTitle: '⚠️ Skip WhatsApp registration?',
       skipConfirmDescription: 'Without a registered number, you cannot use the financial assistant via WhatsApp. You can register later in Settings > Profile.',
       skipConfirmNote: '💡 Remember: even with WhatsApp registered, only users with an active subscription can use the service.',
@@ -142,6 +144,7 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, onSkip, userId 
       success: '¡WhatsApp configurado con éxito!',
       error: 'Error al guardar teléfono',
       invalidPhone: 'Por favor, ingresa un teléfono válido',
+      phoneAlreadyExists: 'Este número de teléfono ya está registrado en otra cuenta',
       skipConfirmTitle: '⚠️ ¿Omitir registro de WhatsApp?',
       skipConfirmDescription: 'Sin un número registrado, no podrás usar el asistente financiero por WhatsApp. Puedes registrarte después en Configuración > Perfil.',
       skipConfirmNote: '💡 Recuerda: incluso con WhatsApp registrado, solo los usuarios con suscripción activa pueden usar el servicio.',
@@ -187,6 +190,28 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, onSkip, userId 
     setLoading(true);
     try {
       const normalizedPhone = normalizePhone(phone, currentCountry.dialCode);
+      
+      // Check if phone already exists in another account
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('phone_number', normalizedPhone)
+        .neq('user_id', userId)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking phone:', checkError);
+        throw checkError;
+      }
+
+      if (existingProfile) {
+        toast({
+          title: t.phoneAlreadyExists,
+          variant: 'destructive'
+        });
+        setLoading(false);
+        return;
+      }
       
       const { error } = await supabase
         .from('profiles')
