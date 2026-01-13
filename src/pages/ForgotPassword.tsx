@@ -28,11 +28,10 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      // Enviar email de redefinição usando nossa edge function
+      // Enviar email com senha temporária usando nossa edge function
       const { error } = await supabase.functions.invoke('send-password-reset', {
         body: {
           userEmail: email,
-          resetUrl: `${window.location.origin}/reset-password`,
           language: 'pt'
         }
       });
@@ -41,8 +40,8 @@ export default function ForgotPassword() {
 
       setEmailSent(true);
       toast({
-        title: "Email de redefinição enviado!",
-        description: "Verifique sua caixa de entrada e siga as instruções.",
+        title: "Senha temporária enviada!",
+        description: "Verifique sua caixa de entrada para sua nova senha.",
       });
     } catch (error: any) {
       toast({
@@ -72,8 +71,8 @@ export default function ForgotPassword() {
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-2">
               {emailSent 
-                ? "Instruções enviadas para seu email" 
-                : "Digite seu email para redefinir sua senha"
+                ? "Senha temporária enviada para seu email" 
+                : "Digite seu email para receber uma senha temporária"
               }
             </CardDescription>
           </div>
@@ -83,10 +82,10 @@ export default function ForgotPassword() {
             <div className="space-y-4 text-center">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">
                 <p className="text-sm">
-                  Enviamos as instruções para redefinir sua senha para <strong>{email}</strong>.
+                  Enviamos uma <strong>senha temporária</strong> para <strong>{email}</strong>.
                 </p>
                 <p className="text-sm mt-2">
-                  Verifique sua caixa de entrada e spam, depois clique no link para redefinir sua senha.
+                  Use essa senha para fazer login. Depois, altere sua senha nas configurações do perfil.
                 </p>
               </div>
               <Button 
