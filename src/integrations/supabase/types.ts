@@ -3526,6 +3526,7 @@ export type Database = {
           invitee_name: string
           inviter_user_id: string
           status: string
+          temp_password: string | null
           temp_password_hash: string | null
           updated_at: string
         }
@@ -3537,6 +3538,7 @@ export type Database = {
           invitee_name: string
           inviter_user_id: string
           status?: string
+          temp_password?: string | null
           temp_password_hash?: string | null
           updated_at?: string
         }
@@ -3548,6 +3550,7 @@ export type Database = {
           invitee_name?: string
           inviter_user_id?: string
           status?: string
+          temp_password?: string | null
           temp_password_hash?: string | null
           updated_at?: string
         }
