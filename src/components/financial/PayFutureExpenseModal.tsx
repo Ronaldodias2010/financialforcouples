@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, CreditCard, Wallet, Building2 } from 'lucide-react';
+import { Calendar, CreditCard, Wallet, Building2, AlertTriangle, DollarSign } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useFutureExpensePayments } from '@/hooks/useFutureExpensePayments';
 import { useManualFutureExpenses } from '@/hooks/useManualFutureExpenses';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCurrencyConverter, type CurrencyCode } from '@/hooks/useCurrencyConverter';
+import { addMonetaryValues } from '@/utils/monetary';
 
 interface PayFutureExpenseModalProps {
   isOpen: boolean;
@@ -62,8 +63,30 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedCard, setSelectedCard] = useState('');
   const [notes, setNotes] = useState('');
+  const [interestAmount, setInterestAmount] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
+
+  // Calculate if expense is overdue
+  const daysOverdue = useMemo(() => {
+    const today = new Date();
+    const dueDate = new Date(expense.due_date);
+    const diffTime = today.getTime() - dueDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  }, [expense.due_date]);
+
+  const isOverdue = daysOverdue > 0;
+
+  // Calculate total amount with interest
+  const parsedInterest = useMemo(() => {
+    const value = parseFloat(interestAmount.replace(',', '.')) || 0;
+    return value >= 0 ? value : 0;
+  }, [interestAmount]);
+
+  const totalAmount = useMemo(() => {
+    return addMonetaryValues(expense.amount, parsedInterest);
+  }, [expense.amount, parsedInterest]);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -71,15 +94,35 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     }
   }, [isOpen, user]);
 
+  useEffect(() => {
+    if (isOpen) {
+      // Reset interest when modal opens
+      setInterestAmount('');
+    }
+  }, [isOpen]);
+
   const fetchAccountsAndCards = async () => {
     if (!user) return;
 
     try {
-      // Fetch accounts
+      // Check if user is part of a couple
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
+      // Fetch accounts (including partner's accounts)
       const { data: accountsData, error: accountsError } = await supabase
         .from('accounts')
         .select('id, name, balance')
-        .eq('user_id', user.id)
+        .in('user_id', userIds)
         .eq('is_active', true);
 
       if (accountsError) {
@@ -88,11 +131,11 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         setAccounts(accountsData || []);
       }
 
-      // Fetch cards
+      // Fetch cards (including partner's cards)
       const { data: cardsData, error: cardsError } = await supabase
         .from('cards')
         .select('id, name, card_type, initial_balance')
-        .eq('user_id', user.id);
+        .in('user_id', userIds);
 
       if (cardsError) {
         console.error('Error fetching cards:', cardsError);
@@ -161,6 +204,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         accountId: paymentMethod === 'account' ? selectedAccount : undefined,
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
         paymentMethod: correctPaymentMethod,
+        interestAmount: parsedInterest,
       });
     } else {
       // Handle other types of expenses
@@ -177,6 +221,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
         // FIXED: Force card payment category for card payments to ensure proper dashboard display
         categoryId: expense.type === 'card_payment' ? cardPaymentCategoryId : undefined,
+        interestAmount: parsedInterest,
       };
 
       result = await processPayment(paymentParams);
@@ -195,6 +240,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     setSelectedAccount('');
     setSelectedCard('');
     setNotes('');
+    setInterestAmount('');
   };
 
   const formatCurrency = (amount: number, currency?: CurrencyCode) => {
@@ -254,11 +300,33 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 )}
               </div>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">{t('payFutureExpense.dueDate')}:</span>
-              <span>{formatDate(expense.due_date)}</span>
+              <div className="flex items-center gap-2">
+                <span>{formatDate(expense.due_date)}</span>
+                {isOverdue && (
+                  <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-medium">
+                    {daysOverdue} {daysOverdue === 1 ? 'dia' : 'dias'} atraso
+                  </span>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Overdue Alert */}
+          {isOverdue && (
+            <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-amber-800 dark:text-amber-200">
+                  {t('payFutureExpense.overdueAlert') || 'Despesa em atraso'}
+                </p>
+                <p className="text-amber-700 dark:text-amber-300 mt-0.5">
+                  {t('payFutureExpense.interestHint') || 'Adicione juros/multa se aplicável'}
+                </p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Payment Date */}
@@ -272,6 +340,37 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 required
               />
             </div>
+
+            {/* Interest Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="interestAmount" className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4" />
+                {t('payFutureExpense.interest') || 'Juros/Multa'}
+                <span className="text-muted-foreground text-xs font-normal">
+                  ({t('common.optional') || 'opcional'})
+                </span>
+              </Label>
+              <Input
+                id="interestAmount"
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
+                value={interestAmount}
+                onChange={(e) => setInterestAmount(e.target.value)}
+              />
+            </div>
+
+            {/* Total Amount Display */}
+            {parsedInterest > 0 && (
+              <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
+                <span className="font-medium">
+                  {t('payFutureExpense.totalToPay') || 'Total a pagar'}:
+                </span>
+                <span className="font-bold text-lg text-primary">
+                  {formatCurrency(totalAmount)}
+                </span>
+              </div>
+            )}
 
             {/* Payment Method */}
             <div className="space-y-2">
@@ -372,7 +471,11 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 className="flex-1"
                 disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount) || (paymentMethod === 'card' && !selectedCard)}
               >
-                {isProcessing ? t('payFutureExpense.processing') : t('payFutureExpense.payButton')}
+                {isProcessing ? t('payFutureExpense.processing') : (
+                  parsedInterest > 0 
+                    ? `${t('payFutureExpense.payButton')} ${formatCurrency(totalAmount)}`
+                    : t('payFutureExpense.payButton')
+                )}
               </Button>
             </div>
           </form>

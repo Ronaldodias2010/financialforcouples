@@ -16,6 +16,7 @@ interface ProcessPaymentParams {
   paymentMethod?: string;
   accountId?: string;
   cardId?: string;
+  interestAmount?: number;
 }
 
 export const useFutureExpensePayments = () => {
@@ -37,6 +38,29 @@ export const useFutureExpensePayments = () => {
     setIsProcessing(true);
     
     try {
+      // Check if user is part of a couple to allow paying partner's expenses
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
+      // Calculate total amount with interest
+      const interestAmount = params.interestAmount || 0;
+      const totalAmount = params.amount + interestAmount;
+      
+      // Build description with interest info if applicable
+      let finalDescription = params.description;
+      if (interestAmount > 0) {
+        finalDescription = `${params.description} (+ juros R$ ${interestAmount.toFixed(2)})`;
+      }
+
       // For installment payments, simply update status in transactions table
       if (params.installmentTransactionId) {
         const { data, error } = await supabase
@@ -44,9 +68,11 @@ export const useFutureExpensePayments = () => {
           .update({
             status: 'completed',
             transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
+            amount: totalAmount,
+            description: finalDescription,
           })
           .eq('id', params.installmentTransactionId)
-          .eq('user_id', user.id)
+          .in('user_id', userIds)
           .select()
           .single();
 
@@ -74,7 +100,7 @@ export const useFutureExpensePayments = () => {
       const { data: existingTransaction, error: findError } = await supabase
         .from('transactions')
         .select('*')
-        .eq('user_id', user.id)
+        .in('user_id', userIds)
         .eq('status', 'pending')
         .eq('type', 'expense')
         .eq('due_date', params.originalDueDate)
@@ -96,6 +122,8 @@ export const useFutureExpensePayments = () => {
             payment_method: params.paymentMethod || 'cash',
             account_id: params.accountId || null,
             card_id: params.cardId || null,
+            amount: totalAmount,
+            description: finalDescription,
           })
           .eq('id', existingTransaction.id)
           .select()
@@ -110,8 +138,8 @@ export const useFutureExpensePayments = () => {
           .insert({
             user_id: user.id,
             type: 'expense',
-            amount: params.amount,
-            description: params.description,
+            amount: totalAmount,
+            description: finalDescription,
             transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
             due_date: params.originalDueDate,
             status: 'completed',
