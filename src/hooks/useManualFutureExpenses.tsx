@@ -33,6 +33,7 @@ interface PayManualExpenseParams {
   cardId?: string;
   paymentMethod?: string;
   interestAmount?: number;
+  categoryId?: string; // ⭐ Permite atualizar a categoria ao pagar
 }
 
 export const useManualFutureExpenses = () => {
@@ -141,16 +142,24 @@ export const useManualFutureExpenses = () => {
       }
 
       // Get the manual future expense (allowing partner's expenses)
+      // ⭐ CRITICAL: Limpar prefixo se existir (ex: "manual_future_uuid" -> "uuid")
+      let cleanExpenseId = params.expenseId;
+      if (cleanExpenseId.startsWith('manual_future_')) {
+        cleanExpenseId = cleanExpenseId.replace('manual_future_', '');
+      }
+      
+      console.log('🔍 [payManualExpense] Looking for expense:', cleanExpenseId, 'in userIds:', userIds);
+      
       const { data: manualExpense, error: fetchError } = await supabase
         .from('manual_future_expenses')
         .select('*')
-        .eq('id', params.expenseId)
+        .eq('id', cleanExpenseId)
         .in('user_id', userIds)
         .eq('is_paid', false)
         .single();
 
       if (fetchError || !manualExpense) {
-        console.error('Error fetching manual future expense:', fetchError);
+        console.error('Error fetching manual future expense:', fetchError, 'expenseId:', cleanExpenseId);
         toast({
           title: "Erro",
           description: "Despesa futura não encontrada",
@@ -158,6 +167,8 @@ export const useManualFutureExpenses = () => {
         });
         return null;
       }
+      
+      console.log('✅ [payManualExpense] Found expense:', manualExpense.description);
 
       // Calculate if payment is late
       const today = new Date();
@@ -186,6 +197,9 @@ export const useManualFutureExpenses = () => {
       // transaction_date = data do pagamento efetivo
       const paymentDate = params.paymentDate || new Date().toISOString().split('T')[0];
       
+      // ⭐ Usar categoria do parâmetro se fornecida, senão usar a original
+      const finalCategoryId = params.categoryId || manualExpense.category_id;
+      
       const { data: newTransaction, error: createError } = await supabase
         .from('transactions')
         .insert({
@@ -197,7 +211,7 @@ export const useManualFutureExpenses = () => {
           purchase_date: paymentDate, // ⭐ Usar data de pagamento para contabilizar no mês correto
           due_date: manualExpense.due_date, // Manter data original do vencimento para referência
           status: 'completed',
-          category_id: manualExpense.category_id,
+          category_id: finalCategoryId, // ⭐ Usar categoria selecionada ou original
           account_id: params.accountId,
           card_id: params.cardId,
           payment_method: params.paymentMethod || manualExpense.payment_method,
@@ -216,20 +230,26 @@ export const useManualFutureExpenses = () => {
         return null;
       }
 
-      // Mark manual expense as paid
+      // ⭐ CRITICAL: Mark manual expense as paid using CLEAN ID
+      console.log('📝 [payManualExpense] Marking expense as paid:', cleanExpenseId);
+      
       const { error: updateError } = await supabase
         .from('manual_future_expenses')
         .update({
           is_paid: true,
+          is_overdue: false, // ⭐ Também remover flag de overdue
           paid_at: new Date().toISOString(),
           transaction_id: newTransaction.id,
+          category_id: finalCategoryId, // ⭐ Atualizar categoria se foi alterada
           updated_at: new Date().toISOString()
         })
-        .eq('id', params.expenseId);
+        .eq('id', cleanExpenseId); // ⭐ Usar ID limpo!
 
       if (updateError) {
-        console.error('Error updating manual expense:', updateError);
+        console.error('❌ [payManualExpense] Error updating manual expense:', updateError);
         // Don't fail the payment if this update fails
+      } else {
+        console.log('✅ [payManualExpense] Successfully marked as paid');
       }
 
       // ⭐ CRITICAL: Invalidate React Query cache to update dashboard immediately

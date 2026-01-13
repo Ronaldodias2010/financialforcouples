@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, CreditCard, Wallet, Building2, AlertTriangle, DollarSign } from 'lucide-react';
+import { Calendar, CreditCard, Wallet, Building2, AlertTriangle, DollarSign, Tag } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useFutureExpensePayments } from '@/hooks/useFutureExpensePayments';
@@ -24,6 +24,7 @@ interface PayFutureExpenseModalProps {
     due_date: string;
     type: 'recurring' | 'installment' | 'card_payment' | 'card_transaction' | 'manual_future';
     category?: string;
+    categoryId?: string; // ⭐ ID da categoria existente
     recurringExpenseId?: string;
     installmentTransactionId?: string;
     cardPaymentInfo?: any;
@@ -46,6 +47,12 @@ interface Card {
   initial_balance: number;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   isOpen,
   onClose,
@@ -62,10 +69,12 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedCard, setSelectedCard] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [notes, setNotes] = useState('');
   const [interestAmount, setInterestAmount] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Calculate if expense is overdue
   const daysOverdue = useMemo(() => {
@@ -91,6 +100,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   useEffect(() => {
     if (isOpen && user) {
       fetchAccountsAndCards();
+      fetchCategories();
     }
   }, [isOpen, user]);
 
@@ -98,8 +108,10 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     if (isOpen) {
       // Reset interest when modal opens
       setInterestAmount('');
+      // ⭐ Pre-select category if expense has one
+      setSelectedCategory(expense.categoryId || '');
     }
-  }, [isOpen]);
+  }, [isOpen, expense.categoryId]);
 
   const fetchAccountsAndCards = async () => {
     if (!user) return;
@@ -144,6 +156,42 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
       }
     } catch (error) {
       console.error('Error fetching accounts and cards:', error);
+    }
+  };
+
+  // ⭐ Fetch expense categories for selection
+  const fetchCategories = async () => {
+    if (!user) return;
+
+    try {
+      // Check if user is part of a couple
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('id, name, color')
+        .in('user_id', userIds)
+        .eq('category_type', 'expense')
+        .is('deleted_at', null)
+        .order('name');
+
+      if (categoriesError) {
+        console.error('Error fetching categories:', categoriesError);
+      } else {
+        setCategories(categoriesData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -205,9 +253,16 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
         paymentMethod: correctPaymentMethod,
         interestAmount: parsedInterest,
+        categoryId: selectedCategory || undefined, // ⭐ Passar categoria selecionada
       });
     } else {
       // Handle other types of expenses
+      // ⭐ Determinar categoryId: usar selecionada, ou do cartão, ou original
+      let finalCategoryId = selectedCategory || undefined;
+      if (expense.type === 'card_payment' && cardPaymentCategoryId) {
+        finalCategoryId = cardPaymentCategoryId;
+      }
+      
       const paymentParams = {
         recurringExpenseId: expense.recurringExpenseId,
         installmentTransactionId: expense.installmentTransactionId,
@@ -219,8 +274,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         paymentMethod: correctPaymentMethod,
         accountId: paymentMethod === 'account' ? selectedAccount : undefined,
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
-        // FIXED: Force card payment category for card payments to ensure proper dashboard display
-        categoryId: expense.type === 'card_payment' ? cardPaymentCategoryId : undefined,
+        categoryId: finalCategoryId, // ⭐ Usar categoria selecionada
         interestAmount: parsedInterest,
       };
 
@@ -239,6 +293,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     setPaymentMethod('cash');
     setSelectedAccount('');
     setSelectedCard('');
+    setSelectedCategory('');
     setNotes('');
     setInterestAmount('');
   };
@@ -371,6 +426,35 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 </span>
               </div>
             )}
+
+            {/* ⭐ Category Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="category" className="flex items-center gap-2">
+                <Tag className="w-4 h-4" />
+                {t('payFutureExpense.category') || 'Categoria'}
+              </Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="bg-background z-50">
+                  <SelectValue placeholder={t('payFutureExpense.selectCategory') || 'Selecione uma categoria'} />
+                </SelectTrigger>
+                <SelectContent className="bg-background border shadow-md z-50 max-h-[200px]">
+                  <SelectItem value="">
+                    <span className="text-muted-foreground">{t('common.noCategory') || 'Sem categoria'}</span>
+                  </SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: category.color || '#888' }}
+                        />
+                        {category.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Payment Method */}
             <div className="space-y-2">

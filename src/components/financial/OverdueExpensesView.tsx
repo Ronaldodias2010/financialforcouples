@@ -191,12 +191,13 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
       });
 
       // Add overdue manual future expenses
+      // ⭐ CRITICAL: Usar o ID real (sem prefixo) para que o pagamento funcione
       manualFutureData?.forEach((item: any) => {
         const dueDate = parseLocalDate(item.due_date);
         const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
         
         expenses.push({
-          id: `manual_future_${item.id}`,
+          id: `manual_future_${item.id}`, // ID para exibição (pode ter prefixo)
           description: item.description || 'Sem descrição',
           amount: item.amount || 0,
           currency: 'BRL',
@@ -205,7 +206,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
           categoryName: item.category_id ? categoriesMap.get(item.category_id) || '' : '',
           ownerUser: item.owner_user || 'user1',
           sourceType: 'manual',
-          sourceId: item.id,
+          sourceId: item.id, // ⭐ Usar ID real SEM prefixo para o pagamento
           daysOverdue,
         });
       });
@@ -589,6 +590,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
             due_date: selectedExpense.dueDate,
             type: selectedExpense.sourceType === 'manual' ? 'manual_future' : 'recurring',
             category: selectedExpense.categoryName,
+            categoryId: selectedExpense.categoryId, // ⭐ Passar categoryId para pre-selecionar
             manualFutureExpenseId: selectedExpense.sourceType === 'manual' ? selectedExpense.sourceId : undefined,
             recurringExpenseId: selectedExpense.sourceType === 'recurring' ? selectedExpense.sourceId : undefined,
           }}
