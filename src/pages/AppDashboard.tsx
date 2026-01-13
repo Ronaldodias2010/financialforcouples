@@ -212,6 +212,7 @@ const AppDashboard = () => {
       <WhatsAppPhoneRequiredModal 
         isOpen={currentStep === 'phone'} 
         onComplete={completePhone}
+        onSkip={completePhone}
         userId={user?.id || ''}
       />
       
