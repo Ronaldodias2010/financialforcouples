@@ -407,6 +407,10 @@ const translations = {
     'payFutureExpense.cancel': 'Cancelar',
     'payFutureExpense.payButton': 'Pagar Gasto',
     'payFutureExpense.processing': 'Processando...',
+    'payFutureExpense.interest': 'Juros/Multa',
+    'payFutureExpense.interestHint': 'Adicione juros/multa se aplicável',
+    'payFutureExpense.totalToPay': 'Total a pagar',
+    'payFutureExpense.overdueAlert': 'Despesa em atraso',
 
     // Pay Card Modal
     'payCard.title': 'Pagar Cartão de Crédito',
@@ -2762,6 +2766,10 @@ const translations = {
     'payFutureExpense.cancel': 'Cancel',
     'payFutureExpense.payButton': 'Pay Expense',
     'payFutureExpense.processing': 'Processing...',
+    'payFutureExpense.interest': 'Interest/Penalty',
+    'payFutureExpense.interestHint': 'Add interest/penalty if applicable',
+    'payFutureExpense.totalToPay': 'Total to pay',
+    'payFutureExpense.overdueAlert': 'Overdue expense',
 
     // Pay Card Modal
     'payCard.title': 'Pay Credit Card',
@@ -5087,6 +5095,10 @@ const translations = {
     'payFutureExpense.cancel': 'Cancelar',
     'payFutureExpense.payButton': 'Pagar Gasto',
     'payFutureExpense.processing': 'Procesando...',
+    'payFutureExpense.interest': 'Intereses/Multa',
+    'payFutureExpense.interestHint': 'Agregue intereses/multa si corresponde',
+    'payFutureExpense.totalToPay': 'Total a pagar',
+    'payFutureExpense.overdueAlert': 'Gasto vencido',
 
     // Pay Card Modal
     'payCard.title': 'Pagar Tarjeta de Crédito',

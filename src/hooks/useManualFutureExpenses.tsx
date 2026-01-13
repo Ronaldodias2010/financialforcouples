@@ -32,6 +32,7 @@ interface PayManualExpenseParams {
   accountId?: string;
   cardId?: string;
   paymentMethod?: string;
+  interestAmount?: number;
 }
 
 export const useManualFutureExpenses = () => {
@@ -126,12 +127,25 @@ export const useManualFutureExpenses = () => {
     setIsLoading(true);
     
     try {
-      // Get the manual future expense
+      // Check if user is part of a couple to allow paying partner's expenses
+      const { data: coupleData } = await supabase
+        .from("user_couples")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let userIds = [user.id];
+      if (coupleData) {
+        userIds = [coupleData.user1_id, coupleData.user2_id];
+      }
+
+      // Get the manual future expense (allowing partner's expenses)
       const { data: manualExpense, error: fetchError } = await supabase
         .from('manual_future_expenses')
         .select('*')
         .eq('id', params.expenseId)
-        .eq('user_id', user.id)
+        .in('user_id', userIds)
         .eq('is_paid', false)
         .single();
 
@@ -151,6 +165,16 @@ export const useManualFutureExpenses = () => {
       const daysOverdue = dueDate < today ? Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
       const isPaidLate = daysOverdue > 0;
 
+      // Calculate total amount with interest
+      const interestAmount = params.interestAmount || 0;
+      const totalAmount = manualExpense.amount + interestAmount;
+      
+      // Build description with interest info if applicable
+      let finalDescription = manualExpense.description;
+      if (interestAmount > 0) {
+        finalDescription = `${manualExpense.description} (+ juros R$ ${interestAmount.toFixed(2)})`;
+      }
+
       // Create a completed transaction
       // transaction_date = data do pagamento (quando foi pago de fato)
       // purchase_date = data original do vencimento (para manter histórico)
@@ -159,8 +183,8 @@ export const useManualFutureExpenses = () => {
         .insert({
           user_id: user.id,
           type: 'expense',
-          amount: manualExpense.amount,
-          description: manualExpense.description,
+          amount: totalAmount,
+          description: finalDescription,
           transaction_date: params.paymentDate || new Date().toISOString().split('T')[0], // Data do pagamento efetivo
           purchase_date: manualExpense.due_date, // Data original do vencimento
           due_date: manualExpense.due_date, // Manter também due_date para referência
