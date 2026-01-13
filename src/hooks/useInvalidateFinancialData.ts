@@ -84,6 +84,29 @@ export const useInvalidateFinancialData = () => {
     }
   };
 
+  const invalidateOverdueExpenses = async (showToast = false) => {
+    console.log('🔄 [InvalidateFinancialData] Invalidating overdue expenses cache...');
+    await queryClient.invalidateQueries({ 
+      queryKey: ['overdue-expenses'],
+      refetchType: 'all'
+    });
+    
+    // Force refetch all active queries
+    await queryClient.refetchQueries({
+      queryKey: ['overdue-expenses'],
+      type: 'active'
+    });
+    
+    console.log('✅ [InvalidateFinancialData] Overdue expenses cache invalidated');
+    
+    if (showToast) {
+      toast({
+        title: "✓ Despesas atrasadas atualizadas",
+        duration: 2000,
+      });
+    }
+  };
+
   const invalidateFinancialSummary = async () => {
     await queryClient.invalidateQueries({ 
       queryKey: ['financial-summary'],
@@ -113,6 +136,7 @@ export const useInvalidateFinancialData = () => {
       queryClient.invalidateQueries({ queryKey: ['cards'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['future-incomes'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['future-expenses'], refetchType: 'active' }),
+      queryClient.invalidateQueries({ queryKey: ['overdue-expenses'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['financial-summary'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['investments'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['today-incomes'], refetchType: 'active' }),
@@ -132,6 +156,7 @@ export const useInvalidateFinancialData = () => {
     invalidateCards,
     invalidateFutureIncomes,
     invalidateFutureExpenses,
+    invalidateOverdueExpenses,
     invalidateFinancialSummary,
     invalidateTodayIncomes,
     invalidateAll,
