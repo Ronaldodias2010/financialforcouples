@@ -147,18 +147,8 @@ serve(async (req) => {
         );
       }
 
-      if (!profile.whatsapp_verified_at) {
-        console.log('[whatsapp-input] WhatsApp not verified:', normalizedPhone);
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            status: 'error',
-            error: 'WhatsApp não verificado. Complete a verificação no app.',
-            code: 'WHATSAPP_NOT_VERIFIED'
-          }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      // NOTA: Removida verificação de whatsapp_verified_at
+      // Agora basta ter o telefone cadastrado no perfil para usar a integração
 
       // =====================================================
       // IDEMPOTÊNCIA: Se whatsapp_message_id já existe
