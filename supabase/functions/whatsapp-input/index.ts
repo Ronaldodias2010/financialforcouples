@@ -140,6 +140,85 @@ serve(async (req) => {
         }
       }
 
+      // =====================================================
+      // CONVERSATION-AWARE: Detectar conversa pendente
+      // Se existe input em waiting_user_input → continuar conversa
+      // Caso contrário → criar novo input
+      // =====================================================
+      const { data: pendingInput, error: pendingError } = await supabase
+        .from('incoming_financial_inputs')
+        .select('id, status, raw_message, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score')
+        .eq('user_id', profile.user_id)
+        .eq('status', 'waiting_user_input')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pendingError) {
+        console.error('[whatsapp-input] Error checking pending input:', pendingError);
+        // Não bloquear - continuar com criação de novo input
+      }
+
+      if (pendingInput) {
+        // =====================================================
+        // CONTINUAR CONVERSA EXISTENTE
+        // Anexar nova mensagem ao input pendente
+        // =====================================================
+        console.log('[whatsapp-input] CONVERSATION-AWARE: Found pending input:', pendingInput.id);
+        console.log('[whatsapp-input] Continuing conversation with new message:', raw_message?.substring(0, 50));
+
+        // Atualizar raw_message com a resposta do usuário (concatenar ou substituir)
+        const updatedRawMessage = pendingInput.raw_message 
+          ? `${pendingInput.raw_message}\n---\nResposta do usuário: ${raw_message}`
+          : raw_message;
+
+        // Atualizar o input existente com a nova mensagem
+        const { error: updateError } = await supabase
+          .from('incoming_financial_inputs')
+          .update({
+            raw_message: updatedRawMessage,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', pendingInput.id);
+
+        if (updateError) {
+          console.error('[whatsapp-input] Error updating pending input:', updateError);
+          throw updateError;
+        }
+
+        // Retornar o input pendente para a IA processar
+        // A IA deve usar PATCH para atualizar com os dados extraídos
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            status: 'continuing_conversation',
+            input_id: pendingInput.id,
+            user_id: profile.user_id,
+            user_name: profile.display_name,
+            existing_data: {
+              amount: pendingInput.amount,
+              currency: pendingInput.currency,
+              transaction_type: pendingInput.transaction_type,
+              category_hint: pendingInput.category_hint,
+              account_hint: pendingInput.account_hint,
+              card_hint: pendingInput.card_hint,
+              description_hint: pendingInput.description_hint,
+              transaction_date: pendingInput.transaction_date,
+              payment_method: pendingInput.payment_method,
+              owner_user: pendingInput.owner_user,
+              resolved_category_id: pendingInput.resolved_category_id,
+              resolved_account_id: pendingInput.resolved_account_id,
+              resolved_card_id: pendingInput.resolved_card_id
+            },
+            original_message: pendingInput.raw_message,
+            user_response: raw_message
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('[whatsapp-input] No pending conversation found - creating new input');
+
       // Criar novo input com status "received"
       const inputData = {
         user_id: profile.user_id,
