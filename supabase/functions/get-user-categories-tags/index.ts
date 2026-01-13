@@ -28,6 +28,9 @@ interface SystemTag {
   name_en: string;
   name_es: string;
   color: string;
+  keywords_pt?: string[];
+  keywords_en?: string[];
+  keywords_es?: string[];
 }
 
 interface UserTag {
@@ -118,7 +121,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch system tags for all categories via relations
+    // Fetch system tags for all categories via relations (including keywords)
     const { data: tagRelations, error: tagRelationsError } = await supabase
       .from('category_tag_relations')
       .select(`
@@ -128,7 +131,10 @@ Deno.serve(async (req) => {
           name_pt,
           name_en,
           name_es,
-          color
+          color,
+          keywords_pt,
+          keywords_en,
+          keywords_es
         )
       `)
       .eq('is_active', true);
@@ -215,7 +221,10 @@ Deno.serve(async (req) => {
               name_pt: rel.category_tags.name_pt,
               name_en: rel.category_tags.name_en,
               name_es: rel.category_tags.name_es,
-              color: rel.category_tags.color
+              color: rel.category_tags.color,
+              keywords_pt: rel.category_tags.keywords_pt || [],
+              keywords_en: rel.category_tags.keywords_en || [],
+              keywords_es: rel.category_tags.keywords_es || []
             });
           }
         });

@@ -357,22 +357,39 @@ serve(async (req) => {
       let resolved_card_id: string | null = null;
 
       // =====================================================
-      // RESOLVER CATEGORIA POR TAGS (KEYWORDS) OU NOME
+      // RESOLVER CATEGORIA POR KEYWORDS DAS TAGS OU NOME
       // =====================================================
       if (category_hint) {
         const searchTerm = category_hint.trim().toLowerCase();
         console.log('[whatsapp-input] Resolving category from hint:', searchTerm);
         
-        // 1) BUSCAR TAG que contenha o termo (ex: "livro" → tag "livros")
-        const { data: tagMatches } = await supabase
+        // 1) PRIMEIRO: Buscar tag por KEYWORDS_PT (match exato no array)
+        // Isso encontra "ifood" nas keywords ["ifood", "delivery", "comida"]
+        const { data: tagByKeyword } = await supabase
           .from('category_tags')
-          .select('id, name_pt')
-          .ilike('name_pt', `%${searchTerm}%`);
+          .select('id, name_pt, keywords_pt')
+          .contains('keywords_pt', [searchTerm]);
+        
+        let tagMatches = tagByKeyword;
+        
+        if (tagByKeyword && tagByKeyword.length > 0) {
+          console.log('[whatsapp-input] Found tag via KEYWORDS_PT:', tagByKeyword.map((t: { name_pt: string }) => t.name_pt));
+        } else {
+          // 2) FALLBACK: Buscar tag por nome parcial (ex: "livro" → tag "livros")
+          console.log('[whatsapp-input] No keyword match, trying name_pt ilike...');
+          const { data: tagByName } = await supabase
+            .from('category_tags')
+            .select('id, name_pt, keywords_pt')
+            .ilike('name_pt', `%${searchTerm}%`);
+          
+          tagMatches = tagByName;
+          if (tagByName && tagByName.length > 0) {
+            console.log('[whatsapp-input] Found tag via NAME_PT:', tagByName.map((t: { name_pt: string }) => t.name_pt));
+          }
+        }
         
         if (tagMatches && tagMatches.length > 0) {
-          console.log('[whatsapp-input] Found matching tags:', tagMatches.map((t: { name_pt: string }) => t.name_pt));
-          
-          // 2) Buscar category_tag_relations para encontrar default_category_id
+          // 3) Buscar category_tag_relations para encontrar default_category_id
           const tagIds = tagMatches.map((t: { id: string }) => t.id);
           const { data: relations } = await supabase
             .from('category_tag_relations')
@@ -385,7 +402,7 @@ serve(async (req) => {
             const defaultCategoryId = relations[0].category_id;
             console.log('[whatsapp-input] Found default category via tag:', defaultCategoryId);
             
-            // 3) Mapear para categoria do usuário via default_category_id
+            // 4) Mapear para categoria do usuário via default_category_id
             const { data: userCategory } = await supabase
               .from('categories')
               .select('id, name')
@@ -397,7 +414,7 @@ serve(async (req) => {
             
             if (userCategory) {
               resolved_category_id = userCategory.id;
-              console.log('[whatsapp-input] Category resolved via TAG:', searchTerm, '->', userCategory.name);
+              console.log('[whatsapp-input] Category resolved via TAG/KEYWORD:', searchTerm, '->', userCategory.name);
             }
           }
         }
