@@ -222,8 +222,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending invite email to ${email}`);
     
+    // Use onboarding@resend.dev if custom domain is not verified
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || 'Couples Financials <onboarding@resend.dev>';
+    
     const emailResponse = await resend.emails.send({
-      from: 'Couples Financials <contato@couplesfinancials.com>',
+      from: fromEmail,
       to: [email],
       subject: lang === 'en' 
         ? `${inviter_name} invited you to Couples Financials 💚`
