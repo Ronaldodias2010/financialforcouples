@@ -122,12 +122,29 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         throw recurringError;
       }
 
+      // Fetch overdue manual future expenses
+      const { data: manualFutureData, error: manualFutureError } = await supabase
+        .from('manual_future_expenses')
+        .select('*')
+        .in('user_id', userIds)
+        .eq('is_overdue', true)
+        .eq('is_paid', false)
+        .is('deleted_at', null);
+
+      if (manualFutureError) {
+        console.error('Error fetching manual future overdue expenses:', manualFutureError);
+        throw manualFutureError;
+      }
+
       // Get unique category IDs
       const categoryIds = new Set<string>();
       transactionsData?.forEach((item: any) => {
         if (item.category_id) categoryIds.add(item.category_id);
       });
       recurringData?.forEach((item: any) => {
+        if (item.category_id) categoryIds.add(item.category_id);
+      });
+      manualFutureData?.forEach((item: any) => {
         if (item.category_id) categoryIds.add(item.category_id);
       });
 
@@ -182,6 +199,26 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
           categoryName: item.category_id ? categoriesMap.get(item.category_id) || '' : '',
           ownerUser: item.owner_user || 'user1',
           sourceType: 'recurring',
+          sourceId: item.id,
+          daysOverdue,
+        });
+      });
+
+      // Add overdue manual future expenses
+      manualFutureData?.forEach((item: any) => {
+        const dueDate = parseLocalDate(item.due_date);
+        const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        expenses.push({
+          id: `manual_future_${item.id}`,
+          description: item.description || 'Sem descrição',
+          amount: item.amount || 0,
+          currency: 'BRL',
+          dueDate: item.due_date,
+          categoryId: item.category_id,
+          categoryName: item.category_id ? categoriesMap.get(item.category_id) || '' : '',
+          ownerUser: item.owner_user || 'user1',
+          sourceType: 'manual',
           sourceId: item.id,
           daysOverdue,
         });
