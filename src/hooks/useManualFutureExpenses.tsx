@@ -39,7 +39,7 @@ export const useManualFutureExpenses = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
-  const { invalidateTransactions, invalidateFutureExpenses, invalidateFinancialSummary } = useInvalidateFinancialData();
+  const { invalidateTransactions, invalidateFutureExpenses, invalidateFinancialSummary, invalidateOverdueExpenses, invalidateAccounts } = useInvalidateFinancialData();
 
   const fetchManualFutureExpenses = async (viewMode: "both" | "user1" | "user2" = "both"): Promise<ManualFutureExpense[]> => {
     if (!user) return [];
@@ -236,7 +236,9 @@ export const useManualFutureExpenses = () => {
       await Promise.all([
         invalidateTransactions(),
         invalidateFutureExpenses(),
-        invalidateFinancialSummary()
+        invalidateFinancialSummary(),
+        invalidateOverdueExpenses(), // ⭐ Remover da aba de atrasados
+        invalidateAccounts() // ⭐ Atualizar saldo das contas
       ]);
 
       toast({
