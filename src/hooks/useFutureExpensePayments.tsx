@@ -125,11 +125,15 @@ export const useFutureExpensePayments = () => {
       let data;
       if (existingTransaction) {
         // Update existing transaction
+        // ⭐ CRITICAL: Use payment date as purchase_date so it appears in current month expenses
+        const paymentDate = params.paymentDate || new Date().toISOString().split('T')[0];
+        
         const { data: updated, error: updateError } = await supabase
           .from('transactions')
           .update({
             status: 'completed',
-            transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
+            transaction_date: paymentDate,
+            purchase_date: paymentDate, // ⭐ Usar data de pagamento para contabilizar no mês correto
             payment_method: params.paymentMethod || 'cash',
             account_id: params.accountId || null,
             card_id: params.cardId || null,
@@ -144,6 +148,9 @@ export const useFutureExpensePayments = () => {
         data = updated;
       } else {
         // Create new transaction if none exists
+        // ⭐ CRITICAL: Use payment date as purchase_date so it appears in current month expenses
+        const paymentDate = params.paymentDate || new Date().toISOString().split('T')[0];
+        
         const { data: created, error: createError } = await supabase
           .from('transactions')
           .insert({
@@ -151,8 +158,9 @@ export const useFutureExpensePayments = () => {
             type: 'expense',
             amount: totalAmount,
             description: finalDescription,
-            transaction_date: params.paymentDate || new Date().toISOString().split('T')[0],
-            due_date: params.originalDueDate,
+            transaction_date: paymentDate,
+            purchase_date: paymentDate, // ⭐ Usar data de pagamento para contabilizar no mês correto
+            due_date: params.originalDueDate, // Manter data original do vencimento para referência
             status: 'completed',
             category_id: params.categoryId || null,
             payment_method: params.paymentMethod || 'cash',

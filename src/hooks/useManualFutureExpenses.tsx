@@ -174,10 +174,18 @@ export const useManualFutureExpenses = () => {
       if (interestAmount > 0) {
         finalDescription = `${manualExpense.description} (+ juros R$ ${interestAmount.toFixed(2)})`;
       }
+      
+      // Add overdue info to description if late
+      if (isPaidLate && interestAmount === 0) {
+        finalDescription = `${manualExpense.description} (pago com ${daysOverdue} dia(s) de atraso)`;
+      }
 
-      // Create a completed transaction
-      // transaction_date = data do pagamento (quando foi pago de fato)
-      // purchase_date = data original do vencimento (para manter histórico)
+      // ⭐ CRITICAL: Para despesas atrasadas ou futuras pagas
+      // purchase_date = data do PAGAMENTO (para aparecer no mês correto de despesas atuais)
+      // due_date = data original do vencimento (para manter histórico)
+      // transaction_date = data do pagamento efetivo
+      const paymentDate = params.paymentDate || new Date().toISOString().split('T')[0];
+      
       const { data: newTransaction, error: createError } = await supabase
         .from('transactions')
         .insert({
@@ -185,9 +193,9 @@ export const useManualFutureExpenses = () => {
           type: 'expense',
           amount: totalAmount,
           description: finalDescription,
-          transaction_date: params.paymentDate || new Date().toISOString().split('T')[0], // Data do pagamento efetivo
-          purchase_date: manualExpense.due_date, // Data original do vencimento
-          due_date: manualExpense.due_date, // Manter também due_date para referência
+          transaction_date: paymentDate, // Data do pagamento efetivo
+          purchase_date: paymentDate, // ⭐ Usar data de pagamento para contabilizar no mês correto
+          due_date: manualExpense.due_date, // Manter data original do vencimento para referência
           status: 'completed',
           category_id: manualExpense.category_id,
           account_id: params.accountId,
