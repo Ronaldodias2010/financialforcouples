@@ -17,43 +17,67 @@ const corsHeaders = {
 
 interface PasswordResetRequest {
   userEmail: string;
-  resetUrl: string;
+  resetUrl?: string;
   language?: string;
 }
 
-// Generate HTML email template
-const generatePasswordResetHtml = (userEmail: string, resetUrl: string, language: 'pt' | 'en'): string => {
+// Generate a secure temporary password
+const generateTempPassword = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  const specialChars = '!@#$%';
+  let password = '';
+  
+  // Generate 8 random characters
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  // Add a special character
+  password += specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+  
+  // Add a number at the end
+  password += Math.floor(Math.random() * 10);
+  
+  return password;
+};
+
+// Generate HTML email template with temporary password
+const generatePasswordResetHtml = (userEmail: string, tempPassword: string, loginUrl: string, language: 'pt' | 'en'): string => {
   const logoUrl = "https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
   
   const texts = {
     pt: {
-      title: 'Redefinir sua senha',
+      title: 'Sua Senha Temporária',
       greeting: `Olá ${userEmail.split('@')[0]}!`,
-      message: 'Recebemos uma solicitação para redefinir sua senha. Clique no botão abaixo para criar uma nova senha.',
-      button: 'Redefinir Senha',
-      expiry: 'Este link expira em 1 hora.',
-      ignore: 'Se você não solicitou a redefinição de senha, pode ignorar este email com segurança.',
-      tips: 'Dicas de segurança:',
+      message: 'Recebemos sua solicitação de recuperação de senha. Aqui está sua senha temporária para acessar sua conta:',
+      passwordLabel: 'Senha Temporária:',
+      instructions: 'Use esta senha para fazer login e depois altere-a nas configurações do seu perfil.',
+      button: 'Fazer Login',
+      expiry: '⚠️ Por segurança, altere sua senha assim que fizer login.',
+      tips: 'Próximos passos:',
       tipsList: [
-        '🔒 Use uma senha forte com letras, números e símbolos',
-        '🔑 Não compartilhe sua senha com ninguém',
-        '📱 Ative autenticação em duas etapas quando disponível'
+        '1️⃣ Clique no botão "Fazer Login" abaixo',
+        '2️⃣ Use seu email e a senha temporária acima',
+        '3️⃣ Após entrar, vá em Configurações e altere sua senha'
       ],
+      ignore: 'Se você não solicitou a recuperação de senha, entre em contato conosco imediatamente.',
       footer: '© 2024 Couples Financials. Todos os direitos reservados.'
     },
     en: {
-      title: 'Reset your password',
+      title: 'Your Temporary Password',
       greeting: `Hello ${userEmail.split('@')[0]}!`,
-      message: 'We received a request to reset your password. Click the button below to create a new password.',
-      button: 'Reset Password',
-      expiry: 'This link expires in 1 hour.',
-      ignore: 'If you didn\'t request a password reset, you can safely ignore this email.',
-      tips: 'Security tips:',
+      message: 'We received your password recovery request. Here is your temporary password to access your account:',
+      passwordLabel: 'Temporary Password:',
+      instructions: 'Use this password to log in and then change it in your profile settings.',
+      button: 'Log In',
+      expiry: '⚠️ For security, change your password as soon as you log in.',
+      tips: 'Next steps:',
       tipsList: [
-        '🔒 Use a strong password with letters, numbers, and symbols',
-        '🔑 Never share your password with anyone',
-        '📱 Enable two-factor authentication when available'
+        '1️⃣ Click the "Log In" button below',
+        '2️⃣ Use your email and the temporary password above',
+        '3️⃣ After logging in, go to Settings and change your password'
       ],
+      ignore: 'If you didn\'t request password recovery, contact us immediately.',
       footer: '© 2024 Couples Financials. All rights reserved.'
     }
   };
@@ -88,19 +112,31 @@ const generatePasswordResetHtml = (userEmail: string, resetUrl: string, language
               <p style="color: #e2e8f0; font-size: 16px; line-height: 24px; margin: 0 0 16px;">${t.greeting}</p>
               <p style="color: #e2e8f0; font-size: 16px; line-height: 24px; margin: 0 0 24px;">${t.message}</p>
               
+              <!-- Temporary Password Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f3460; border: 2px solid #e94560; border-radius: 12px; margin-bottom: 24px;">
+                <tr>
+                  <td align="center" style="padding: 24px;">
+                    <p style="color: #94a3b8; font-size: 14px; margin: 0 0 8px;">${t.passwordLabel}</p>
+                    <p style="color: #22c55e; font-size: 32px; font-weight: bold; font-family: monospace; letter-spacing: 4px; margin: 0; user-select: all;">${tempPassword}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #fbbf24; font-size: 14px; text-align: center; margin: 0 0 24px;">${t.instructions}</p>
+              
               <!-- Button -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center" style="padding: 16px 0 24px;">
-                    <a href="${resetUrl}" target="_blank" style="display: inline-block; background-color: #e94560; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
+                    <a href="${loginUrl}" target="_blank" style="display: inline-block; background-color: #e94560; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
                   </td>
                 </tr>
               </table>
               
               <!-- Expiry Notice -->
-              <p style="color: #fbbf24; font-size: 14px; text-align: center; margin: 0 0 24px;">⏱️ ${t.expiry}</p>
+              <p style="color: #fbbf24; font-size: 14px; text-align: center; margin: 0 0 24px;">${t.expiry}</p>
               
-              <!-- Security Tips -->
+              <!-- Steps -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: rgba(34, 197, 94, 0.1); border-radius: 8px; margin-bottom: 24px;">
                 <tr>
                   <td style="padding: 16px;">
@@ -110,7 +146,7 @@ const generatePasswordResetHtml = (userEmail: string, resetUrl: string, language
                 </tr>
               </table>
               
-              <p style="color: #94a3b8; font-size: 14px; text-align: center; margin: 0;">${t.ignore}</p>
+              <p style="color: #ef4444; font-size: 14px; text-align: center; margin: 0;">${t.ignore}</p>
             </td>
           </tr>
           
@@ -136,26 +172,64 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userEmail, resetUrl, language = 'pt' }: PasswordResetRequest = await req.json();
+    const { userEmail, language = 'pt' }: PasswordResetRequest = await req.json();
     console.log(`Processing password reset for: ${userEmail}, language: ${language}`);
 
-    const lang = language === 'en' ? 'en' : 'pt';
-    const emailHtml = generatePasswordResetHtml(userEmail, resetUrl, lang);
+    // 1. Find user by email
+    const { data: usersData, error: listError } = await supabase.auth.admin.listUsers();
+    
+    if (listError) {
+      console.error('Error listing users:', listError);
+      throw new Error(`Failed to list users: ${listError.message}`);
+    }
 
-    console.log(`Sending password reset email to ${userEmail}`);
+    const targetUser = usersData?.users?.find(u => u.email === userEmail);
+    
+    if (!targetUser) {
+      console.log(`User with email ${userEmail} not found - sending success anyway for security`);
+      // Return success anyway to prevent email enumeration attacks
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // 2. Generate temporary password
+    const tempPassword = generateTempPassword();
+    console.log(`Generated temporary password for user ${targetUser.id}`);
+
+    // 3. Update user's password using admin API
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      targetUser.id,
+      { password: tempPassword }
+    );
+
+    if (updateError) {
+      console.error('Error updating user password:', updateError);
+      throw new Error(`Failed to update password: ${updateError.message}`);
+    }
+
+    console.log(`Password updated successfully for user ${targetUser.id}`);
+
+    // 4. Send email with temporary password
+    const lang = language === 'en' ? 'en' : 'pt';
+    const loginUrl = `${req.headers.get('origin') || 'https://couplesfinancials.com'}/auth`;
+    const emailHtml = generatePasswordResetHtml(userEmail, tempPassword, loginUrl, lang);
+
+    console.log(`Sending temporary password email to ${userEmail}`);
     
     const emailResponse = await resend.emails.send({
       from: "Couples Financials <noreply@couplesfinancials.com>",
       to: [userEmail],
       subject: lang === 'en' 
-        ? "🔐 Reset your Couples Financials password"
-        : "🔐 Redefinir sua senha do Couples Financials",
+        ? "🔐 Your Temporary Password - Couples Financials"
+        : "🔐 Sua Senha Temporária - Couples Financials",
       html: emailHtml,
     });
 
-    console.log("Password reset email sent successfully:", JSON.stringify(emailResponse));
+    console.log("Temporary password email sent successfully:", JSON.stringify(emailResponse));
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ success: true, emailId: emailResponse.data?.id }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
