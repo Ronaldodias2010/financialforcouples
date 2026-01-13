@@ -20,6 +20,29 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // error              → erro inesperado
 // ============================================================
 
+// ============================================================
+// FUNÇÃO DE NORMALIZAÇÃO DE TELEFONE (CANÔNICA)
+// Formato: somente números, com código do país, sem "+"
+// Exemplo: 5511994433352
+// ============================================================
+function normalizePhone(rawPhone: string): string {
+  if (!rawPhone) return '';
+  
+  // Remove TUDO que não é número
+  let phone = rawPhone.replace(/\D/g, '');
+  
+  // Remove zeros à esquerda
+  phone = phone.replace(/^0+/, '');
+  
+  // Se começar com 55 (Brasil) e tiver 12-13 dígitos, está correto
+  // Se NÃO começar com 55 e tiver 10-11 dígitos, adicionar 55
+  if (!phone.startsWith('55') && phone.length >= 10 && phone.length <= 11) {
+    phone = '55' + phone;
+  }
+  
+  return phone;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -42,8 +65,12 @@ serve(async (req) => {
         source = 'whatsapp'
       } = body;
 
+      // Normalizar telefone ANTES de qualquer operação
+      const normalizedPhone = normalizePhone(phone_number);
+
       console.log('[whatsapp-input] POST - Creating new input:', { 
-        phone_number, 
+        phone_number_raw: phone_number,
+        phone_number_normalized: normalizedPhone,
         raw_message: raw_message?.substring(0, 50),
         whatsapp_message_id 
       });
@@ -63,18 +90,52 @@ serve(async (req) => {
         );
       }
 
-      // Normalizar número de telefone (remover espaços, traços, parênteses)
-      const normalizedPhone = phone_number.replace(/[\s\-\(\)]/g, '');
-
       // Buscar user_id pelo phone_number na tabela profiles
-      const { data: profile, error: profileError } = await supabase
+      // Estratégia: buscar pelo telefone normalizado OU por variações comuns
+      let profile = null;
+      let profileError = null;
+
+      // Tentar busca exata primeiro
+      const { data: exactMatch, error: exactError } = await supabase
         .from('profiles')
         .select('user_id, display_name, phone_number, whatsapp_verified_at')
         .eq('phone_number', normalizedPhone)
-        .single();
+        .maybeSingle();
+
+      if (exactMatch) {
+        profile = exactMatch;
+        console.log('[whatsapp-input] Found profile by exact match:', normalizedPhone);
+      } else {
+        // Tentar variações: sem código do país (11 dígitos) ou com 0 na frente
+        const phoneVariations = [
+          normalizedPhone,
+          normalizedPhone.startsWith('55') ? normalizedPhone.slice(2) : normalizedPhone, // sem 55
+          normalizedPhone.startsWith('55') ? '0' + normalizedPhone.slice(2) : normalizedPhone, // 0 + DDD
+        ];
+        
+        console.log('[whatsapp-input] Trying phone variations:', phoneVariations);
+        
+        for (const variation of phoneVariations) {
+          const { data: varMatch } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, phone_number, whatsapp_verified_at')
+            .eq('phone_number', variation)
+            .maybeSingle();
+          
+          if (varMatch) {
+            profile = varMatch;
+            console.log('[whatsapp-input] Found profile by variation:', variation);
+            break;
+          }
+        }
+        
+        if (!profile) {
+          profileError = exactError;
+        }
+      }
 
       if (profileError || !profile) {
-        console.log('[whatsapp-input] Phone not registered:', normalizedPhone);
+        console.log('[whatsapp-input] Phone not registered. Tried:', normalizedPhone);
         return new Response(
           JSON.stringify({ 
             success: false, 
