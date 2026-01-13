@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { usePartnerNames } from '@/hooks/usePartnerNames';
@@ -13,6 +13,7 @@ import { PayFutureExpenseModal } from './PayFutureExpenseModal';
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
 import { parseLocalDate } from '@/utils/date';
 import { Badge } from '@/components/ui/badge';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Select,
   SelectContent,
@@ -46,62 +47,47 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { convertCurrency, getCurrencySymbol } = useCurrencyConverter();
+  const queryClient = useQueryClient();
   
-  const [overdueExpenses, setOverdueExpenses] = useState<OverdueExpense[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedExpense, setSelectedExpense] = useState<OverdueExpense | null>(null);
   const [showPayModal, setShowPayModal] = useState(false);
   const [periodFilter, setPeriodFilter] = useState<'90days' | 'all'>('90days');
 
-  // Filter expenses based on period selection
-  const filteredExpenses = useMemo(() => {
-    if (periodFilter === 'all') return overdueExpenses;
-    return overdueExpenses.filter(expense => expense.daysOverdue <= 90);
-  }, [overdueExpenses, periodFilter]);
-
-  // Count expenses older than 90 days
-  const expensesOver90Days = useMemo(() => {
-    return overdueExpenses.filter(expense => expense.daysOverdue > 90);
-  }, [overdueExpenses]);
-
-  useEffect(() => {
-    if (user) {
-      fetchOverdueExpenses();
+  // Build userIds based on couple and viewMode
+  const userIds = useMemo(() => {
+    if (!user) return [];
+    if (couple && viewMode === 'both') {
+      return [couple.user1_id, couple.user2_id];
+    } else if (couple && viewMode === 'user1') {
+      return [couple.user1_id];
+    } else if (couple && viewMode === 'user2') {
+      return [couple.user2_id];
     }
-  }, [user, viewMode]);
+    return [user.id];
+  }, [user, couple, viewMode]);
 
-  const fetchOverdueExpenses = async () => {
-    if (!user) return;
+  // Fetch overdue expenses function wrapped in useCallback
+  const fetchOverdueExpenses = useCallback(async (): Promise<OverdueExpense[]> => {
+    if (!user || userIds.length === 0) return [];
     
-    setLoading(true);
-    try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split('T')[0];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
 
-      let userIds = [user.id];
-      if (couple && viewMode === 'both') {
-        userIds = [couple.user1_id, couple.user2_id];
-      } else if (couple && viewMode === 'user1') {
-        userIds = [couple.user1_id];
-      } else if (couple && viewMode === 'user2') {
-        userIds = [couple.user2_id];
-      }
-
-      // Fetch ALL overdue pending transactions (manual expenses) - busca TODAS as despesas com due_date < today
-      // Não filtra por is_overdue, busca diretamente pelo due_date
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from('transactions')
-        .select(`
-          *,
-          category:categories(id, name, color)
-        `)
-        .in('user_id', userIds)
-        .eq('status', 'pending')
-        .eq('type', 'expense')
-        .is('card_id', null)
-        .lt('due_date', todayStr)
-        .order('due_date', { ascending: true });
+    // Fetch ALL overdue pending transactions (manual expenses) - busca TODAS as despesas com due_date < today
+    // Não filtra por is_overdue, busca diretamente pelo due_date
+    const { data: transactionsData, error: transactionsError } = await supabase
+      .from('transactions')
+      .select(`
+        *,
+        category:categories(id, name, color)
+      `)
+      .in('user_id', userIds)
+      .eq('status', 'pending')
+      .eq('type', 'expense')
+      .is('card_id', null)
+      .lt('due_date', todayStr)
+      .order('due_date', { ascending: true });
 
       if (transactionsError) {
         console.error('Error fetching overdue transactions:', transactionsError);
@@ -224,21 +210,75 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         });
       });
 
-      // Sort by days overdue (most overdue first)
-      expenses.sort((a, b) => b.daysOverdue - a.daysOverdue);
-      
-      setOverdueExpenses(expenses);
-    } catch (error) {
-      console.error('Error fetching overdue expenses:', error);
-      toast({
-        title: t('common.error'),
-        description: t('common.errorLoadingData'),
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Sort by days overdue (most overdue first)
+    expenses.sort((a, b) => b.daysOverdue - a.daysOverdue);
+    
+    return expenses;
+  }, [user, userIds]);
+
+  // Use React Query for caching and automatic refetching
+  const { 
+    data: overdueExpenses = [], 
+    isLoading: loading,
+    refetch 
+  } = useQuery({
+    queryKey: ['overdue-expenses', user?.id, viewMode, couple?.user1_id, couple?.user2_id],
+    queryFn: fetchOverdueExpenses,
+    enabled: !!user && userIds.length > 0,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+  });
+
+  // Filter expenses based on period selection
+  const filteredExpenses = useMemo(() => {
+    if (periodFilter === 'all') return overdueExpenses;
+    return overdueExpenses.filter(expense => expense.daysOverdue <= 90);
+  }, [overdueExpenses, periodFilter]);
+
+  // Count expenses older than 90 days
+  const expensesOver90Days = useMemo(() => {
+    return overdueExpenses.filter(expense => expense.daysOverdue > 90);
+  }, [overdueExpenses]);
+
+  // Supabase Realtime subscription for automatic updates
+  useEffect(() => {
+    if (!user) return;
+
+    console.log('🔄 [OverdueExpensesView] Setting up realtime subscription...');
+    
+    const channel = supabase
+      .channel('overdue-expenses-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          console.log('📡 [OverdueExpensesView] Transactions changed, refetching...');
+          queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'recurring_expenses' },
+        () => {
+          console.log('📡 [OverdueExpensesView] Recurring expenses changed, refetching...');
+          queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'manual_future_expenses' },
+        () => {
+          console.log('📡 [OverdueExpensesView] Manual future expenses changed, refetching...');
+          queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔄 [OverdueExpensesView] Cleaning up realtime subscription...');
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
 
   const handlePayExpense = (expense: OverdueExpense) => {
     setSelectedExpense(expense);
@@ -248,7 +288,7 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
   const handlePaymentSuccess = () => {
     setShowPayModal(false);
     setSelectedExpense(null);
-    fetchOverdueExpenses();
+    // Refetch is handled by cache invalidation in payment hooks
     toast({
       title: t('common.success'),
       description: t('monthlyExpenses.payModal.successMessage'),

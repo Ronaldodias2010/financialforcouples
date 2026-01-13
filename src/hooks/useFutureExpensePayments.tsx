@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useInvalidateFinancialData } from './useInvalidateFinancialData';
 
 interface ProcessPaymentParams {
   recurringExpenseId?: string;
@@ -24,6 +25,7 @@ export const useFutureExpensePayments = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { invalidateTransactions, invalidateFutureExpenses, invalidateOverdueExpenses, invalidateFinancialSummary, invalidateAccounts } = useInvalidateFinancialData();
 
   const processPayment = async (params: ProcessPaymentParams) => {
     if (!user) {
@@ -91,6 +93,15 @@ export const useFutureExpensePayments = () => {
           description: t('futureExpenses.installmentPaid'),
           variant: "default",
         });
+
+        // Invalidate all related caches for automatic refresh
+        await Promise.all([
+          invalidateTransactions(),
+          invalidateFutureExpenses(),
+          invalidateOverdueExpenses(),
+          invalidateFinancialSummary(),
+          invalidateAccounts(),
+        ]);
 
         return data;
       }
@@ -180,6 +191,15 @@ export const useFutureExpensePayments = () => {
         description: t('futureExpenses.expensePaid'),
         variant: "default",
       });
+
+      // Invalidate all related caches for automatic refresh
+      await Promise.all([
+        invalidateTransactions(),
+        invalidateFutureExpenses(),
+        invalidateOverdueExpenses(),
+        invalidateFinancialSummary(),
+        invalidateAccounts(),
+      ]);
 
       return data;
     } catch (error) {
@@ -293,6 +313,15 @@ export const useFutureExpensePayments = () => {
         description: t('futureExpenses.installmentMoved'),
         variant: "default",
       });
+
+      // Invalidate all related caches for automatic refresh
+      await Promise.all([
+        invalidateTransactions(),
+        invalidateFutureExpenses(),
+        invalidateOverdueExpenses(),
+        invalidateFinancialSummary(),
+        invalidateAccounts(),
+      ]);
 
       return data;
     } catch (error) {
