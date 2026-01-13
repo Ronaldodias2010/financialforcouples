@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Phone, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Phone, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 
 interface WhatsAppPhoneRequiredModalProps {
   isOpen: boolean;
   onComplete: () => void;
+  onSkip: () => void;
   userId: string;
 }
 
@@ -63,12 +65,13 @@ const normalizePhone = (phone: string, dialCode: string): string => {
   return cleanDialCode + numbers;
 };
 
-export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, userId }: WhatsAppPhoneRequiredModalProps) => {
+export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, onSkip, userId }: WhatsAppPhoneRequiredModalProps) => {
   const { language, inBrazil } = useLanguage();
   const { toast } = useToast();
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>(inBrazil ? 'BR' : 'US');
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
 
   // Auto-detect country based on language
   useEffect(() => {
@@ -96,7 +99,12 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, userId }: Whats
       saveButton: 'Salvar e Continuar',
       success: 'WhatsApp configurado com sucesso!',
       error: 'Erro ao salvar telefone',
-      invalidPhone: 'Por favor, insira um telefone válido'
+      invalidPhone: 'Por favor, insira um telefone válido',
+      skipConfirmTitle: '⚠️ Deseja pular o cadastro do WhatsApp?',
+      skipConfirmDescription: 'Sem o número cadastrado, você não poderá usar o assistente financeiro via WhatsApp. Você pode cadastrar depois em Configurações > Perfil.',
+      skipConfirmNote: '💡 Lembre-se: mesmo com o WhatsApp cadastrado, apenas usuários com assinatura ativa podem utilizar o serviço.',
+      skipConfirmCancel: 'Voltar e cadastrar',
+      skipConfirmContinue: 'Pular por agora'
     },
     en: {
       title: '📱 Set up your WhatsApp',
@@ -112,7 +120,12 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, userId }: Whats
       saveButton: 'Save and Continue',
       success: 'WhatsApp configured successfully!',
       error: 'Error saving phone',
-      invalidPhone: 'Please enter a valid phone number'
+      invalidPhone: 'Please enter a valid phone number',
+      skipConfirmTitle: '⚠️ Skip WhatsApp registration?',
+      skipConfirmDescription: 'Without a registered number, you cannot use the financial assistant via WhatsApp. You can register later in Settings > Profile.',
+      skipConfirmNote: '💡 Remember: even with WhatsApp registered, only users with an active subscription can use the service.',
+      skipConfirmCancel: 'Go back and register',
+      skipConfirmContinue: 'Skip for now'
     },
     es: {
       title: '📱 Configura tu WhatsApp',
@@ -128,7 +141,12 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, userId }: Whats
       saveButton: 'Guardar y Continuar',
       success: '¡WhatsApp configurado con éxito!',
       error: 'Error al guardar teléfono',
-      invalidPhone: 'Por favor, ingresa un teléfono válido'
+      invalidPhone: 'Por favor, ingresa un teléfono válido',
+      skipConfirmTitle: '⚠️ ¿Omitir registro de WhatsApp?',
+      skipConfirmDescription: 'Sin un número registrado, no podrás usar el asistente financiero por WhatsApp. Puedes registrarte después en Configuración > Perfil.',
+      skipConfirmNote: '💡 Recuerda: incluso con WhatsApp registrado, solo los usuarios con suscripción activa pueden usar el servicio.',
+      skipConfirmCancel: 'Volver y registrar',
+      skipConfirmContinue: 'Omitir por ahora'
     }
   };
 
@@ -200,83 +218,123 @@ export const WhatsAppPhoneRequiredModal = ({ isOpen, onComplete, userId }: Whats
     }
   };
 
+  const handleSkipClick = () => {
+    setShowSkipConfirm(true);
+  };
+
+  const handleConfirmSkip = () => {
+    // Mark first access as completed even when skipping
+    localStorage.setItem(`first_access_completed_${userId}`, 'true');
+    setShowSkipConfirm(false);
+    onSkip();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Phone className="h-5 w-5 text-primary" />
-            {t.title}
-          </DialogTitle>
-          <DialogDescription>
-            {t.description}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+          {/* Close button */}
+          <button
+            onClick={handleSkipClick}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+            disabled={loading}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
 
-        <div className="space-y-4 py-4">
-          {/* Country selector */}
-          <div className="space-y-2">
-            <Label>{t.countryLabel}</Label>
-            <Select value={selectedCountry} onValueChange={handleCountryChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {countries.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
-                    {country.dialCode} - {country.name[language as keyof typeof country.name] || country.name.en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-primary" />
+              {t.title}
+            </DialogTitle>
+            <DialogDescription>
+              {t.description}
+            </DialogDescription>
+          </DialogHeader>
 
-          {/* Phone input with mask */}
-          <div className="space-y-2">
-            <Label htmlFor="phone">{t.phoneLabel}</Label>
-            <div className="flex gap-2">
-              <div className="flex items-center px-3 bg-muted border rounded-md text-sm font-medium">
-                {currentCountry.dialCode}
+          <div className="space-y-4 py-4">
+            {/* Country selector */}
+            <div className="space-y-2">
+              <Label>{t.countryLabel}</Label>
+              <Select value={selectedCountry} onValueChange={handleCountryChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.dialCode} - {country.name[language as keyof typeof country.name] || country.name.en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Phone input with mask */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">{t.phoneLabel}</Label>
+              <div className="flex gap-2">
+                <div className="flex items-center px-3 bg-muted border rounded-md text-sm font-medium">
+                  {currentCountry.dialCode}
+                </div>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder={currentCountry.placeholder}
+                  value={phone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  disabled={loading}
+                  maxLength={currentCountry.maxLength}
+                  className="flex-1"
+                />
               </div>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder={currentCountry.placeholder}
-                value={phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                disabled={loading}
-                maxLength={currentCountry.maxLength}
-                className="flex-1"
-              />
+              <p className="text-xs text-muted-foreground">{t.phoneHint}</p>
             </div>
-            <p className="text-xs text-muted-foreground">{t.phoneHint}</p>
-          </div>
 
-          {/* Benefits */}
-          <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg p-4 space-y-2">
-            <p className="text-sm">{t.whatsappBenefit1}</p>
-            <p className="text-sm">{t.whatsappBenefit2}</p>
-            <p className="text-sm">{t.whatsappBenefit3}</p>
-          </div>
+            {/* Benefits */}
+            <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg p-4 space-y-2">
+              <p className="text-sm">{t.whatsappBenefit1}</p>
+              <p className="text-sm">{t.whatsappBenefit2}</p>
+              <p className="text-sm">{t.whatsappBenefit3}</p>
+            </div>
 
-          {/* Warning */}
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium text-amber-600 dark:text-amber-400">{t.warningTitle}</p>
-              <p className="text-sm text-muted-foreground">{t.warningText}</p>
+            {/* Warning */}
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-600 dark:text-amber-400">{t.warningTitle}</p>
+                <p className="text-sm text-muted-foreground">{t.warningText}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <Button 
-          onClick={handleSave} 
-          disabled={loading || !isValidPhone()}
-          className="w-full"
-        >
-          {loading ? '...' : t.saveButton}
-        </Button>
-      </DialogContent>
-    </Dialog>
+          <Button 
+            onClick={handleSave} 
+            disabled={loading || !isValidPhone()}
+            className="w-full"
+          >
+            {loading ? '...' : t.saveButton}
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Skip Confirmation Alert */}
+      <AlertDialog open={showSkipConfirm} onOpenChange={setShowSkipConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.skipConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>{t.skipConfirmDescription}</p>
+              <p className="font-medium text-amber-600 dark:text-amber-400">{t.skipConfirmNote}</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.skipConfirmCancel}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSkip}>{t.skipConfirmContinue}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
