@@ -162,17 +162,18 @@ serve(async (req) => {
       if (pendingInput) {
         // =====================================================
         // CONTINUAR CONVERSA EXISTENTE
-        // Anexar nova mensagem ao input pendente
+        // Reutilizar input pendente, manter status waiting_user_input
         // =====================================================
         console.log('[whatsapp-input] CONVERSATION-AWARE: Found pending input:', pendingInput.id);
         console.log('[whatsapp-input] Continuing conversation with new message:', raw_message?.substring(0, 50));
 
-        // Atualizar raw_message com a resposta do usuário (concatenar ou substituir)
+        // Atualizar raw_message com a resposta do usuário (concatenar)
         const updatedRawMessage = pendingInput.raw_message 
           ? `${pendingInput.raw_message}\n---\nResposta do usuário: ${raw_message}`
           : raw_message;
 
         // Atualizar o input existente com a nova mensagem
+        // Status permanece waiting_user_input até que todos os dados sejam confirmados
         const { error: updateError } = await supabase
           .from('incoming_financial_inputs')
           .update({
@@ -187,11 +188,11 @@ serve(async (req) => {
         }
 
         // Retornar o input pendente para a IA processar
-        // A IA deve usar PATCH para atualizar com os dados extraídos
+        // Status: waiting_user_input (contrato válido)
         return new Response(
           JSON.stringify({ 
             success: true, 
-            status: 'continuing_conversation',
+            status: 'waiting_user_input',
             input_id: pendingInput.id,
             user_id: profile.user_id,
             user_name: profile.display_name,
