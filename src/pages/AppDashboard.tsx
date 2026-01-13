@@ -1,6 +1,7 @@
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useFirstAccess } from "@/hooks/useFirstAccess";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
@@ -13,10 +14,13 @@ import { downloadTutorialPDF, openTutorialHTML } from "@/utils/tutorialUtils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { CurrencyRatesDisplay } from "@/components/financial/CurrencyRatesDisplay";
 import TestimonialFormModal from "@/components/landing/TestimonialFormModal";
+import { FirstAccessWelcomeModal } from "@/components/onboarding/FirstAccessWelcomeModal";
+import { WhatsAppPhoneRequiredModal } from "@/components/onboarding/WhatsAppPhoneRequiredModal";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
   const { t, tFor, inBrazil, language } = useLanguage();
+  const { currentStep, completeWelcome, completePhone } = useFirstAccess();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
   const [displayName, setDisplayName] = useState<string>('');
@@ -199,6 +203,18 @@ const AppDashboard = () => {
       </header>
       
       <TestimonialFormModal open={testimonialOpen} onOpenChange={setTestimonialOpen} />
+      
+      {/* First Access Modals */}
+      <FirstAccessWelcomeModal 
+        isOpen={currentStep === 'welcome'} 
+        onComplete={completeWelcome} 
+      />
+      <WhatsAppPhoneRequiredModal 
+        isOpen={currentStep === 'phone'} 
+        onComplete={completePhone}
+        userId={user?.id || ''}
+      />
+      
       <main>
         {currentPage === 'dashboard' ? (
           <div>
