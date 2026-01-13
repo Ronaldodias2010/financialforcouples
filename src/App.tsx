@@ -40,7 +40,10 @@ const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
 const CleanupPastel = lazy(() => import("./pages/CleanupPastel"));
 const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m => ({ default: m.TestPartnerEmails })));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
+const InstallApp = lazy(() => import("./pages/InstallApp"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import PWAInstallBanner from "./components/pwa/PWAInstallBanner";
+import PWAFloatingButton from "./components/pwa/PWAFloatingButton";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,6 +80,7 @@ const AppRoutes = () => {
         <Route path="/parceria" element={<Partnership />} />
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/asociacion" element={<Partnership />} />
+        <Route path="/install" element={<InstallApp />} />
         
         <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
         <Route path="/accounts" element={<ProtectedRoute><AccountsPage onBack={handleNavBack} /></ProtectedRoute>} />
@@ -109,6 +113,8 @@ const App = () => {
                 <SubscriptionProvider>
                   <ErrorReporter />
                   <PhoneRequestWrapper />
+                  <PWAInstallBanner />
+                  <PWAFloatingButton />
                   <AppRoutes />
                   <Toaster />
                   <Sonner />

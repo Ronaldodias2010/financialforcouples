@@ -1,3 +1,6 @@
+// Importar polyfills PRIMEIRO para navegadores antigos
+import "./polyfills";
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
