@@ -386,10 +386,10 @@ serve(async (req) => {
         );
       }
 
-      // Verificar se input existe
+      // Verificar se input existe E CARREGAR ESTADO COMPLETO
       const { data: existingInput, error: fetchError } = await supabase
         .from('incoming_financial_inputs')
-        .select('id, status, processed_at, transaction_id, user_id, source')
+        .select('id, status, processed_at, transaction_id, user_id, source, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score')
         .eq('id', input_id)
         .single();
 
@@ -415,6 +415,58 @@ serve(async (req) => {
       }
 
       // =====================================================
+      // MERGE DE ESTADO CONVERSACIONAL
+      // Preservar dados existentes, atualizar apenas campos novos
+      // NUNCA sobrescrever valores válidos com null/undefined
+      // =====================================================
+      const mergeField = <T>(newValue: T | undefined | null, existingValue: T | null): T | null => {
+        // Se newValue é undefined ou null, manter valor existente
+        if (newValue === undefined || newValue === null) {
+          return existingValue;
+        }
+        // Se newValue é string vazia, manter valor existente
+        if (typeof newValue === 'string' && newValue.trim() === '') {
+          return existingValue;
+        }
+        // Caso contrário, usar novo valor
+        return newValue;
+      };
+
+      // Estado merged - combina dados existentes com novos
+      const mergedState = {
+        amount: mergeField(amount, existingInput.amount),
+        currency: mergeField(currency, existingInput.currency),
+        transaction_type: mergeField(transaction_type, existingInput.transaction_type),
+        category_hint: mergeField(category_hint, existingInput.category_hint),
+        account_hint: mergeField(account_hint, existingInput.account_hint),
+        card_hint: mergeField(card_hint, existingInput.card_hint),
+        description_hint: mergeField(description_hint, existingInput.description_hint),
+        transaction_date: mergeField(transaction_date, existingInput.transaction_date),
+        payment_method: mergeField(payment_method, existingInput.payment_method),
+        owner_user: mergeField(owner_user, existingInput.owner_user),
+        confidence_score: mergeField(confidence_score, existingInput.confidence_score),
+        // IDs resolvidos também devem ser preservados
+        resolved_category_id: existingInput.resolved_category_id,
+        resolved_account_id: existingInput.resolved_account_id,
+        resolved_card_id: existingInput.resolved_card_id,
+      };
+
+      console.log('[whatsapp-input] MERGE STATE - Before:', {
+        amount: existingInput.amount,
+        category_hint: existingInput.category_hint,
+        account_hint: existingInput.account_hint,
+        card_hint: existingInput.card_hint,
+        payment_method: existingInput.payment_method,
+        resolved_category_id: existingInput.resolved_category_id,
+        resolved_account_id: existingInput.resolved_account_id,
+        resolved_card_id: existingInput.resolved_card_id
+      });
+      console.log('[whatsapp-input] MERGE STATE - New data from AI:', {
+        amount, category_hint, account_hint, card_hint, payment_method
+      });
+      console.log('[whatsapp-input] MERGE STATE - After merge:', mergedState);
+
+      // =====================================================
       // RESOLUÇÃO ANTECIPADA DE HINTS
       // =====================================================
       let resolved_category_id: string | null = null;
@@ -423,10 +475,11 @@ serve(async (req) => {
 
       // =====================================================
       // RESOLVER CATEGORIA POR KEYWORDS DAS TAGS OU NOME
+      // Usar mergedState.category_hint em vez de category_hint raw
       // =====================================================
-      if (category_hint) {
-        const searchTerm = category_hint.trim().toLowerCase();
-        console.log('[whatsapp-input] Resolving category from hint:', searchTerm);
+      if (mergedState.category_hint && !mergedState.resolved_category_id) {
+        const searchTerm = mergedState.category_hint.trim().toLowerCase();
+        console.log('[whatsapp-input] Resolving category from merged hint:', searchTerm);
         
         // 1) PRIMEIRO: Buscar tag por KEYWORDS_PT (match exato no array)
         // Isso encontra "ifood" nas keywords ["ifood", "delivery", "comida"]
@@ -478,14 +531,14 @@ serve(async (req) => {
               .single();
             
             if (userCategory) {
-              resolved_category_id = userCategory.id;
+              mergedState.resolved_category_id = userCategory.id;
               console.log('[whatsapp-input] Category resolved via TAG/KEYWORD:', searchTerm, '->', userCategory.name);
             }
           }
         }
         
         // 4) FALLBACK: Busca direta pelo nome da categoria
-        if (!resolved_category_id) {
+        if (!mergedState.resolved_category_id) {
           console.log('[whatsapp-input] Tag search failed, trying direct name match...');
           
           const { data: category } = await supabase
@@ -493,38 +546,38 @@ serve(async (req) => {
             .select('id, name')
             .eq('user_id', existingInput.user_id)
             .is('deleted_at', null)
-            .ilike('name', `%${category_hint.trim()}%`)
+            .ilike('name', `%${mergedState.category_hint.trim()}%`)
             .order('created_at', { ascending: false })
             .limit(1)
             .single();
 
           if (category) {
-            resolved_category_id = category.id;
-            console.log('[whatsapp-input] Category resolved by NAME:', category_hint, '->', category.name);
+            mergedState.resolved_category_id = category.id;
+            console.log('[whatsapp-input] Category resolved by NAME:', mergedState.category_hint, '->', category.name);
           } else {
-            console.log('[whatsapp-input] Category not found for hint:', category_hint);
+            console.log('[whatsapp-input] Category not found for hint:', mergedState.category_hint);
           }
         }
       }
 
-      // Tentar resolver account_hint → account_id
-      if (account_hint) {
+      // Tentar resolver account_hint → account_id (usar mergedState)
+      if (mergedState.account_hint && !mergedState.resolved_account_id) {
         const { data: account } = await supabase
           .from('accounts')
           .select('id, name')
           .eq('user_id', existingInput.user_id)
           .is('deleted_at', null)
           .eq('is_active', true)
-          .ilike('name', `%${account_hint.trim()}%`)
+          .ilike('name', `%${mergedState.account_hint.trim()}%`)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
 
         if (account) {
-          resolved_account_id = account.id;
-          console.log('[whatsapp-input] Account resolved:', account_hint, '->', account.name);
+          mergedState.resolved_account_id = account.id;
+          console.log('[whatsapp-input] Account resolved:', mergedState.account_hint, '->', account.name);
         } else {
-          console.log('[whatsapp-input] Account not found for hint:', account_hint);
+          console.log('[whatsapp-input] Account not found for hint:', mergedState.account_hint);
         }
       }
 
@@ -568,15 +621,16 @@ serve(async (req) => {
 
       // =====================================================
       // Tentar resolver card_hint → card_id (busca inteligente COM PRIORIZAÇÃO)
+      // Usar mergedState para hints e payment_method
       // =====================================================
       type CardWithType = { id: string; name: string; card_type: string; account_id: string | null };
       
-      if (card_hint && userCards && userCards.length > 0) {
+      if (mergedState.card_hint && !mergedState.resolved_card_id && userCards && userCards.length > 0) {
         // Palavras genéricas a ignorar na busca
         const stopWords = ['banco', 'cartão', 'cartao', 'card', 'de', 'do', 'da', 'credito', 'crédito', 'debito', 'débito'];
         
         // Extrair palavras relevantes do hint
-        const words = card_hint.trim().toLowerCase().split(/\s+/)
+        const words = mergedState.card_hint.trim().toLowerCase().split(/\s+/)
           .filter((w: string) => w.length > 2 && !stopWords.includes(w));
         
         console.log('[whatsapp-input] Card search keywords:', words);
@@ -589,7 +643,7 @@ serve(async (req) => {
         
         // Função de busca reutilizável COM NORMALIZAÇÃO DE ACENTOS
         const findCardInList = (cardList: typeof userCards) => {
-          const normalizedHint = normalizeText(card_hint);
+          const normalizedHint = normalizeText(mergedState.card_hint!);
           
           // Primeiro: busca exata normalizada
           let match = cardList.find((card: CardWithType) => 
@@ -624,8 +678,8 @@ serve(async (req) => {
         
         let match: CardWithType | undefined;
         
-        // LÓGICA BASEADA EM payment_method
-        if (payment_method === 'credit_card') {
+        // LÓGICA BASEADA EM payment_method (merged)
+        if (mergedState.payment_method === 'credit_card') {
           // Priorizar cartões de crédito
           match = findCardInList(creditCards);
           if (!match) {
@@ -634,7 +688,7 @@ serve(async (req) => {
               console.log('[whatsapp-input] WARNING: Only found DEBIT card for credit payment:', match.name);
             }
           }
-        } else if (payment_method === 'debit_card') {
+        } else if (mergedState.payment_method === 'debit_card') {
           // Priorizar cartões de débito
           match = findCardInList(debitCards);
           if (!match) {
@@ -659,29 +713,29 @@ serve(async (req) => {
         }
         
         if (match) {
-          resolved_card_id = match.id;
-          console.log('[whatsapp-input] Card resolved:', card_hint, '->', match.name, '(', match.card_type, ')');
+          mergedState.resolved_card_id = match.id;
+          console.log('[whatsapp-input] Card resolved:', mergedState.card_hint, '->', match.name, '(', match.card_type, ')');
           
           // Se for cartão de débito, resolver conta associada
           if (match.card_type === 'debit' && match.account_id) {
-            resolved_account_id = match.account_id;
-            console.log('[whatsapp-input] Debit card linked account:', resolved_account_id);
+            mergedState.resolved_account_id = match.account_id;
+            console.log('[whatsapp-input] Debit card linked account:', mergedState.resolved_account_id);
           }
         } else {
-          console.log('[whatsapp-input] Card not found or ambiguous for hint:', card_hint, 'Available:', userCards.map((c: CardWithType) => `${c.name} (${c.card_type})`));
+          console.log('[whatsapp-input] Card not found or ambiguous for hint:', mergedState.card_hint, 'Available:', userCards.map((c: CardWithType) => `${c.name} (${c.card_type})`));
         }
-      } else if (card_hint && (!userCards || userCards.length === 0)) {
+      } else if (mergedState.card_hint && (!userCards || userCards.length === 0)) {
         console.log('[whatsapp-input] No cards found for user');
       }
 
       // =====================================================
-      // DETERMINAR STATUS BASEADO EM RESOLUÇÃO
+      // DETERMINAR STATUS BASEADO EM RESOLUÇÃO (USANDO mergedState)
       // =====================================================
       const isWhatsApp = existingInput.source === 'whatsapp';
       
-      // Verificar campos obrigatórios
-      const needsCard = payment_method === 'credit_card';
-      const needsAccount = payment_method === 'debit_card' || payment_method === 'pix' || payment_method === 'cash';
+      // Verificar campos obrigatórios BASEADO NO ESTADO MERGED
+      const needsCard = mergedState.payment_method === 'credit_card';
+      const needsAccount = mergedState.payment_method === 'debit_card' || mergedState.payment_method === 'pix' || mergedState.payment_method === 'cash';
 
       // Interface melhorada para perguntas
       interface QuestionItem {
@@ -695,15 +749,19 @@ serve(async (req) => {
       
       const questions: QuestionItem[] = [];
 
-      // Campos básicos obrigatórios
-      if (!amount) {
+      // =====================================================
+      // VALIDAÇÃO BASEADA NO ESTADO COMPLETO ACUMULADO
+      // =====================================================
+
+      // Campos básicos obrigatórios - verificar mergedState
+      if (!mergedState.amount) {
         questions.push({ 
           field: 'amount', 
           question: 'Qual o valor da transação?',
           type: 'text'
         });
       }
-      if (!transaction_type) {
+      if (!mergedState.transaction_type) {
         questions.push({ 
           field: 'transaction_type', 
           question: 'É uma despesa ou receita?',
@@ -711,17 +769,18 @@ serve(async (req) => {
           type: 'selection'
         });
       }
+      
       // =====================================================
       // LÓGICA PARA CARTÃO AMBÍGUO (sem payment_method definido)
       // =====================================================
-      if (card_hint && !payment_method && !resolved_card_id && userCards && userCards.length > 0) {
+      if (mergedState.card_hint && !mergedState.payment_method && !mergedState.resolved_card_id && userCards && userCards.length > 0) {
         // Verificar se existem cartões de ambos tipos que correspondem ao hint
         const creditCards = userCards.filter((c: CardWithType) => c.card_type === 'credit');
         const debitCards = userCards.filter((c: CardWithType) => c.card_type === 'debit');
         
         // Função de busca simplificada para verificar match
         const hasMatchInList = (cardList: typeof userCards) => {
-          const searchLower = card_hint.trim().toLowerCase();
+          const searchLower = mergedState.card_hint!.trim().toLowerCase();
           return cardList.some((card: CardWithType) => 
             card.name.toLowerCase().includes(searchLower) ||
             searchLower.includes(card.name.toLowerCase())
@@ -735,7 +794,7 @@ serve(async (req) => {
           console.log('[whatsapp-input] Card type ambiguity detected - need to ask user');
           questions.push({ 
             field: 'payment_method', 
-            question: `"${card_hint}" - é cartão de crédito ou débito?`,
+            question: `"${mergedState.card_hint}" - é cartão de crédito ou débito?`,
             options: ['cartão de crédito', 'cartão de débito'],
             type: 'selection'
           });
@@ -748,7 +807,7 @@ serve(async (req) => {
             type: 'selection'
           });
         }
-      } else if (!payment_method) {
+      } else if (!mergedState.payment_method) {
         questions.push({ 
           field: 'payment_method', 
           question: 'Qual a forma de pagamento?',
@@ -762,10 +821,10 @@ serve(async (req) => {
       // Sem resolved_category_id = SEMPRE waiting_user_input
       // NUNCA usar "Outros" como fallback automático
       // =====================================================
-      if (!resolved_category_id) {
+      if (!mergedState.resolved_category_id) {
         console.log('[whatsapp-input] CATEGORY NOT RESOLVED - will ask user (no "Outros" fallback)');
         
-        if (!category_hint) {
+        if (!mergedState.category_hint) {
           // Sem hint da IA - inferir do contexto ou perguntar com sugestões
           const rawLower = body.raw_message?.toLowerCase() || '';
           const contextHints: string[] = [];
@@ -802,25 +861,25 @@ serve(async (req) => {
           });
         } else {
           // Tinha hint mas não resolveu = perguntar com sugestões
-          console.log('[whatsapp-input] Category hint provided but not resolved:', category_hint);
-          const suggestedText = `Não encontrei a categoria "${category_hint}" nas suas tags. ${frequentCategories.length > 0 ? 'Escolha uma: ' + frequentCategories.join(', ') : 'Qual categoria deseja usar?'}`;
+          console.log('[whatsapp-input] Category hint provided but not resolved:', mergedState.category_hint);
+          const suggestedText = `Não encontrei a categoria "${mergedState.category_hint}" nas suas tags. ${frequentCategories.length > 0 ? 'Escolha uma: ' + frequentCategories.join(', ') : 'Qual categoria deseja usar?'}`;
           questions.push({ 
             field: 'category', 
             question: suggestedText, 
-            hint: category_hint,
+            hint: mergedState.category_hint,
             suggestions: frequentCategories,
             type: frequentCategories.length > 0 ? 'selection' : 'text'
           });
         }
       } else {
-        console.log('[whatsapp-input] Category resolved successfully:', resolved_category_id);
+        console.log('[whatsapp-input] Category resolved successfully:', mergedState.resolved_category_id);
       }
 
-      // Cartão - se necessário
+      // Cartão - se necessário (usar mergedState)
       if (needsCard) {
         const cardNames = userCards?.map((c: { name: string }) => c.name) || [];
         
-        if (!card_hint) {
+        if (!mergedState.card_hint) {
           questions.push({ 
             field: 'card', 
             question: cardNames.length > 0 
@@ -829,25 +888,25 @@ serve(async (req) => {
             options: cardNames,
             type: cardNames.length > 0 ? 'selection' : 'text'
           });
-        } else if (!resolved_card_id) {
+        } else if (!mergedState.resolved_card_id) {
           const suggestedText = cardNames.length > 0
-            ? `Não encontrei "${card_hint}". Seus cartões: ${cardNames.join(', ')}. Qual usar?`
-            : `Não encontrei o cartão "${card_hint}". Qual cartão deseja usar?`;
+            ? `Não encontrei "${mergedState.card_hint}". Seus cartões: ${cardNames.join(', ')}. Qual usar?`
+            : `Não encontrei o cartão "${mergedState.card_hint}". Qual cartão deseja usar?`;
           questions.push({ 
             field: 'card', 
             question: suggestedText, 
-            hint: card_hint,
+            hint: mergedState.card_hint,
             options: cardNames,
             type: cardNames.length > 0 ? 'selection' : 'text'
           });
         }
       }
 
-      // Conta - se necessária
+      // Conta - se necessária (usar mergedState)
       if (needsAccount) {
         const accountNames = userAccounts?.map((a: { name: string }) => a.name) || [];
         
-        if (!account_hint) {
+        if (!mergedState.account_hint) {
           questions.push({ 
             field: 'account', 
             question: accountNames.length > 0
@@ -856,14 +915,14 @@ serve(async (req) => {
             options: accountNames,
             type: accountNames.length > 0 ? 'selection' : 'text'
           });
-        } else if (!resolved_account_id) {
+        } else if (!mergedState.resolved_account_id) {
           const suggestedText = accountNames.length > 0
-            ? `Não encontrei "${account_hint}". Suas contas: ${accountNames.join(', ')}. Qual usar?`
-            : `Não encontrei a conta "${account_hint}". Qual conta deseja usar?`;
+            ? `Não encontrei "${mergedState.account_hint}". Suas contas: ${accountNames.join(', ')}. Qual usar?`
+            : `Não encontrei a conta "${mergedState.account_hint}". Qual conta deseja usar?`;
           questions.push({ 
             field: 'account', 
             question: suggestedText, 
-            hint: account_hint,
+            hint: mergedState.account_hint,
             options: accountNames,
             type: accountNames.length > 0 ? 'selection' : 'text'
           });
@@ -884,15 +943,19 @@ serve(async (req) => {
       }
 
       // =====================================================
-      // LOG DETALHADO DE RESOLUÇÃO
+      // LOG DETALHADO DE RESOLUÇÃO (usando mergedState)
       // =====================================================
       console.log('[whatsapp-input] Resolution summary:', {
         input_id,
-        hints: { category_hint, card_hint, account_hint },
+        mergedHints: { 
+          category_hint: mergedState.category_hint, 
+          card_hint: mergedState.card_hint, 
+          account_hint: mergedState.account_hint 
+        },
         resolved: { 
-          category: resolved_category_id ? 'OK' : (category_hint ? 'FAILED' : 'NO_HINT'),
-          card: resolved_card_id ? 'OK' : (needsCard ? (card_hint ? 'FAILED' : 'NO_HINT') : 'N/A'),
-          account: resolved_account_id ? 'OK' : (needsAccount ? (account_hint ? 'FAILED' : 'NO_HINT') : 'N/A')
+          category: mergedState.resolved_category_id ? 'OK' : (mergedState.category_hint ? 'FAILED' : 'NO_HINT'),
+          card: mergedState.resolved_card_id ? 'OK' : (needsCard ? (mergedState.card_hint ? 'FAILED' : 'NO_HINT') : 'N/A'),
+          account: mergedState.resolved_account_id ? 'OK' : (needsAccount ? (mergedState.account_hint ? 'FAILED' : 'NO_HINT') : 'N/A')
         },
         availableOptions: {
           cards: userCards?.length || 0,
@@ -904,29 +967,29 @@ serve(async (req) => {
       });
 
       // =====================================================
-      // ATUALIZAR INPUT COM DADOS E IDs RESOLVIDOS
+      // ATUALIZAR INPUT COM ESTADO MERGED COMPLETO
+      // Garantir que todos os dados acumulados são salvos
       // =====================================================
       const updateData: Record<string, unknown> = {
         status: newStatus,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // SALVAR TODO O ESTADO MERGED (não apenas novos valores)
+        amount: mergedState.amount,
+        currency: mergedState.currency,
+        transaction_type: mergedState.transaction_type,
+        category_hint: mergedState.category_hint,
+        account_hint: mergedState.account_hint,
+        card_hint: mergedState.card_hint,
+        description_hint: mergedState.description_hint,
+        transaction_date: mergedState.transaction_date,
+        payment_method: mergedState.payment_method,
+        owner_user: mergedState.owner_user,
+        confidence_score: mergedState.confidence_score,
+        // IDs resolvidos
+        resolved_category_id: mergedState.resolved_category_id,
+        resolved_account_id: mergedState.resolved_account_id,
+        resolved_card_id: mergedState.resolved_card_id
       };
-      
-      if (amount !== undefined) updateData.amount = amount;
-      if (currency !== undefined) updateData.currency = currency;
-      if (transaction_type !== undefined) updateData.transaction_type = transaction_type;
-      if (category_hint !== undefined) updateData.category_hint = category_hint;
-      if (account_hint !== undefined) updateData.account_hint = account_hint;
-      if (card_hint !== undefined) updateData.card_hint = card_hint;
-      if (description_hint !== undefined) updateData.description_hint = description_hint;
-      if (transaction_date !== undefined) updateData.transaction_date = transaction_date;
-      if (confidence_score !== undefined) updateData.confidence_score = confidence_score;
-      if (payment_method !== undefined) updateData.payment_method = payment_method;
-      if (owner_user !== undefined) updateData.owner_user = owner_user;
-      
-      // Salvar IDs resolvidos
-      if (resolved_category_id) updateData.resolved_category_id = resolved_category_id;
-      if (resolved_account_id) updateData.resolved_account_id = resolved_account_id;
-      if (resolved_card_id) updateData.resolved_card_id = resolved_card_id;
 
       const { error: updateError } = await supabase
         .from('incoming_financial_inputs')
