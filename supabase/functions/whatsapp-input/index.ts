@@ -116,6 +116,45 @@ function normalizePhone(rawPhone: string): string {
   return phone;
 }
 
+// ============================================================
+// SMART CARD RESOLUTION HELPERS
+// ============================================================
+
+/**
+ * Extrai tipo de cartão (crédito/débito) do hint do usuário
+ * Ex: "crédito Sicredi" → 'credit', "débito Nubank" → 'debit'
+ */
+function extractCardTypeFromHint(hint: string): 'credit' | 'debit' | null {
+  if (!hint) return null;
+  const hintLower = hint.toLowerCase();
+  
+  // Padrões para crédito
+  if (/\b(cr[eé]dito|credit)\b/i.test(hintLower)) {
+    return 'credit';
+  }
+  
+  // Padrões para débito
+  if (/\b(d[eé]bito|debit)\b/i.test(hintLower)) {
+    return 'debit';
+  }
+  
+  return null;
+}
+
+/**
+ * Remove palavras de tipo do hint para busca mais limpa
+ * Ex: "crédito Sicredi" → "sicredi", "cartão Nubank Black" → "nubank black"
+ */
+function cleanCardHint(hint: string): string {
+  if (!hint) return '';
+  return hint
+    .toLowerCase()
+    .replace(/\b(cart[aã]o|de|do|da|no|na|cr[eé]dito|d[eé]bito|credit|debit|card)\b/gi, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -729,17 +768,23 @@ serve(async (req) => {
         .map(([name]) => name);
 
       // =====================================================
-      // Tentar resolver card_hint → card_id (busca inteligente COM PRIORIZAÇÃO)
-      // Usar mergedState para hints e payment_method
+      // SMART CARD RESOLUTION - Resolver automaticamente quando possível
+      // Evita perguntas desnecessárias usando contexto do tipo
       // =====================================================
       type CardWithType = { id: string; name: string; card_type: string; account_id: string | null };
       
       if (mergedState.card_hint && !mergedState.resolved_card_id && userCards && userCards.length > 0) {
-        // Palavras genéricas a ignorar na busca
-        const stopWords = ['banco', 'cartão', 'cartao', 'card', 'de', 'do', 'da', 'credito', 'crédito', 'debito', 'débito'];
+        // PASSO 1: Extrair tipo do hint (se usuário disse "crédito Sicredi")
+        const hintCardType = extractCardTypeFromHint(mergedState.card_hint);
+        console.log('[whatsapp-input] SMART RESOLUTION - Hint card type:', hintCardType);
         
-        // Extrair palavras relevantes do hint
-        const words = mergedState.card_hint.trim().toLowerCase().split(/\s+/)
+        // PASSO 2: Limpar hint removendo palavras de tipo
+        const cleanedHint = cleanCardHint(mergedState.card_hint);
+        console.log('[whatsapp-input] Cleaned hint:', cleanedHint, '(original:', mergedState.card_hint, ')');
+        
+        // Palavras relevantes para busca
+        const stopWords = ['banco', 'bank'];
+        const words = cleanedHint.split(/\s+/)
           .filter((w: string) => w.length > 2 && !stopWords.includes(w));
         
         console.log('[whatsapp-input] Card search keywords:', words);
@@ -750,80 +795,134 @@ serve(async (req) => {
         
         console.log('[whatsapp-input] Cards by type - Credit:', creditCards.length, 'Debit:', debitCards.length);
         
-        // Função de busca reutilizável COM NORMALIZAÇÃO DE ACENTOS
-        const findCardInList = (cardList: typeof userCards) => {
-          const normalizedHint = normalizeText(mergedState.card_hint!);
+        // PASSO 3: Determinar tipo efetivo (hint > payment_method > null)
+        const effectiveCardType = hintCardType || 
+          (mergedState.payment_method === 'credit_card' ? 'credit' : 
+           mergedState.payment_method === 'debit_card' ? 'debit' : null);
+        
+        console.log('[whatsapp-input] Effective card type:', effectiveCardType);
+        
+        // Função que retorna TODOS os matches (não só o primeiro)
+        const findAllCardsInList = (cardList: CardWithType[], searchHint: string): CardWithType[] => {
+          const normalizedHint = normalizeText(searchHint);
+          const searchWords = searchHint.split(/\s+/)
+            .filter((w: string) => w.length > 2)
+            .map((w: string) => normalizeText(w));
           
-          // Primeiro: busca exata normalizada
-          let match = cardList.find((card: CardWithType) => 
-            normalizeText(card.name) === normalizedHint
-          );
-          
-          // Segundo: busca por substring completa (hint normalizado no nome normalizado)
-          if (!match) {
-            match = cardList.find((card: CardWithType) => 
-              normalizeText(card.name).includes(normalizedHint)
-            );
-          }
-          
-          // Terceiro: nome normalizado do cartão dentro do hint normalizado
-          if (!match) {
-            match = cardList.find((card: CardWithType) => 
-              normalizedHint.includes(normalizeText(card.name))
-            );
-          }
-          
-          // Quarto: busca por palavras-chave normalizadas
-          if (!match && words.length > 0) {
-            const normalizedWords = words.map((w: string) => normalizeText(w));
-            match = cardList.find((card: CardWithType) => {
-              const cardName = normalizeText(card.name);
-              return normalizedWords.some((word: string) => cardName.includes(word));
-            });
-          }
-          
-          return match;
+          return cardList.filter((card: CardWithType) => {
+            const cardName = normalizeText(card.name);
+            
+            // Match exato
+            if (cardName === normalizedHint) return true;
+            
+            // Hint contido no nome do cartão
+            if (cardName.includes(normalizedHint)) return true;
+            
+            // Nome do cartão contido no hint
+            if (normalizedHint.includes(cardName)) return true;
+            
+            // Match por palavras-chave (todas as palavras do hint devem estar no nome)
+            if (searchWords.length > 0 && searchWords.some((word: string) => cardName.includes(word))) {
+              return true;
+            }
+            
+            return false;
+          });
+        };
+        
+        // Função de busca que retorna primeiro match (para compatibilidade)
+        const findCardInList = (cardList: CardWithType[]): CardWithType | undefined => {
+          const matches = findAllCardsInList(cardList, cleanedHint);
+          return matches.length > 0 ? matches[0] : undefined;
         };
         
         let match: CardWithType | undefined;
+        let isSmartResolution = false;
         
-        // LÓGICA BASEADA EM payment_method (merged)
-        if (mergedState.payment_method === 'credit_card') {
-          // Priorizar cartões de crédito
-          match = findCardInList(creditCards);
-          if (!match) {
+        // PASSO 4: Lógica inteligente baseada em tipo efetivo
+        if (effectiveCardType === 'credit') {
+          // Tipo definido como CRÉDITO - buscar apenas em cartões de crédito
+          const allMatches = findAllCardsInList(creditCards, cleanedHint);
+          
+          if (allMatches.length === 1) {
+            // ÚNICO MATCH → RESOLVER AUTOMATICAMENTE
+            match = allMatches[0];
+            isSmartResolution = true;
+            console.log('[whatsapp-input] SMART RESOLVE: Only 1 credit card matches:', match.name);
+          } else if (allMatches.length > 1) {
+            // MÚLTIPLOS MATCHES no mesmo tipo → Usar primeiro (nomes similares)
+            match = allMatches[0];
+            console.log('[whatsapp-input] Multiple credit matches, using first:', allMatches.map(c => c.name));
+          } else {
+            // Sem match em crédito, tentar débito como fallback
             match = findCardInList(debitCards);
             if (match) {
-              console.log('[whatsapp-input] WARNING: Only found DEBIT card for credit payment:', match.name);
+              console.log('[whatsapp-input] WARNING: Only found DEBIT card for credit hint:', match.name);
             }
           }
-        } else if (mergedState.payment_method === 'debit_card') {
-          // Priorizar cartões de débito
-          match = findCardInList(debitCards);
-          if (!match) {
+        } else if (effectiveCardType === 'debit') {
+          // Tipo definido como DÉBITO - buscar apenas em cartões de débito
+          const allMatches = findAllCardsInList(debitCards, cleanedHint);
+          
+          if (allMatches.length === 1) {
+            // ÚNICO MATCH → RESOLVER AUTOMATICAMENTE
+            match = allMatches[0];
+            isSmartResolution = true;
+            console.log('[whatsapp-input] SMART RESOLVE: Only 1 debit card matches:', match.name);
+          } else if (allMatches.length > 1) {
+            // MÚLTIPLOS MATCHES no mesmo tipo → Usar primeiro
+            match = allMatches[0];
+            console.log('[whatsapp-input] Multiple debit matches, using first:', allMatches.map(c => c.name));
+          } else {
+            // Sem match em débito, tentar crédito como fallback
             match = findCardInList(creditCards);
             if (match) {
-              console.log('[whatsapp-input] WARNING: Only found CREDIT card for debit payment:', match.name);
+              console.log('[whatsapp-input] WARNING: Only found CREDIT card for debit hint:', match.name);
             }
           }
         } else {
-          // payment_method indefinido - buscar em todos mas verificar ambiguidade
-          const creditMatch = findCardInList(creditCards);
-          const debitMatch = findCardInList(debitCards);
+          // SEM TIPO DEFINIDO - buscar em ambos com lógica inteligente
+          const creditMatches = findAllCardsInList(creditCards, cleanedHint);
+          const debitMatches = findAllCardsInList(debitCards, cleanedHint);
           
-          // Se encontrou match em ambos tipos, temos ambiguidade
-          if (creditMatch && debitMatch) {
-            console.log('[whatsapp-input] AMBIGUITY: Found cards in both types:', creditMatch.name, '(credit)', debitMatch.name, '(debit)');
+          console.log('[whatsapp-input] Matches found - Credit:', creditMatches.length, 'Debit:', debitMatches.length);
+          
+          // Se só tem matches em um tipo → RESOLVER AUTOMATICAMENTE
+          if (creditMatches.length > 0 && debitMatches.length === 0) {
+            // Só encontrou cartões de crédito
+            match = creditMatches[0];
+            isSmartResolution = creditMatches.length === 1;
+            console.log('[whatsapp-input] SMART RESOLVE: Only credit cards match, using:', match.name);
+          } else if (debitMatches.length > 0 && creditMatches.length === 0) {
+            // Só encontrou cartões de débito
+            match = debitMatches[0];
+            isSmartResolution = debitMatches.length === 1;
+            console.log('[whatsapp-input] SMART RESOLVE: Only debit cards match, using:', match.name);
+          } else if (creditMatches.length > 0 && debitMatches.length > 0) {
+            // AMBIGUIDADE REAL: matches em ambos tipos
+            console.log('[whatsapp-input] AMBIGUITY: Found cards in both types:',
+              'Credit:', creditMatches.map(c => c.name),
+              'Debit:', debitMatches.map(c => c.name));
             // NÃO resolver - deixar para perguntar ao usuário
             match = undefined;
-          } else {
-            match = creditMatch || debitMatch;
           }
         }
         
         if (match) {
           mergedState.resolved_card_id = match.id;
-          console.log('[whatsapp-input] Card resolved:', mergedState.card_hint, '->', match.name, '(', match.card_type, ')');
+          
+          // Se resolvido via hint de tipo, atualizar payment_method também
+          if (isSmartResolution && hintCardType) {
+            if (hintCardType === 'credit' && !mergedState.payment_method) {
+              mergedState.payment_method = 'credit_card';
+              console.log('[whatsapp-input] SMART: Also setting payment_method to credit_card');
+            } else if (hintCardType === 'debit' && !mergedState.payment_method) {
+              mergedState.payment_method = 'debit_card';
+              console.log('[whatsapp-input] SMART: Also setting payment_method to debit_card');
+            }
+          }
+          
+          console.log('[whatsapp-input] Card resolved:', mergedState.card_hint, '->', match.name, '(', match.card_type, ')', isSmartResolution ? '[SMART]' : '');
           
           // Se for cartão de débito, resolver conta associada
           if (match.card_type === 'debit' && match.account_id) {
@@ -831,7 +930,8 @@ serve(async (req) => {
             console.log('[whatsapp-input] Debit card linked account:', mergedState.resolved_account_id);
           }
         } else {
-          console.log('[whatsapp-input] Card not found or ambiguous for hint:', mergedState.card_hint, 'Available:', userCards.map((c: CardWithType) => `${c.name} (${c.card_type})`));
+          console.log('[whatsapp-input] Card not found or ambiguous for hint:', mergedState.card_hint, 
+            'Available:', userCards.map((c: CardWithType) => `${c.name} (${c.card_type})`));
         }
       } else if (mergedState.card_hint && (!userCards || userCards.length === 0)) {
         console.log('[whatsapp-input] No cards found for user');
@@ -881,42 +981,67 @@ serve(async (req) => {
       
       // =====================================================
       // LÓGICA PARA CARTÃO AMBÍGUO (sem payment_method definido)
+      // Usar a mesma lógica inteligente de limpeza de hint
       // =====================================================
       if (mergedState.card_hint && !mergedState.payment_method && !mergedState.resolved_card_id && userCards && userCards.length > 0) {
-        // Verificar se existem cartões de ambos tipos que correspondem ao hint
-        const creditCards = userCards.filter((c: CardWithType) => c.card_type === 'credit');
-        const debitCards = userCards.filter((c: CardWithType) => c.card_type === 'debit');
+        // Se já tinha tipo no hint, não deveria chegar aqui (já resolveu acima)
+        // Mas verificar novamente para garantir
+        const hintCardType = extractCardTypeFromHint(mergedState.card_hint);
         
-        // Função de busca simplificada para verificar match
-        const hasMatchInList = (cardList: typeof userCards) => {
-          const searchLower = mergedState.card_hint!.trim().toLowerCase();
-          return cardList.some((card: CardWithType) => 
-            card.name.toLowerCase().includes(searchLower) ||
-            searchLower.includes(card.name.toLowerCase())
-          );
-        };
-        
-        const hasCreditMatch = hasMatchInList(creditCards);
-        const hasDebitMatch = hasMatchInList(debitCards);
-        
-        if (hasCreditMatch && hasDebitMatch) {
-          console.log('[whatsapp-input] Card type ambiguity detected - need to ask user');
-          questions.push({ 
-            field: 'payment_method', 
-            question: `"${mergedState.card_hint}" - é cartão de crédito ou débito?`,
-            options: ['cartão de crédito', 'cartão de débito'],
-            type: 'selection'
-          });
-        } else if (!hasCreditMatch && !hasDebitMatch) {
-          // Sem match, perguntar forma de pagamento
+        if (hintCardType) {
+          // Hint tinha tipo explícito mas não resolveu = sem cartões do tipo
+          console.log('[whatsapp-input] Card type explicit in hint but not resolved - asking for payment method');
           questions.push({ 
             field: 'payment_method', 
             question: 'Qual a forma de pagamento?',
             options: ['PIX', 'cartão de crédito', 'cartão de débito', 'dinheiro'],
             type: 'selection'
           });
+        } else {
+          // Verificar se existem cartões de ambos tipos que correspondem ao hint limpo
+          const cleanedHint = cleanCardHint(mergedState.card_hint);
+          const creditCards = userCards.filter((c: CardWithType) => c.card_type === 'credit');
+          const debitCards = userCards.filter((c: CardWithType) => c.card_type === 'debit');
+          
+          // Função de busca usando hint limpo
+          const countMatchesInList = (cardList: typeof userCards): number => {
+            const normalizedHint = normalizeText(cleanedHint);
+            const words = cleanedHint.split(/\s+/).filter((w: string) => w.length > 2).map((w: string) => normalizeText(w));
+            
+            return cardList.filter((card: CardWithType) => {
+              const cardName = normalizeText(card.name);
+              // Match por substring ou palavras
+              return cardName.includes(normalizedHint) || 
+                     normalizedHint.includes(cardName) ||
+                     (words.length > 0 && words.some((word: string) => cardName.includes(word)));
+            }).length;
+          };
+          
+          const creditMatchCount = countMatchesInList(creditCards);
+          const debitMatchCount = countMatchesInList(debitCards);
+          
+          console.log('[whatsapp-input] Ambiguity check - Credit matches:', creditMatchCount, 'Debit matches:', debitMatchCount);
+          
+          if (creditMatchCount > 0 && debitMatchCount > 0) {
+            console.log('[whatsapp-input] Card type ambiguity detected - need to ask user');
+            questions.push({ 
+              field: 'payment_method', 
+              question: `"${mergedState.card_hint}" - é cartão de crédito ou débito?`,
+              options: ['cartão de crédito', 'cartão de débito'],
+              type: 'selection'
+            });
+          } else if (creditMatchCount === 0 && debitMatchCount === 0) {
+            // Sem match, perguntar forma de pagamento
+            questions.push({ 
+              field: 'payment_method', 
+              question: 'Qual a forma de pagamento?',
+              options: ['PIX', 'cartão de crédito', 'cartão de débito', 'dinheiro'],
+              type: 'selection'
+            });
+          }
+          // Se só tem match em um tipo, já foi resolvido acima - não precisa perguntar
         }
-      } else if (!mergedState.payment_method) {
+      } else if (!mergedState.payment_method && !mergedState.resolved_card_id) {
         questions.push({ 
           field: 'payment_method', 
           question: 'Qual a forma de pagamento?',
