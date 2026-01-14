@@ -11,7 +11,8 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePromoCode } from "@/hooks/usePromoCode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, CreditCard, Lock, DollarSign, Eye, EyeOff } from "lucide-react";
+import { User, CreditCard, Lock, DollarSign, Eye, EyeOff, Pencil } from "lucide-react";
+import { ChangeWhatsAppNumberModal } from "./ChangeWhatsAppNumberModal";
 
 interface UserProfileFormProps {
   onBack?: () => void;
@@ -44,6 +45,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showChangePhoneModal, setShowChangePhoneModal] = useState(false);
   const [billing, setBilling] = useState<{
     planAmount?: number;
     planInterval?: string;
@@ -402,13 +404,25 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
 
               <div>
                 <Label htmlFor="phone_number">{t('userProfile.phone')}</Label>
-                <Input
-                  id="phone_number"
-                  type="tel"
-                  value={profile.phone_number}
-                  onChange={(e) => setProfile(prev => ({ ...prev, phone_number: e.target.value }))}
-                  placeholder={t('userProfile.phonePlaceholder')}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="phone_number"
+                    type="tel"
+                    value={profile.phone_number}
+                    readOnly
+                    className="bg-muted flex-1"
+                    placeholder={t('userProfile.phonePlaceholder')}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => setShowChangePhoneModal(true)}
+                    title={t('userProfile.changeWhatsApp')}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {t('userProfile.phoneHelp')}
                 </p>
@@ -744,6 +758,17 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Change WhatsApp Number Modal */}
+      <ChangeWhatsAppNumberModal
+        isOpen={showChangePhoneModal}
+        onClose={() => setShowChangePhoneModal(false)}
+        onSuccess={() => {
+          fetchProfile();
+        }}
+        userId={user?.id || ''}
+        currentPhone={profile.phone_number}
+      />
     </div>
   );
 };
