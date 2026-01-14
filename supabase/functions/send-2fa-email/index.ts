@@ -122,6 +122,14 @@ const handler = async (req: Request): Promise<Response> => {
     const code = generateCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
+    // Delete any existing unused codes for this user/method
+    await supabase
+      .from('user_2fa_codes')
+      .delete()
+      .eq('user_id', userId)
+      .eq('method', 'email')
+      .is('used_at', null);
+
     // Store code in database
     const { error: dbError } = await supabase
       .from('user_2fa_codes')
@@ -130,7 +138,6 @@ const handler = async (req: Request): Promise<Response> => {
         code_hash: code, // In production, this should be hashed
         method: 'email',
         expires_at: expiresAt,
-        is_used: false,
       });
 
     if (dbError) {
