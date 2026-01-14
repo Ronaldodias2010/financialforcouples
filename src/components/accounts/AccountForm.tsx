@@ -32,11 +32,40 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
   });
   const [isNegative, setIsNegative] = useState(false);
 
+  // Get decimal separator based on currency (US uses dot, others use comma)
+  const getDecimalSeparator = (currency: string) => currency === 'USD' ? '.' : ',';
+  
+  const getPlaceholder = (currency: string) => currency === 'USD' ? '0.00' : '0,00';
+
   const formatCurrency = (value: number, currency: string) => {
-    return new Intl.NumberFormat('pt-BR', {
+    const locale = currency === 'USD' ? 'en-US' : 'pt-BR';
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
     }).format(value);
+  };
+
+  // Parse monetary value handling both separators
+  const parseMonetary = (val: string) => {
+    // Replace comma with dot for parsing
+    return parseFloat(val.replace(',', '.')) || 0;
+  };
+
+  // Format input value according to currency locale
+  const formatInputValue = (value: string, currency: string) => {
+    // Only allow numbers and the appropriate decimal separator
+    const decimalSep = getDecimalSeparator(currency);
+    const otherSep = decimalSep === '.' ? ',' : '.';
+    // Replace wrong separator with correct one, remove invalid chars
+    let formatted = value.replace(/[^0-9.,]/g, '');
+    // Convert to correct separator
+    formatted = formatted.replace(otherSep, decimalSep);
+    // Ensure only one decimal separator
+    const parts = formatted.split(decimalSep);
+    if (parts.length > 2) {
+      formatted = parts[0] + decimalSep + parts.slice(1).join('');
+    }
+    return formatted;
   };
 
   const tr = (key: string, def: string) => {
@@ -50,8 +79,6 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
 
     setLoading(true);
     try {
-      // Parse values handling both comma and dot as decimal separators
-      const parseMonetary = (val: string) => parseFloat(val.replace(',', '.')) || 0;
       const limit = parseMonetary(accountData.overdraft_limit);
       const raw = parseMonetary(accountData.balance);
       const signedBalance = raw * (isNegative ? -1 : 1);
@@ -154,10 +181,10 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
               inputMode="decimal"
               value={accountData.overdraft_limit}
               onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9.,]/g, '');
+                const value = formatInputValue(e.target.value, accountData.currency);
                 setAccountData(prev => ({ ...prev, overdraft_limit: value }));
               }}
-              placeholder="0,00"
+              placeholder={getPlaceholder(accountData.currency)}
             />
           </div>
 
@@ -169,11 +196,10 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
               inputMode="decimal"
               value={accountData.balance}
               onChange={(e) => {
-                // Allow numbers, comma and dot for decimal input
-                const value = e.target.value.replace(/[^0-9.,]/g, '');
+                const value = formatInputValue(e.target.value, accountData.currency);
                 setAccountData(prev => ({ ...prev, balance: value }));
               }}
-              placeholder="0,00"
+              placeholder={getPlaceholder(accountData.currency)}
               required
               className={isNegative ? "text-destructive" : undefined}
             />
@@ -210,7 +236,6 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
         <div>
           <span className="font-medium">{t('accounts.limitUsed')}: </span>
           {(() => {
-            const parseMonetary = (val: string) => parseFloat(val.replace(',', '.')) || 0;
             const limit = parseMonetary(accountData.overdraft_limit);
             const raw = parseMonetary(accountData.balance);
             const bal = raw * (isNegative ? -1 : 1);
@@ -221,7 +246,6 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
         <div className="mt-1 text-muted-foreground">
           <span className="font-medium">{t('accounts.remainingLimit')}: </span>
           {(() => {
-            const parseMonetary = (val: string) => parseFloat(val.replace(',', '.')) || 0;
             const limit = parseMonetary(accountData.overdraft_limit);
             const raw = parseMonetary(accountData.balance);
             const bal = raw * (isNegative ? -1 : 1);
@@ -233,7 +257,6 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
         <div className="mt-1">
           <span className="font-medium">{tr('accounts.limit', 'Limite')}: </span>
           {(() => {
-            const parseMonetary = (val: string) => parseFloat(val.replace(',', '.')) || 0;
             const limit = parseMonetary(accountData.overdraft_limit);
             return formatCurrency(limit, accountData.currency);
           })()}
