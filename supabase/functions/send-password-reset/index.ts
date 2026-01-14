@@ -198,10 +198,16 @@ const handler = async (req: Request): Promise<Response> => {
     const tempPassword = generateTempPassword();
     console.log(`Generated temporary password for user ${targetUser.id}`);
 
-    // 3. Update user's password using admin API
+    // 3. Update user's password using admin API AND set requires_password_change flag
     const { error: updateError } = await supabase.auth.admin.updateUserById(
       targetUser.id,
-      { password: tempPassword }
+      { 
+        password: tempPassword,
+        user_metadata: {
+          ...targetUser.user_metadata,
+          requires_password_change: true
+        }
+      }
     );
 
     if (updateError) {

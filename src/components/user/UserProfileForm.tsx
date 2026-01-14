@@ -11,7 +11,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePromoCode } from "@/hooks/usePromoCode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, CreditCard, Lock, DollarSign } from "lucide-react";
+import { User, CreditCard, Lock, DollarSign, Eye, EyeOff } from "lucide-react";
 
 interface UserProfileFormProps {
   onBack?: () => void;
@@ -41,6 +41,9 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
     new_password: "",
     confirm_password: ""
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [billing, setBilling] = useState<{
     planAmount?: number;
     planInterval?: string;
@@ -143,20 +146,38 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
   };
 
   const updatePassword = async () => {
+    if (!passwordData.current_password) {
+      toast.error(t('userProfile.currentPasswordRequired'));
+      return;
+    }
+
     if (!passwordData.new_password || passwordData.new_password !== passwordData.confirm_password) {
-      toast.error("As senhas não coincidem");
+      toast.error(t('userProfile.passwordsDoNotMatch'));
       return;
     }
 
     setLoading(true);
     try {
+      // Verify current password by re-authenticating
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: passwordData.current_password
+      });
+
+      if (signInError) {
+        toast.error(t('userProfile.currentPasswordIncorrect'));
+        setLoading(false);
+        return;
+      }
+
+      // Update to new password
       const { error } = await supabase.auth.updateUser({
         password: passwordData.new_password
       });
 
       if (error) throw error;
 
-      toast.success("Senha atualizada com sucesso!");
+      toast.success(t('userProfile.passwordUpdatedSuccess'));
       setPasswordData({
         current_password: "",
         new_password: "",
@@ -164,7 +185,7 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
       });
     } catch (error) {
       console.error("Error updating password:", error);
-      toast.error("Erro ao atualizar senha");
+      toast.error(t('userProfile.passwordUpdateError'));
     } finally {
       setLoading(false);
     }
@@ -642,25 +663,78 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
               </div>
 
               <div>
+                <Label htmlFor="current_password">{t('userProfile.currentPassword')}</Label>
+                <div className="relative">
+                  <Input
+                    id="current_password"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={passwordData.current_password}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
+                    placeholder={t('userProfile.currentPasswordPlaceholder')}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
                 <Label htmlFor="new_password">{t('userProfile.newPassword')}</Label>
-                <Input
-                  id="new_password"
-                  type="password"
-                  value={passwordData.new_password}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
-                  placeholder="Digite a nova senha"
-                />
+                <div className="relative">
+                  <Input
+                    id="new_password"
+                    type={showNewPassword ? "text" : "password"}
+                    value={passwordData.new_password}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
+                    placeholder={t('userProfile.newPasswordPlaceholder')}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <Label htmlFor="confirm_password">{t('userProfile.confirmPassword')}</Label>
-                <Input
-                  id="confirm_password"
-                  type="password"
-                  value={passwordData.confirm_password}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
-                  placeholder="Confirme a nova senha"
-                />
+                <div className="relative">
+                  <Input
+                    id="confirm_password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={passwordData.confirm_password}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
+                    placeholder={t('userProfile.confirmPasswordPlaceholder')}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <Button onClick={updatePassword} disabled={loading}>
