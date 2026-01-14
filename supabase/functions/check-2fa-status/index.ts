@@ -29,14 +29,14 @@ serve(async (req) => {
 
     const { data, error } = await supabaseAdmin
       .from("user_2fa_settings")
-      .select("is_enabled, method")
+      .select("is_enabled, method, phone_number")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (error) {
       console.error("Error fetching 2FA settings:", error);
       return new Response(
-        JSON.stringify({ is_enabled: false, method: "none" }),
+        JSON.stringify({ is_enabled: false, method: "none", phone_number: null }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -45,6 +45,7 @@ serve(async (req) => {
       JSON.stringify({
         is_enabled: data?.is_enabled ?? false,
         method: data?.method ?? "none",
+        phone_number: data?.phone_number ?? null,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

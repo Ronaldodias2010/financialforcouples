@@ -48,9 +48,17 @@ export default function AuthCallback() {
 
           if (tfaResponse?.is_enabled && tfaResponse?.method && tfaResponse.method !== 'none') {
             // Enviar código se for SMS ou Email
-            if (tfaResponse.method === 'sms' || tfaResponse.method === 'email') {
+            if (tfaResponse.method === 'sms') {
+              // Para SMS, usar a função de verificação de telefone
+              const phoneNumber = tfaResponse.phone_number;
+              if (phoneNumber) {
+                await supabase.functions.invoke('send-phone-verification', {
+                  body: { phoneNumber }
+                });
+              }
+            } else if (tfaResponse.method === 'email') {
               await supabase.functions.invoke('send-2fa-email', {
-                body: { userId: session.user.id, method: tfaResponse.method }
+                body: { userId: session.user.id, email: session.user.email }
               });
             }
             
