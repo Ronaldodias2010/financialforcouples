@@ -14,6 +14,7 @@ import { translateAuthError } from '@/utils/authErrors';
 import { trackSignUp, trackLogin } from '@/utils/analytics';
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 import { TwoFactorMethod } from '@/hooks/use2FA';
+import { use2FAStatus } from '@/hooks/use2FAStatus';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +34,7 @@ export default function Auth() {
   const [twoFactorMethod, setTwoFactorMethod] = useState<TwoFactorMethod>('none');
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
+  const { has2FAEnabled, isLoaded: is2FAStatusLoaded } = use2FAStatus();
 
   // Listen for auth state changes (captures OAuth completion)
   useEffect(() => {
@@ -482,13 +484,15 @@ export default function Auth() {
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t('auth.signIn')}
                 </Button>
-                {/* 2FA Recommendation Alert */}
-                <Alert className="border-blue-500/20 bg-blue-500/5">
-                  <Shield className="h-4 w-4 text-blue-500" />
-                  <AlertDescription className="text-sm text-blue-600 dark:text-blue-400">
-                    {t('auth.2faRecommendation')}
-                  </AlertDescription>
-                </Alert>
+                {/* 2FA Recommendation Alert - only show if user hasn't enabled 2FA before */}
+                {is2FAStatusLoaded && !has2FAEnabled && (
+                  <Alert className="border-blue-500/20 bg-blue-500/5">
+                    <Shield className="h-4 w-4 text-blue-500" />
+                    <AlertDescription className="text-sm text-blue-600 dark:text-blue-400">
+                      {t('auth.2faRecommendation')}
+                    </AlertDescription>
+                  </Alert>
+                )}
                 
                 <Button 
                   type="button" 

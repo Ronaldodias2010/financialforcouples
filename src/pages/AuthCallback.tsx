@@ -6,6 +6,8 @@ import { TwoFactorOptOut } from '@/components/auth/TwoFactorOptOut';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 import { TwoFactorMethod } from '@/hooks/use2FA';
 import { use2FAPrompt } from '@/hooks/use2FAPrompt';
+import { use2FASession } from '@/hooks/use2FASession';
+import { use2FAStatus } from '@/hooks/use2FAStatus';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -18,13 +20,16 @@ export default function AuthCallback() {
   const [twoFactorMethod, setTwoFactorMethod] = useState<TwoFactorMethod>('none');
   const [selectedMethod, setSelectedMethod] = useState<TwoFactorMethod>('totp');
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
   const { shouldShowPrompt, dismissPrompt, isLoaded } = use2FAPrompt();
+  const { isSessionValid, setVerifiedSession, isLoaded: isSessionLoaded } = use2FASession();
+  const { markAs2FAEnabled } = use2FAStatus();
 
   useEffect(() => {
     // Wait for localStorage to be loaded before making decisions
-    if (!isLoaded) return;
+    if (!isLoaded || !isSessionLoaded) return;
 
     const handleCallback = async () => {
       try {
@@ -36,6 +41,7 @@ export default function AuthCallback() {
           return;
         }
 
+        setCurrentUserId(session.user.id);
         console.log('AuthCallback: Session found, checking 2FA status...');
 
         // Verificar se usuário tem 2FA habilitado
@@ -47,6 +53,13 @@ export default function AuthCallback() {
           console.log('AuthCallback: 2FA status response:', tfaResponse);
 
           if (tfaResponse?.is_enabled && tfaResponse?.method && tfaResponse.method !== 'none') {
+            // Check if user has a valid 2FA session (verified within 1 day)
+            if (isSessionValid(session.user.id)) {
+              console.log('AuthCallback: Valid 2FA session found, skipping verification');
+              window.location.href = '/app';
+              return;
+            }
+
             // Enviar código se for SMS ou Email
             if (tfaResponse.method === 'sms') {
               // Para SMS, usar a função de verificação de telefone
@@ -94,9 +107,13 @@ export default function AuthCallback() {
     };
 
     handleCallback();
-  }, [shouldShowPrompt, isLoaded]);
+  }, [shouldShowPrompt, isLoaded, isSessionLoaded, isSessionValid]);
 
   const handle2FAVerified = () => {
+    // Save session so user doesn't need to verify again for 1 day
+    if (currentUserId) {
+      setVerifiedSession(currentUserId);
+    }
     toast({
       title: t('auth.loginSuccessTitle'),
       description: t('auth.loginSuccessDesc'),
@@ -132,6 +149,8 @@ export default function AuthCallback() {
   };
 
   const handleSetupComplete = () => {
+    // Mark user as having 2FA enabled (to hide recommendation on login page)
+    markAs2FAEnabled();
     setShowSetup(false);
     toast({
       title: t('2fa.enabled.title'),

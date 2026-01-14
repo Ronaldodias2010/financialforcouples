@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { use2FA, TwoFactorMethod } from '@/hooks/use2FA';
 import { use2FAPrompt } from '@/hooks/use2FAPrompt';
+import { use2FAStatus } from '@/hooks/use2FAStatus';
 import { useLanguage } from '@/hooks/useLanguage';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 import { TwoFactorWizard } from '@/components/auth/TwoFactorWizard';
@@ -38,6 +39,7 @@ export default function SecuritySettings() {
     fetchSettings 
   } = use2FA();
   const { resetPrompt } = use2FAPrompt();
+  const { markAs2FAEnabled, markAs2FADisabled } = use2FAStatus();
 
   const [showSetup, setShowSetup] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
@@ -55,6 +57,8 @@ export default function SecuritySettings() {
     try {
       const success = await disable2FA();
       if (success) {
+        // Mark 2FA as disabled (to show recommendation on login page again)
+        markAs2FADisabled();
         toast({
           title: t('2fa.disabled.title'),
           description: t('2fa.disabled.description'),
@@ -72,6 +76,8 @@ export default function SecuritySettings() {
   };
 
   const handleSetupComplete = () => {
+    // Mark 2FA as enabled (to hide recommendation on login page)
+    markAs2FAEnabled();
     setShowSetup(false);
     fetchSettings();
   };
