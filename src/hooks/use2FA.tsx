@@ -198,7 +198,25 @@ export function use2FA(): Use2FAReturn {
           return false;
         }
       } else if (method === 'sms') {
-        const phoneNumber = settings?.phone_number;
+        // Try to get phone from 2FA settings first, then from profile
+        let phoneNumber = settings?.phone_number;
+        
+        if (!phoneNumber) {
+          // Fetch from profile as fallback
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('phone_number')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profile?.phone_number) {
+            phoneNumber = profile.phone_number.replace(/\D/g, '');
+            if (!phoneNumber.startsWith('+')) {
+              phoneNumber = `+${phoneNumber}`;
+            }
+          }
+        }
+        
         if (!phoneNumber) {
           toast({
             variant: 'destructive',
@@ -230,18 +248,24 @@ export function use2FA(): Use2FAReturn {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      // Save phone number first
+      // Format phone number with + prefix if not present
+      let formattedPhone = phoneNumber.replace(/\D/g, '');
+      if (!formattedPhone.startsWith('+')) {
+        formattedPhone = `+${formattedPhone}`;
+      }
+
+      // Save phone number to 2FA settings
       await supabase
         .from('user_2fa_settings')
         .upsert({
           user_id: user.id,
-          phone_number: phoneNumber,
+          phone_number: formattedPhone,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
 
       // Send verification code
       const { error } = await supabase.functions.invoke('send-phone-verification', {
-        body: { phoneNumber }
+        body: { phoneNumber: formattedPhone }
       });
 
       if (error) {
@@ -254,6 +278,33 @@ export function use2FA(): Use2FAReturn {
     } catch (error) {
       console.error('Error in enableSMS:', error);
       return false;
+    }
+  };
+
+  // Get phone number from profile if not set in 2FA settings
+  const getPhoneFromProfile = async (): Promise<string | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('phone_number')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile?.phone_number) {
+        // Format with + prefix
+        let phone = profile.phone_number.replace(/\D/g, '');
+        if (!phone.startsWith('+')) {
+          phone = `+${phone}`;
+        }
+        return phone;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting phone from profile:', error);
+      return null;
     }
   };
 
