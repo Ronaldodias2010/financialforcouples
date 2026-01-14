@@ -1359,6 +1359,7 @@ const translations = {
     'userProfile.passwordUpdateError': 'Erro ao atualizar senha',
     'userProfile.inviteEmailHelp': 'Email onde o convite será enviado para o segundo usuário se cadastrar',
     'userProfile.dismissReminders': 'Não mostrar mais lembretes',
+    'userProfile.changeWhatsApp': 'Alterar Número WhatsApp',
     
     // Invite Card
     'inviteCard': 'Convidar Parceiro(a)',
@@ -3665,6 +3666,7 @@ const translations = {
     'userProfile.passwordUpdateError': 'Error updating password',
     'userProfile.inviteEmailHelp': 'Email where the invite will be sent for the second user to register',
     'userProfile.dismissReminders': 'Don\'t show reminders anymore',
+    'userProfile.changeWhatsApp': 'Change WhatsApp Number',
     
     // Invite Card
     'inviteCard': 'Invite Partner',
@@ -6081,6 +6083,7 @@ const translations = {
     'userProfile.passwordUpdateError': 'Error al actualizar contraseña',
     'userProfile.inviteEmailHelp': 'Email donde se enviará la invitación para que el segundo usuario se registre',
     'userProfile.dismissReminders': 'No mostrar más recordatorios',
+    'userProfile.changeWhatsApp': 'Cambiar Número WhatsApp',
     
     // Invite Card
     'inviteCard': 'Invitar Pareja',
