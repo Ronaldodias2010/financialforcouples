@@ -262,29 +262,22 @@ export function use2FA(): Use2FAReturn {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      // Verify code in database
       const phoneNumber = settings?.phone_number;
       if (!phoneNumber) return false;
 
-      const { data, error } = await supabase
-        .from('phone_verifications')
-        .select('*')
-        .eq('phone_number', phoneNumber.replace(/\D/g, ''))
-        .eq('verification_code', code)
-        .gt('expires_at', new Date().toISOString())
-        .eq('verified', false)
-        .maybeSingle();
+      // Use the edge function which uses Twilio Verify API
+      const { data, error } = await supabase.functions.invoke('verify-phone-code', {
+        body: { 
+          phoneNumber,
+          code,
+          useVerifyApi: true // Use Twilio Verify API
+        }
+      });
 
-      if (error || !data) {
-        console.error('SMS verification failed:', error);
+      if (error || !data?.verified) {
+        console.error('SMS verification failed:', error || data?.error);
         return false;
       }
-
-      // Mark as verified
-      await supabase
-        .from('phone_verifications')
-        .update({ verified: true, verified_at: new Date().toISOString() })
-        .eq('id', data.id);
 
       // Enable 2FA via SMS
       await supabase

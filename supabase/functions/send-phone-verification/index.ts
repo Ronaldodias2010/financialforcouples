@@ -38,7 +38,7 @@ serve(async (req) => {
 
     // Check if using Twilio Verify API (recommended for 2FA)
     if (accountSid && authToken && verifyServiceSid) {
-      console.log('[SMS 2FA] Using Twilio Verify API');
+      console.log('[SMS 2FA] Using Twilio Verify API with Service SID:', verifyServiceSid);
       
       // Use Twilio Verify API - the recommended way for 2FA
       const verifyUrl = `https://verify.twilio.com/v2/Services/${verifyServiceSid}/Verifications`;
@@ -71,7 +71,8 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           message: 'Verification code sent successfully',
-          status: responseData.status
+          status: responseData.status,
+          useVerifyApi: true
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -106,7 +107,8 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           message: 'Verification code sent (dev mode)',
-          code: verificationCode // Only for development!
+          code: verificationCode, // Only for development!
+          useVerifyApi: false
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -171,36 +173,16 @@ serve(async (req) => {
     console.log('[SMS 2FA] SMS sent successfully via Messages API');
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Verification code sent successfully' }),
+      JSON.stringify({ 
+        success: true, 
+        message: 'Verification code sent successfully',
+        useVerifyApi: false
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('[SMS 2FA] Error:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Failed to send verification code' 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
-    );
-  }
-});
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Twilio error:', errorData);
-      throw new Error('Failed to send SMS');
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, message: 'Verification code sent successfully' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error) {
-    console.error('Error in send-phone-verification:', error);
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Failed to send verification code' 
