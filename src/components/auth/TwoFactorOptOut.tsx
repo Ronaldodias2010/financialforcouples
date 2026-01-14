@@ -41,7 +41,7 @@ export function TwoFactorOptOut({ open, onOpenChange, onConfirm, onGoBack }: Two
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-amber-500/10 rounded-full">
@@ -120,7 +120,7 @@ export function TwoFactorOptOut({ open, onOpenChange, onConfirm, onGoBack }: Two
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+        <DialogFooter className="flex-col sm:flex-row gap-2 sticky bottom-0 bg-background pt-4 -mb-6 pb-[env(safe-area-inset-bottom)]">
           <Button variant="outline" onClick={handleGoBack} className="w-full sm:w-auto">
             {t('2fa.optout.goBack')}
           </Button>
