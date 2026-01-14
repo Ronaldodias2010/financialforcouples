@@ -708,24 +708,84 @@ serve(async (req) => {
         }
       }
 
-      // Tentar resolver account_hint → account_id (usar mergedState)
+      // =====================================================
+      // SMART ACCOUNT RESOLUTION - Resolver automaticamente quando possível
+      // Usa lógica similar aos cartões: limpa hint e busca matches
+      // =====================================================
       if (mergedState.account_hint && !mergedState.resolved_account_id) {
-        const { data: account } = await supabase
+        // Limpar hint de conta (remover palavras genéricas)
+        const cleanedAccountHint = mergedState.account_hint
+          .toLowerCase()
+          .replace(/\b(conta|account|banco|bank|corrente|poupanca|poupança)\b/gi, '')
+          .trim()
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        console.log('[whatsapp-input] SMART ACCOUNT RESOLUTION - Cleaned hint:', cleanedAccountHint, '(original:', mergedState.account_hint, ')');
+        
+        // Buscar TODAS as contas que correspondem ao hint
+        const { data: allAccounts } = await supabase
           .from('accounts')
           .select('id, name')
           .eq('user_id', existingInput.user_id)
           .is('deleted_at', null)
-          .eq('is_active', true)
-          .ilike('name', `%${mergedState.account_hint.trim()}%`)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .eq('is_active', true);
+        
+        if (allAccounts && allAccounts.length > 0) {
+          // Função para encontrar todas as contas que correspondem
+          const normalizedHint = normalizeText(cleanedAccountHint);
+          const words = cleanedAccountHint.split(/\s+/).filter((w: string) => w.length > 2).map((w: string) => normalizeText(w));
+          
+          const matchingAccounts = allAccounts.filter((acc: { id: string; name: string }) => {
+            const accName = normalizeText(acc.name);
+            
+            // Match exato
+            if (accName === normalizedHint) return true;
+            
+            // Hint contido no nome da conta
+            if (accName.includes(normalizedHint)) return true;
+            
+            // Nome da conta contido no hint
+            if (normalizedHint.includes(accName)) return true;
+            
+            // Match por palavras-chave
+            if (words.length > 0 && words.some((word: string) => accName.includes(word))) return true;
+            
+            return false;
+          });
+          
+          console.log('[whatsapp-input] Account matches found:', matchingAccounts.length, matchingAccounts.map((a: { name: string }) => a.name));
+          
+          if (matchingAccounts.length === 1) {
+            // ÚNICO MATCH → RESOLVER AUTOMATICAMENTE
+            mergedState.resolved_account_id = matchingAccounts[0].id;
+            console.log('[whatsapp-input] SMART ACCOUNT RESOLVE: Only 1 account matches:', matchingAccounts[0].name);
+          } else if (matchingAccounts.length > 1) {
+            // MÚLTIPLOS MATCHES → usar o primeiro (nomes similares)
+            mergedState.resolved_account_id = matchingAccounts[0].id;
+            console.log('[whatsapp-input] Multiple account matches, using first:', matchingAccounts[0].name);
+          } else {
+            // Nenhum match com hint limpo - tentar busca original
+            const { data: account } = await supabase
+              .from('accounts')
+              .select('id, name')
+              .eq('user_id', existingInput.user_id)
+              .is('deleted_at', null)
+              .eq('is_active', true)
+              .ilike('name', `%${mergedState.account_hint.trim()}%`)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single();
 
-        if (account) {
-          mergedState.resolved_account_id = account.id;
-          console.log('[whatsapp-input] Account resolved:', mergedState.account_hint, '->', account.name);
+            if (account) {
+              mergedState.resolved_account_id = account.id;
+              console.log('[whatsapp-input] Account resolved (fallback):', mergedState.account_hint, '->', account.name);
+            } else {
+              console.log('[whatsapp-input] Account not found for hint:', mergedState.account_hint);
+            }
+          }
         } else {
-          console.log('[whatsapp-input] Account not found for hint:', mergedState.account_hint);
+          console.log('[whatsapp-input] No accounts found for user');
         }
       }
 
