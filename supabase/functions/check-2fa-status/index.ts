@@ -27,32 +27,61 @@ serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const { data, error } = await supabaseAdmin
+    // Get 2FA settings
+    const { data: settings, error: settingsError } = await supabaseAdmin
       .from("user_2fa_settings")
       .select("is_enabled, method, phone_number")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (error) {
-      console.error("Error fetching 2FA settings:", error);
+    if (settingsError) {
+      console.error("Error fetching 2FA settings:", settingsError);
       return new Response(
         JSON.stringify({ is_enabled: false, method: "none", phone_number: null }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // If SMS method is enabled but no phone in 2FA settings, get from profile
+    let phoneNumber = settings?.phone_number ?? null;
+    
+    if (settings?.method === 'sms' && !phoneNumber) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("phone_number")
+        .eq("user_id", userId)
+        .single();
+      
+      if (profile?.phone_number) {
+        // Format phone number with + prefix
+        let phone = profile.phone_number.replace(/\D/g, '');
+        if (!phone.startsWith('+')) {
+          phone = `+${phone}`;
+        }
+        phoneNumber = phone;
+        
+        // Update 2FA settings with the correct phone from profile
+        await supabaseAdmin
+          .from("user_2fa_settings")
+          .update({ phone_number: phoneNumber, updated_at: new Date().toISOString() })
+          .eq("user_id", userId);
+        
+        console.log(`[check-2fa-status] Updated phone for user ${userId} from profile: ${phoneNumber}`);
+      }
+    }
+
     return new Response(
       JSON.stringify({
-        is_enabled: data?.is_enabled ?? false,
-        method: data?.method ?? "none",
-        phone_number: data?.phone_number ?? null,
+        is_enabled: settings?.is_enabled ?? false,
+        method: settings?.method ?? "none",
+        phone_number: phoneNumber,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error:", error);
     return new Response(
-      JSON.stringify({ is_enabled: false, method: "none" }),
+      JSON.stringify({ is_enabled: false, method: "none", phone_number: null }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
