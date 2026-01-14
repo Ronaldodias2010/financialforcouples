@@ -18,7 +18,66 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // processed          → transação já criada
 // duplicate          → mensagem duplicada sem ação necessária
 // error              → erro inesperado
+// expired            → conversa abandonada por timeout (>15 min)
+// cancelled          → conversa cancelada pelo usuário
+// superseded         → conversa substituída por nova transação
 // ============================================================
+
+// ============================================================
+// TIMEOUT E RESET DE CONVERSA
+// ============================================================
+const CONVERSATION_TIMEOUT_MINUTES = 15;
+
+// Comandos que o usuário pode usar para cancelar/reiniciar conversa
+const RESET_COMMANDS = ['cancelar', 'reiniciar', 'nova', 'começar de novo', 'limpar', 'cancel', 'reset', 'novo'];
+
+/**
+ * Verifica se a mensagem contém um comando de reset
+ */
+function isResetCommand(message: string): boolean {
+  const msg = message.toLowerCase().trim();
+  return RESET_COMMANDS.some(cmd => msg.includes(cmd));
+}
+
+/**
+ * Detecta se a mensagem é uma nova transação (não continuação da conversa anterior)
+ * Indicadores:
+ * - Começa com saudação + padrão de transação
+ * - Menciona valor E cartão/conta diferente do existente
+ */
+function isNewTransaction(newMessage: string, existingData: any): boolean {
+  const msg = newMessage.toLowerCase().trim();
+  
+  // Saudações indicam início de nova conversa
+  const startsWithGreeting = /^(ol[aá]|oi|hey|bom dia|boa tarde|boa noite|couples|ola couples|olá couples)/i.test(msg);
+  
+  // Padrões de nova transação (gastei/paguei/comprei + valor)
+  const hasTransactionPattern = /(gastei|paguei|comprei|recebi|transferi|depositei|saquei).*(r\$|\d+[,\.]\d{2}|\d+\s*reais)/i.test(msg);
+  
+  // Se começa com saudação E tem padrão de transação → nova transação
+  if (startsWithGreeting && hasTransactionPattern) {
+    console.log('[whatsapp-input] Detected new transaction: greeting + transaction pattern');
+    return true;
+  }
+  
+  // Se tem padrão de nova transação completa (verbo + valor)
+  if (hasTransactionPattern && existingData) {
+    const existingCard = existingData.card_hint?.toLowerCase() || '';
+    const existingAccount = existingData.account_hint?.toLowerCase() || '';
+    
+    // Lista de cartões/contas comuns para detecção
+    const cardPatterns = /(nubank|inter|c6|itau|bradesco|santander|mercadopago|picpay|bb|caixa|sicoob|sicredi|original|next|neon|pan|btg|xp|rico|clear|modal|safra|banrisul|ame|pagbank|pagseguro)/i;
+    const mentionedCard = msg.match(cardPatterns);
+    
+    // Se menciona um cartão diferente do existente → nova transação
+    if (mentionedCard && existingCard && !msg.includes(existingCard)) {
+      console.log('[whatsapp-input] Detected new transaction: different card mentioned', { mentioned: mentionedCard[0], existing: existingCard });
+      return true;
+    }
+  }
+  
+  return false;
+}
 
 // ============================================================
 // FUNÇÃO DE NORMALIZAÇÃO DE TEXTO (REMOVE ACENTOS E ESPECIAIS)
