@@ -262,17 +262,23 @@ const getOwnerNameForCard = (card: CardData) => {
                       </p>
                     )}
                     {card.card_type === "credit" && card.credit_limit && (
-                      <p className={cn(
-                        "text-sm",
-                        (card.credit_limit - (card.current_balance ?? 0)) < 0 ? "text-destructive font-semibold" : ""
-                      )}>
-                        Limite Disponível: {formatCurrency(getConvertedValue(card.credit_limit - (card.current_balance ?? 0), card.currency), getDisplayCurrency(card.currency))}
-                        {card.currency !== getDisplayCurrency(card.currency) && (
-                          <span className="text-xs text-muted-foreground ml-1">
-                            (orig: {formatCurrency(card.credit_limit - (card.current_balance ?? 0), card.currency)})
-                          </span>
-                        )}
-                      </p>
+                      (() => {
+                        // Limite disponível = initial_balance (informado pelo usuário) - current_balance (gastos acumulados)
+                        const availableLimit = (card.initial_balance ?? card.credit_limit) - (card.current_balance ?? 0);
+                        return (
+                          <p className={cn(
+                            "text-sm",
+                            availableLimit < 0 ? "text-destructive font-semibold" : ""
+                          )}>
+                            Limite Disponível: {formatCurrency(getConvertedValue(availableLimit, card.currency), getDisplayCurrency(card.currency))}
+                            {card.currency !== getDisplayCurrency(card.currency) && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                (orig: {formatCurrency(availableLimit, card.currency)})
+                              </span>
+                            )}
+                          </p>
+                        );
+                      })()
                     )}
                     {card.closing_date && card.card_type === "credit" && (
                       <p className="text-sm text-muted-foreground">
