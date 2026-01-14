@@ -10,7 +10,6 @@ import { SafeTooltipProvider } from "./components/system/SafeTooltipProvider";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ErrorReporter } from "./components/system/ErrorReporter";
-import { WhatsAppVerificationWrapper } from "./components/auth/WhatsAppVerificationWrapper";
 
 import LandingSimple from "./pages/LandingSimple";
 const PrivacyPolicy = lazy(() => import("./components/landing/PrivacyPolicy"));
@@ -112,7 +111,6 @@ const App = () => {
               <SafeTooltipProvider>
                 <SubscriptionProvider>
                   <ErrorReporter />
-                  <WhatsAppVerificationWrapper />
                   <PWAInstallBanner />
                   <PWAFloatingButton />
                   <AppRoutes />
