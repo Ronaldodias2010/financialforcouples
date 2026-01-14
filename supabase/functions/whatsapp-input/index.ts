@@ -269,9 +269,9 @@ serve(async (req) => {
       // Se existe input em waiting_user_input → continuar conversa
       // Caso contrário → criar novo input
       // =====================================================
-      const { data: pendingInput, error: pendingError } = await supabase
+      let { data: pendingInput, error: pendingError } = await supabase
         .from('incoming_financial_inputs')
-        .select('id, status, raw_message, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score')
+        .select('id, status, raw_message, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score, updated_at')
         .eq('user_id', profile.user_id)
         .eq('status', 'waiting_user_input')
         .order('created_at', { ascending: false })
@@ -283,18 +283,68 @@ serve(async (req) => {
         // Não bloquear - continuar com criação de novo input
       }
 
+      // =====================================================
+      // VERIFICAR CONDIÇÕES DE RESET DE CONVERSA
+      // 1. Timeout de 15 minutos
+      // 2. Comando de reset do usuário
+      // 3. Detecção de nova transação
+      // =====================================================
+      if (pendingInput) {
+        const lastUpdated = new Date(pendingInput.updated_at);
+        const minutesElapsed = (Date.now() - lastUpdated.getTime()) / (1000 * 60);
+
+        // Regra 1: Timeout de 15 minutos
+        if (minutesElapsed > CONVERSATION_TIMEOUT_MINUTES) {
+          console.log(`[whatsapp-input] TIMEOUT: Expiring stale conversation (${minutesElapsed.toFixed(1)} min):`, pendingInput.id);
+          await supabase
+            .from('incoming_financial_inputs')
+            .update({ status: 'expired', updated_at: new Date().toISOString() })
+            .eq('id', pendingInput.id);
+          pendingInput = null; // Forçar criação de novo input
+        }
+        // Regra 2: Comando de reset do usuário
+        else if (isResetCommand(raw_message)) {
+          console.log('[whatsapp-input] RESET: User cancelled conversation:', pendingInput.id);
+          await supabase
+            .from('incoming_financial_inputs')
+            .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+            .eq('id', pendingInput.id);
+          pendingInput = null; // Forçar criação de novo input
+        }
+        // Regra 3: Detecção de nova transação
+        else if (isNewTransaction(raw_message, pendingInput)) {
+          console.log('[whatsapp-input] SUPERSEDE: Detected new transaction, replacing old:', pendingInput.id);
+          await supabase
+            .from('incoming_financial_inputs')
+            .update({ status: 'superseded', updated_at: new Date().toISOString() })
+            .eq('id', pendingInput.id);
+          pendingInput = null; // Forçar criação de novo input
+        }
+      }
+
       if (pendingInput) {
         // =====================================================
-        // CONTINUAR CONVERSA EXISTENTE
+        // CONTINUAR CONVERSA EXISTENTE (conversa ainda válida)
         // Reutilizar input pendente, manter status waiting_user_input
         // =====================================================
-        console.log('[whatsapp-input] CONVERSATION-AWARE: Found pending input:', pendingInput.id);
+        console.log('[whatsapp-input] CONVERSATION-AWARE: Continuing pending input:', pendingInput.id);
         console.log('[whatsapp-input] Continuing conversation with new message:', raw_message?.substring(0, 50));
 
         // Atualizar raw_message com a resposta do usuário (concatenar)
-        const updatedRawMessage = pendingInput.raw_message 
-          ? `${pendingInput.raw_message}\n---\nResposta do usuário: ${raw_message}`
-          : raw_message;
+        // Limitar histórico a 5 mensagens para evitar acúmulo excessivo
+        const existingMessages = pendingInput.raw_message?.split('\n---\n') || [];
+        const maxMessages = 5;
+        let updatedRawMessage: string;
+        
+        if (existingMessages.length >= maxMessages) {
+          // Manter apenas as últimas N-1 mensagens + nova
+          const recentMessages = existingMessages.slice(-(maxMessages - 1));
+          updatedRawMessage = `${recentMessages.join('\n---\n')}\n---\nResposta do usuário: ${raw_message}`;
+        } else {
+          updatedRawMessage = pendingInput.raw_message 
+            ? `${pendingInput.raw_message}\n---\nResposta do usuário: ${raw_message}`
+            : raw_message;
+        }
 
         // Atualizar o input existente com a nova mensagem
         // Status permanece waiting_user_input até que todos os dados sejam confirmados
