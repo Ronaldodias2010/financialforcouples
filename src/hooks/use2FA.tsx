@@ -112,9 +112,36 @@ export function use2FA(): Use2FAReturn {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      // Get the challenge
+      // First, get list of enrolled factors to find the correct factorId
+      const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+      
+      if (factorsError) {
+        console.error('Error listing factors:', factorsError);
+        return false;
+      }
+
+      // Find the unverified TOTP factor (just enrolled)
+      let factorId: string | null = null;
+      
+      // Check for unverified factors first (setup flow)
+      if (factorsData?.totp && factorsData.totp.length > 0) {
+        // Find unverified factor first, otherwise use the first verified one
+        const unverifiedFactor = factorsData.totp.find(f => f.status === 'unverified');
+        const verifiedFactor = factorsData.totp.find(f => f.status === 'verified');
+        
+        factorId = unverifiedFactor?.id || verifiedFactor?.id || null;
+      }
+
+      if (!factorId) {
+        console.error('No TOTP factor found');
+        return false;
+      }
+
+      console.log('[2FA] Using factorId:', factorId);
+
+      // Get the challenge using the actual factor ID
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-        factorId: 'totp'
+        factorId: factorId
       });
 
       if (challengeError) {
@@ -122,9 +149,11 @@ export function use2FA(): Use2FAReturn {
         return false;
       }
 
-      // Verify the code
+      console.log('[2FA] Challenge created:', challengeData.id);
+
+      // Verify the code using the correct IDs
       const { error: verifyError } = await supabase.auth.mfa.verify({
-        factorId: challengeData.id,
+        factorId: factorId,
         challengeId: challengeData.id,
         code
       });
@@ -133,6 +162,8 @@ export function use2FA(): Use2FAReturn {
         console.error('Error verifying TOTP:', verifyError);
         return false;
       }
+
+      console.log('[2FA] TOTP verified successfully');
 
       // Update 2FA settings in database
       await supabase
