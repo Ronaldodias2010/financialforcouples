@@ -25,22 +25,107 @@ serve(async (req) => {
       );
     }
 
-    // Generate 6-digit verification code
+    // Clean phone number (remove spaces, dashes, etc.)
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    const formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
+
+    console.log('[SMS 2FA] Sending verification to:', formattedPhone);
+
+    // Get Twilio credentials
+    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const verifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
+
+    // Check if using Twilio Verify API (recommended for 2FA)
+    if (accountSid && authToken && verifyServiceSid) {
+      console.log('[SMS 2FA] Using Twilio Verify API');
+      
+      // Use Twilio Verify API - the recommended way for 2FA
+      const verifyUrl = `https://verify.twilio.com/v2/Services/${verifyServiceSid}/Verifications`;
+      
+      const body = new URLSearchParams({
+        To: formattedPhone,
+        Channel: 'sms',
+        Locale: language === 'pt' ? 'pt' : language === 'es' ? 'es' : 'en'
+      });
+
+      const response = await fetch(verifyUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${btoa(`${accountSid}:${authToken}`)}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString()
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        console.error('[SMS 2FA] Twilio Verify error:', responseData);
+        throw new Error(responseData.message || 'Failed to send verification SMS');
+      }
+
+      console.log('[SMS 2FA] Verification sent successfully, status:', responseData.status);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Verification code sent successfully',
+          status: responseData.status
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Fallback: Use basic Messages API with custom code storage
+    const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+    
+    if (!accountSid || !authToken || !fromNumber) {
+      // Development mode - generate code but don't send
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      console.log('[SMS 2FA] DEV MODE - Code:', verificationCode, 'for:', formattedPhone);
+      
+      // Store in database for dev testing
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 5);
+
+      await supabase.from('phone_verifications').upsert({
+        phone_number: cleanPhone,
+        verification_code: verificationCode,
+        expires_at: expiresAt.toISOString(),
+        verified: false
+      });
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Verification code sent (dev mode)',
+          code: verificationCode // Only for development!
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Use Messages API as fallback
+    console.log('[SMS 2FA] Using Twilio Messages API (fallback)');
+    
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Store verification code in Supabase with expiration (5 minutes)
+    // Store verification code
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Clean phone number (remove spaces, dashes, etc.)
-    const cleanPhone = phoneNumber.replace(/\D/g, '');
-
     const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 minutes expiration
+    expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
-    // Store in a verification table (you'll need to create this)
     const { error: storageError } = await supabase
       .from('phone_verifications')
       .upsert({
@@ -51,36 +136,19 @@ serve(async (req) => {
       });
 
     if (storageError) {
-      console.error('Error storing verification code:', storageError);
+      console.error('[SMS 2FA] Error storing code:', storageError);
       throw new Error('Failed to store verification code');
-    }
-
-    // Send SMS using Twilio (you'll need to add TWILIO_* secrets)
-    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
-
-    if (!accountSid || !authToken || !fromNumber) {
-      // For development, just return success without actually sending SMS
-      console.log('SMS would be sent to:', cleanPhone, 'with code:', verificationCode);
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Verification code sent (dev mode)',
-          code: verificationCode // Only for development
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
     const message = language === 'en' 
       ? `Your verification code is: ${verificationCode}. Valid for 5 minutes.`
+      : language === 'es'
+      ? `Tu código de verificación es: ${verificationCode}. Válido por 5 minutos.`
       : `Seu código de verificação é: ${verificationCode}. Válido por 5 minutos.`;
 
-    // Create Twilio request
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-    const body = new URLSearchParams({
-      To: cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`,
+    const msgBody = new URLSearchParams({
+      To: formattedPhone,
       From: fromNumber,
       Body: message
     });
@@ -91,9 +159,35 @@ serve(async (req) => {
         'Authorization': `Basic ${btoa(`${accountSid}:${authToken}`)}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: body.toString()
+      body: msgBody.toString()
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[SMS 2FA] Twilio Messages error:', errorData);
+      throw new Error('Failed to send SMS');
+    }
+
+    console.log('[SMS 2FA] SMS sent successfully via Messages API');
+
+    return new Response(
+      JSON.stringify({ success: true, message: 'Verification code sent successfully' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('[SMS 2FA] Error:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Failed to send verification code' 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    );
+  }
+});
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Twilio error:', errorData);
