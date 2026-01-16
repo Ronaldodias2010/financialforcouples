@@ -466,6 +466,84 @@ serve(async (req) => {
     console.log('[process-financial-input] Input updated with resolved IDs');
 
     // ========================================
+    // PASSO 4.5: VALIDAR SALDO DA CONTA (se for despesa e usar conta)
+    // ========================================
+    if (resource_type === 'account' && resolved_account_id && input.transaction_type === 'expense') {
+      console.log('[process-financial-input] Validating account balance for expense...');
+      
+      const { data: accountData, error: accountError } = await supabase
+        .from('accounts')
+        .select('balance, name, currency, overdraft_limit')
+        .eq('id', resolved_account_id)
+        .single();
+
+      if (accountError || !accountData) {
+        console.error('[process-financial-input] Could not fetch account for balance check:', accountError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            status: 'error',
+            error: 'Não foi possível verificar o saldo da conta.',
+            error_code: 'ACCOUNT_FETCH_ERROR',
+            hint: 'Tente novamente ou verifique se a conta existe.'
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Calcular saldo disponível (saldo atual + limite de cheque especial)
+      const currentBalance = accountData.balance || 0;
+      const overdraftLimit = accountData.overdraft_limit || 0;
+      const availableBalance = currentBalance + overdraftLimit;
+      const transactionAmount = Math.abs(input.amount);
+
+      console.log('[process-financial-input] Balance check:', { 
+        currentBalance, 
+        overdraftLimit, 
+        availableBalance, 
+        transactionAmount,
+        accountName: accountData.name
+      });
+
+      if (transactionAmount > availableBalance) {
+        console.log('[process-financial-input] INSUFFICIENT_BALANCE - Rejecting transaction');
+        
+        const formattedBalance = new Intl.NumberFormat('pt-BR', { 
+          style: 'currency', 
+          currency: accountData.currency || 'BRL' 
+        }).format(currentBalance);
+        
+        const formattedAvailable = new Intl.NumberFormat('pt-BR', { 
+          style: 'currency', 
+          currency: accountData.currency || 'BRL' 
+        }).format(availableBalance);
+        
+        const formattedAmount = new Intl.NumberFormat('pt-BR', { 
+          style: 'currency', 
+          currency: input.currency || 'BRL' 
+        }).format(transactionAmount);
+
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            status: 'error',
+            error: `Saldo insuficiente na conta "${accountData.name}".`,
+            error_code: 'INSUFFICIENT_BALANCE',
+            hint: `Saldo atual: ${formattedBalance}. Disponível (com limite): ${formattedAvailable}. Valor da transação: ${formattedAmount}.`,
+            details: {
+              account_name: accountData.name,
+              current_balance: currentBalance,
+              available_balance: availableBalance,
+              requested_amount: transactionAmount,
+              currency: accountData.currency || 'BRL'
+            }
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // ========================================
     // PASSO 5: CRIAR TRANSAÇÃO
     // ========================================
     console.log('[process-financial-input] Creating transaction...');
