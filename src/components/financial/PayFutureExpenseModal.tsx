@@ -331,7 +331,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            {t('payFutureExpense.title')}
+            {t('payFutureExpense.title') || 'Pagar Despesa'}
           </DialogTitle>
         </DialogHeader>
 
@@ -339,11 +339,11 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
           {/* Expense Info */}
           <div className="bg-muted/50 p-4 rounded-lg space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">{t('payFutureExpense.description')}:</span>
+              <span className="text-sm text-muted-foreground">{t('payFutureExpense.description') || 'Descrição'}:</span>
               <span className="font-medium">{expense.description}</span>
             </div>
             <div className="flex justify-between items-start">
-              <span className="text-sm text-muted-foreground">{t('payFutureExpense.amount')}:</span>
+              <span className="text-sm text-muted-foreground">{t('payFutureExpense.amount') || 'Valor'}:</span>
               <div className="text-right">
                 <span className="font-bold text-destructive block">
                   {formatCurrency(expense.amount, expense.currency)}
@@ -356,7 +356,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">{t('payFutureExpense.dueDate')}:</span>
+              <span className="text-sm text-muted-foreground">{t('payFutureExpense.dueDate') || 'Vencimento'}:</span>
               <div className="flex items-center gap-2">
                 <span>{formatDate(expense.due_date)}</span>
                 {isOverdue && (
@@ -386,7 +386,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Payment Date */}
             <div className="space-y-2">
-              <Label htmlFor="paymentDate">{t('payFutureExpense.paymentDate')}</Label>
+              <Label htmlFor="paymentDate">{t('payFutureExpense.paymentDate') || 'Data do Pagamento'}</Label>
               <Input
                 id="paymentDate"
                 type="date"
@@ -458,31 +458,31 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
             {/* Payment Method */}
             <div className="space-y-2">
-              <Label htmlFor="paymentMethod">{t('payFutureExpense.paymentMethod')}</Label>
+              <Label htmlFor="paymentMethod">{t('payFutureExpense.paymentMethod') || 'Forma de Pagamento'}</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger className="bg-background z-50">
                   <div className="flex items-center gap-2">
                     {getPaymentMethodIcon()}
-                    <SelectValue placeholder={t('payFutureExpense.selectMethod')} />
+                    <SelectValue placeholder={t('payFutureExpense.selectMethod') || 'Selecione'} />
                   </div>
                 </SelectTrigger>
                 <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="cash">
                     <div className="flex items-center gap-2">
                       <Wallet className="w-4 h-4" />
-                      {t('payFutureExpense.cash')}
+                      {t('payFutureExpense.cash') || 'Dinheiro'}
                     </div>
                   </SelectItem>
                   <SelectItem value="account">
                     <div className="flex items-center gap-2">
                       <Building2 className="w-4 h-4" />
-                      {t('payFutureExpense.bankAccount')}
+                      {t('payFutureExpense.bankAccount') || 'Conta Bancária'}
                     </div>
                   </SelectItem>
                   <SelectItem value="card">
                     <div className="flex items-center gap-2">
                       <CreditCard className="w-4 h-4" />
-                      {t('payFutureExpense.card')}
+                      {t('payFutureExpense.card') || 'Cartão'}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -492,10 +492,10 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
             {/* Account Selection */}
             {paymentMethod === 'account' && (
               <div className="space-y-2">
-                <Label htmlFor="account">{t('payFutureExpense.account')}</Label>
+                <Label htmlFor="account">{t('payFutureExpense.account') || 'Conta'}</Label>
                 <Select value={selectedAccount} onValueChange={setSelectedAccount}>
                   <SelectTrigger className="bg-background z-50">
-                    <SelectValue placeholder={t('payFutureExpense.selectAccount')} />
+                    <SelectValue placeholder={t('payFutureExpense.selectAccount') || 'Selecione uma conta'} />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
                     {accounts.map((account) => (
@@ -511,15 +511,15 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
             {/* Card Selection */}
             {paymentMethod === 'card' && (
               <div className="space-y-2">
-                <Label htmlFor="card">{t('payFutureExpense.card')}</Label>
+                <Label htmlFor="card">{t('payFutureExpense.card') || 'Cartão'}</Label>
                 <Select value={selectedCard} onValueChange={setSelectedCard}>
                   <SelectTrigger className="bg-background z-50">
-                    <SelectValue placeholder={t('payFutureExpense.selectCard')} />
+                    <SelectValue placeholder={t('payFutureExpense.selectCard') || 'Selecione um cartão'} />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
                     {cards.map((card) => (
                       <SelectItem key={card.id} value={card.id}>
-                        {card.name} ({card.card_type})
+                        {card.name} ({card.card_type === 'credit' ? (t('common.credit') || 'Crédito') : (t('common.debit') || 'Débito')})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -529,10 +529,10 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">{t('payFutureExpense.notes')}</Label>
+              <Label htmlFor="notes">{t('payFutureExpense.notes') || 'Observações'}</Label>
               <Textarea
                 id="notes"
-                placeholder={t('payFutureExpense.notesPlaceholder')}
+                placeholder={t('payFutureExpense.notesPlaceholder') || 'Adicione observações...'}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -548,17 +548,17 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 className="flex-1"
                 disabled={isProcessing}
               >
-                {t('payFutureExpense.cancel')}
+                {t('payFutureExpense.cancel') || 'Cancelar'}
               </Button>
               <Button
                 type="submit"
                 className="flex-1"
                 disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount) || (paymentMethod === 'card' && !selectedCard)}
               >
-                {isProcessing ? t('payFutureExpense.processing') : (
+                {isProcessing ? (t('payFutureExpense.processing') || 'Processando...') : (
                   parsedInterest > 0 
-                    ? `${t('payFutureExpense.payButton')} ${formatCurrency(totalAmount)}`
-                    : t('payFutureExpense.payButton')
+                    ? `${t('payFutureExpense.payButton') || 'Pagar'} ${formatCurrency(totalAmount)}`
+                    : (t('payFutureExpense.payButton') || 'Pagar')
                 )}
               </Button>
             </div>
