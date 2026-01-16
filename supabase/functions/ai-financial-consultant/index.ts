@@ -323,10 +323,10 @@ serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    const aiResponse = aiData.choices[0].message.content;
+    const aiResponseText = aiData.choices[0].message.content;
 
     // Calculate actual tokens and cost
-    const outputTokens = estimateTokens(aiResponse);
+    const outputTokens = estimateTokens(aiResponseText);
     const totalTokens = inputTokens + outputTokens;
     const estimatedCost = estimateCostBRL(inputTokens, outputTokens);
 
@@ -362,7 +362,7 @@ serve(async (req) => {
     });
 
     // Save to AI history if this is an analysis or recommendation
-    await saveToAIHistory(supabaseClient, user.id, 'ai_analysis', aiResponse);
+    await saveToAIHistory(supabaseClient, user.id, 'ai_analysis', aiResponseText);
 
     // Get updated usage for response
     const { data: updatedUsage } = await supabaseClient
@@ -370,7 +370,7 @@ serve(async (req) => {
       .single();
 
     return new Response(JSON.stringify({ 
-      response: aiResponse,
+      response: aiResponseText,
       usage: {
         tokensUsed: totalTokens,
         estimatedCost: estimatedCost,
