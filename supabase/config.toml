@@ -101,3 +101,9 @@ verify_jwt = false
 
 [functions.monitor-selic-rate]
 verify_jwt = false
+
+[functions.mistral-ocr-processor]
+verify_jwt = true
+
+[functions.fetch-reconciliation-data]
+verify_jwt = true
