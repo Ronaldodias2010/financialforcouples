@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +41,7 @@ interface MileageRule {
   existing_miles?: number;
   purchase_type?: string;
   card?: Card;
+  cards?: Card; // From Supabase join
 }
 
 interface MileageGoal {
@@ -94,11 +96,21 @@ export const MileageSystem = () => {
     card_id: "",
     bank_name: "",
     card_brand: "",
-    miles_per_amount: 1,
-    amount_threshold: 1,
-    currency: "BRL" as "BRL" | "USD" | "EUR",
     existing_miles: 0,
-    purchase_type: "domestic" as "domestic" | "international"
+    // Regra Nacional
+    domestic: {
+      enabled: true,
+      currency: "BRL" as "BRL" | "USD" | "EUR",
+      miles_per_amount: 1,
+      amount_threshold: 1,
+    },
+    // Regra Internacional
+    international: {
+      enabled: false,
+      currency: "USD" as "BRL" | "USD" | "EUR",
+      miles_per_amount: 3,
+      amount_threshold: 1,
+    }
   });
 
   const [goalForm, setGoalForm] = useState({
@@ -206,7 +218,12 @@ export const MileageSystem = () => {
       return;
     }
 
-    setMileageRules(data || []);
+    // Map cards to card for backward compatibility
+    const mappedData = (data || []).map(rule => ({
+      ...rule,
+      card: rule.cards
+    }));
+    setMileageRules(mappedData as MileageRule[]);
   };
 
   const loadMileageGoals = async () => {
@@ -295,30 +312,83 @@ export const MileageSystem = () => {
   const handleCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Verificar se já existe regra para este cartão + tipo de compra
-    const existingRule = mileageRules.find(
-      r => r.card_id === ruleForm.card_id && 
-           r.purchase_type === ruleForm.purchase_type &&
-           r.user_id === user?.id
-    );
-    
-    if (existingRule) {
+    // Verificar se pelo menos uma regra está ativada
+    if (!ruleForm.domestic.enabled && !ruleForm.international.enabled) {
       toast({
         title: "Erro",
-        description: ruleForm.purchase_type === 'domestic' 
-          ? "Já existe uma regra para compras nacionais neste cartão." 
-          : "Já existe uma regra para compras internacionais neste cartão.",
+        description: "Ative pelo menos uma regra (Nacional ou Internacional).",
         variant: "destructive"
       });
       return;
     }
+
+    const rulesToCreate: Array<{
+      user_id: string | undefined;
+      card_id: string;
+      bank_name: string;
+      card_brand: string;
+      existing_miles: number;
+      purchase_type: string;
+      currency: "BRL" | "USD" | "EUR";
+      miles_per_amount: number;
+      amount_threshold: number;
+    }> = [];
+
+    // Verificar e preparar regra nacional
+    if (ruleForm.domestic.enabled) {
+      const existingDomestic = mileageRules.find(
+        r => r.card_id === ruleForm.card_id && r.purchase_type === 'domestic' && r.user_id === user?.id
+      );
+      if (existingDomestic) {
+        toast({
+          title: "Erro",
+          description: "Já existe uma regra para compras nacionais neste cartão.",
+          variant: "destructive"
+        });
+        return;
+      }
+      rulesToCreate.push({
+        user_id: user?.id,
+        card_id: ruleForm.card_id,
+        bank_name: ruleForm.bank_name,
+        card_brand: ruleForm.card_brand,
+        existing_miles: ruleForm.existing_miles,
+        purchase_type: 'domestic',
+        currency: ruleForm.domestic.currency,
+        miles_per_amount: ruleForm.domestic.miles_per_amount,
+        amount_threshold: ruleForm.domestic.amount_threshold,
+      });
+    }
+
+    // Verificar e preparar regra internacional
+    if (ruleForm.international.enabled) {
+      const existingInternational = mileageRules.find(
+        r => r.card_id === ruleForm.card_id && r.purchase_type === 'international' && r.user_id === user?.id
+      );
+      if (existingInternational) {
+        toast({
+          title: "Erro",
+          description: "Já existe uma regra para compras internacionais neste cartão.",
+          variant: "destructive"
+        });
+        return;
+      }
+      rulesToCreate.push({
+        user_id: user?.id,
+        card_id: ruleForm.card_id,
+        bank_name: ruleForm.bank_name,
+        card_brand: ruleForm.card_brand,
+        existing_miles: 0, // Milhas existentes só na regra nacional
+        purchase_type: 'international',
+        currency: ruleForm.international.currency,
+        miles_per_amount: ruleForm.international.miles_per_amount,
+        amount_threshold: ruleForm.international.amount_threshold,
+      });
+    }
     
     const { error } = await supabase
       .from("card_mileage_rules")
-      .insert({
-        user_id: user?.id,
-        ...ruleForm
-      });
+      .insert(rulesToCreate);
 
     if (error) {
       toast({
@@ -329,20 +399,31 @@ export const MileageSystem = () => {
       return;
     }
 
+    const rulesCreated = rulesToCreate.length;
     toast({
       title: "Sucesso",
-      description: t('mileage.ruleCreated')
+      description: rulesCreated > 1 
+        ? `${rulesCreated} regras criadas com sucesso!` 
+        : t('mileage.ruleCreated')
     });
 
     setRuleForm({
       card_id: "",
       bank_name: "",
       card_brand: "",
-      miles_per_amount: 1,
-      amount_threshold: 1,
-      currency: "BRL",
       existing_miles: 0,
-      purchase_type: "domestic"
+      domestic: {
+        enabled: true,
+        currency: "BRL",
+        miles_per_amount: 1,
+        amount_threshold: 1,
+      },
+      international: {
+        enabled: false,
+        currency: "USD",
+        miles_per_amount: 3,
+        amount_threshold: 1,
+      }
     });
     setShowRuleForm(false);
     loadMileageRules();
@@ -681,90 +762,6 @@ export const MileageSystem = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="purchase_type">Tipo de Compra</Label>
-                      <Select 
-                        value={ruleForm.purchase_type} 
-                        onValueChange={(value: "domestic" | "international") => {
-                          setRuleForm({
-                            ...ruleForm, 
-                            purchase_type: value,
-                            // Sugerir moeda baseada no tipo de compra
-                            currency: value === 'international' ? 'USD' : 'BRL'
-                          });
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="domestic">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-green-600" />
-                              <span>Compras Nacionais (Brasil)</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="international">
-                            <div className="flex items-center gap-2">
-                              <Globe className="h-4 w-4 text-blue-600" />
-                              <span>Compras Internacionais</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Alguns cartões oferecem taxas diferentes para compras no exterior
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="currency">{t('mileage.currency')}</Label>
-                      <Select value={ruleForm.currency} onValueChange={(value: "BRL" | "USD" | "EUR") => setRuleForm({...ruleForm, currency: value})}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="BRL">Real (BRL)</SelectItem>
-                          <SelectItem value="USD">Dólar (USD)</SelectItem>
-                          <SelectItem value="EUR">Euro (EUR)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {ruleForm.currency !== 'BRL' && ruleForm.purchase_type === 'domestic' && (
-                        <div className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
-                          <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-blue-700 dark:text-blue-300">
-                            Compras em BRL serão convertidas automaticamente para {ruleForm.currency} usando a cotação atual antes do cálculo de pontos.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="miles_per_amount">{t('mileage.milesPerAmount')}</Label>
-                      <Input
-                        id="miles_per_amount"
-                        type="number"
-                        step="0.1"
-                        value={ruleForm.miles_per_amount}
-                        onChange={(e) => setRuleForm({...ruleForm, miles_per_amount: Number(e.target.value)})}
-                        placeholder={t('mileage.milesPlaceholder')}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="amount_threshold">{t('mileage.amountThreshold')}</Label>
-                      <Input
-                        id="amount_threshold"
-                        type="number"
-                        step="0.01"
-                        value={ruleForm.amount_threshold}
-                        onChange={(e) => setRuleForm({...ruleForm, amount_threshold: Number(e.target.value)})}
-                        placeholder={t('mileage.thresholdPlaceholder')}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="existing_miles">{t('mileage.existingMiles')}</Label>
                       <Input
                         id="existing_miles"
@@ -780,47 +777,182 @@ export const MileageSystem = () => {
                     </div>
                   </div>
 
-                  {/* Preview do cálculo */}
-                  {ruleForm.miles_per_amount > 0 && ruleForm.amount_threshold > 0 && (
-                    <div className="p-4 bg-muted/50 rounded-lg border">
-                      <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        Preview do Cálculo
-                      </h4>
-                      {ruleForm.currency !== 'BRL' && ruleForm.purchase_type === 'domestic' ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm flex-wrap">
-                            <span className="font-medium">R$ 100,00</span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium text-blue-600">
-                              {ruleForm.currency === 'USD' ? '≈ US$ ' : '≈ € '}
-                              {(100 * (ruleForm.currency === 'USD' ? 0.1843 : 0.1572)).toFixed(2)}
-                            </span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium text-green-600">
-                              ≈ {Math.floor(((100 * (ruleForm.currency === 'USD' ? 0.1843 : 0.1572)) / ruleForm.amount_threshold) * ruleForm.miles_per_amount)} pontos
-                            </span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Conversão automática BRL → {ruleForm.currency} aplicada
-                          </p>
+                  {/* Seções Nacional e Internacional lado a lado */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    {/* Compras Nacionais */}
+                    <div className={`p-4 rounded-lg border-2 transition-all ${ruleForm.domestic.enabled ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20' : 'border-muted bg-muted/20'}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-5 w-5 text-green-600" />
+                          <h4 className="font-semibold">Compras Nacionais</h4>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium">
-                            {getCurrencySymbol(ruleForm.currency as CurrencyCode)} 100,00
-                          </span>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium text-green-600">
-                            {Math.floor((100 / ruleForm.amount_threshold) * ruleForm.miles_per_amount)} pontos
-                          </span>
+                        <Checkbox 
+                          checked={ruleForm.domestic.enabled}
+                          onCheckedChange={(checked) => setRuleForm({
+                            ...ruleForm, 
+                            domestic: {...ruleForm.domestic, enabled: checked === true}
+                          })}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-4">Compras realizadas no Brasil (BRL)</p>
+                      
+                      {ruleForm.domestic.enabled && (
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Moeda da Regra</Label>
+                            <Select 
+                              value={ruleForm.domestic.currency} 
+                              onValueChange={(value: "BRL" | "USD" | "EUR") => setRuleForm({
+                                ...ruleForm, 
+                                domestic: {...ruleForm.domestic, currency: value}
+                              })}
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="BRL">Real (BRL)</SelectItem>
+                                <SelectItem value="USD">Dólar (USD)</SelectItem>
+                                <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {ruleForm.domestic.currency !== 'BRL' && (
+                              <p className="text-xs text-blue-600 dark:text-blue-400">
+                                BRL → {ruleForm.domestic.currency} (conversão automática)
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Pontos</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                className="h-8"
+                                value={ruleForm.domestic.miles_per_amount}
+                                onChange={(e) => setRuleForm({
+                                  ...ruleForm, 
+                                  domestic: {...ruleForm.domestic, miles_per_amount: Number(e.target.value)}
+                                })}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">A cada ({ruleForm.domestic.currency})</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                className="h-8"
+                                value={ruleForm.domestic.amount_threshold}
+                                onChange={(e) => setRuleForm({
+                                  ...ruleForm, 
+                                  domestic: {...ruleForm.domestic, amount_threshold: Number(e.target.value)}
+                                })}
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Preview Nacional */}
+                          <div className="p-2 bg-background rounded border text-xs">
+                            <span className="text-muted-foreground">Exemplo: </span>
+                            {ruleForm.domestic.currency !== 'BRL' ? (
+                              <span>
+                                R$ 100 → {getCurrencySymbol(ruleForm.domestic.currency)} {(100 * (ruleForm.domestic.currency === 'USD' ? 0.18 : 0.16)).toFixed(2)} → <span className="text-green-600 font-medium">≈ {Math.floor(((100 * (ruleForm.domestic.currency === 'USD' ? 0.18 : 0.16)) / ruleForm.domestic.amount_threshold) * ruleForm.domestic.miles_per_amount)} pts</span>
+                              </span>
+                            ) : (
+                              <span>
+                                R$ 100 → <span className="text-green-600 font-medium">{Math.floor((100 / ruleForm.domestic.amount_threshold) * ruleForm.domestic.miles_per_amount)} pts</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
-                  )}
 
-                  <div className="flex gap-2">
-                    <Button type="submit">{t('mileage.createRule')}</Button>
+                    {/* Compras Internacionais */}
+                    <div className={`p-4 rounded-lg border-2 transition-all ${ruleForm.international.enabled ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20' : 'border-muted bg-muted/20'}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-5 w-5 text-blue-600" />
+                          <h4 className="font-semibold">Compras Internacionais</h4>
+                        </div>
+                        <Checkbox 
+                          checked={ruleForm.international.enabled}
+                          onCheckedChange={(checked) => setRuleForm({
+                            ...ruleForm, 
+                            international: {...ruleForm.international, enabled: checked === true}
+                          })}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-4">Compras no exterior (USD/EUR)</p>
+                      
+                      {ruleForm.international.enabled && (
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Moeda da Regra</Label>
+                            <Select 
+                              value={ruleForm.international.currency} 
+                              onValueChange={(value: "BRL" | "USD" | "EUR") => setRuleForm({
+                                ...ruleForm, 
+                                international: {...ruleForm.international, currency: value}
+                              })}
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="USD">Dólar (USD)</SelectItem>
+                                <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                                <SelectItem value="BRL">Real (BRL)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Pontos</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                className="h-8"
+                                value={ruleForm.international.miles_per_amount}
+                                onChange={(e) => setRuleForm({
+                                  ...ruleForm, 
+                                  international: {...ruleForm.international, miles_per_amount: Number(e.target.value)}
+                                })}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">A cada ({ruleForm.international.currency})</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                className="h-8"
+                                value={ruleForm.international.amount_threshold}
+                                onChange={(e) => setRuleForm({
+                                  ...ruleForm, 
+                                  international: {...ruleForm.international, amount_threshold: Number(e.target.value)}
+                                })}
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Preview Internacional */}
+                          <div className="p-2 bg-background rounded border text-xs">
+                            <span className="text-muted-foreground">Exemplo: </span>
+                            <span>
+                              {getCurrencySymbol(ruleForm.international.currency)} 100 → <span className="text-blue-600 font-medium">{Math.floor((100 / ruleForm.international.amount_threshold) * ruleForm.international.miles_per_amount)} pts</span>
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <Button type="submit" disabled={!ruleForm.domestic.enabled && !ruleForm.international.enabled}>
+                      {ruleForm.domestic.enabled && ruleForm.international.enabled ? 'Criar 2 Regras' : t('mileage.createRule')}
+                    </Button>
                     <Button type="button" variant="outline" onClick={() => setShowRuleForm(false)}>
                       {t('common.cancel')}
                     </Button>
