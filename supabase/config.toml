@@ -98,3 +98,6 @@ verify_jwt = false
 
 [functions.check-2fa-status]
 verify_jwt = false
+
+[functions.monitor-selic-rate]
+verify_jwt = false

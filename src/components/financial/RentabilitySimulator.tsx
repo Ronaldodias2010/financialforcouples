@@ -4,11 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, TrendingUp, DollarSign, Target, Clock } from "lucide-react";
+import { Calculator, TrendingUp, DollarSign, Target, Clock, RefreshCw, Info } from "lucide-react";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import type { CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useMarketRates } from "@/hooks/useMarketRates";
 import { formatMonetaryValue, parseMonetaryValue } from "@/utils/monetary";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { format } from "date-fns";
+import { ptBR, enUS, es } from "date-fns/locale";
 
 interface RentabilitySimulatorProps {
   userPreferredCurrency: string;
@@ -35,6 +40,7 @@ interface SimulationResult {
 export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimulatorProps) => {
   const { t, language } = useLanguage();
   const { formatCurrency, convertCurrency } = useCurrencyConverter();
+  const { rates: marketRates, isLoading: ratesLoading, refresh: refreshRates } = useMarketRates();
   const [simulationMode, setSimulationMode] = useState<'time' | 'goal'>('time');
   const [formData, setFormData] = useState({
     initialAmount: "",
@@ -47,30 +53,41 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
   });
   const [result, setResult] = useState<SimulationResult | null>(null);
 
+  const getDateLocale = () => {
+    switch (language) {
+      case 'pt': return ptBR;
+      case 'es': return es;
+      default: return enUS;
+    }
+  };
+
   const getInvestmentTypes = () => {
     if (language === 'pt') {
+      // Use dynamic market rates when available, with fallbacks
       return [
-        { value: "tesouro_selic", label: "Tesouro Selic", rate: 11.5 },
-        { value: "tesouro_ipca", label: "Tesouro IPCA+", rate: 12.0 },
-        { value: "cdb", label: "CDB", rate: 12.5 },
-        { value: "lci_lca", label: "LCI/LCA", rate: 10.5 },
-        { value: "fundos_di", label: "Fundos DI", rate: 10.8 },
-        { value: "acoes", label: "Ações (histórico)", rate: 15.0 },
-        { value: "fundos_imobiliarios", label: "Fundos Imobiliários", rate: 13.0 },
-        { value: "custom", label: "Taxa Personalizada", rate: 0 }
+        { value: "tesouro_selic", label: "Tesouro Selic", rate: marketRates.tesouro_selic ?? 14.25, dynamic: true },
+        { value: "tesouro_ipca", label: "Tesouro IPCA+", rate: marketRates.tesouro_ipca ?? 10.5, dynamic: true },
+        { value: "cdb_100", label: "CDB 100% CDI", rate: marketRates.cdb_100 ?? 14.15, dynamic: true },
+        { value: "cdb_110", label: "CDB 110% CDI", rate: marketRates.cdb_110 ?? 15.57, dynamic: true },
+        { value: "cdb_120", label: "CDB 120% CDI", rate: marketRates.cdb_120 ?? 16.98, dynamic: true },
+        { value: "lci_lca", label: "LCI/LCA (isento IR)", rate: marketRates.lci_lca ?? 12.74, dynamic: true },
+        { value: "fundos_di", label: "Fundos DI", rate: (marketRates.cdi ?? 14.15) * 0.95, dynamic: true },
+        { value: "acoes", label: "Ações (histórico)", rate: 15.0, dynamic: false },
+        { value: "fundos_imobiliarios", label: "Fundos Imobiliários", rate: 13.0, dynamic: false },
+        { value: "custom", label: "Taxa Personalizada", rate: 0, dynamic: false }
       ];
     } else {
-      // US/International market investments
+      // US/International market investments (static rates)
       return [
-        { value: "treasury_bills", label: t('simulator.investments.treasuryBills') || 'Treasury Bills', rate: 4.5 },
-        { value: "treasury_notes", label: t('simulator.investments.treasuryNotes') || 'Treasury Notes', rate: 4.8 },
-        { value: "treasury_bonds", label: t('simulator.investments.treasuryBonds') || 'Treasury Bonds', rate: 5.0 },
-        { value: "corporate_bonds", label: t('simulator.investments.corporateBonds') || 'Corporate Bonds', rate: 6.5 },
-        { value: "cds", label: t('simulator.investments.cds') || 'Certificates of Deposit', rate: 4.2 },
-        { value: "stocks", label: t('simulator.investments.stocks') || 'Stocks (historical)', rate: 10.0 },
-        { value: "etfs", label: t('simulator.investments.etfs') || 'ETFs', rate: 8.5 },
-        { value: "reits", label: t('simulator.investments.reits') || 'REITs', rate: 7.8 },
-        { value: "custom", label: t('simulator.investments.custom') || 'Custom Rate', rate: 0 }
+        { value: "treasury_bills", label: t('simulator.investments.treasuryBills') || 'Treasury Bills', rate: 4.5, dynamic: false },
+        { value: "treasury_notes", label: t('simulator.investments.treasuryNotes') || 'Treasury Notes', rate: 4.8, dynamic: false },
+        { value: "treasury_bonds", label: t('simulator.investments.treasuryBonds') || 'Treasury Bonds', rate: 5.0, dynamic: false },
+        { value: "corporate_bonds", label: t('simulator.investments.corporateBonds') || 'Corporate Bonds', rate: 6.5, dynamic: false },
+        { value: "cds", label: t('simulator.investments.cds') || 'Certificates of Deposit', rate: 4.2, dynamic: false },
+        { value: "stocks", label: t('simulator.investments.stocks') || 'Stocks (historical)', rate: 10.0, dynamic: false },
+        { value: "etfs", label: t('simulator.investments.etfs') || 'ETFs', rate: 8.5, dynamic: false },
+        { value: "reits", label: t('simulator.investments.reits') || 'REITs', rate: 7.8, dynamic: false },
+        { value: "custom", label: t('simulator.investments.custom') || 'Custom Rate', rate: 0, dynamic: false }
       ];
     }
   };
@@ -246,6 +263,43 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
               />
             </div>
 
+            {/* Market Rates Info (for Brazilian investments) */}
+            {language === 'pt' && (
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg text-xs">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    SELIC: {marketRates.selic?.toFixed(2) ?? '—'}%
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    CDI: {marketRates.cdi?.toFixed(2) ?? '—'}%
+                  </Badge>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={refreshRates}
+                        disabled={ratesLoading}
+                      >
+                        <RefreshCw className={`h-3 w-3 ${ratesLoading ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Atualizar taxas do Banco Central</p>
+                      {marketRates.lastUpdated && (
+                        <p className="text-xs text-muted-foreground">
+                          Última atualização: {format(new Date(marketRates.lastUpdated), 'dd/MM/yyyy HH:mm', { locale: getDateLocale() })}
+                        </p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="investmentType">{t('simulator.investmentType')}</Label>
               <Select
@@ -258,7 +312,11 @@ export const RentabilitySimulator = ({ userPreferredCurrency }: RentabilitySimul
                 <SelectContent>
                   {investmentTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
-                      {type.label} {type.rate > 0 && `(${type.rate}% a.a.)`}
+                      <div className="flex items-center gap-2">
+                        <span>{type.label}</span>
+                        {type.rate > 0 && <span className="text-muted-foreground">({type.rate.toFixed(2)}% a.a.)</span>}
+                        {type.dynamic && <Info className="h-3 w-3 text-blue-500" />}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>

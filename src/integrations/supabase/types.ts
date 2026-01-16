@@ -1798,6 +1798,51 @@ export type Database = {
         }
         Relationships: []
       }
+      market_rates: {
+        Row: {
+          bcb_series: number | null
+          created_at: string
+          id: string
+          indicator: string
+          previous_value: number | null
+          rate_date: string
+          recorded_at: string
+          source: string
+          unit: string
+          updated_at: string
+          value: number
+          variation: number | null
+        }
+        Insert: {
+          bcb_series?: number | null
+          created_at?: string
+          id?: string
+          indicator: string
+          previous_value?: number | null
+          rate_date?: string
+          recorded_at?: string
+          source?: string
+          unit?: string
+          updated_at?: string
+          value: number
+          variation?: number | null
+        }
+        Update: {
+          bcb_series?: number | null
+          created_at?: string
+          id?: string
+          indicator?: string
+          previous_value?: number | null
+          rate_date?: string
+          recorded_at?: string
+          source?: string
+          unit?: string
+          updated_at?: string
+          value?: number
+          variation?: number | null
+        }
+        Relationships: []
+      }
       migration_audit_log: {
         Row: {
           action: string
@@ -3463,6 +3508,45 @@ export type Database = {
           updated_at?: string
           user1_id?: string
           user2_id?: string
+        }
+        Relationships: []
+      }
+      user_financial_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          notification_type: string
+          title: string
+          updated_at: string
+          urgency: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          notification_type: string
+          title: string
+          updated_at?: string
+          urgency?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          title?: string
+          updated_at?: string
+          urgency?: string
+          user_id?: string
         }
         Relationships: []
       }
