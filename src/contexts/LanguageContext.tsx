@@ -346,6 +346,8 @@ const translations = {
     'aiRecommendations.viewMode': 'Modo de Visualização',
     'aiRecommendations.both': 'Ambos',
     'aiRecommendations.exportFormat': 'Formato de Exportação',
+    'ai.warning.lastRequest': '⚠️ Esta foi sua última pergunta do dia. O limite será renovado amanhã.',
+    'ai.warning.penultimateRequest': '⚠️ Atenção: A próxima pergunta será a última do dia. Use com sabedoria!',
     'nav.cards': 'Cartões',
     'nav.accounts': 'Contas',
     
@@ -2743,6 +2745,8 @@ const translations = {
     'aiRecommendations.viewMode': 'View Mode',
     'aiRecommendations.both': 'Both',
     'aiRecommendations.exportFormat': 'Export Format',
+    'ai.warning.lastRequest': '⚠️ This was your last question of the day. The limit will reset tomorrow.',
+    'ai.warning.penultimateRequest': '⚠️ Attention: The next question will be your last of the day. Use it wisely!',
     'nav.cards': 'Cards',
     'nav.accounts': 'Accounts',
     
@@ -5110,6 +5114,8 @@ const translations = {
     'aiRecommendations.viewMode': 'Modo de Visualización',
     'aiRecommendations.both': 'Ambos',
     'aiRecommendations.exportFormat': 'Formato de Exportación',
+    'ai.warning.lastRequest': '⚠️ Esta fue tu última pregunta del día. El límite se renovará mañana.',
+    'ai.warning.penultimateRequest': '⚠️ Atención: La próxima pregunta será la última del día. ¡Úsala sabiamente!',
     'nav.cards': 'Tarjetas',
     'nav.accounts': 'Cuentas',
     

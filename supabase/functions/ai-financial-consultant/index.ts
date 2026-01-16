@@ -370,13 +370,29 @@ serve(async (req) => {
       .rpc('get_user_daily_ai_usage', { p_user_id: user.id })
       .single();
 
+    // Calculate remaining requests for warning system
+    const remainingRequests = limits.daily_requests_limit - (updatedUsage?.requests_count || 0);
+    const isLastRequest = remainingRequests === 0;
+    const isSecondToLastRequest = remainingRequests === 1;
+    
+    // Determine warning type
+    let warning: string | null = null;
+    if (isLastRequest) {
+      warning = 'LAST_REQUEST_USED';
+    } else if (isSecondToLastRequest) {
+      warning = 'SECOND_TO_LAST_REQUEST';
+    }
+
     return new Response(JSON.stringify({ 
       response: aiResponseText,
       usage: {
         tokensUsed: totalTokens,
         estimatedCost: estimatedCost,
         dailyUsage: updatedUsage,
-        dailyLimits: limits
+        dailyLimits: limits,
+        remainingRequests: remainingRequests,
+        isLastRequest: isLastRequest,
+        warning: warning
       },
       financialSummary: {
         totalAccounts: financialData.accounts.length,

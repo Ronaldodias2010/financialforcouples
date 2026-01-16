@@ -19,6 +19,11 @@ const AIRecommendationsContent = () => {
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'ai', message: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [usageWarning, setUsageWarning] = useState<{
+    show: boolean;
+    type: 'last' | 'penultimate' | null;
+    remaining: number;
+  }>({ show: false, type: null, remaining: 0 });
   
   // Voice functionality
   const {
@@ -110,6 +115,29 @@ const AIRecommendationsContent = () => {
         message: aiResponse
       }]);
 
+      // Check for usage warnings
+      if (data.usage) {
+        const remaining = data.usage.remainingRequests;
+        
+        if (remaining === 0) {
+          // This was the last request of the day
+          setUsageWarning({ 
+            show: true, 
+            type: 'last', 
+            remaining: 0 
+          });
+        } else if (remaining === 1) {
+          // This was the second-to-last, next one is the last
+          setUsageWarning({ 
+            show: true, 
+            type: 'penultimate', 
+            remaining: 1 
+          });
+        } else {
+          setUsageWarning({ show: false, type: null, remaining });
+        }
+      }
+
       // Auto-speak the AI response if capabilities allow
       if (capabilities.speechSynthesis) {
         speak(aiResponse);
@@ -149,6 +177,27 @@ const AIRecommendationsContent = () => {
           {t('aiRecommendations.subtitle')}
         </p>
       </div>
+
+      {/* Usage Warning Alert */}
+      {usageWarning.show && (
+        <Alert 
+          variant={usageWarning.type === 'last' ? 'destructive' : 'default'} 
+          className={cn(
+            "animate-fade-in",
+            usageWarning.type === 'penultimate' && "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20"
+          )}
+        >
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className={cn(
+            usageWarning.type === 'penultimate' && "text-yellow-700 dark:text-yellow-400"
+          )}>
+            {usageWarning.type === 'last' 
+              ? t('ai.warning.lastRequest')
+              : t('ai.warning.penultimateRequest')
+            }
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* AI Chat Interface */}
       <Card>
