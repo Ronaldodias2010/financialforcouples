@@ -172,7 +172,7 @@ const translations = {
     'nav.recurring': 'Despesas Recorrentes',
     'nav.converter': 'Conversor',
     'nav.cashFlow': 'Fluxo de Caixa',
-    'nav.aiRecommendations': 'Recomendações da IA',
+    'nav.aiRecommendations': 'Fale com a PrIscA',
     
     // Navigation Short Labels (Mobile)
     'nav.short.dashboard': 'Início',
@@ -284,8 +284,8 @@ const translations = {
     'converter.paymentMethods.zelle': 'Zelle',
     
     // AI Recommendations
-    'aiRecommendations.title': 'Recomendações da IA',
-    'aiRecommendations.subtitle': 'Análise inteligente das suas finanças e recomendações personalizadas',
+    'aiRecommendations.title': 'Consultora PrIscA',
+    'aiRecommendations.subtitle': 'Sua consultora financeira direta e sem papas na língua',
     'aiRecommendations.analysisPanel': 'Período de Análise',
     'aiRecommendations.analysisPeriod': 'Período de Análise',
     'aiRecommendations.from': 'De:',
@@ -300,7 +300,7 @@ const translations = {
     'aiRecommendations.incomeDesc': 'Compilado de todas as receitas do período',
     'aiRecommendations.taxReport': 'Imposto de Renda',
     'aiRecommendations.taxDesc': 'Dados organizados para declaração do IR',
-    'aiRecommendations.aiConsultant': 'Consultor Financeiro IA',
+    'aiRecommendations.aiConsultant': 'PrIscA - Sua Consultora',
     'aiRecommendations.askAnything': 'Pergunte qualquer coisa sobre suas finanças!',
     'aiRecommendations.exampleQuestion': 'Ex: "Como está meu orçamento este mês?"',
     'aiRecommendations.typePlaceholder': 'Digite sua pergunta sobre finanças...',
@@ -2564,7 +2564,7 @@ const translations = {
     'nav.recurring': 'Recurring Expenses',
     'nav.converter': 'Converter',
     'nav.cashFlow': 'Cash Flow',
-    'nav.aiRecommendations': 'AI Recommendations',
+    'nav.aiRecommendations': 'Chat with PrIscA',
     
     // Navigation Short Labels (Mobile)
     'nav.short.dashboard': 'Home',
@@ -2676,8 +2676,8 @@ const translations = {
     'converter.paymentMethods.zelle': 'Zelle',
     
     // AI Recommendations
-    'aiRecommendations.title': 'AI Recommendations',
-    'aiRecommendations.subtitle': 'Intelligent analysis of your finances and personalized recommendations',
+    'aiRecommendations.title': 'PrIscA Consultant',
+    'aiRecommendations.subtitle': 'Your direct, no-nonsense financial consultant',
     'aiRecommendations.analysisPanel': 'Analysis Period',
     'aiRecommendations.from': 'From:',
     'aiRecommendations.to': 'To:',
@@ -2691,7 +2691,7 @@ const translations = {
     'aiRecommendations.incomeDesc': 'Compilation of all period income',
     'aiRecommendations.taxReport': 'Tax Report',
     'aiRecommendations.taxDesc': 'Organized data for tax declaration',
-    'aiRecommendations.aiConsultant': 'AI Financial Consultant',
+    'aiRecommendations.aiConsultant': 'PrIscA - Your Consultant',
     'aiRecommendations.askAnything': 'Ask anything about your finances!',
     'aiRecommendations.exampleQuestion': 'Ex: "How is my budget this month?"',
     'aiRecommendations.typePlaceholder': 'Type your finance question...',
@@ -4925,7 +4925,7 @@ const translations = {
     'nav.recurring': 'Gastos Recurrentes',
     'nav.converter': 'Conversor',
     'nav.cashFlow': 'Flujo de Caja',
-    'nav.aiRecommendations': 'Recomendaciones de IA',
+    'nav.aiRecommendations': 'Habla con PrIscA',
     
     // Navigation Short Labels (Mobile)
     'nav.short.dashboard': 'Inicio',
@@ -5037,8 +5037,8 @@ const translations = {
     'converter.paymentMethods.zelle': 'Zelle',
     
     // AI Recommendations
-    'aiRecommendations.title': 'Recomendaciones de IA',
-    'aiRecommendations.subtitle': 'Análisis inteligente de tus finanzas y recomendaciones personalizadas',
+    'aiRecommendations.title': 'Consultora PrIscA',
+    'aiRecommendations.subtitle': 'Tu consultora financiera directa y sin pelos en la lengua',
     'aiRecommendations.analysisPanel': 'Período de Análisis',
     'aiRecommendations.from': 'Desde:',
     'aiRecommendations.to': 'Hasta:',
@@ -5052,7 +5052,7 @@ const translations = {
     'aiRecommendations.incomeDesc': 'Compilación de todos los ingresos del período',
     'aiRecommendations.taxReport': 'Declaración de Impuestos',
     'aiRecommendations.taxDesc': 'Datos organizados para la declaración fiscal',
-    'aiRecommendations.aiConsultant': 'Consultor Financiero IA',
+    'aiRecommendations.aiConsultant': 'PrIscA - Tu Consultora',
     'aiRecommendations.askAnything': '¡Pregunta cualquier cosa sobre tus finanzas!',
     'aiRecommendations.exampleQuestion': 'Ej: "¿Cómo está mi presupuesto este mes?"',
     'aiRecommendations.typePlaceholder': 'Escribe tu pregunta sobre finanzas...',

@@ -107,7 +107,7 @@ export const AIControlSection = () => {
 
   const translations = {
     pt: {
-      title: 'Controle de IA',
+      title: 'Controle da PrIscA',
       overview: 'Visão Geral',
       users: 'Usuários',
       limits: 'Limites',
@@ -160,7 +160,7 @@ export const AIControlSection = () => {
       daysActiveInMonth: 'dias ativos'
     },
     en: {
-      title: 'AI Control',
+      title: 'PrIscA Control',
       overview: 'Overview',
       users: 'Users',
       limits: 'Limits',
@@ -213,7 +213,7 @@ export const AIControlSection = () => {
       daysActiveInMonth: 'active days'
     },
     es: {
-      title: 'Control de IA',
+      title: 'Control de PrIscA',
       overview: 'Resumen',
       users: 'Usuarios',
       limits: 'Límites',
