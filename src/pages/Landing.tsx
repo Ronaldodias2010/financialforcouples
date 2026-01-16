@@ -12,7 +12,7 @@ import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
 import Footer from "@/components/landing/Footer";
 import IncomeTaxSection from "@/components/landing/IncomeTaxSection";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import "@/styles/landing-theme.css";
 
@@ -22,10 +22,18 @@ const Landing = () => {
   // Show Income Tax section only for Brazilian users or Portuguese language
   const showIncomeTaxSection = language === 'pt' || inBrazil;
 
-  useEffect(() => {
-    // Force light mode for landing page
-    document.documentElement.classList.remove('dark');
-    document.documentElement.classList.add('light');
+  useLayoutEffect(() => {
+    // Force light mode for landing page (even if user preference is dark)
+    const root = document.documentElement;
+    root.dataset.forceTheme = 'light';
+    root.classList.remove('dark');
+    root.classList.add('light');
+    window.dispatchEvent(new Event('app:force-theme-change'));
+
+    return () => {
+      delete root.dataset.forceTheme;
+      window.dispatchEvent(new Event('app:force-theme-change'));
+    };
   }, []);
 
   return (

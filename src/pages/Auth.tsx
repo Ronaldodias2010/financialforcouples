@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,10 +36,18 @@ export default function Auth() {
   const { language, setLanguage, t } = useLanguage();
   const { has2FAEnabled, isLoaded: is2FAStatusLoaded } = use2FAStatus();
 
-  // Force light mode for auth page
-  useEffect(() => {
-    document.documentElement.classList.remove('dark');
-    document.documentElement.classList.add('light');
+  // Force light mode for auth page (even if user preference is dark)
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.dataset.forceTheme = 'light';
+    root.classList.remove('dark');
+    root.classList.add('light');
+    window.dispatchEvent(new Event('app:force-theme-change'));
+
+    return () => {
+      delete root.dataset.forceTheme;
+      window.dispatchEvent(new Event('app:force-theme-change'));
+    };
   }, []);
 
   // Listen for auth state changes (captures OAuth completion)
