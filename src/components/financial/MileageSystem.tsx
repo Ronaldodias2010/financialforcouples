@@ -15,7 +15,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
-import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User } from "lucide-react";
+import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User, Globe, MapPin } from "lucide-react";
 import { PromotionsSection } from './PromotionsSection';
 import { format } from "date-fns";
 import { parseLocalDate } from "@/utils/date";
@@ -38,6 +38,7 @@ interface MileageRule {
   currency: string;
   is_active: boolean;
   existing_miles?: number;
+  purchase_type?: string;
   card?: Card;
 }
 
@@ -96,7 +97,8 @@ export const MileageSystem = () => {
     miles_per_amount: 1,
     amount_threshold: 1,
     currency: "BRL" as "BRL" | "USD" | "EUR",
-    existing_miles: 0
+    existing_miles: 0,
+    purchase_type: "domestic" as "domestic" | "international"
   });
 
   const [goalForm, setGoalForm] = useState({
@@ -293,6 +295,24 @@ export const MileageSystem = () => {
   const handleCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Verificar se já existe regra para este cartão + tipo de compra
+    const existingRule = mileageRules.find(
+      r => r.card_id === ruleForm.card_id && 
+           r.purchase_type === ruleForm.purchase_type &&
+           r.user_id === user?.id
+    );
+    
+    if (existingRule) {
+      toast({
+        title: "Erro",
+        description: ruleForm.purchase_type === 'domestic' 
+          ? "Já existe uma regra para compras nacionais neste cartão." 
+          : "Já existe uma regra para compras internacionais neste cartão.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const { error } = await supabase
       .from("card_mileage_rules")
       .insert({
@@ -321,7 +341,8 @@ export const MileageSystem = () => {
       miles_per_amount: 1,
       amount_threshold: 1,
       currency: "BRL",
-      existing_miles: 0
+      existing_miles: 0,
+      purchase_type: "domestic"
     });
     setShowRuleForm(false);
     loadMileageRules();
@@ -660,6 +681,42 @@ export const MileageSystem = () => {
                     </div>
 
                     <div className="space-y-2">
+                      <Label htmlFor="purchase_type">Tipo de Compra</Label>
+                      <Select 
+                        value={ruleForm.purchase_type} 
+                        onValueChange={(value: "domestic" | "international") => {
+                          setRuleForm({
+                            ...ruleForm, 
+                            purchase_type: value,
+                            // Sugerir moeda baseada no tipo de compra
+                            currency: value === 'international' ? 'USD' : 'BRL'
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="domestic">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-green-600" />
+                              <span>Compras Nacionais (Brasil)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="international">
+                            <div className="flex items-center gap-2">
+                              <Globe className="h-4 w-4 text-blue-600" />
+                              <span>Compras Internacionais</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Alguns cartões oferecem taxas diferentes para compras no exterior
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="currency">{t('mileage.currency')}</Label>
                       <Select value={ruleForm.currency} onValueChange={(value: "BRL" | "USD" | "EUR") => setRuleForm({...ruleForm, currency: value})}>
                         <SelectTrigger>
@@ -732,10 +789,24 @@ export const MileageSystem = () => {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-semibold">{rule.card?.name}</h4>
                         <Badge variant={rule.is_active ? "default" : "secondary"}>
                           {rule.is_active ? t('mileage.active') : t('mileage.inactive')}
+                        </Badge>
+                        {/* Badge para tipo de compra */}
+                        <Badge 
+                          variant="outline" 
+                          className={rule.purchase_type === 'international' 
+                            ? "border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950" 
+                            : "border-green-500 text-green-600 bg-green-50 dark:bg-green-950"
+                          }
+                        >
+                          {rule.purchase_type === 'international' ? (
+                            <><Globe className="h-3 w-3 mr-1" />Internacional</>
+                          ) : (
+                            <><MapPin className="h-3 w-3 mr-1" />Nacional</>
+                          )}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
@@ -744,8 +815,13 @@ export const MileageSystem = () => {
                       <p className="text-sm">
                         {rule.miles_per_amount} {t('mileage.milesEarned')} {t('mileage.amountThreshold')} {rule.currency} {rule.amount_threshold}
                       </p>
+                      {rule.existing_miles && rule.existing_miles > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Milhas existentes: {Math.floor(rule.existing_miles).toLocaleString()}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2">
                       <Button
                         size="sm"
                         variant="outline"
