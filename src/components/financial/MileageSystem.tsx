@@ -31,17 +31,17 @@ interface Card {
 interface MileageRule {
   id: string;
   user_id?: string;
-  card_id: string;
+  card_id: string | null;
   bank_name: string;
   card_brand: string;
   miles_per_amount: number;
   amount_threshold: number;
   currency: string;
   is_active: boolean;
-  existing_miles?: number;
-  purchase_type?: string;
-  card?: Card;
-  cards?: Card; // From Supabase join
+  existing_miles?: number | null;
+  purchase_type?: string | null;
+  card?: Card | null;
+  cards?: Card | null;
 }
 
 interface MileageGoal {
@@ -218,12 +218,30 @@ export const MileageSystem = () => {
       return;
     }
 
-    // Map cards to card for backward compatibility
-    const mappedData = (data || []).map(rule => ({
-      ...rule,
-      card: rule.cards
-    }));
-    setMileageRules(mappedData as MileageRule[]);
+    if (!data) {
+      setMileageRules([]);
+      return;
+    }
+
+    // Map to local interface - explicitly construct to avoid Supabase type conflicts
+    const rules = data.map((rule): MileageRule => {
+      return {
+        id: rule.id,
+        user_id: rule.user_id,
+        card_id: rule.card_id,
+        bank_name: rule.bank_name,
+        card_brand: rule.card_brand,
+        miles_per_amount: rule.miles_per_amount,
+        amount_threshold: rule.amount_threshold,
+        currency: rule.currency,
+        is_active: rule.is_active,
+        existing_miles: rule.existing_miles,
+        purchase_type: rule.purchase_type || 'domestic',
+        card: rule.cards as Card | null,
+        cards: rule.cards as Card | null
+      };
+    });
+    setMileageRules(rules);
   };
 
   const loadMileageGoals = async () => {
