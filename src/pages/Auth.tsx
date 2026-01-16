@@ -36,6 +36,12 @@ export default function Auth() {
   const { language, setLanguage, t } = useLanguage();
   const { has2FAEnabled, isLoaded: is2FAStatusLoaded } = use2FAStatus();
 
+  // Force light mode for auth page
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+  }, []);
+
   // Listen for auth state changes (captures OAuth completion)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
