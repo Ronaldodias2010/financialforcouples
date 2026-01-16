@@ -773,15 +773,14 @@ export const ConverterDashboard: React.FC = () => {
                   className="gap-2 flex-1 sm:flex-initial"
                 >
                   <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Exportar</span>
+                  <span className="hidden sm:inline">{t('converter.export.shortLabel')}</span>
                 </Button>
                 <Button
                   onClick={() => setCurrentStep('select-source')}
                   className="gap-2 flex-1 sm:flex-initial"
                 >
                   <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Reconciliar</span>
-                  <span className="sm:hidden">Reconciliar</span>
+                  <span>{t('converter.reconcile.button')}</span>
                 </Button>
               </>
             )}
