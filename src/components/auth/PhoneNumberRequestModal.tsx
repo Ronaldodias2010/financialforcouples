@@ -1,12 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Phone, X } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+
+type CountryCode = 'BR' | 'US' | 'PT' | 'ES' | 'MX' | 'AR';
+
+interface CountryConfig {
+  code: CountryCode;
+  dialCode: string;
+  name: string;
+  mask: string;
+  placeholder: string;
+}
+
+const countries: CountryConfig[] = [
+  { code: 'BR', dialCode: '55', name: '🇧🇷 Brasil', mask: '(##) #####-####', placeholder: '(11) 98765-4321' },
+  { code: 'US', dialCode: '1', name: '🇺🇸 USA', mask: '(###) ###-####', placeholder: '(555) 123-4567' },
+  { code: 'PT', dialCode: '351', name: '🇵🇹 Portugal', mask: '### ### ###', placeholder: '912 345 678' },
+  { code: 'ES', dialCode: '34', name: '🇪🇸 España', mask: '### ### ###', placeholder: '612 345 678' },
+  { code: 'MX', dialCode: '52', name: '🇲🇽 México', mask: '(##) ####-####', placeholder: '(55) 1234-5678' },
+  { code: 'AR', dialCode: '54', name: '🇦🇷 Argentina', mask: '(##) ####-####', placeholder: '(11) 1234-5678' }
+];
+
+// Apply mask to phone input
+const applyMask = (value: string, mask: string): string => {
+  const digits = value.replace(/\D/g, '');
+  let result = '';
+  let digitIndex = 0;
+  
+  for (let i = 0; i < mask.length && digitIndex < digits.length; i++) {
+    if (mask[i] === '#') {
+      result += digits[digitIndex];
+      digitIndex++;
+    } else {
+      result += mask[i];
+    }
+  }
+  
+  return result;
+};
+
+// Normalize phone for storage: remove non-digits and add country code
+const normalizePhone = (phone: string, dialCode: string): string => {
+  const digits = phone.replace(/\D/g, '');
+  return dialCode + digits;
+};
 
 interface PhoneNumberRequestModalProps {
   isOpen: boolean;
@@ -18,14 +62,28 @@ export const PhoneNumberRequestModal = ({ isOpen, onClose, userId }: PhoneNumber
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const [phone, setPhone] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>('BR');
   const [loading, setLoading] = useState(false);
+
+  // Auto-detect country based on language
+  useEffect(() => {
+    if (language === 'en') {
+      setSelectedCountry('US');
+    } else if (language === 'es') {
+      setSelectedCountry('ES');
+    } else {
+      setSelectedCountry('BR');
+    }
+  }, [language]);
+
+  const currentCountry = countries.find(c => c.code === selectedCountry) || countries[0];
 
   const text = {
     pt: {
       title: '📱 Adicione seu telefone',
       description: 'Para aproveitar todos os recursos, adicione seu número de telefone. Isso ajuda a proteger sua conta e receber notificações importantes.',
       phoneLabel: 'Número de telefone',
-      phonePlaceholder: '(11) 98765-4321',
+      countryLabel: 'País',
       saveButton: 'Salvar telefone',
       skipButton: 'Pular por enquanto',
       success: 'Telefone adicionado com sucesso!',
@@ -36,7 +94,7 @@ export const PhoneNumberRequestModal = ({ isOpen, onClose, userId }: PhoneNumber
       title: '📱 Add your phone number',
       description: 'To enjoy all features, add your phone number. This helps protect your account and receive important notifications.',
       phoneLabel: 'Phone number',
-      phonePlaceholder: '(11) 98765-4321',
+      countryLabel: 'Country',
       saveButton: 'Save phone',
       skipButton: 'Skip for now',
       success: 'Phone added successfully!',
@@ -47,7 +105,7 @@ export const PhoneNumberRequestModal = ({ isOpen, onClose, userId }: PhoneNumber
       title: '📱 Agrega tu teléfono',
       description: 'Para disfrutar de todas las funciones, agrega tu número de teléfono. Esto ayuda a proteger tu cuenta y recibir notificaciones importantes.',
       phoneLabel: 'Número de teléfono',
-      phonePlaceholder: '(11) 98765-4321',
+      countryLabel: 'País',
       saveButton: 'Guardar teléfono',
       skipButton: 'Omitir por ahora',
       success: '¡Teléfono agregado con éxito!',
@@ -58,8 +116,26 @@ export const PhoneNumberRequestModal = ({ isOpen, onClose, userId }: PhoneNumber
 
   const t2 = text[language as keyof typeof text] || text.pt;
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const masked = applyMask(e.target.value, currentCountry.mask);
+    setPhone(masked);
+  };
+
+  const handleCountryChange = (value: string) => {
+    setSelectedCountry(value as CountryCode);
+    setPhone('');
+  };
+
+  const isValidPhone = (): boolean => {
+    const digits = phone.replace(/\D/g, '');
+    // Check minimum length based on country
+    if (selectedCountry === 'BR') return digits.length >= 10 && digits.length <= 11;
+    if (selectedCountry === 'US') return digits.length === 10;
+    return digits.length >= 9;
+  };
+
   const handleSave = async () => {
-    if (!phone || phone.length < 10) {
+    if (!isValidPhone()) {
       toast({
         title: t2.invalidPhone,
         variant: 'destructive'
@@ -69,9 +145,12 @@ export const PhoneNumberRequestModal = ({ isOpen, onClose, userId }: PhoneNumber
 
     setLoading(true);
     try {
+      // Normalize phone with country code before saving
+      const normalizedPhone = normalizePhone(phone, currentCountry.dialCode);
+      
       const { error } = await supabase
         .from('profiles')
-        .update({ phone_number: phone })
+        .update({ phone_number: normalizedPhone })
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -115,13 +194,28 @@ export const PhoneNumberRequestModal = ({ isOpen, onClose, userId }: PhoneNumber
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
+            <Label>{t2.countryLabel}</Label>
+            <Select value={selectedCountry} onValueChange={handleCountryChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {countries.map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    {country.name} (+{country.dialCode})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="phone">{t2.phoneLabel}</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder={t2.phonePlaceholder}
+              placeholder={currentCountry.placeholder}
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={handlePhoneChange}
               disabled={loading}
             />
           </div>
