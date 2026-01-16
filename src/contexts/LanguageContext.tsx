@@ -348,6 +348,8 @@ const translations = {
     'aiRecommendations.exportFormat': 'Formato de Exportação',
     'ai.warning.lastRequest': '⚠️ Esta foi sua última pergunta do dia. O limite será renovado amanhã.',
     'ai.warning.penultimateRequest': '⚠️ Atenção: A próxima pergunta será a última do dia. Use com sabedoria!',
+    'ai.warning.essentialLimit': '📢 Plano Essential: Você tem apenas 1 pergunta por dia.',
+    'ai.warning.upgradeToPremium': 'Faça upgrade para Premium e tenha mais consultas!',
     'nav.cards': 'Cartões',
     'nav.accounts': 'Contas',
     
@@ -2747,6 +2749,8 @@ const translations = {
     'aiRecommendations.exportFormat': 'Export Format',
     'ai.warning.lastRequest': '⚠️ This was your last question of the day. The limit will reset tomorrow.',
     'ai.warning.penultimateRequest': '⚠️ Attention: The next question will be your last of the day. Use it wisely!',
+    'ai.warning.essentialLimit': '📢 Essential Plan: You have only 1 question per day.',
+    'ai.warning.upgradeToPremium': 'Upgrade to Premium for more consultations!',
     'nav.cards': 'Cards',
     'nav.accounts': 'Accounts',
     
@@ -5116,6 +5120,8 @@ const translations = {
     'aiRecommendations.exportFormat': 'Formato de Exportación',
     'ai.warning.lastRequest': '⚠️ Esta fue tu última pregunta del día. El límite se renovará mañana.',
     'ai.warning.penultimateRequest': '⚠️ Atención: La próxima pregunta será la última del día. ¡Úsala sabiamente!',
+    'ai.warning.essentialLimit': '📢 Plan Essential: Solo tienes 1 pregunta por día.',
+    'ai.warning.upgradeToPremium': '¡Actualiza a Premium para más consultas!',
     'nav.cards': 'Tarjetas',
     'nav.accounts': 'Cuentas',
     

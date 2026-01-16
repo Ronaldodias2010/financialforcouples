@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeech } from "@/hooks/useSpeech";
 
-const AIRecommendationsContent = () => {
+const AIRecommendationsContent = ({ subscriptionTier }: { subscriptionTier: string }) => {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const [chatMessage, setChatMessage] = useState("");
@@ -167,6 +167,20 @@ const AIRecommendationsContent = () => {
 
   return (
     <div className="space-y-6">
+      {/* Essential User Warning - Always visible */}
+      {subscriptionTier === 'essential' && (
+        <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertDescription className="text-amber-700 dark:text-amber-400">
+            <span className="font-medium">{t('ai.warning.essentialLimit')}</span>
+            {' '}
+            <a href="/subscription" className="underline font-semibold hover:text-amber-900 dark:hover:text-amber-300">
+              {t('ai.warning.upgradeToPremium')}
+            </a>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
@@ -375,7 +389,7 @@ const PremiumUpgradeFallback = () => {
 };
 
 export const AIRecommendations = () => {
-  const { hasAccess } = useSubscription();
+  const { hasAccess, subscriptionTier } = useSubscription();
   
   console.log('🤖 [AI RECOMMENDATIONS] Checking access for aiRecommendations feature');
   
@@ -385,5 +399,5 @@ export const AIRecommendations = () => {
   }
   
   console.log('✅ [AI RECOMMENDATIONS] Access granted - showing content');
-  return <AIRecommendationsContent />;
+  return <AIRecommendationsContent subscriptionTier={subscriptionTier} />;
 };
