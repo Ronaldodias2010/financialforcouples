@@ -73,11 +73,31 @@ const AIRecommendationsContent = () => {
             role: 'ai', 
             message: `Esta consulta excederia seu limite diário de tokens. Tente uma pergunta mais curta ou aguarde até amanhã.`
           }]);
-        } else if (data?.error === 'OPENAI_API_ERROR') {
+        } else if (data?.error === 'AI_API_ERROR' || data?.error === 'OPENAI_API_ERROR') {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
-            message: 'Não foi possível processar sua solicitação no momento. Tente novamente em alguns minutos.'
+            message: 'PrIscA não conseguiu processar sua solicitação no momento. Tente novamente em alguns minutos.'
           }]);
+        } else if (data?.error === 'RATE_LIMIT_EXCEEDED') {
+          setChatHistory(prev => [...prev, { 
+            role: 'ai', 
+            message: 'PrIscA está sobrecarregada no momento. 🙄 Aguarde alguns minutos e tente novamente.'
+          }]);
+          toast({
+            title: "Sistema sobrecarregado",
+            description: "Aguarde alguns minutos e tente novamente.",
+            variant: "destructive"
+          });
+        } else if (data?.error === 'CREDITS_EXHAUSTED') {
+          setChatHistory(prev => [...prev, { 
+            role: 'ai', 
+            message: 'Créditos de IA esgotados. Entre em contato com o suporte para resolver.'
+          }]);
+          toast({
+            title: "Créditos esgotados",
+            description: "Entre em contato com o suporte.",
+            variant: "destructive"
+          });
         } else {
           throw error;
         }
