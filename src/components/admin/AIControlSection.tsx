@@ -157,7 +157,21 @@ export const AIControlSection = () => {
       noDataMonth: 'Nenhum dado encontrado para este mês',
       selectMonth: 'Selecionar Mês',
       monthYear: 'Mês/Ano',
-      daysActiveInMonth: 'dias ativos'
+      daysActiveInMonth: 'dias ativos',
+      // New translations for Users tab
+      activeUsers: 'Usuários Ativos',
+      tokensPerUser: 'Tokens/Usuário',
+      totalCost: 'Custo Total',
+      usersDetail: 'Detalhamento de Uso',
+      consumedByUsers: 'Consumidos por {count} usuários hoje',
+      avgTokensPerUserShort: 'Média: {count} tokens/usuário',
+      above80Limit: 'Acima de 80% do limite',
+      tokensUsed: 'tokens utilizados',
+      requestsAndCost: '{requests} requisições • {cost}',
+      tokensInMonth: 'tokens no mês',
+      monthlyUsersRanking: 'Usuários do Mês - Ranking por Tokens',
+      perActiveDay: 'por dia ativo',
+      avgPerUser: 'Média: {cost} / usuário'
     },
     en: {
       title: 'PrIscA Control',
@@ -210,7 +224,21 @@ export const AIControlSection = () => {
       noDataMonth: 'No data found for this month',
       selectMonth: 'Select Month',
       monthYear: 'Month/Year',
-      daysActiveInMonth: 'active days'
+      daysActiveInMonth: 'active days',
+      // New translations for Users tab
+      activeUsers: 'Active Users',
+      tokensPerUser: 'Tokens/User',
+      totalCost: 'Total Cost',
+      usersDetail: 'Usage Details',
+      consumedByUsers: 'Consumed by {count} users today',
+      avgTokensPerUserShort: 'Average: {count} tokens/user',
+      above80Limit: 'Above 80% of limit',
+      tokensUsed: 'tokens used',
+      requestsAndCost: '{requests} requests • {cost}',
+      tokensInMonth: 'tokens in month',
+      monthlyUsersRanking: 'Monthly Users - Token Ranking',
+      perActiveDay: 'per active day',
+      avgPerUser: 'Average: {cost} / user'
     },
     es: {
       title: 'Control de PrIscA',
@@ -258,12 +286,26 @@ export const AIControlSection = () => {
       previousMonth: 'Mes Anterior',
       currentMonth: 'Mes Actual',
       growth: 'Crecimiento',
-      decline: 'Decline',
+      decline: 'Descenso',
       stable: 'Estable',
       noDataMonth: 'No se encontraron datos para este mes',
       selectMonth: 'Seleccionar Mes',
       monthYear: 'Mes/Año',
-      daysActiveInMonth: 'días activos'
+      daysActiveInMonth: 'días activos',
+      // New translations for Users tab
+      activeUsers: 'Usuarios Activos',
+      tokensPerUser: 'Tokens/Usuario',
+      totalCost: 'Costo Total',
+      usersDetail: 'Detalle de Uso',
+      consumedByUsers: 'Consumidos por {count} usuarios hoy',
+      avgTokensPerUserShort: 'Promedio: {count} tokens/usuario',
+      above80Limit: 'Por encima del 80% del límite',
+      tokensUsed: 'tokens utilizados',
+      requestsAndCost: '{requests} solicitudes • {cost}',
+      tokensInMonth: 'tokens en el mes',
+      monthlyUsersRanking: 'Usuarios del Mes - Ranking por Tokens',
+      perActiveDay: 'por día activo',
+      avgPerUser: 'Promedio: {cost} / usuario'
     }
   };
 
@@ -639,10 +681,10 @@ export const AIControlSection = () => {
                     {formatNumber(metrics.totalTokens)}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Consumidos por {metrics.totalUsers} usuários hoje
+                    {text.consumedByUsers.replace('{count}', String(metrics.totalUsers))}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Média: {formatNumber(metrics.avgTokensPerUser)} tokens/usuário
+                    {text.avgTokensPerUserShort.replace('{count}', formatNumber(metrics.avgTokensPerUser))}
                   </div>
                 </CardContent>
               </Card>
@@ -670,7 +712,7 @@ export const AIControlSection = () => {
                   <CardContent>
                     <div className="text-2xl font-bold">{formatNumber(metrics.totalRequests)}</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {formatNumber(metrics.avgTokensPerUser)} tokens/usuário
+                      {text.avgTokensPerUserShort.replace('{count}', formatNumber(metrics.avgTokensPerUser))}
                     </div>
                   </CardContent>
                 </Card>
@@ -683,7 +725,7 @@ export const AIControlSection = () => {
                   <CardContent>
                     <div className="text-2xl font-bold">{formatCurrency(metrics.totalCost)}</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Média: {formatCurrency(metrics.totalCost / Math.max(metrics.totalUsers, 1))} / usuário
+                      {text.avgPerUser.replace('{cost}', formatCurrency(metrics.totalCost / Math.max(metrics.totalUsers, 1)))}
                     </div>
                   </CardContent>
                 </Card>
@@ -698,7 +740,7 @@ export const AIControlSection = () => {
                       {formatNumber(metrics.usersNearLimit)}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Acima de 80% do limite
+                      {text.above80Limit}
                     </div>
                   </CardContent>
                 </Card>
@@ -728,9 +770,9 @@ export const AIControlSection = () => {
                         <div className="text-3xl font-bold text-amber-700">
                           {formatNumber(metrics.topUser.tokens_used)}
                         </div>
-                        <div className="text-sm text-muted-foreground">tokens utilizados</div>
+                        <div className="text-sm text-muted-foreground">{text.tokensUsed}</div>
                         <div className="text-sm">
-                          {formatNumber(metrics.topUser.requests_count)} requisições • {formatCurrency(Number(metrics.topUser.estimated_cost_brl))}
+                          {text.requestsAndCost.replace('{requests}', formatNumber(metrics.topUser.requests_count)).replace('{cost}', formatCurrency(Number(metrics.topUser.estimated_cost_brl)))}
                         </div>
                       </div>
                     </div>
@@ -758,7 +800,7 @@ export const AIControlSection = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold text-blue-700">{formatNumber(metrics.totalUsers)}</div>
-                      <div className="text-sm text-blue-600">Usuários Ativos</div>
+                      <div className="text-sm text-blue-600">{text.activeUsers}</div>
                     </div>
                     <Users className="h-8 w-8 text-blue-500" />
                   </div>
@@ -770,7 +812,7 @@ export const AIControlSection = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold text-green-700">{formatNumber(metrics.avgTokensPerUser)}</div>
-                      <div className="text-sm text-green-600">Tokens/Usuário</div>
+                      <div className="text-sm text-green-600">{text.tokensPerUser}</div>
                     </div>
                     <Target className="h-8 w-8 text-green-500" />
                   </div>
@@ -782,7 +824,7 @@ export const AIControlSection = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold text-purple-700">{formatCurrency(metrics.totalCost)}</div>
-                      <div className="text-sm text-purple-600">Custo Total</div>
+                      <div className="text-sm text-purple-600">{text.totalCost}</div>
                     </div>
                     <DollarSign className="h-8 w-8 text-purple-500" />
                   </div>
@@ -795,7 +837,7 @@ export const AIControlSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                {text.users} - Detalhamento de Uso
+                {text.users} - {text.usersDetail}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1033,9 +1075,9 @@ export const AIControlSection = () => {
                         <div className="text-3xl font-bold text-emerald-700">
                           {formatNumber(monthlyMetrics.topUser.monthly_tokens)}
                         </div>
-                        <div className="text-sm text-muted-foreground">tokens no mês</div>
+                        <div className="text-sm text-muted-foreground">{text.tokensInMonth}</div>
                         <div className="text-sm">
-                          {formatNumber(monthlyMetrics.topUser.monthly_requests)} requisições • {formatCurrency(monthlyMetrics.topUser.monthly_cost)}
+                          {text.requestsAndCost.replace('{requests}', formatNumber(monthlyMetrics.topUser.monthly_requests)).replace('{cost}', formatCurrency(monthlyMetrics.topUser.monthly_cost))}
                         </div>
                       </div>
                     </div>
@@ -1048,7 +1090,7 @@ export const AIControlSection = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5" />
-                    Usuários do Mês - Ranking por Tokens
+                    {text.monthlyUsersRanking}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1084,7 +1126,7 @@ export const AIControlSection = () => {
                             <div className="text-sm font-medium text-muted-foreground">{text.requests}</div>
                             <div className="text-xl font-bold text-green-600">{formatNumber(user.monthly_requests)}</div>
                             <div className="text-xs text-muted-foreground">
-                              ~{formatNumber(Math.round(user.monthly_requests / user.days_active))} por dia ativo
+                              ~{formatNumber(Math.round(user.monthly_requests / user.days_active))} {text.perActiveDay}
                             </div>
                           </div>
 
@@ -1092,7 +1134,7 @@ export const AIControlSection = () => {
                             <div className="text-sm font-medium text-muted-foreground">{text.tokens}</div>
                             <div className="text-xl font-bold text-blue-600">{formatNumber(user.monthly_tokens)}</div>
                             <div className="text-xs text-muted-foreground">
-                              ~{formatNumber(Math.round(user.monthly_tokens / user.days_active))} por dia ativo
+                              ~{formatNumber(Math.round(user.monthly_tokens / user.days_active))} {text.perActiveDay}
                             </div>
                           </div>
 
@@ -1100,7 +1142,7 @@ export const AIControlSection = () => {
                             <div className="text-sm font-medium text-muted-foreground">{text.cost}</div>
                             <div className="text-xl font-bold text-purple-600">{formatCurrency(user.monthly_cost)}</div>
                             <div className="text-xs text-muted-foreground">
-                              ~{formatCurrency(user.monthly_cost / user.days_active)} por dia ativo
+                              ~{formatCurrency(user.monthly_cost / user.days_active)} {text.perActiveDay}
                             </div>
                           </div>
                         </div>
