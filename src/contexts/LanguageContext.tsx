@@ -285,7 +285,7 @@ const translations = {
     
     // AI Recommendations
     'aiRecommendations.title': 'Consultora PrIscA',
-    'aiRecommendations.subtitle': 'Sua consultora financeira direta e sem papas na língua',
+    'aiRecommendations.subtitle': 'Sua consultora Financeira de IA sem papas na língua',
     'aiRecommendations.analysisPanel': 'Período de Análise',
     'aiRecommendations.analysisPeriod': 'Período de Análise',
     'aiRecommendations.from': 'De:',
