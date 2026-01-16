@@ -605,6 +605,7 @@ const translations = {
     'monthlyExpenses.cardPayment': 'Pagamento do Cartão',
     'monthlyExpenses.payModal.title': 'Pagar Gasto Futuro',
     'monthlyExpenses.payModal.button': 'Pagar Gasto',
+    'monthlyExpenses.payModal.successMessage': 'Pagamento registrado com sucesso!',
     
     // Export functionality
     'export.selectFormat': 'Formato',
@@ -2996,6 +2997,7 @@ const translations = {
     'monthlyExpenses.cardPayment': 'Card Payment',
     'monthlyExpenses.payModal.title': 'Pay Future Expense',
     'monthlyExpenses.payModal.button': 'Pay Expense',
+    'monthlyExpenses.payModal.successMessage': 'Payment successfully registered!',
     
     // Future Expenses PDF/CSV Export
     'futureExpenses.description': 'Description',
@@ -5436,6 +5438,7 @@ const translations = {
     'monthlyExpenses.cardPayment': 'Pago de Tarjeta',
     'monthlyExpenses.payModal.title': 'Pagar Gasto Futuro',
     'monthlyExpenses.payModal.button': 'Pagar Gasto',
+    'monthlyExpenses.payModal.successMessage': '¡Pago registrado con éxito!',
     'monthlyExpenses.pdfTitle': 'Informe de Gastos Mensuales',
     'monthlyExpenses.pdfPeriod': 'Período',
     'monthlyExpenses.pdfTotalExpenses': 'Total de Gastos',
