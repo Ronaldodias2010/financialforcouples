@@ -15,7 +15,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
-import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User, Globe, MapPin } from "lucide-react";
+import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User, Globe, MapPin, ArrowRight, Info } from "lucide-react";
 import { PromotionsSection } from './PromotionsSection';
 import { format } from "date-fns";
 import { parseLocalDate } from "@/utils/date";
@@ -728,6 +728,14 @@ export const MileageSystem = () => {
                           <SelectItem value="EUR">Euro (EUR)</SelectItem>
                         </SelectContent>
                       </Select>
+                      {ruleForm.currency !== 'BRL' && ruleForm.purchase_type === 'domestic' && (
+                        <div className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
+                          <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                            Compras em BRL serão convertidas automaticamente para {ruleForm.currency} usando a cotação atual antes do cálculo de pontos.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -772,6 +780,45 @@ export const MileageSystem = () => {
                     </div>
                   </div>
 
+                  {/* Preview do cálculo */}
+                  {ruleForm.miles_per_amount > 0 && ruleForm.amount_threshold > 0 && (
+                    <div className="p-4 bg-muted/50 rounded-lg border">
+                      <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Preview do Cálculo
+                      </h4>
+                      {ruleForm.currency !== 'BRL' && ruleForm.purchase_type === 'domestic' ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm flex-wrap">
+                            <span className="font-medium">R$ 100,00</span>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium text-blue-600">
+                              {ruleForm.currency === 'USD' ? '≈ US$ ' : '≈ € '}
+                              {(100 * (ruleForm.currency === 'USD' ? 0.1843 : 0.1572)).toFixed(2)}
+                            </span>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium text-green-600">
+                              ≈ {Math.floor(((100 * (ruleForm.currency === 'USD' ? 0.1843 : 0.1572)) / ruleForm.amount_threshold) * ruleForm.miles_per_amount)} pontos
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Conversão automática BRL → {ruleForm.currency} aplicada
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-medium">
+                            {getCurrencySymbol(ruleForm.currency as CurrencyCode)} 100,00
+                          </span>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium text-green-600">
+                            {Math.floor((100 / ruleForm.amount_threshold) * ruleForm.miles_per_amount)} pontos
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <Button type="submit">{t('mileage.createRule')}</Button>
                     <Button type="button" variant="outline" onClick={() => setShowRuleForm(false)}>
@@ -812,9 +859,14 @@ export const MileageSystem = () => {
                       <p className="text-sm text-muted-foreground">
                         {rule.bank_name} • {rule.card_brand}
                       </p>
-                      <p className="text-sm">
-                        {rule.miles_per_amount} {t('mileage.milesEarned')} {t('mileage.amountThreshold')} {rule.currency} {rule.amount_threshold}
-                      </p>
+                      <div className="text-sm">
+                        <span className="font-medium">{rule.miles_per_amount} pontos</span> por {rule.currency} {rule.amount_threshold}
+                        {rule.currency !== 'BRL' && (rule.purchase_type === 'domestic' || !rule.purchase_type) && (
+                          <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                            (converte BRL → {rule.currency})
+                          </span>
+                        )}
+                      </div>
                       {rule.existing_miles && rule.existing_miles > 0 && (
                         <p className="text-xs text-muted-foreground">
                           Milhas existentes: {Math.floor(rule.existing_miles).toLocaleString()}
