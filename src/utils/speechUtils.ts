@@ -162,7 +162,13 @@ export class SpeechSynthesisManager {
     this.currentUtterance.onerror = (event) => {
       this.isSpeaking = false;
       this.currentUtterance = null;
-      this.onError(`Erro na síntese de voz: ${event.error}`);
+      // "interrupted" is not a real error - it happens when the user stops speech
+      if (event.error !== 'interrupted' && event.error !== 'canceled') {
+        this.onError(`Erro na síntese de voz: ${event.error}`);
+      } else {
+        // Just call onEnd for graceful stop
+        this.onEnd();
+      }
     };
 
     // Select the best voice for the language
@@ -178,22 +184,51 @@ export class SpeechSynthesisManager {
 
   private selectBestVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
     const langCode = this.getLanguageCode();
+    const langPrefix = langCode.split('-')[0];
     
-    // Try to find a local voice first
-    const localVoices = voices.filter(voice => 
-      voice.lang.startsWith(langCode.split('-')[0]) && voice.localService
+    // Filter voices by language
+    const languageVoices = voices.filter(voice => 
+      voice.lang.startsWith(langPrefix)
     );
     
+    // Prefer female voices for PrIscA (she's a woman!)
+    // Common female voice name patterns across browsers
+    const femalePatterns = [
+      /female/i, /mulher/i, /mujer/i, /woman/i,
+      /maria/i, /lucia/i, /luciana/i, /fernanda/i, /ana/i,
+      /google.*female/i, /microsoft.*female/i,
+      // Portuguese female voices
+      /vitória/i, /francisca/i, /raquel/i, /catarina/i,
+      // English female voices  
+      /samantha/i, /victoria/i, /karen/i, /moira/i, /tessa/i, /fiona/i,
+      // Spanish female voices
+      /mónica/i, /paulina/i, /helena/i
+    ];
+    
+    // Try to find a female voice
+    const femaleVoice = languageVoices.find(voice => 
+      femalePatterns.some(pattern => pattern.test(voice.name))
+    );
+    
+    if (femaleVoice) {
+      console.log('🎤 Selected female voice for PrIscA:', femaleVoice.name);
+      return femaleVoice;
+    }
+    
+    // If no explicit female voice found, try local voices first (usually better quality)
+    const localVoices = languageVoices.filter(voice => voice.localService);
     if (localVoices.length > 0) {
+      console.log('🎤 Using local voice:', localVoices[0].name);
       return localVoices[0];
     }
-
-    // Fallback to any voice in the target language
-    const anyVoices = voices.filter(voice => 
-      voice.lang.startsWith(langCode.split('-')[0])
-    );
     
-    return anyVoices.length > 0 ? anyVoices[0] : null;
+    // Fallback to any voice in the target language
+    if (languageVoices.length > 0) {
+      console.log('🎤 Using fallback voice:', languageVoices[0].name);
+      return languageVoices[0];
+    }
+    
+    return null;
   }
 
   private getLanguageCode(): string {
