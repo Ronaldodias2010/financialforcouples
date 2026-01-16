@@ -225,6 +225,26 @@ export const GoalsManager = ({ goals, onRefresh, userPreferredCurrency }: GoalsM
 
   return (
     <div className="space-y-6">
+      {/* Introduction Card */}
+      <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <Target className="h-6 w-6 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-lg">{t('goals.whyGoals') || 'Por que definir objetivos?'}</h3>
+              <p className="text-sm text-muted-foreground">
+                {t('goals.goalsImportance') || 'Ter objetivos financeiros claros é fundamental para o sucesso dos seus investimentos. Eles servem como bússola, orientando suas decisões e mantendo você motivado a longo prazo.'}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t('goals.goalsInvestmentLink') || 'Ao criar um objetivo, você poderá vincular seus investimentos a ele. Assim, o sistema calculará automaticamente o progresso com base no valor atual dos investimentos associados, mostrando o quanto falta para alcançar sua meta.'}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">{t('goals.title')}</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

@@ -543,8 +543,8 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
           <div className="hidden sm:flex space-x-8">
             {[
               { id: "overview", label: t('investments.overview'), icon: TrendingUp },
-              { id: "investments", label: t('investments.title'), icon: TrendingUp },
               { id: "goals", label: t('investments.goals'), icon: Target },
+              { id: "investments", label: t('investments.title'), icon: TrendingUp },
               { id: "charts", label: t('investments.portfolioChart'), icon: PieChart },
               { id: "simulator", label: t('investments.profitabilitySimulator'), icon: Calculator }
             ].map((tab) => {
@@ -573,8 +573,8 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
             <div className="flex space-x-4 justify-center">
               {[
                 { id: "overview", label: t('investments.overview'), icon: TrendingUp },
-                { id: "investments", label: t('investments.title'), icon: TrendingUp },
-                { id: "goals", label: t('investments.goals'), icon: Target }
+                { id: "goals", label: t('investments.goals'), icon: Target },
+                { id: "investments", label: t('investments.title'), icon: TrendingUp }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -703,6 +703,14 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
           </div>
         </TabsContent>
 
+        <TabsContent value="goals">
+          <GoalsManager 
+            goals={goals}
+            onRefresh={fetchGoals}
+            userPreferredCurrency={userPreferredCurrency}
+          />
+        </TabsContent>
+
         <TabsContent value="investments">
           <InvestmentList 
             investments={investments} 
@@ -710,14 +718,6 @@ export const InvestmentDashboard = ({ onBack, viewMode: initialViewMode }: Inves
             onRefresh={fetchInvestments}
             userPreferredCurrency={userPreferredCurrency}
             onEdit={handleEdit}
-          />
-        </TabsContent>
-
-        <TabsContent value="goals">
-          <GoalsManager 
-            goals={goals}
-            onRefresh={fetchGoals}
-            userPreferredCurrency={userPreferredCurrency}
           />
         </TabsContent>
 
