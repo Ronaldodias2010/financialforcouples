@@ -361,7 +361,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                 <span>{formatDate(expense.due_date)}</span>
                 {isOverdue && (
                   <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-medium">
-                    {daysOverdue} {daysOverdue === 1 ? 'dia' : 'dias'} atraso
+                    {daysOverdue} {daysOverdue === 1 ? (t('common.day') || 'dia') : (t('common.days') || 'dias')} {t('common.overdue') || 'em atraso'}
                   </span>
                 )}
               </div>
