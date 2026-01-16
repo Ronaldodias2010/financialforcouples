@@ -282,6 +282,10 @@ const translations = {
     'converter.paymentMethods.wire': 'Wire Transfer',
     'converter.paymentMethods.check': 'Cheque',
     'converter.paymentMethods.zelle': 'Zelle',
+    'converter.steps.source': 'Origem',
+    'converter.steps.differences': 'Diferenças',
+    'converter.steps.differencesShort': 'Dif.',
+    'converter.steps.import': 'Importar',
     
     // AI Recommendations
     'aiRecommendations.title': 'Consultora PrIscA',
@@ -2675,6 +2679,10 @@ const translations = {
     'converter.paymentMethods.wire': 'Wire Transfer',
     'converter.paymentMethods.check': 'Check',
     'converter.paymentMethods.zelle': 'Zelle',
+    'converter.steps.source': 'Source',
+    'converter.steps.differences': 'Differences',
+    'converter.steps.differencesShort': 'Diff.',
+    'converter.steps.import': 'Import',
     
     // AI Recommendations
     'aiRecommendations.title': 'PrIscA Consultant',
@@ -5037,6 +5045,10 @@ const translations = {
     'converter.paymentMethods.wire': 'Transferencia Wire',
     'converter.paymentMethods.check': 'Cheque',
     'converter.paymentMethods.zelle': 'Zelle',
+    'converter.steps.source': 'Origen',
+    'converter.steps.differences': 'Diferencias',
+    'converter.steps.differencesShort': 'Dif.',
+    'converter.steps.import': 'Importar',
     
     // AI Recommendations
     'aiRecommendations.title': 'Consultora PrIscA',
