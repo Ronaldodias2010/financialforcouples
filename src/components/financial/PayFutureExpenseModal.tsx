@@ -108,8 +108,8 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     if (isOpen) {
       // Reset interest when modal opens
       setInterestAmount('');
-      // ⭐ Pre-select category if expense has one
-      setSelectedCategory(expense.categoryId || '');
+      // ⭐ Pre-select category if expense has one, use 'none' for no category
+      setSelectedCategory(expense.categoryId || 'none');
     }
   }, [isOpen, expense.categoryId]);
 
@@ -253,12 +253,12 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
         paymentMethod: correctPaymentMethod,
         interestAmount: parsedInterest,
-        categoryId: selectedCategory || undefined, // ⭐ Passar categoria selecionada
+        categoryId: selectedCategory === 'none' ? undefined : selectedCategory, // ⭐ Passar categoria selecionada
       });
     } else {
       // Handle other types of expenses
       // ⭐ Determinar categoryId: usar selecionada, ou do cartão, ou original
-      let finalCategoryId = selectedCategory || undefined;
+      let finalCategoryId = selectedCategory === 'none' ? undefined : selectedCategory;
       if (expense.type === 'card_payment' && cardPaymentCategoryId) {
         finalCategoryId = cardPaymentCategoryId;
       }
@@ -293,7 +293,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     setPaymentMethod('cash');
     setSelectedAccount('');
     setSelectedCard('');
-    setSelectedCategory('');
+    setSelectedCategory('none');
     setNotes('');
     setInterestAmount('');
   };
@@ -438,7 +438,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                   <SelectValue placeholder={t('payFutureExpense.selectCategory') || 'Selecione uma categoria'} />
                 </SelectTrigger>
                 <SelectContent className="bg-background border shadow-md z-50 max-h-[200px]">
-                  <SelectItem value="">
+                  <SelectItem value="none">
                     <span className="text-muted-foreground">{t('common.noCategory') || 'Sem categoria'}</span>
                   </SelectItem>
                   {categories.map((category) => (
