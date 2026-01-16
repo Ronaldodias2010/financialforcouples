@@ -37,6 +37,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const EmailTest = lazy(() => import("./pages/EmailTest"));
 const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
 const CleanupPastel = lazy(() => import("./pages/CleanupPastel"));
+const CleanupNetflix = lazy(() => import("./pages/CleanupNetflix"));
 const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m => ({ default: m.TestPartnerEmails })));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
@@ -91,6 +92,7 @@ const AppRoutes = () => {
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
         <Route path="/cleanup-pastel" element={<ProtectedRoute><CleanupPastel /></ProtectedRoute>} />
+        <Route path="/cleanup-netflix" element={<ProtectedRoute><CleanupNetflix /></ProtectedRoute>} />
         <Route path="/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
         <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
         <Route path="/test-emails" element={<TestPartnerEmails />} />
