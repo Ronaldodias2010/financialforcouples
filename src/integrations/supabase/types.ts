@@ -278,6 +278,7 @@ export type Database = {
           id: string
           is_active: boolean
           miles_per_amount: number
+          purchase_type: string | null
           updated_at: string
           user_id: string
         }
@@ -292,6 +293,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           miles_per_amount?: number
+          purchase_type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -306,6 +308,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           miles_per_amount?: number
+          purchase_type?: string | null
           updated_at?: string
           user_id?: string
         }
