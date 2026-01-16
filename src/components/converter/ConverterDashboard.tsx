@@ -522,9 +522,9 @@ export const ConverterDashboard: React.FC = () => {
     const steps = [
       { key: 'upload', icon: Upload, label: 'Upload', shortLabel: 'Upload' },
       { key: 'preview', icon: Eye, label: 'Preview', shortLabel: 'Preview' },
-      { key: 'select-source', icon: Users, label: 'Origem', shortLabel: 'Origem' },
-      { key: 'differences', icon: ArrowLeftRight, label: 'Diferenças', shortLabel: 'Dif.' },
-      { key: 'import', icon: Send, label: 'Importar', shortLabel: 'Importar' },
+      { key: 'select-source', icon: Users, label: t('converter.steps.source') || 'Source', shortLabel: t('converter.steps.source') || 'Source' },
+      { key: 'differences', icon: ArrowLeftRight, label: t('converter.steps.differences') || 'Differences', shortLabel: t('converter.steps.differencesShort') || 'Diff.' },
+      { key: 'import', icon: Send, label: t('converter.steps.import') || 'Import', shortLabel: t('converter.steps.import') || 'Import' },
     ];
 
     const currentIndex = steps.findIndex(s => s.key === currentStep);
