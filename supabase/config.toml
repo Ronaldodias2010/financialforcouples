@@ -107,3 +107,6 @@ verify_jwt = true
 
 [functions.fetch-reconciliation-data]
 verify_jwt = true
+
+[functions.verify-2fa-email]
+verify_jwt = false

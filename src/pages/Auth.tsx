@@ -157,10 +157,17 @@ export default function Auth() {
           });
 
           if (tfaResponse?.is_enabled && tfaResponse?.method && tfaResponse.method !== 'none') {
-            // Enviar código se for SMS ou Email
-            if (tfaResponse.method === 'sms' || tfaResponse.method === 'email') {
+            // Enviar código no canal correto
+            if (tfaResponse.method === 'sms') {
+              const phone = tfaResponse.phone_number;
+              if (phone) {
+                await supabase.functions.invoke('send-phone-verification', {
+                  body: { phoneNumber: phone, language }
+                });
+              }
+            } else if (tfaResponse.method === 'email') {
               await supabase.functions.invoke('send-2fa-email', {
-                body: { userId: data.user.id, method: tfaResponse.method }
+                body: { userId: data.user.id, email: data.user.email ?? email, language }
               });
             }
             
