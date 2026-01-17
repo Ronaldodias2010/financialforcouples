@@ -78,6 +78,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [cashAccountId, setCashAccountId] = useState<string | null>(null);
 
   // Calculate if expense is overdue
   const daysOverdue = useMemo(() => {
@@ -136,7 +137,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
       return `Saldo insuficiente na conta "${selectedAccountData.name}". Disponível: ${formatCurrencyWithConverter(selectedAccountData.balance, currency)}`;
     }
     return null;
-  }, [expense.amount, parsedInterest]);
+  }, [paymentMethod, hasSufficientCashBalance, hasSufficientAccountBalance, cashBalance, selectedAccountData, expense.currency, formatCurrencyWithConverter]);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -171,18 +172,32 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         userIds = [coupleData.user1_id, coupleData.user2_id];
       }
 
-      // Fetch accounts (including partner's accounts)
+      // Fetch accounts (including partner's accounts) - excluding cash accounts
       const { data: accountsData, error: accountsError } = await supabase
         .from('accounts')
         .select('id, name, balance')
         .in('user_id', userIds)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .or('is_cash_account.is.null,is_cash_account.eq.false');
 
       if (accountsError) {
         console.error('Error fetching accounts:', accountsError);
       } else {
         setAccounts(accountsData || []);
       }
+
+      // Fetch cash account for the expense currency
+      const expenseCurrency = expense.currency || 'BRL';
+      const { data: cashAccountData } = await supabase
+        .from('accounts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_cash_account', true)
+        .eq('currency', expenseCurrency)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      setCashAccountId(cashAccountData?.id || null);
 
       // Fetch cards (including partner's cards)
       const { data: cardsData, error: cardsError } = await supabase
@@ -297,10 +312,15 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
     if (expense.type === 'manual_future' && expense.manualFutureExpenseId) {
       // Handle manual future expense payment
+      // For cash payments, use the cash account ID so the balance is deducted
+      const accountIdForPayment = paymentMethod === 'cash' 
+        ? cashAccountId || undefined
+        : (paymentMethod === 'account' ? selectedAccount : undefined);
+
       result = await payManualExpense({
         expenseId: expense.manualFutureExpenseId,
         paymentDate,
-        accountId: paymentMethod === 'account' ? selectedAccount : undefined,
+        accountId: accountIdForPayment,
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
         paymentMethod: correctPaymentMethod,
         interestAmount: parsedInterest,
@@ -314,6 +334,11 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         finalCategoryId = cardPaymentCategoryId;
       }
       
+      // For cash payments, use the cash account ID so the balance is deducted
+      const accountIdForPayment = paymentMethod === 'cash' 
+        ? cashAccountId || undefined
+        : (paymentMethod === 'account' ? selectedAccount : undefined);
+
       const paymentParams = {
         recurringExpenseId: expense.recurringExpenseId,
         installmentTransactionId: expense.installmentTransactionId,
@@ -323,7 +348,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
         amount: expense.amount,
         description: `${expense.description}${notes ? ` - ${notes}` : ''}`,
         paymentMethod: correctPaymentMethod,
-        accountId: paymentMethod === 'account' ? selectedAccount : undefined,
+        accountId: accountIdForPayment,
         cardId: paymentMethod === 'card' ? selectedCard : undefined,
         categoryId: finalCategoryId, // ⭐ Usar categoria selecionada
         interestAmount: parsedInterest,
