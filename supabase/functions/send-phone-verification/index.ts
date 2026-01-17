@@ -62,6 +62,27 @@ serve(async (req) => {
 
       if (!response.ok) {
         console.error('[SMS 2FA] Twilio Verify error:', responseData);
+        
+        // Check for specific Twilio error codes
+        if (responseData.code === 60410) {
+          // Phone number is blocked by Twilio
+          return new Response(
+            JSON.stringify({ 
+              error: 'phone_blocked',
+              message: language === 'en' 
+                ? 'This phone number has been temporarily blocked. Please use email verification instead.'
+                : language === 'es'
+                ? 'Este número de teléfono ha sido bloqueado temporalmente. Por favor, use la verificación por correo electrónico.'
+                : 'Este número de telefone foi temporariamente bloqueado. Por favor, use a verificação por e-mail.',
+              code: responseData.code
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 403 
+            }
+          );
+        }
+        
         throw new Error(responseData.message || 'Failed to send verification SMS');
       }
 
