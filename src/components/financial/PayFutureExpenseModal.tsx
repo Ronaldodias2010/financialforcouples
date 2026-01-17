@@ -13,7 +13,8 @@ import { useManualFutureExpenses } from '@/hooks/useManualFutureExpenses';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCurrencyConverter, type CurrencyCode } from '@/hooks/useCurrencyConverter';
 import { addMonetaryValues } from '@/utils/monetary';
-
+import { useCashBalance } from '@/hooks/useCashBalance';
+import { useToast } from '@/hooks/use-toast';
 interface PayFutureExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,6 +65,8 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const { payManualExpense } = useManualFutureExpenses();
   const { t, language } = useLanguage();
   const { formatCurrency: formatCurrencyWithConverter, convertCurrency } = useCurrencyConverter();
+  const { getCashBalance } = useCashBalance();
+  const { toast } = useToast();
   
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -95,6 +98,44 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
 
   const totalAmount = useMemo(() => {
     return addMonetaryValues(expense.amount, parsedInterest);
+  }, [expense.amount, parsedInterest]);
+
+  // Balance validation for cash payments
+  const cashBalance = useMemo(() => {
+    return getCashBalance((expense.currency as CurrencyCode) || 'BRL');
+  }, [getCashBalance, expense.currency]);
+
+  const hasSufficientCashBalance = useMemo(() => {
+    if (paymentMethod !== 'cash') return true;
+    return cashBalance >= totalAmount;
+  }, [paymentMethod, cashBalance, totalAmount]);
+
+  // Balance validation for account payments
+  const selectedAccountData = useMemo(() => {
+    return accounts.find(acc => acc.id === selectedAccount);
+  }, [accounts, selectedAccount]);
+
+  const hasSufficientAccountBalance = useMemo(() => {
+    if (paymentMethod !== 'account' || !selectedAccountData) return true;
+    return selectedAccountData.balance >= totalAmount;
+  }, [paymentMethod, selectedAccountData, totalAmount]);
+
+  // Combined validation
+  const hasInsufficientFunds = useMemo(() => {
+    if (paymentMethod === 'cash') return !hasSufficientCashBalance;
+    if (paymentMethod === 'account') return !hasSufficientAccountBalance;
+    return false;
+  }, [paymentMethod, hasSufficientCashBalance, hasSufficientAccountBalance]);
+
+  const balanceErrorMessage = useMemo(() => {
+    const currency = (expense.currency as CurrencyCode) || 'BRL';
+    if (paymentMethod === 'cash' && !hasSufficientCashBalance) {
+      return `Saldo em dinheiro insuficiente. Disponível: ${formatCurrencyWithConverter(cashBalance, currency)}`;
+    }
+    if (paymentMethod === 'account' && selectedAccountData && !hasSufficientAccountBalance) {
+      return `Saldo insuficiente na conta "${selectedAccountData.name}". Disponível: ${formatCurrencyWithConverter(selectedAccountData.balance, currency)}`;
+    }
+    return null;
   }, [expense.amount, parsedInterest]);
 
   useEffect(() => {
@@ -239,6 +280,16 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     e.preventDefault();
     
     if (!user) return;
+
+    // Validate balance before processing
+    if (hasInsufficientFunds) {
+      toast({
+        title: "Saldo insuficiente",
+        description: balanceErrorMessage || "Você não tem saldo suficiente para realizar este pagamento.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     let result;
     const correctPaymentMethod = await getCorrectPaymentMethod();
@@ -539,6 +590,21 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
               />
             </div>
 
+            {/* Insufficient Funds Alert */}
+            {hasInsufficientFunds && balanceErrorMessage && (
+              <div className="flex items-start gap-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-medium text-destructive">
+                    Saldo Insuficiente
+                  </p>
+                  <p className="text-destructive/80 mt-0.5">
+                    {balanceErrorMessage}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Buttons */}
             <div className="flex gap-2 pt-4">
               <Button
@@ -553,7 +619,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
               <Button
                 type="submit"
                 className="flex-1"
-                disabled={isProcessing || (paymentMethod === 'account' && !selectedAccount) || (paymentMethod === 'card' && !selectedCard)}
+                disabled={isProcessing || hasInsufficientFunds || (paymentMethod === 'account' && !selectedAccount) || (paymentMethod === 'card' && !selectedCard)}
               >
                 {isProcessing ? 'Processando...' : (
                   parsedInterest > 0 
