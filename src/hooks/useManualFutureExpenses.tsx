@@ -231,9 +231,11 @@ export const useManualFutureExpenses = () => {
       }
 
       // ⭐ CRITICAL: Mark manual expense as paid using CLEAN ID
-      console.log('📝 [payManualExpense] Marking expense as paid:', cleanExpenseId);
+      // Usar o ID do registro que encontramos (manualExpense.id) para garantir consistência
+      const expenseIdToUpdate = manualExpense.id;
+      console.log('📝 [payManualExpense] Marking expense as paid:', expenseIdToUpdate, 'original cleanExpenseId:', cleanExpenseId);
       
-      const { error: updateError } = await supabase
+      const { data: updateData, error: updateError } = await supabase
         .from('manual_future_expenses')
         .update({
           is_paid: true,
@@ -243,13 +245,17 @@ export const useManualFutureExpenses = () => {
           category_id: finalCategoryId, // ⭐ Atualizar categoria se foi alterada
           updated_at: new Date().toISOString()
         })
-        .eq('id', cleanExpenseId); // ⭐ Usar ID limpo!
+        .eq('id', expenseIdToUpdate) // ⭐ Usar ID do registro encontrado!
+        .in('user_id', userIds) // ⭐ Incluir userIds para garantir RLS
+        .select();
 
       if (updateError) {
         console.error('❌ [payManualExpense] Error updating manual expense:', updateError);
         // Don't fail the payment if this update fails
+      } else if (!updateData || updateData.length === 0) {
+        console.error('❌ [payManualExpense] No rows updated! Check RLS policies.');
       } else {
-        console.log('✅ [payManualExpense] Successfully marked as paid');
+        console.log('✅ [payManualExpense] Successfully marked as paid:', updateData);
       }
 
       // ⭐ CRITICAL: Invalidate React Query cache to update dashboard immediately
