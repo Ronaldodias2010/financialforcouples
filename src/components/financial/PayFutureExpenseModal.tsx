@@ -46,6 +46,8 @@ interface Card {
   name: string;
   card_type: string;
   initial_balance: number;
+  credit_limit: number | null;
+  current_balance: number | null;
 }
 
 interface Category {
@@ -121,12 +123,31 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     return selectedAccountData.balance >= totalAmount;
   }, [paymentMethod, selectedAccountData, totalAmount]);
 
+  // Balance validation for card payments
+  const selectedCardData = useMemo(() => {
+    return cards.find(card => card.id === selectedCard);
+  }, [cards, selectedCard]);
+
+  const hasSufficientCardLimit = useMemo(() => {
+    if (paymentMethod !== 'card' || !selectedCardData) return true;
+    // For credit cards, check available limit (credit_limit - current_balance)
+    if (selectedCardData.card_type === 'credit') {
+      const creditLimit = selectedCardData.credit_limit || 0;
+      const currentBalance = selectedCardData.current_balance || 0;
+      const availableLimit = creditLimit - currentBalance;
+      return availableLimit >= totalAmount;
+    }
+    // For debit cards, we don't validate here (uses linked account)
+    return true;
+  }, [paymentMethod, selectedCardData, totalAmount]);
+
   // Combined validation
   const hasInsufficientFunds = useMemo(() => {
     if (paymentMethod === 'cash') return !hasSufficientCashBalance;
     if (paymentMethod === 'account') return !hasSufficientAccountBalance;
+    if (paymentMethod === 'card') return !hasSufficientCardLimit;
     return false;
-  }, [paymentMethod, hasSufficientCashBalance, hasSufficientAccountBalance]);
+  }, [paymentMethod, hasSufficientCashBalance, hasSufficientAccountBalance, hasSufficientCardLimit]);
 
   const balanceErrorMessage = useMemo(() => {
     const currency = (expense.currency as CurrencyCode) || 'BRL';
@@ -136,8 +157,14 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
     if (paymentMethod === 'account' && selectedAccountData && !hasSufficientAccountBalance) {
       return `Saldo insuficiente na conta "${selectedAccountData.name}". Disponível: ${formatCurrencyWithConverter(selectedAccountData.balance, currency)}`;
     }
+    if (paymentMethod === 'card' && selectedCardData && !hasSufficientCardLimit) {
+      const creditLimit = selectedCardData.credit_limit || 0;
+      const currentBalance = selectedCardData.current_balance || 0;
+      const availableLimit = creditLimit - currentBalance;
+      return `Limite insuficiente no cartão "${selectedCardData.name}". Disponível: ${formatCurrencyWithConverter(availableLimit, currency)}`;
+    }
     return null;
-  }, [paymentMethod, hasSufficientCashBalance, hasSufficientAccountBalance, cashBalance, selectedAccountData, expense.currency, formatCurrencyWithConverter]);
+  }, [paymentMethod, hasSufficientCashBalance, hasSufficientAccountBalance, hasSufficientCardLimit, cashBalance, selectedAccountData, selectedCardData, expense.currency, formatCurrencyWithConverter]);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -202,8 +229,9 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
       // Fetch cards (including partner's cards)
       const { data: cardsData, error: cardsError } = await supabase
         .from('cards')
-        .select('id, name, card_type, initial_balance')
-        .in('user_id', userIds);
+        .select('id, name, card_type, initial_balance, credit_limit, current_balance')
+        .in('user_id', userIds)
+        .is('deleted_at', null);
 
       if (cardsError) {
         console.error('Error fetching cards:', cardsError);
