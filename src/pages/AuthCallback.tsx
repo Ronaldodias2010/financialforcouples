@@ -21,8 +21,9 @@ export default function AuthCallback() {
   const [selectedMethod, setSelectedMethod] = useState<TwoFactorMethod>('totp');
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [smsBlocked, setSmsBlocked] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { shouldShowPrompt, dismissPrompt, isLoaded } = use2FAPrompt();
   const { isSessionValid, setVerifiedSession, isLoaded: isSessionLoaded } = use2FASession();
   const { markAs2FAEnabled } = use2FAStatus();
@@ -65,13 +66,37 @@ export default function AuthCallback() {
               // Para SMS, usar a função de verificação de telefone
               const phoneNumber = tfaResponse.phone_number;
               if (phoneNumber) {
-                await supabase.functions.invoke('send-phone-verification', {
-                  body: { phoneNumber }
+                const { data: smsResponse, error: smsError } = await supabase.functions.invoke('send-phone-verification', {
+                  body: { phoneNumber, language }
                 });
+                
+                // Check if phone is blocked by Twilio
+                if (smsError || smsResponse?.error === 'phone_blocked') {
+                  console.warn('SMS blocked, offering email fallback');
+                  setSmsBlocked(true);
+                  // Try to send email as fallback
+                  await supabase.functions.invoke('send-2fa-email', {
+                    body: { userId: session.user.id, email: session.user.email, language }
+                  });
+                  toast({
+                    variant: 'destructive',
+                    title: language === 'en' ? 'SMS Unavailable' : language === 'es' ? 'SMS No Disponible' : 'SMS Indisponível',
+                    description: language === 'en' 
+                      ? 'Your phone number is temporarily blocked. A verification code was sent to your email.'
+                      : language === 'es'
+                      ? 'Su número de teléfono está bloqueado temporalmente. Se envió un código a su correo.'
+                      : 'Seu número de telefone está temporariamente bloqueado. Um código foi enviado para seu e-mail.',
+                  });
+                  // Switch to email method
+                  setTwoFactorMethod('email');
+                  setShow2FA(true);
+                  setIsLoading(false);
+                  return;
+                }
               }
             } else if (tfaResponse.method === 'email') {
               await supabase.functions.invoke('send-2fa-email', {
-                body: { userId: session.user.id, email: session.user.email }
+                body: { userId: session.user.id, email: session.user.email, language }
               });
             }
             
