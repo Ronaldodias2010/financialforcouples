@@ -65,20 +65,21 @@ serve(async (req) => {
         
         // Check for specific Twilio error codes
         if (responseData.code === 60410) {
-          // Phone number is blocked by Twilio
+          // Phone number is blocked by Twilio (treat as a handled business-case, not a hard error)
           return new Response(
-            JSON.stringify({ 
+            JSON.stringify({
+              success: false,
               error: 'phone_blocked',
-              message: language === 'en' 
+              message: language === 'en'
                 ? 'This phone number has been temporarily blocked. Please use email verification instead.'
                 : language === 'es'
                 ? 'Este número de teléfono ha sido bloqueado temporalmente. Por favor, use la verificación por correo electrónico.'
                 : 'Este número de telefone foi temporariamente bloqueado. Por favor, use a verificação por e-mail.',
-              code: responseData.code
+              code: responseData.code,
             }),
-            { 
+            {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 403 
+              status: 200,
             }
           );
         }

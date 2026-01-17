@@ -38,7 +38,7 @@ export function use2FA(): Use2FAReturn {
   const [settings, setSettings] = useState<TwoFactorSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -190,7 +190,7 @@ export function use2FA(): Use2FAReturn {
 
       if (method === 'email') {
         const { error } = await supabase.functions.invoke('send-2fa-email', {
-          body: { userId: user.id, email: user.email }
+          body: { userId: user.id, email: user.email, language }
         });
 
         if (error) {
@@ -200,7 +200,7 @@ export function use2FA(): Use2FAReturn {
       } else if (method === 'sms') {
         // Try to get phone from 2FA settings first, then from profile
         let phoneNumber = settings?.phone_number;
-        
+
         if (!phoneNumber) {
           // Fetch from profile as fallback
           const { data: profile } = await supabase
@@ -208,7 +208,7 @@ export function use2FA(): Use2FAReturn {
             .select('phone_number')
             .eq('user_id', user.id)
             .single();
-          
+
           if (profile?.phone_number) {
             phoneNumber = profile.phone_number.replace(/\D/g, '');
             if (!phoneNumber.startsWith('+')) {
@@ -216,7 +216,7 @@ export function use2FA(): Use2FAReturn {
             }
           }
         }
-        
+
         if (!phoneNumber) {
           toast({
             variant: 'destructive',
@@ -226,12 +226,13 @@ export function use2FA(): Use2FAReturn {
           return false;
         }
 
-        const { error } = await supabase.functions.invoke('send-phone-verification', {
-          body: { phoneNumber }
+        const { data, error } = await supabase.functions.invoke('send-phone-verification', {
+          body: { phoneNumber, language }
         });
 
-        if (error) {
-          console.error('Error sending SMS:', error);
+        // Treat non-2xx (error) OR a business error payload as failure
+        if (error || data?.error) {
+          console.error('Error sending SMS:', error || data?.error);
           return false;
         }
       }
@@ -355,7 +356,7 @@ export function use2FA(): Use2FAReturn {
       if (!user) return false;
 
       const { error } = await supabase.functions.invoke('send-2fa-email', {
-        body: { userId: user.id, email: user.email }
+        body: { userId: user.id, email: user.email, language }
       });
 
       if (error) {
@@ -372,40 +373,17 @@ export function use2FA(): Use2FAReturn {
 
   const verifyEmail = async (code: string): Promise<boolean> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      const normalizedCode = code.replace(/\D/g, '').trim();
+      if (normalizedCode.length !== 6) return false;
 
-      // Verify code in database
-      const { data, error } = await supabase
-        .from('user_2fa_codes')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('code_hash', code)
-        .eq('method', 'email')
-        .gt('expires_at', new Date().toISOString())
-        .is('used_at', null)
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke('verify-2fa-email', {
+        body: { code: normalizedCode }
+      });
 
-      if (error || !data) {
-        console.error('Email verification failed:', error);
+      if (error || !data?.verified) {
+        console.error('Email verification failed:', error || data);
         return false;
       }
-
-      // Mark code as used
-      await supabase
-        .from('user_2fa_codes')
-        .update({ used_at: new Date().toISOString() })
-        .eq('id', data.id);
-
-      // Enable 2FA via email
-      await supabase
-        .from('user_2fa_settings')
-        .upsert({
-          user_id: user.id,
-          method: 'email',
-          is_enabled: true,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
 
       await fetchSettings();
       return true;
