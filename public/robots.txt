@@ -1,8 +1,51 @@
+# Robots.txt for Couples Financials
+# https://couplesfinancials.com
+
+# Allow all crawlers for public pages
+User-agent: *
+Allow: /
+Allow: /auth
+Allow: /sobre-nos
+Allow: /about-us
+Allow: /privacy
+Allow: /terms
+Allow: /partnership
+Allow: /install-app
+
+# Block private/authenticated areas
+Disallow: /app
+Disallow: /app/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin-dashboard
+Disallow: /profile
+Disallow: /subscription
+Disallow: /accounts
+Disallow: /cards
+Disallow: /mileage
+Disallow: /change-password
+Disallow: /reset-password
+Disallow: /email-confirmation
+Disallow: /send-confirmation
+Disallow: /email-test
+Disallow: /checkout
+Disallow: /direct-checkout
+Disallow: /checkout-email-confirmation
+Disallow: /subscription-success
+Disallow: /card-payment
+Disallow: /security-settings
+Disallow: /cleanup-*
+Disallow: /test-*
+Disallow: /api/
+
+# Specific crawler rules
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +53,24 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://couplesfinancials.com/sitemap.xml
+
+# Host directive
+Host: https://couplesfinancials.com
