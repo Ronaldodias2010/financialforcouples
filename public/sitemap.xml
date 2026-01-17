@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   
-  <!-- Homepage -->
+  <!-- Homepage - Highest Priority -->
   <url>
     <loc>https://couplesfinancials.com/</loc>
-    <lastmod>2025-08-30</lastmod>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://couplesfinancials.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://couplesfinancials.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://couplesfinancials.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://couplesfinancials.com/"/>
+    <lastmod>2026-01-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -15,33 +20,69 @@
   <!-- Login/Auth -->
   <url>
     <loc>https://couplesfinancials.com/auth</loc>
-    <lastmod>2025-08-30</lastmod>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- About Us - Portuguese -->
+  <url>
+    <loc>https://couplesfinancials.com/sobre-nos</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://couplesfinancials.com/sobre-nos"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://couplesfinancials.com/about-us"/>
+    <lastmod>2026-01-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
-  <!-- About Us -->
+  <!-- About Us - English -->
   <url>
-    <loc>https://couplesfinancials.com/sobre-nos</loc>
-    <lastmod>2025-08-30</lastmod>
+    <loc>https://couplesfinancials.com/about-us</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://couplesfinancials.com/about-us"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://couplesfinancials.com/sobre-nos"/>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Partnership/Affiliate Program -->
+  <url>
+    <loc>https://couplesfinancials.com/partnership</loc>
+    <lastmod>2026-01-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  
+  <!-- Install App (PWA) -->
+  <url>
+    <loc>https://couplesfinancials.com/install-app</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Password Recovery -->
+  <url>
+    <loc>https://couplesfinancials.com/forgot-password</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
   
   <!-- Privacy Policy -->
   <url>
     <loc>https://couplesfinancials.com/privacy</loc>
-    <lastmod>2025-08-30</lastmod>
+    <lastmod>2026-01-17</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
   
   <!-- Terms of Use -->
   <url>
     <loc>https://couplesfinancials.com/terms</loc>
-    <lastmod>2025-08-30</lastmod>
+    <lastmod>2026-01-17</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
   
 </urlset>

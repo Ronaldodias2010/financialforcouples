@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,6 +25,12 @@
     <meta name="description" content="A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos. App para controle financeiro casal, orçamento familiar e investimentos. Comece grátis!">
     <meta name="author" content="Couples Financials" />
     <meta name="keywords" content="gestão financeira casais, finanças para casais, controle gastos casal, investimentos casal, orçamento familiar, app finanças casais, controle financeiro casal, como organizar finanças do casal, aplicativo para controlar gastos em casal, planejamento financeiro casal">
+    
+    <!-- Hreflang tags for multilingual SEO -->
+    <link rel="alternate" hreflang="pt-BR" href="https://couplesfinancials.com/" />
+    <link rel="alternate" hreflang="en" href="https://couplesfinancials.com/" />
+    <link rel="alternate" hreflang="es" href="https://couplesfinancials.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://couplesfinancials.com/" />
     
     <!-- Preload critical resources -->
     <link rel="preload" href="/src/main.tsx" as="script" />
@@ -87,6 +93,8 @@
     <meta property="og:url" content="https://couplesfinancials.com" />
     <meta property="og:site_name" content="Couples Financials" />
     <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
 
     <!-- Performance & SEO hints -->
     <link rel="canonical" href="https://couplesfinancials.com" />
@@ -107,27 +115,140 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": ["Organization", "WebApplication"],
+      "@type": "Organization",
       "name": "Couples Financials",
       "description": "Primeira plataforma brasileira especializada em gestão financeira para casais",
       "url": "https://couplesfinancials.com",
-        "logo": "https://couplesfinancials.com/icons/icon-512x512.png?v=12",
+      "logo": "https://couplesfinancials.com/icons/icon-512x512.png?v=12",
+      "foundingDate": "2024",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": ["Portuguese", "English", "Spanish"]
+      },
+      "sameAs": [
+        "https://couplesfinancials.com"
+      ]
+    }
+    </script>
+    
+    <!-- Structured Data - SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Couples Financials",
+      "description": "A primeira plataforma brasileira criada especialmente para casais organizarem suas finanças, compartilharem gastos e realizarem sonhos juntos.",
+      "url": "https://couplesfinancials.com",
       "applicationCategory": "FinanceApplication",
-      "operatingSystem": "Web, PWA",
+      "operatingSystem": "Web, Android, iOS",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "2.0",
+      "author": {
+        "@type": "Organization",
+        "name": "Couples Financials"
+      },
       "offers": {
-        "@type": "Offer",
-        "price": "0",
+        "@type": "AggregateOffer",
+        "lowPrice": "0",
+        "highPrice": "29.90",
         "priceCurrency": "BRL",
-        "description": "Plano gratuito disponível"
+        "offerCount": "3"
       },
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
-        "reviewCount": "150"
+        "reviewCount": "150",
+        "bestRating": "5",
+        "worstRating": "1"
       },
-      "keywords": "gestão financeira casais, controle financeiro casal, app finanças casais, orçamento familiar",
-      "sameAs": [
-        "https://couplesfinancials.com"
+      "featureList": [
+        "Gestão financeira compartilhada para casais",
+        "Controle de despesas e receitas",
+        "Metas de investimento",
+        "Controle de cartões de crédito",
+        "Sistema de milhas",
+        "Importação de extratos bancários",
+        "Relatórios financeiros",
+        "Integração via WhatsApp"
+      ]
+    }
+    </script>
+    
+    <!-- Structured Data - FAQ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O que é o Couples Financials?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O Couples Financials é a primeira plataforma brasileira especializada em gestão financeira para casais. Permite organizar finanças, compartilhar gastos, controlar cartões e investimentos juntos."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O Couples Financials é gratuito?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim! Oferecemos um plano gratuito com recursos essenciais. Para funcionalidades avançadas como IA financeira e relatórios completos, oferecemos planos Premium a partir de R$19,90/mês."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como funciona o controle financeiro para casais?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Você e seu parceiro(a) podem compartilhar contas, categorizar despesas, definir metas conjuntas e acompanhar o orçamento familiar em tempo real através do app."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso importar meus extratos bancários?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim! O Couples Financials suporta importação de extratos em PDF e Excel dos principais bancos brasileiros, facilitando o controle automático de suas transações."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Meus dados financeiros estão seguros?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutamente! Utilizamos criptografia de ponta a ponta, autenticação segura e seguimos as melhores práticas de segurança da informação para proteger seus dados."
+          }
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Structured Data - BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://couplesfinancials.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Sobre Nós",
+          "item": "https://couplesfinancials.com/sobre-nos"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Login",
+          "item": "https://couplesfinancials.com/auth"
+        }
       ]
     }
     </script>
