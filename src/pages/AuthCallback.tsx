@@ -62,45 +62,100 @@ export default function AuthCallback() {
             }
 
             // Enviar código se for SMS ou Email
+            let actualMethod: TwoFactorMethod = tfaResponse.method as TwoFactorMethod;
+            
             if (tfaResponse.method === 'sms') {
-              // Para SMS, usar a função de verificação de telefone
+              // Para SMS, tentar enviar e fazer fallback para email se falhar
               const phoneNumber = tfaResponse.phone_number;
+              let smsFailed = false;
+              
               if (phoneNumber) {
-                const { data: smsResponse, error: smsError } = await supabase.functions.invoke('send-phone-verification', {
-                  body: { phoneNumber, language }
-                });
-                
-                // Check if phone is blocked by Twilio
-                if (smsError || smsResponse?.error === 'phone_blocked') {
-                  console.warn('SMS blocked, offering email fallback');
-                  setSmsBlocked(true);
-                  // Try to send email as fallback
-                  await supabase.functions.invoke('send-2fa-email', {
+                try {
+                  const { data: smsResponse, error: smsError } = await supabase.functions.invoke('send-phone-verification', {
+                    body: { phoneNumber, language }
+                  });
+                  
+                  // Check if there was ANY error with SMS
+                  if (smsError || smsResponse?.error) {
+                    console.warn('SMS failed, will fallback to email:', smsError || smsResponse?.error);
+                    smsFailed = true;
+                  }
+                } catch (smsException) {
+                  console.warn('SMS exception, will fallback to email:', smsException);
+                  smsFailed = true;
+                }
+              } else {
+                // No phone number configured, fallback to email
+                console.warn('No phone number configured, will fallback to email');
+                smsFailed = true;
+              }
+              
+              // If SMS failed for any reason, automatically fallback to email
+              if (smsFailed) {
+                setSmsBlocked(true);
+                try {
+                  const { error: emailError } = await supabase.functions.invoke('send-2fa-email', {
                     body: { userId: session.user.id, email: session.user.email, language }
                   });
+                  
+                  if (!emailError) {
+                    toast({
+                      title: language === 'en' ? 'Verification via Email' : language === 'es' ? 'Verificación por Email' : 'Verificação via Email',
+                      description: language === 'en' 
+                        ? 'SMS was unavailable. A verification code was sent to your email.'
+                        : language === 'es'
+                        ? 'SMS no disponible. Se envió un código de verificación a su correo.'
+                        : 'SMS indisponível. Um código de verificação foi enviado para seu e-mail.',
+                    });
+                    actualMethod = 'email';
+                  } else {
+                    // Both SMS and email failed
+                    toast({
+                      variant: 'destructive',
+                      title: language === 'en' ? 'Verification Error' : language === 'es' ? 'Error de Verificación' : 'Erro de Verificação',
+                      description: language === 'en' 
+                        ? 'Could not send verification code. Please try again later.'
+                        : language === 'es'
+                        ? 'No se pudo enviar el código. Por favor intente más tarde.'
+                        : 'Não foi possível enviar o código. Por favor tente novamente mais tarde.',
+                    });
+                    // Still show the dialog with email method as last resort
+                    actualMethod = 'email';
+                  }
+                } catch (emailException) {
+                  console.error('Email fallback also failed:', emailException);
                   toast({
                     variant: 'destructive',
-                    title: language === 'en' ? 'SMS Unavailable' : language === 'es' ? 'SMS No Disponible' : 'SMS Indisponível',
+                    title: language === 'en' ? 'Verification Error' : language === 'es' ? 'Error de Verificación' : 'Erro de Verificação',
                     description: language === 'en' 
-                      ? 'Your phone number is temporarily blocked. A verification code was sent to your email.'
+                      ? 'Could not send verification code. Please try again later.'
                       : language === 'es'
-                      ? 'Su número de teléfono está bloqueado temporalmente. Se envió un código a su correo.'
-                      : 'Seu número de telefone está temporariamente bloqueado. Um código foi enviado para seu e-mail.',
+                      ? 'No se pudo enviar el código. Por favor intente más tarde.'
+                      : 'Não foi possível enviar o código. Por favor tente novamente mais tarde.',
                   });
-                  // Switch to email method
-                  setTwoFactorMethod('email');
-                  setShow2FA(true);
-                  setIsLoading(false);
-                  return;
+                  actualMethod = 'email';
                 }
               }
             } else if (tfaResponse.method === 'email') {
-              await supabase.functions.invoke('send-2fa-email', {
-                body: { userId: session.user.id, email: session.user.email, language }
-              });
+              try {
+                await supabase.functions.invoke('send-2fa-email', {
+                  body: { userId: session.user.id, email: session.user.email, language }
+                });
+              } catch (emailError) {
+                console.error('Email 2FA send failed:', emailError);
+                toast({
+                  variant: 'destructive',
+                  title: language === 'en' ? 'Email Error' : language === 'es' ? 'Error de Email' : 'Erro de Email',
+                  description: language === 'en' 
+                    ? 'Could not send verification email. Please try again.'
+                    : language === 'es'
+                    ? 'No se pudo enviar el correo de verificación. Por favor intente de nuevo.'
+                    : 'Não foi possível enviar o e-mail de verificação. Por favor tente novamente.',
+                });
+              }
             }
             
-            setTwoFactorMethod(tfaResponse.method as TwoFactorMethod);
+            setTwoFactorMethod(actualMethod);
             setShow2FA(true);
             setIsLoading(false);
             return;
