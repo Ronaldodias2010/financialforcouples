@@ -76,6 +76,7 @@ export type Database = {
           message: string
           updated_at: string
           user_id: string
+          user_question: string | null
         }
         Insert: {
           amount?: number | null
@@ -87,6 +88,7 @@ export type Database = {
           message: string
           updated_at?: string
           user_id: string
+          user_question?: string | null
         }
         Update: {
           amount?: number | null
@@ -98,6 +100,7 @@ export type Database = {
           message?: string
           updated_at?: string
           user_id?: string
+          user_question?: string | null
         }
         Relationships: []
       }
