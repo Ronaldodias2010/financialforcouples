@@ -14,21 +14,95 @@ Este guia explica como configurar o N8N para processar mensagens do WhatsApp e c
 ## 🔗 URLs das Edge Functions
 
 ```
-POST   ${SUPABASE_URL}/functions/v1/whatsapp-input     # Criar input
-PATCH  ${SUPABASE_URL}/functions/v1/whatsapp-input     # Atualizar com dados da IA
-GET    ${SUPABASE_URL}/functions/v1/whatsapp-input     # Consultar status
-GET    ${SUPABASE_URL}/functions/v1/get-user-options   # Obter opções do usuário
+POST   ${SUPABASE_URL}/functions/v1/detect-message-intent  # Detectar idioma e intenção (NOVO!)
+POST   ${SUPABASE_URL}/functions/v1/whatsapp-query         # Consultas (saldo, gastos do mês) (NOVO!)
+POST   ${SUPABASE_URL}/functions/v1/whatsapp-input         # Criar input para registro
+PATCH  ${SUPABASE_URL}/functions/v1/whatsapp-input         # Atualizar com dados da IA
+GET    ${SUPABASE_URL}/functions/v1/whatsapp-input         # Consultar status
+GET    ${SUPABASE_URL}/functions/v1/get-user-options       # Obter opções do usuário
 POST   ${SUPABASE_URL}/functions/v1/process-financial-input  # Processar e criar transação
 ```
 
 ---
 
-## 🔄 Fluxo Completo N8N
+## 🌐 Suporte Multi-Idioma (NOVO!)
+
+O sistema agora suporta mensagens em **Português**, **Inglês** e **Espanhol**:
+
+### Exemplos de Entradas Suportadas
+
+| Idioma | Registro de Gasto | Consulta de Saldo |
+|--------|-------------------|-------------------|
+| 🇧🇷 PT | "Gastei 50 no uber" | "Qual meu saldo?" |
+| 🇺🇸 EN | "Spent 30 on groceries" | "What are my expenses this month?" |
+| 🇪🇸 ES | "Gasté 20 en supermercado" | "¿Cuánto gasté este mes?" |
+
+### Nova Edge Function: `detect-message-intent`
+
+Antes de processar, detecta:
+- **Idioma**: pt, en, es
+- **Intenção**: `query` (consulta) ou `record` (registro)
+- **Tipo de consulta**: balance, monthly_expenses, category_summary, etc.
+
+```json
+// Request
+{ "message": "What are my expenses this month?" }
+
+// Response
+{
+  "success": true,
+  "language": "en",
+  "intent": "query",
+  "query_type": "monthly_expenses"
+}
+```
+
+### Nova Edge Function: `whatsapp-query`
+
+Responde consultas financeiras no idioma do usuário:
+
+```json
+// Request
+{
+  "user_id": "uuid",
+  "query_type": "monthly_expenses",
+  "language": "en"
+}
+
+// Response (English)
+{
+  "success": true,
+  "response": "📊 *Monthly Summary - January 2026*\n\n💰 Account Balance: R$ 5,432.10\n📥 Income: R$ 8,500.00\n📤 Expenses: R$ 3,067.90\n\n🏆 Top categories:\n1. Food: R$ 890.50"
+}
+```
+
+---
+
+## 🔄 Fluxo Completo N8N (ATUALIZADO)
 
 ### Visão Geral do Workflow
 
 ```
-WhatsApp Webhook → Criar Input → Buscar Opções → IA Processa → Atualizar Input → Criar Transação → Responder WhatsApp
+WhatsApp Webhook 
+    ↓
+Detectar Intenção (detect-message-intent)
+    ↓
+┌───────────────────────┬───────────────────────┐
+│ Se intent = 'query'   │ Se intent = 'record'  │
+│         ↓             │          ↓            │
+│  Buscar Dados         │  Criar Input          │
+│  (whatsapp-query)     │  (whatsapp-input)     │
+│         ↓             │          ↓            │
+│  Responder WhatsApp   │  Buscar Opções        │
+│                       │          ↓            │
+│                       │  IA Processa          │
+│                       │          ↓            │
+│                       │  Atualizar Input      │
+│                       │          ↓            │
+│                       │  Criar Transação      │
+│                       │          ↓            │
+│                       │  Responder WhatsApp   │
+└───────────────────────┴───────────────────────┘
 ```
 
 ---
