@@ -3,11 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Shield, TrendingUp, AlertTriangle, Lightbulb, Plus, X, Bell } from "lucide-react";
+import { Shield, TrendingUp, AlertTriangle, Lightbulb, Plus, X, Bell, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCurrencyConverter, CurrencyCode, CURRENCY_INFO } from "@/hooks/useCurrencyConverter";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface EmergencyAccount {
   id: string;
@@ -33,14 +41,23 @@ export const EmergencyFundCard = ({
   monthlyExpensesAverage = 0 
 }: EmergencyFundCardProps) => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { convertCurrency, exchangeRates, refreshRates, loading: ratesLoading } = useCurrencyConverter();
   const [emergencyAccount, setEmergencyAccount] = useState<EmergencyAccount | null>(null);
   const [reminders, setReminders] = useState<EmergencyReminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTips, setShowTips] = useState(true);
+  const [changingCurrency, setChangingCurrency] = useState(false);
 
-  // Calculate goal based on 6 months of average expenses
-  const suggestedGoal = monthlyExpensesAverage * 6;
+  const accountCurrency = (emergencyAccount?.currency || 'BRL') as CurrencyCode;
+
+  // Convert monthly expenses to account currency for goal calculation
+  const monthlyExpensesInAccountCurrency = accountCurrency === 'BRL' 
+    ? monthlyExpensesAverage 
+    : convertCurrency(monthlyExpensesAverage, 'BRL', accountCurrency);
+
+  // Calculate goal based on 6 months of average expenses (in account currency)
+  const suggestedGoal = monthlyExpensesInAccountCurrency * 6;
   const currentBalance = emergencyAccount?.balance || 0;
   const progressPercentage = suggestedGoal > 0 
     ? Math.min((currentBalance / suggestedGoal) * 100, 100) 
@@ -104,10 +121,53 @@ export const EmergencyFundCard = ({
   };
 
   const formatCurrency = (value: number, currency: string = "BRL") => {
-    return new Intl.NumberFormat("pt-BR", {
+    // Use appropriate locale based on currency
+    const locale = currency === 'USD' ? 'en-US' : currency === 'EUR' ? 'de-DE' : 'pt-BR';
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency,
     }).format(value);
+  };
+
+  const handleCurrencyChange = async (newCurrency: CurrencyCode) => {
+    if (!emergencyAccount || newCurrency === accountCurrency) return;
+    
+    setChangingCurrency(true);
+    try {
+      // Convert current balance to new currency
+      const newBalance = convertCurrency(currentBalance, accountCurrency, newCurrency);
+      
+      const { error } = await supabase
+        .from('accounts')
+        .update({ 
+          currency: newCurrency,
+          balance: Math.round(newBalance * 100) / 100 // Round to 2 decimal places
+        })
+        .eq('id', emergencyAccount.id);
+
+      if (error) throw error;
+
+      setEmergencyAccount(prev => prev ? {
+        ...prev,
+        currency: newCurrency,
+        balance: Math.round(newBalance * 100) / 100
+      } : null);
+
+      toast.success(
+        language === 'pt' 
+          ? `Moeda alterada para ${CURRENCY_INFO[newCurrency].name}` 
+          : `Currency changed to ${CURRENCY_INFO[newCurrency].name}`
+      );
+    } catch (error) {
+      console.error('Error changing currency:', error);
+      toast.error(
+        language === 'pt' 
+          ? 'Erro ao alterar moeda' 
+          : 'Error changing currency'
+      );
+    } finally {
+      setChangingCurrency(false);
+    }
   };
 
   const getProgressColor = () => {
@@ -177,7 +237,36 @@ export const EmergencyFundCard = ({
               {t('emergency.title') || 'Reserva de Emergência'}
             </CardTitle>
           </div>
-          {getStatusBadge()}
+          <div className="flex items-center gap-2">
+            {/* Currency Selector */}
+            <Select 
+              value={accountCurrency} 
+              onValueChange={(value) => handleCurrencyChange(value as CurrencyCode)}
+              disabled={changingCurrency}
+            >
+              <SelectTrigger className="w-[90px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="BRL">
+                  <span className="flex items-center gap-1">
+                    <span>🇧🇷</span> BRL
+                  </span>
+                </SelectItem>
+                <SelectItem value="USD">
+                  <span className="flex items-center gap-1">
+                    <span>🇺🇸</span> USD
+                  </span>
+                </SelectItem>
+                <SelectItem value="EUR">
+                  <span className="flex items-center gap-1">
+                    <span>🇪🇺</span> EUR
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {getStatusBadge()}
+          </div>
         </div>
       </CardHeader>
       
@@ -283,8 +372,8 @@ export const EmergencyFundCard = ({
               {t('emergency.monthsCovered') || 'Meses Cobertos'}
             </p>
             <p className="text-lg font-semibold text-emerald-600">
-              {monthlyExpensesAverage > 0 
-                ? (currentBalance / monthlyExpensesAverage).toFixed(1)
+              {monthlyExpensesInAccountCurrency > 0 
+                ? (currentBalance / monthlyExpensesInAccountCurrency).toFixed(1)
                 : '-'
               }
             </p>
@@ -294,7 +383,7 @@ export const EmergencyFundCard = ({
               {t('emergency.remaining') || 'Falta para Meta'}
             </p>
             <p className="text-lg font-semibold">
-              {formatCurrency(Math.max(0, suggestedGoal - currentBalance), emergencyAccount.currency)}
+              {formatCurrency(Math.max(0, suggestedGoal - currentBalance), accountCurrency)}
             </p>
           </div>
         </div>
