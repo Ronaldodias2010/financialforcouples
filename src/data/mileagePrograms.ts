@@ -13,8 +13,8 @@ export const MILEAGE_PROGRAMS: MileageProgramConfig[] = [
   {
     code: 'latam_pass',
     name: 'LATAM Pass',
-    logo: '/mileage-logos/latam-pass.svg',
-    primaryColor: '#E91C5A',
+    logo: '/mileage-logos/latam-pass.png',
+    primaryColor: '#1B1464',
     country: 'BR',
     hasOAuth: true,
     oauthUrl: 'https://api.latam-pass.latam.com/oauth/authorize',
