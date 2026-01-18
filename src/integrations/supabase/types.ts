@@ -901,6 +901,249 @@ export type Database = {
         }
         Relationships: []
       }
+      couple_agreement_compliance: {
+        Row: {
+          agreement_id: string | null
+          compliance_percentage: number | null
+          compliant: boolean | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          period_end: string
+          period_start: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          violations: Json | null
+        }
+        Insert: {
+          agreement_id?: string | null
+          compliance_percentage?: number | null
+          compliant?: boolean | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          period_end: string
+          period_start: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          violations?: Json | null
+        }
+        Update: {
+          agreement_id?: string | null
+          compliance_percentage?: number | null
+          compliant?: boolean | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          violations?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_agreement_compliance_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "couple_agreements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_agreements: {
+        Row: {
+          accepted_by_user1: boolean | null
+          accepted_by_user2: boolean | null
+          agreement_type: string
+          couple_id: string | null
+          created_at: string | null
+          created_by: string | null
+          decision_id: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          review_date: string | null
+          rules: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_by_user1?: boolean | null
+          accepted_by_user2?: boolean | null
+          agreement_type: string
+          couple_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          decision_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          review_date?: string | null
+          rules?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_by_user1?: boolean | null
+          accepted_by_user2?: boolean | null
+          agreement_type?: string
+          couple_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          decision_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          review_date?: string | null
+          rules?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_agreements_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "user_couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couple_agreements_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "couple_decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_decision_votes: {
+        Row: {
+          condition: string | null
+          created_at: string | null
+          decision_id: string | null
+          id: string
+          notes: string | null
+          selected_scenario: string | null
+          updated_at: string | null
+          user_id: string | null
+          vote: string
+        }
+        Insert: {
+          condition?: string | null
+          created_at?: string | null
+          decision_id?: string | null
+          id?: string
+          notes?: string | null
+          selected_scenario?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          vote: string
+        }
+        Update: {
+          condition?: string | null
+          created_at?: string | null
+          decision_id?: string | null
+          id?: string
+          notes?: string | null
+          selected_scenario?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_decision_votes_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "couple_decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_decisions: {
+        Row: {
+          action_plan: Json | null
+          category: string | null
+          context_data: Json | null
+          couple_id: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          decision_type: string
+          description: string | null
+          estimated_value: number | null
+          final_decision: Json | null
+          id: string
+          motivation: string | null
+          paused_until: string | null
+          restrictions: Json | null
+          scenarios: Json | null
+          status: string | null
+          target_date: string | null
+          title: string
+          updated_at: string | null
+          urgency: string | null
+          who_wants: string | null
+        }
+        Insert: {
+          action_plan?: Json | null
+          category?: string | null
+          context_data?: Json | null
+          couple_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          decision_type: string
+          description?: string | null
+          estimated_value?: number | null
+          final_decision?: Json | null
+          id?: string
+          motivation?: string | null
+          paused_until?: string | null
+          restrictions?: Json | null
+          scenarios?: Json | null
+          status?: string | null
+          target_date?: string | null
+          title: string
+          updated_at?: string | null
+          urgency?: string | null
+          who_wants?: string | null
+        }
+        Update: {
+          action_plan?: Json | null
+          category?: string | null
+          context_data?: Json | null
+          couple_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          decision_type?: string
+          description?: string | null
+          estimated_value?: number | null
+          final_decision?: Json | null
+          id?: string
+          motivation?: string | null
+          paused_until?: string | null
+          restrictions?: Json | null
+          scenarios?: Json | null
+          status?: string | null
+          target_date?: string | null
+          title?: string
+          updated_at?: string | null
+          urgency?: string | null
+          who_wants?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_decisions_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "user_couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couple_relationship_requests: {
         Row: {
           created_at: string | null
