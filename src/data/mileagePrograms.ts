@@ -32,7 +32,7 @@ export const MILEAGE_PROGRAMS: MileageProgramConfig[] = [
   {
     code: 'livelo',
     name: 'Livelo',
-    logo: '/mileage-logos/livelo.svg',
+    logo: '/mileage-logos/livelo.png',
     primaryColor: '#E5007D',
     country: 'BR',
     hasOAuth: false,
