@@ -45,8 +45,10 @@ export function MileageProgramsSection({ onMilesUpdate }: MileageProgramsSection
 
   const handleConnect = async (programCode: string, memberId?: string, balance?: number) => {
     const program = await connectProgram(programCode, memberId);
-    if (program && balance !== undefined && balance > 0) {
-      await updateProgramBalance(program.id, balance, memberId);
+    if (program) {
+      // Always update balance to transition from 'connecting' to 'connected'
+      // Even if balance is 0 or undefined, we want to set the status correctly
+      await updateProgramBalance(program.id, balance ?? 0, memberId);
     }
     onMilesUpdate?.();
   };

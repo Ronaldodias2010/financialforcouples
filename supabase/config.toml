@@ -113,3 +113,6 @@ verify_jwt = false
 
 [functions.decision-ai-helper]
 verify_jwt = true
+
+[functions.sync-mileage-program]
+verify_jwt = false
