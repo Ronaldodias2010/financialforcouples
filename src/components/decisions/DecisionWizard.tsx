@@ -28,6 +28,7 @@ import {
 import { useLanguage } from '@/hooks/useLanguage';
 import { useDecisions, DECISION_TEMPLATES, DecisionScenario } from '@/hooks/useDecisions';
 import { useFinancialData } from '@/hooks/useFinancialData';
+import { DecisionAIHelper, DecisionAIHelperButton } from './DecisionAIHelper';
 
 interface DecisionWizardProps {
   onBack: () => void;
@@ -49,6 +50,8 @@ export const DecisionWizard = ({ onBack, onComplete }: DecisionWizardProps) => {
   const { userPreferredCurrency, getAccountsBalance } = useFinancialData();
   
   const [currentStep, setCurrentStep] = useState(1);
+  const [showAIHelper, setShowAIHelper] = useState(false);
+  const [aiQuestionsUsed, setAIQuestionsUsed] = useState(0);
   const [formData, setFormData] = useState({
     // Step 1 - Template
     decision_type: '',
@@ -797,6 +800,21 @@ export const DecisionWizard = ({ onBack, onComplete }: DecisionWizardProps) => {
           </Button>
         )}
       </div>
+
+      {/* PrIscA AI Helper */}
+      {showAIHelper ? (
+        <DecisionAIHelper
+          currentStep={currentStep}
+          formData={formData}
+          isOpen={showAIHelper}
+          onClose={() => setShowAIHelper(false)}
+        />
+      ) : (
+        <DecisionAIHelperButton
+          onClick={() => setShowAIHelper(true)}
+          remainingQuestions={3 - aiQuestionsUsed}
+        />
+      )}
     </div>
   );
 };

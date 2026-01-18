@@ -357,14 +357,31 @@ export const FinancialDashboard = () => {
                 <TrendingUp className="h-6 w-6" />
                 <span>{t('nav.investments')}</span>
               </Button>
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col gap-2 w-full border-rose-200 hover:border-rose-400 hover:bg-rose-50 dark:border-rose-800 dark:hover:border-rose-600 dark:hover:bg-rose-950"
-                onClick={() => setCurrentPage("decisions")}
-              >
-                <Heart className="h-6 w-6 text-rose-500" />
-                <span className="text-rose-700 dark:text-rose-300">{t('nav.decisions')}</span>
-              </Button>
+              <div className="w-full">
+                <PremiumFeatureGuard 
+                  feature="decisions"
+                  fallback={
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex flex-col gap-2 w-full border-rose-200 opacity-60 cursor-not-allowed relative"
+                      disabled
+                    >
+                      <Heart className="h-6 w-6 text-rose-400" />
+                      <span className="text-rose-500">{t('nav.decisions')}</span>
+                      <Badge variant="secondary" className="absolute top-1 right-1 text-[10px] px-1">Premium</Badge>
+                    </Button>
+                  }
+                >
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex flex-col gap-2 w-full border-rose-200 hover:border-rose-400 hover:bg-rose-50 dark:border-rose-800 dark:hover:border-rose-600 dark:hover:bg-rose-950"
+                    onClick={() => setCurrentPage("decisions")}
+                  >
+                    <Heart className="h-6 w-6 text-rose-500" />
+                    <span className="text-rose-700 dark:text-rose-300">{t('nav.decisions')}</span>
+                  </Button>
+                </PremiumFeatureGuard>
+              </div>
               <div className="w-full">
                 <PremiumFeatureGuard 
                   feature="aiMileage"
