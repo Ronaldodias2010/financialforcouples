@@ -21,12 +21,63 @@ export default function AuthCallback() {
   const [selectedMethod, setSelectedMethod] = useState<TwoFactorMethod>('totp');
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [smsBlocked, setSmsBlocked] = useState(false);
+  const [smsError, setSmsError] = useState(false);
+  const [smsErrorMessage, setSmsErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const { shouldShowPrompt, dismissPrompt, isLoaded } = use2FAPrompt();
   const { isSessionValid, setVerifiedSession, isLoaded: isSessionLoaded } = use2FASession();
   const { markAs2FAEnabled } = use2FAStatus();
+
+  const handleRetrySMS = async () => {
+    if (!currentUserId) return;
+    
+    setSmsError(false);
+    setSmsErrorMessage(null);
+    
+    try {
+      const { data: tfaResponse } = await supabase.functions.invoke('check-2fa-status', {
+        body: { userId: currentUserId }
+      });
+      
+      if (tfaResponse?.phone_number) {
+        const { data: smsResponse, error: smsError } = await supabase.functions.invoke('send-phone-verification', {
+          body: { 
+            phoneNumber: tfaResponse.phone_number, 
+            language,
+            userId: currentUserId
+          }
+        });
+        
+        if (smsError || smsResponse?.error) {
+          setSmsError(true);
+          setSmsErrorMessage(smsResponse?.error_message || 'SMS sending failed');
+          toast({
+            variant: 'destructive',
+            title: language === 'en' ? 'SMS Error' : language === 'es' ? 'Error de SMS' : 'Erro de SMS',
+            description: language === 'en' 
+              ? 'Could not send SMS. Please try again or change your verification method in settings.'
+              : language === 'es'
+              ? 'No se pudo enviar el SMS. Intente de nuevo o cambie su método de verificación en configuración.'
+              : 'Não foi possível enviar o SMS. Tente novamente ou altere seu método de verificação nas configurações.',
+          });
+        } else {
+          toast({
+            title: language === 'en' ? 'SMS Sent' : language === 'es' ? 'SMS Enviado' : 'SMS Enviado',
+            description: language === 'en' 
+              ? 'A new verification code has been sent.'
+              : language === 'es'
+              ? 'Se ha enviado un nuevo código de verificación.'
+              : 'Um novo código de verificação foi enviado.',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Retry SMS failed:', error);
+      setSmsError(true);
+      setSmsErrorMessage('Exception during SMS retry');
+    }
+  };
 
   useEffect(() => {
     // Wait for localStorage to be loaded before making decisions
@@ -62,81 +113,84 @@ export default function AuthCallback() {
             }
 
             // Enviar código se for SMS ou Email
-            let actualMethod: TwoFactorMethod = tfaResponse.method as TwoFactorMethod;
+            // IMPORTANT: Always respect user's method preference - no automatic fallback
+            const userMethod: TwoFactorMethod = tfaResponse.method as TwoFactorMethod;
             
-            if (tfaResponse.method === 'sms') {
-              // Para SMS, tentar enviar e fazer fallback para email se falhar
+            if (userMethod === 'sms') {
+              // Para SMS, tentar enviar - se falhar, mostrar erro mas NÃO fazer fallback automático
               const phoneNumber = tfaResponse.phone_number;
-              let smsFailed = false;
               
               if (phoneNumber) {
                 try {
-                  const { data: smsResponse, error: smsError } = await supabase.functions.invoke('send-phone-verification', {
-                    body: { phoneNumber, language }
+                  const { data: smsResponse, error: smsNetworkError } = await supabase.functions.invoke('send-phone-verification', {
+                    body: { 
+                      phoneNumber, 
+                      language,
+                      userId: session.user.id
+                    }
                   });
                   
-                  // Check if there was ANY error with SMS
-                  if (smsError || smsResponse?.error) {
-                    console.warn('SMS failed, will fallback to email:', smsError || smsResponse?.error);
-                    smsFailed = true;
-                  }
-                } catch (smsException) {
-                  console.warn('SMS exception, will fallback to email:', smsException);
-                  smsFailed = true;
-                }
-              } else {
-                // No phone number configured, fallback to email
-                console.warn('No phone number configured, will fallback to email');
-                smsFailed = true;
-              }
-              
-              // If SMS failed for any reason, automatically fallback to email
-              if (smsFailed) {
-                setSmsBlocked(true);
-                try {
-                  const { error: emailError } = await supabase.functions.invoke('send-2fa-email', {
-                    body: { userId: session.user.id, email: session.user.email, language }
-                  });
-                  
-                  if (!emailError) {
-                    toast({
-                      title: language === 'en' ? 'Verification via Email' : language === 'es' ? 'Verificación por Email' : 'Verificação via Email',
-                      description: language === 'en' 
-                        ? 'SMS was unavailable. A verification code was sent to your email.'
-                        : language === 'es'
-                        ? 'SMS no disponible. Se envió un código de verificación a su correo.'
-                        : 'SMS indisponível. Um código de verificação foi enviado para seu e-mail.',
-                    });
-                    actualMethod = 'email';
-                  } else {
-                    // Both SMS and email failed
+                  // Check if there was an error with SMS
+                  if (smsNetworkError || smsResponse?.error) {
+                    console.warn('[2FA] SMS failed - error logged. User preference NOT changed.');
+                    console.warn('[2FA] Error details:', smsNetworkError || smsResponse);
+                    
+                    // Set error state so UI can show retry option
+                    setSmsError(true);
+                    setSmsErrorMessage(smsResponse?.error_message || 'SMS sending failed');
+                    
+                    // Show toast informing user about the error
                     toast({
                       variant: 'destructive',
-                      title: language === 'en' ? 'Verification Error' : language === 'es' ? 'Error de Verificación' : 'Erro de Verificação',
+                      title: language === 'en' ? 'SMS Error' : language === 'es' ? 'Error de SMS' : 'Erro de SMS',
                       description: language === 'en' 
-                        ? 'Could not send verification code. Please try again later.'
+                        ? 'Could not send SMS verification. You can retry or use a backup code.'
                         : language === 'es'
-                        ? 'No se pudo enviar el código. Por favor intente más tarde.'
-                        : 'Não foi possível enviar o código. Por favor tente novamente mais tarde.',
+                        ? 'No se pudo enviar la verificación por SMS. Puede reintentar o usar un código de respaldo.'
+                        : 'Não foi possível enviar a verificação por SMS. Você pode tentar novamente ou usar um código de backup.',
                     });
-                    // Still show the dialog with email method as last resort
-                    actualMethod = 'email';
+                    
+                    // IMPORTANT: Keep method as SMS - do NOT change to email
+                    // User can use backup codes or retry
+                  } else {
+                    console.log('[2FA] SMS sent successfully');
                   }
-                } catch (emailException) {
-                  console.error('Email fallback also failed:', emailException);
+                } catch (smsException) {
+                  console.error('[2FA] SMS exception - error logged. User preference NOT changed:', smsException);
+                  setSmsError(true);
+                  setSmsErrorMessage('Exception during SMS sending');
+                  
                   toast({
                     variant: 'destructive',
-                    title: language === 'en' ? 'Verification Error' : language === 'es' ? 'Error de Verificación' : 'Erro de Verificação',
+                    title: language === 'en' ? 'SMS Error' : language === 'es' ? 'Error de SMS' : 'Erro de SMS',
                     description: language === 'en' 
-                      ? 'Could not send verification code. Please try again later.'
+                      ? 'Could not send SMS verification. You can retry or use a backup code.'
                       : language === 'es'
-                      ? 'No se pudo enviar el código. Por favor intente más tarde.'
-                      : 'Não foi possível enviar o código. Por favor tente novamente mais tarde.',
+                      ? 'No se pudo enviar la verificación por SMS. Puede reintentar o usar un código de respaldo.'
+                      : 'Não foi possível enviar a verificação por SMS. Você pode tentar novamente ou usar um código de backup.',
                   });
-                  actualMethod = 'email';
                 }
+              } else {
+                // No phone number configured
+                console.warn('[2FA] No phone number configured for SMS method');
+                setSmsError(true);
+                setSmsErrorMessage('No phone number configured');
+                
+                toast({
+                  variant: 'destructive',
+                  title: language === 'en' ? 'Configuration Error' : language === 'es' ? 'Error de Configuración' : 'Erro de Configuração',
+                  description: language === 'en' 
+                    ? 'No phone number configured for SMS. Please use a backup code or update your settings.'
+                    : language === 'es'
+                    ? 'No hay número de teléfono configurado para SMS. Use un código de respaldo o actualice su configuración.'
+                    : 'Nenhum número de telefone configurado para SMS. Use um código de backup ou atualize suas configurações.',
+                });
               }
-            } else if (tfaResponse.method === 'email') {
+              
+              // ALWAYS keep the method as SMS - respect user preference
+              setTwoFactorMethod('sms');
+              
+            } else if (userMethod === 'email') {
               try {
                 await supabase.functions.invoke('send-2fa-email', {
                   body: { userId: session.user.id, email: session.user.email, language }
@@ -153,9 +207,11 @@ export default function AuthCallback() {
                     : 'Não foi possível enviar o e-mail de verificação. Por favor tente novamente.',
                 });
               }
+              setTwoFactorMethod('email');
+            } else {
+              setTwoFactorMethod(userMethod);
             }
             
-            setTwoFactorMethod(actualMethod);
             setShow2FA(true);
             setIsLoading(false);
             return;
@@ -258,6 +314,9 @@ export default function AuthCallback() {
         method={twoFactorMethod}
         onVerified={handle2FAVerified}
         onCancel={handle2FACancel}
+        smsError={smsError}
+        smsErrorMessage={smsErrorMessage}
+        onRetrySMS={handleRetrySMS}
       />
 
       <TwoFactorWizard

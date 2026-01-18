@@ -13,11 +13,15 @@ serve(async (req) => {
   }
 
   try {
-    const { phoneNumber, language = 'pt' } = await req.json();
+    const { phoneNumber, language = 'pt', userId } = await req.json();
 
     if (!phoneNumber) {
       return new Response(
-        JSON.stringify({ error: 'Phone number is required' }),
+        JSON.stringify({ 
+          success: false,
+          error: 'missing_phone',
+          message: 'Phone number is required' 
+        }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400 
@@ -29,7 +33,65 @@ serve(async (req) => {
     const cleanPhone = phoneNumber.replace(/\D/g, '');
     const formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
 
+    // Validate E.164 format
+    const e164Regex = /^\+[1-9]\d{1,14}$/;
+    if (!e164Regex.test(formattedPhone)) {
+      console.error('[SMS 2FA] Invalid phone format:', formattedPhone);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'invalid_phone_format',
+          message: language === 'en'
+            ? 'Phone number must be in E.164 format (e.g., +5511999999999)'
+            : language === 'es'
+            ? 'El número de teléfono debe estar en formato E.164 (ej: +5511999999999)'
+            : 'Número de telefone deve estar no formato E.164 (ex: +5511999999999)'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
+
     console.log('[SMS 2FA] Sending verification to:', formattedPhone);
+
+    // Initialize Supabase client for logging errors
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Helper function to log SMS errors to database
+    const logSmsError = async (errorCode: string, errorMessage: string) => {
+      try {
+        if (userId) {
+          await supabase
+            .from('user_2fa_settings')
+            .update({
+              last_sms_error_code: errorCode,
+              last_sms_error_message: errorMessage,
+              last_notification_at: new Date().toISOString(),
+              last_notification_channel: 'sms_failed'
+            })
+            .eq('user_id', userId);
+        } else {
+          // Try to find by phone number
+          await supabase
+            .from('user_2fa_settings')
+            .update({
+              last_sms_error_code: errorCode,
+              last_sms_error_message: errorMessage,
+              last_notification_at: new Date().toISOString(),
+              last_notification_channel: 'sms_failed'
+            })
+            .eq('phone_number', formattedPhone);
+        }
+        console.log('[SMS 2FA] Error logged to database:', errorCode, errorMessage);
+      } catch (logError) {
+        console.error('[SMS 2FA] Failed to log error to database:', logError);
+      }
+    };
 
     // Get Twilio credentials
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
@@ -63,31 +125,43 @@ serve(async (req) => {
       if (!response.ok) {
         console.error('[SMS 2FA] Twilio Verify error:', responseData);
         
-        // Check for specific Twilio error codes
-        if (responseData.code === 60410) {
-          // Phone number is blocked by Twilio (treat as a handled business-case, not a hard error)
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'phone_blocked',
-              message: language === 'en'
-                ? 'This phone number has been temporarily blocked. Please use email verification instead.'
-                : language === 'es'
-                ? 'Este número de teléfono ha sido bloqueado temporalmente. Por favor, use la verificación por correo electrónico.'
-                : 'Este número de telefone foi temporariamente bloqueado. Por favor, use a verificação por e-mail.',
-              code: responseData.code,
-            }),
-            {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 200,
-            }
-          );
-        }
+        const errorCode = String(responseData.code || 'UNKNOWN');
+        const errorMessage = responseData.message || 'Unknown Twilio error';
         
-        throw new Error(responseData.message || 'Failed to send verification SMS');
+        // Log the error to database for tracking
+        await logSmsError(errorCode, errorMessage);
+        
+        // Return structured error WITHOUT suggesting email fallback
+        // The frontend should decide how to handle this based on user preference
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'sms_failed',
+            error_code: errorCode,
+            error_message: errorMessage,
+            // IMPORTANT: Do NOT include fallback suggestion - respect user preference
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200, // Return 200 so frontend can handle the error gracefully
+          }
+        );
       }
 
       console.log('[SMS 2FA] Verification sent successfully, status:', responseData.status);
+
+      // Log successful send
+      if (userId) {
+        await supabase
+          .from('user_2fa_settings')
+          .update({
+            last_notification_channel: 'sms',
+            last_notification_at: new Date().toISOString(),
+            last_sms_error_code: null,
+            last_sms_error_message: null
+          })
+          .eq('user_id', userId);
+      }
 
       return new Response(
         JSON.stringify({ 
@@ -108,12 +182,6 @@ serve(async (req) => {
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       
       console.log('[SMS 2FA] DEV MODE - Code:', verificationCode, 'for:', formattedPhone);
-      
-      // Store in database for dev testing
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
 
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 5);
@@ -141,12 +209,6 @@ serve(async (req) => {
     
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Store verification code
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
@@ -161,7 +223,19 @@ serve(async (req) => {
 
     if (storageError) {
       console.error('[SMS 2FA] Error storing code:', storageError);
-      throw new Error('Failed to store verification code');
+      await logSmsError('STORAGE_ERROR', 'Failed to store verification code');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'sms_failed',
+          error_code: 'STORAGE_ERROR',
+          error_message: 'Failed to store verification code'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
     }
 
     const message = language === 'en' 
@@ -189,10 +263,40 @@ serve(async (req) => {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('[SMS 2FA] Twilio Messages error:', errorData);
-      throw new Error('Failed to send SMS');
+      
+      const errorCode = String(errorData.code || 'MESSAGES_ERROR');
+      const errorMessage = errorData.message || 'Failed to send SMS';
+      
+      await logSmsError(errorCode, errorMessage);
+      
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'sms_failed',
+          error_code: errorCode,
+          error_message: errorMessage
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
     }
 
     console.log('[SMS 2FA] SMS sent successfully via Messages API');
+
+    // Log successful send
+    if (userId) {
+      await supabase
+        .from('user_2fa_settings')
+        .update({
+          last_notification_channel: 'sms',
+          last_notification_at: new Date().toISOString(),
+          last_sms_error_code: null,
+          last_sms_error_message: null
+        })
+        .eq('user_id', userId);
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -207,11 +311,14 @@ serve(async (req) => {
     console.error('[SMS 2FA] Error:', error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Failed to send verification code' 
+        success: false,
+        error: 'sms_failed',
+        error_code: 'EXCEPTION',
+        error_message: error instanceof Error ? error.message : 'Failed to send verification code' 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 200 // Return 200 so frontend can handle gracefully
       }
     );
   }

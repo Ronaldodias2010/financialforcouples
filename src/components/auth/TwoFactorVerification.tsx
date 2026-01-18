@@ -23,6 +23,9 @@ interface TwoFactorVerificationProps {
   method: TwoFactorMethod;
   onVerified: () => void;
   onCancel: () => void;
+  smsError?: boolean;
+  smsErrorMessage?: string | null;
+  onRetrySMS?: () => void;
 }
 
 export function TwoFactorVerification({ 
@@ -30,7 +33,10 @@ export function TwoFactorVerification({
   onOpenChange, 
   method, 
   onVerified,
-  onCancel 
+  onCancel,
+  smsError = false,
+  smsErrorMessage,
+  onRetrySMS
 }: TwoFactorVerificationProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -130,12 +136,27 @@ export function TwoFactorVerification({
           </TabsList>
 
           <TabsContent value="code" className="space-y-4 py-4">
-            <Alert>
-              <Shield className="h-4 w-4" />
-              <AlertDescription>
-                {getMethodDescription()}
-              </AlertDescription>
-            </Alert>
+            {smsError && method === 'sms' ? (
+              <Alert variant="destructive">
+                <Shield className="h-4 w-4" />
+                <AlertDescription className="space-y-2">
+                  <p>{t('2fa.error.smsFailed')}</p>
+                  {smsErrorMessage && (
+                    <p className="text-xs opacity-75">{smsErrorMessage}</p>
+                  )}
+                  <p className="text-sm">
+                    {t('2fa.error.useBackupOrRetry')}
+                  </p>
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert>
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
+                  {getMethodDescription()}
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="space-y-2">
               <Label>{t('2fa.verification.codeLabel')}</Label>
@@ -157,7 +178,41 @@ export function TwoFactorVerification({
               </div>
             </div>
 
-            {(method === 'sms' || method === 'email') && (
+            {method === 'sms' && smsError && onRetrySMS && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-full border-destructive text-destructive hover:bg-destructive/10"
+                onClick={onRetrySMS}
+                disabled={isResending}
+              >
+                {isResending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                {t('2fa.verification.retrySms')}
+              </Button>
+            )}
+
+            {method === 'sms' && !smsError && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="w-full"
+                onClick={handleResend}
+                disabled={isResending}
+              >
+                {isResending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                {t('2fa.verification.resend')}
+              </Button>
+            )}
+
+            {method === 'email' && (
               <Button 
                 variant="ghost" 
                 size="sm"

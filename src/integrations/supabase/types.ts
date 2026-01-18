@@ -3305,10 +3305,15 @@ export type Database = {
           failed_attempts: number | null
           id: string
           is_enabled: boolean | null
+          last_notification_at: string | null
+          last_notification_channel: string | null
+          last_sms_error_code: string | null
+          last_sms_error_message: string | null
           last_verified_at: string | null
           locked_until: string | null
           method: string | null
           phone_number: string | null
+          sms_opt_in: boolean | null
           totp_secret: string | null
           updated_at: string | null
           user_id: string
@@ -3320,10 +3325,15 @@ export type Database = {
           failed_attempts?: number | null
           id?: string
           is_enabled?: boolean | null
+          last_notification_at?: string | null
+          last_notification_channel?: string | null
+          last_sms_error_code?: string | null
+          last_sms_error_message?: string | null
           last_verified_at?: string | null
           locked_until?: string | null
           method?: string | null
           phone_number?: string | null
+          sms_opt_in?: boolean | null
           totp_secret?: string | null
           updated_at?: string | null
           user_id: string
@@ -3335,10 +3345,15 @@ export type Database = {
           failed_attempts?: number | null
           id?: string
           is_enabled?: boolean | null
+          last_notification_at?: string | null
+          last_notification_channel?: string | null
+          last_sms_error_code?: string | null
+          last_sms_error_message?: string | null
           last_verified_at?: string | null
           locked_until?: string | null
           method?: string | null
           phone_number?: string | null
+          sms_opt_in?: boolean | null
           totp_secret?: string | null
           updated_at?: string | null
           user_id?: string
