@@ -50,7 +50,7 @@ export const MILEAGE_PROGRAMS: MileageProgramConfig[] = [
   {
     code: 'united',
     name: 'MileagePlus',
-    logo: '/mileage-logos/united.svg',
+    logo: '/mileage-logos/united.png',
     primaryColor: '#002244',
     country: 'US',
     hasOAuth: false,
