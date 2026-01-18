@@ -30,6 +30,24 @@ export const MILEAGE_PROGRAMS: MileageProgramConfig[] = [
     estimatedValuePerMile: 2.50
   },
   {
+    code: 'azul',
+    name: 'Azul Fidelidade',
+    logo: '/mileage-logos/azul.jpg',
+    primaryColor: '#00A1E0',
+    country: 'BR',
+    hasOAuth: false,
+    estimatedValuePerMile: 2.20
+  },
+  {
+    code: 'esfera',
+    name: 'Esfera',
+    logo: '/mileage-logos/esfera.webp',
+    primaryColor: '#EC0000',
+    country: 'BR',
+    hasOAuth: false,
+    estimatedValuePerMile: 1.50
+  },
+  {
     code: 'livelo',
     name: 'Livelo',
     logo: '/mileage-logos/livelo.png',
