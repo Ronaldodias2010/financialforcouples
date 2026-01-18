@@ -82,33 +82,39 @@ export function MileageProgramsSection({ onMilesUpdate }: MileageProgramsSection
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Link2 className="h-5 w-5 text-primary" />
-            {t('mileage.programs.title')}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            {programs.length > 0 && (
-              <div className="text-right mr-4">
-                <div className="text-2xl font-bold">
-                  {totalSyncedMiles.toLocaleString()}
-                </div>
-                {totalEstimatedValue > 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    ≈ R$ {totalEstimatedValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        <CardHeader className="pb-2">
+          {/* Responsive header - stacks on mobile */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-primary" />
+              <span className="hidden sm:inline">{t('mileage.programs.title')}</span>
+              <span className="sm:hidden">{t('mileage.programs.titleShort') || 'Milhagens'}</span>
+            </CardTitle>
+            
+            <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
+              {programs.length > 0 && (
+                <div className="text-left sm:text-right">
+                  <div className="text-xl sm:text-2xl font-bold">
+                    {totalSyncedMiles.toLocaleString()}
                   </div>
-                )}
-              </div>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConnectModalOpen(true)}
-              className="gap-1"
-            >
-              <Plus className="h-4 w-4" />
-              {t('mileage.programs.addProgram')}
-            </Button>
+                  {totalEstimatedValue > 0 && (
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      ≈ R$ {totalEstimatedValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </div>
+                  )}
+                </div>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConnectModalOpen(true)}
+                className="gap-1 text-xs sm:text-sm whitespace-nowrap"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden xs:inline">{t('mileage.programs.addProgram')}</span>
+                <span className="xs:hidden">{t('common.add')}</span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
 
