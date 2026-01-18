@@ -24,6 +24,8 @@ interface MileageProgram {
 const PROGRAM_VALUES: Record<string, number> = {
   'latam_pass': 2.87,
   'smiles': 2.50,
+  'azul': 2.20,
+  'esfera': 1.50,
   'livelo': 1.80,
   'aa': 7.50,
   'united': 6.50,
