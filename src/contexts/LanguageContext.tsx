@@ -579,6 +579,9 @@ const translations = {
     'common.error': 'Erro',
     'common.locale': 'pt-BR',
     'common.color': 'Cor',
+    'common.back': 'Voltar',
+    'common.next': 'Próximo',
+    'common.previous': 'Anterior',
     'back': 'Voltar',
     
     // Currency Display
@@ -3157,6 +3160,9 @@ const translations = {
     'common.error': 'Error',
     'common.locale': 'en-US',
     'common.color': 'Color',
+    'common.back': 'Back',
+    'common.next': 'Next',
+    'common.previous': 'Previous',
     'back': 'Back',
     
     // Currency Display
@@ -5696,6 +5702,9 @@ const translations = {
     'common.select': 'Seleccionar',
     'common.refresh': 'Actualizar',
     'common.color': 'Color',
+    'common.back': 'Atrás',
+    'common.next': 'Siguiente',
+    'common.previous': 'Anterior',
     'back': 'Atrás',
     
     // Currency Display
