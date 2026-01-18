@@ -41,7 +41,7 @@ export const MILEAGE_PROGRAMS: MileageProgramConfig[] = [
   {
     code: 'aa',
     name: 'AAdvantage',
-    logo: '/mileage-logos/aa.svg',
+    logo: '/mileage-logos/aa.png',
     primaryColor: '#0074C4',
     country: 'US',
     hasOAuth: false,
