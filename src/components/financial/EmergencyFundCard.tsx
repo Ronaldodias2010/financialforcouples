@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Shield, TrendingUp, AlertTriangle, Lightbulb, Plus, X, Bell, RefreshCw } from "lucide-react";
+import { Shield, Lightbulb, Plus, X, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +20,7 @@ interface EmergencyAccount {
   id: string;
   balance: number;
   currency: string;
+  balance_brl: number; // Original balance in BRL for accurate tracking
 }
 
 interface EmergencyReminder {
@@ -72,16 +72,32 @@ export const EmergencyFundCard = ({
 
   const fetchEmergencyAccount = async () => {
     try {
-      const { data, error } = await supabase
+      // Use type assertion since 'emergency' type exists in DB but not in generated types
+      const { data, error } = await (supabase
         .from("accounts")
         .select("id, balance, currency")
         .eq("user_id", user?.id)
-        .eq("account_type", "emergency")
+        .eq("account_type", "emergency" as any)
         .eq("is_active", true)
-        .maybeSingle();
+        .maybeSingle() as any);
 
       if (error) throw error;
-      setEmergencyAccount(data);
+      
+      if (data) {
+        // Store original BRL balance for accurate tracking
+        const balanceInBRL = data.currency === 'BRL' 
+          ? data.balance 
+          : convertCurrency(data.balance, data.currency as CurrencyCode, 'BRL');
+        
+        setEmergencyAccount({
+          id: data.id,
+          balance: data.balance,
+          currency: data.currency,
+          balance_brl: balanceInBRL
+        });
+      } else {
+        setEmergencyAccount(null);
+      }
     } catch (error) {
       console.error("Error fetching emergency account:", error);
     } finally {
@@ -91,13 +107,14 @@ export const EmergencyFundCard = ({
 
   const fetchReminders = async () => {
     try {
-      const { data, error } = await supabase
-        .from("emergency_fund_reminders")
+      // Type assertion for table that exists but may not be in generated types
+      const { data, error } = await (supabase
+        .from("emergency_fund_reminders" as any)
         .select("*")
         .eq("user_id", user?.id)
         .eq("is_read", false)
         .order("created_at", { ascending: false })
-        .limit(3);
+        .limit(3) as any);
 
       if (error) throw error;
       setReminders(data || []);
@@ -108,10 +125,10 @@ export const EmergencyFundCard = ({
 
   const dismissReminder = async (reminderId: string) => {
     try {
-      const { error } = await supabase
-        .from("emergency_fund_reminders")
+      const { error } = await (supabase
+        .from("emergency_fund_reminders" as any)
         .update({ is_read: true })
-        .eq("id", reminderId);
+        .eq("id", reminderId) as any);
 
       if (error) throw error;
       setReminders(prev => prev.filter(r => r.id !== reminderId));
@@ -134,14 +151,20 @@ export const EmergencyFundCard = ({
     
     setChangingCurrency(true);
     try {
-      // Convert current balance to new currency
-      const newBalance = convertCurrency(currentBalance, accountCurrency, newCurrency);
+      // Get the original BRL balance for accurate conversion
+      const balanceInBRL = emergencyAccount.balance_brl || 
+        (accountCurrency === 'BRL' ? currentBalance : convertCurrency(currentBalance, accountCurrency, 'BRL'));
+      
+      // Convert from BRL to new currency for display
+      const newBalance = newCurrency === 'BRL' 
+        ? balanceInBRL 
+        : convertCurrency(balanceInBRL, 'BRL', newCurrency);
       
       const { error } = await supabase
         .from('accounts')
         .update({ 
           currency: newCurrency,
-          balance: Math.round(newBalance * 100) / 100 // Round to 2 decimal places
+          balance: Math.round(newBalance * 100) / 100
         })
         .eq('id', emergencyAccount.id);
 
@@ -150,7 +173,8 @@ export const EmergencyFundCard = ({
       setEmergencyAccount(prev => prev ? {
         ...prev,
         currency: newCurrency,
-        balance: Math.round(newBalance * 100) / 100
+        balance: Math.round(newBalance * 100) / 100,
+        balance_brl: balanceInBRL // Preserve original BRL balance
       } : null);
 
       toast.success(
