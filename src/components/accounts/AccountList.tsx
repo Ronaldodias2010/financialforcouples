@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Trash2, AlertTriangle, Edit } from "lucide-react";
+import { Wallet, Trash2, AlertTriangle, Edit, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { AccountEditForm } from "./AccountEditForm";
 import { AccountDeactivationDialog } from "./AccountDeactivationDialog";
@@ -104,6 +104,7 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
       checking: t('accounts.types.checking') || "Conta Corrente",
       savings: t('accounts.types.savings') || "Poupança",
       investment: t('accounts.types.investment') || "Investimento",
+      emergency: t('accounts.types.emergency') || "Reserva de Emergência",
       other: t('accounts.types.other') || "Outra"
     };
     return types[type as keyof typeof types] || type;
@@ -197,11 +198,15 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
           {accounts.map((account) => (
             <Card 
               key={account.id} 
-              className={`p-4 ${!account.is_active ? 'opacity-30 bg-muted/50' : ''}`}
+              className={`p-4 ${!account.is_active ? 'opacity-30 bg-muted/50' : ''} ${account.account_type === 'emergency' ? 'border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {(() => {
+                    // Show shield icon for emergency accounts
+                    if (account.account_type === 'emergency') {
+                      return <Shield className="h-8 w-8 text-emerald-600" />;
+                    }
                     const logo = getBankLogo(account.name);
                     return logo ? (
                       <img src={logo} alt={`${account.name} logo`} className="h-8 w-8 rounded-sm object-contain" loading="lazy" />

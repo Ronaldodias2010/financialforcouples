@@ -4,8 +4,9 @@ import { AccountList } from "@/components/accounts/AccountList";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
-import { ArrowLeft, Wallet, Eye, CreditCard } from "lucide-react";
+import { ArrowLeft, Wallet, Eye, CreditCard, Shield } from "lucide-react";
 import { FinancialCard } from "@/components/financial/FinancialCard";
+import { EmergencyFundCard } from "@/components/financial/EmergencyFundCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
@@ -259,8 +260,17 @@ const user2RealTotal = isUserOne() ? partnerRealTotal : currentUserRealTotal;
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left Column - Cash Account and Account Management */}
+        {/* Left Column - Emergency Fund, Cash Account and Account Management */}
         <div className="space-y-6">
+          {/* Emergency Fund Card */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Shield className="h-5 w-5 text-emerald-600" />
+              {t('emergency.title') || 'Reserva de Emergência'}
+            </h2>
+            <EmergencyFundCard />
+          </div>
+
           {/* Cash Account Card */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
