@@ -318,7 +318,6 @@ export const FinancialDashboard = () => {
             {/* Emergency Fund Card */}
             <EmergencyFundCard 
               monthlyExpensesAverage={getTransactionsTotalOutflows(viewMode)}
-              onDepositClick={() => setCurrentPage("accounts")}
             />
 
             {/* Quick Actions */}
