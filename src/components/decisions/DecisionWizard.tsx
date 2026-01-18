@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { DateInput } from '@/components/ui/date-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -267,10 +268,9 @@ export const DecisionWizard = ({ onBack, onComplete }: DecisionWizardProps) => {
           </div>
           <div>
             <Label>{t('decisions.field.targetDate')}</Label>
-            <Input
-              type="date"
+            <DateInput
               value={formData.target_date}
-              onChange={(e) => setFormData({ ...formData, target_date: e.target.value })}
+              onChange={(value) => setFormData({ ...formData, target_date: value })}
             />
           </div>
         </div>
