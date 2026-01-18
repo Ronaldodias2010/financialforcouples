@@ -2396,6 +2396,9 @@ const translations = {
     '2fa.error.resendFailed': 'Falha ao reenviar código. Tente novamente.',
     '2fa.error.noPhone': 'Nenhum número de telefone cadastrado.',
     '2fa.error.enrollFailed': 'Falha ao configurar 2FA. Tente novamente.',
+    '2fa.error.smsFailed': 'Não foi possível enviar o SMS de verificação.',
+    '2fa.error.useBackupOrRetry': 'Você pode tentar reenviar ou usar um código de backup.',
+    '2fa.verification.retrySms': 'Tentar Reenviar SMS',
     
     // Landing - Income Tax Section (Brazil only)
     'landing.incomeTax.badge': '🇧🇷 Exclusivo Brasil',
@@ -4767,6 +4770,9 @@ const translations = {
     '2fa.error.resendFailed': 'Failed to resend code. Please try again.',
     '2fa.error.noPhone': 'No phone number registered.',
     '2fa.error.enrollFailed': 'Failed to set up 2FA. Please try again.',
+    '2fa.error.smsFailed': 'Could not send SMS verification.',
+    '2fa.error.useBackupOrRetry': 'You can retry or use a backup code.',
+    '2fa.verification.retrySms': 'Retry SMS',
     
     // Landing - Income Tax Section (Brazil only)
     'landing.incomeTax.badge': '🇧🇷 Brazil Exclusive',
@@ -7127,6 +7133,9 @@ const translations = {
     '2fa.error.resendFailed': 'Error al reenviar código. Inténtalo de nuevo.',
     '2fa.error.noPhone': 'No hay número de teléfono registrado.',
     '2fa.error.enrollFailed': 'Error al configurar 2FA. Inténtalo de nuevo.',
+    '2fa.error.smsFailed': 'No se pudo enviar la verificación por SMS.',
+    '2fa.error.useBackupOrRetry': 'Puedes reintentar o usar un código de respaldo.',
+    '2fa.verification.retrySms': 'Reintentar SMS',
     
     // Landing - Income Tax Section (Brazil only)
     'landing.incomeTax.badge': '🇧🇷 Exclusivo Brasil',
