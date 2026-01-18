@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw, CreditCard, ArrowLeftRight } from "lucide-react";
+import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw, CreditCard, ArrowLeftRight, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { enUS, ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -1521,9 +1521,12 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                       </SelectTrigger>
                       <SelectContent>
                         {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
+                          <SelectItem key={account.id} value={account.id} className={account.account_type === 'emergency' ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
                             <div className="flex items-center justify-between w-full">
-                              <span>{account.name}</span>
+                              <span className="flex items-center gap-1">
+                                {account.account_type === 'emergency' && <Shield className="h-3 w-3 text-emerald-600" />}
+                                {account.name}
+                              </span>
                               <span className="text-muted-foreground ml-2">
                                 {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                               </span>
@@ -1587,9 +1590,12 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                       </SelectTrigger>
                       <SelectContent>
                         {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
+                          <SelectItem key={account.id} value={account.id} className={account.account_type === 'emergency' ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
                             <div className="flex items-center justify-between w-full">
-                              <span>{account.name}</span>
+                              <span className="flex items-center gap-1">
+                                {account.account_type === 'emergency' && <Shield className="h-3 w-3 text-emerald-600" />}
+                                {account.name}
+                              </span>
                               <span className="text-muted-foreground ml-2">
                                 {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                               </span>
@@ -1654,9 +1660,12 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
+                    <SelectItem key={account.id} value={account.id} className={account.account_type === 'emergency' ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
                       <div className="flex items-center justify-between w-full">
-                        <span>{account.name}</span>
+                        <span className="flex items-center gap-1">
+                          {account.account_type === 'emergency' && <Shield className="h-3 w-3 text-emerald-600" />}
+                          {account.name}
+                        </span>
                         <span className="text-muted-foreground ml-2">
                           {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                         </span>
@@ -1769,9 +1778,12 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                     const used = bal < 0 ? Math.min(limit, Math.abs(bal)) : 0;
                     const exhausted = limit > 0 && used >= limit;
                     return (
-                      <SelectItem key={account.id} value={account.id} disabled={exhausted}>
+                      <SelectItem key={account.id} value={account.id} disabled={exhausted} className={account.account_type === 'emergency' ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
                         <div className="flex items-center justify-between w-full">
-                          <span>{account.name}</span>
+                          <span className="flex items-center gap-1">
+                            {account.account_type === 'emergency' && <Shield className="h-3 w-3 text-emerald-600" />}
+                            {account.name}
+                          </span>
                           <span className="text-muted-foreground ml-2">
                             {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                             {exhausted && <span className="ml-2 text-destructive">• Limite esgotado</span>}
