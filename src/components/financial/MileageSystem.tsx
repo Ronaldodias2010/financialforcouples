@@ -22,6 +22,8 @@ import { PromotionsSection } from './PromotionsSection';
 import { MileageRuleWizard, type RuleFormData } from './MileageRuleWizard';
 import { MileageGoalAnalysis } from './MileageGoalAnalysis';
 import { MileageSmartSummary } from './MileageSmartSummary';
+import { MileageProgramsSection } from './MileageProgramsSection';
+import { useMileagePrograms } from '@/hooks/useMileagePrograms';
 import { format } from "date-fns";
 import { parseLocalDate } from "@/utils/date";
 
@@ -80,6 +82,7 @@ export const MileageSystem = () => {
   const { couple, isPartOfCouple, getPartnerUserId } = useCouple();
   const { names } = usePartnerNames();
   const { convertCurrency, getCurrencySymbol } = useCurrencyConverter();
+  const { totalSyncedMiles, loadPrograms } = useMileagePrograms();
   
   const [cards, setCards] = useState<Card[]>([]);
   const [mileageRules, setMileageRules] = useState<MileageRule[]>([]);
@@ -650,7 +653,7 @@ export const MileageSystem = () => {
             />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Math.floor(totalMiles).toString()}</div>
+            <div className="text-2xl font-bold">{Math.floor(totalMiles + totalSyncedMiles).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">{t('mileage.milesAccumulated')}</p>
           </CardContent>
         </Card>
@@ -692,6 +695,9 @@ export const MileageSystem = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Connected Mileage Programs Section */}
+      <MileageProgramsSection onMilesUpdate={loadTotalMiles} />
 
       {/* Main Content - Regras, Metas e Histórico */}
       <Tabs defaultValue="rules" className="space-y-4">

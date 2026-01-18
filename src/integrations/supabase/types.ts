@@ -2300,6 +2300,104 @@ export type Database = {
           },
         ]
       }
+      mileage_program_history: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          miles_amount: number
+          program_id: string | null
+          source: string | null
+          transaction_date: string
+          transaction_type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          miles_amount: number
+          program_id?: string | null
+          source?: string | null
+          transaction_date: string
+          transaction_type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          miles_amount?: number
+          program_id?: string | null
+          source?: string | null
+          transaction_date?: string
+          transaction_type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mileage_program_history_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "mileage_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mileage_programs: {
+        Row: {
+          access_token: string | null
+          balance_miles: number | null
+          balance_value: number | null
+          created_at: string | null
+          external_member_id: string | null
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          program_code: string
+          program_name: string
+          refresh_token: string | null
+          status: string
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          balance_miles?: number | null
+          balance_value?: number | null
+          created_at?: string | null
+          external_member_id?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          program_code: string
+          program_name: string
+          refresh_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          balance_miles?: number | null
+          balance_value?: number | null
+          created_at?: string | null
+          external_member_id?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          program_code?: string
+          program_name?: string
+          refresh_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       moblix_offers: {
         Row: {
           created_at: string | null
