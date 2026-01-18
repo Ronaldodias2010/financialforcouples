@@ -59,7 +59,7 @@ export const MILEAGE_PROGRAMS: MileageProgramConfig[] = [
   {
     code: 'delta',
     name: 'SkyMiles',
-    logo: '/mileage-logos/delta.svg',
+    logo: '/mileage-logos/delta.jpeg',
     primaryColor: '#003366',
     country: 'US',
     hasOAuth: false,
