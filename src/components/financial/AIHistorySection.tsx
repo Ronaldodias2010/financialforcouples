@@ -16,6 +16,7 @@ interface AIHistoryEntry {
   id: string;
   entry_type: string;
   message: string;
+  user_question?: string | null;
   card_name?: string | null;
   amount?: number | null;
   currency?: string | null;
@@ -83,8 +84,14 @@ export const AIHistorySection = () => {
     setExpandedEntries(newExpanded);
   };
 
-  const getMessagePreview = (message: string) => {
-    const firstLine = message.split('\n')[0];
+  const getMessagePreview = (entry: AIHistoryEntry) => {
+    // If user question exists, show it as preview
+    if (entry.user_question) {
+      const question = entry.user_question;
+      return question.length > 100 ? question.substring(0, 100) + '...' : question;
+    }
+    // Fallback to first line of AI response
+    const firstLine = entry.message.split('\n')[0];
     return firstLine.length > 120 ? firstLine.substring(0, 120) + '...' : firstLine;
   };
 
@@ -200,9 +207,12 @@ export const AIHistorySection = () => {
                              </div>
                            </div>
                            
-                           {/* Preview line */}
+                           {/* Preview line - show user question if exists */}
                            <div className="text-sm text-foreground/80 text-left">
-                             {getMessagePreview(entry.message)}
+                             {entry.user_question && (
+                               <span className="text-muted-foreground mr-1">Você:</span>
+                             )}
+                             {getMessagePreview(entry)}
                            </div>
                          </div>
                        </CollapsibleTrigger>
@@ -241,7 +251,19 @@ export const AIHistorySection = () => {
                     <CollapsibleContent>
                       <div className="px-4 pb-4 border-t bg-muted/20">
                         <div className="pt-3 space-y-3">
+                          {/* Show user question if exists */}
+                          {entry.user_question && (
+                            <div className="bg-muted/50 rounded-lg p-3 border-l-2 border-primary">
+                              <div className="text-xs text-muted-foreground mb-1 font-medium">Sua pergunta:</div>
+                              <div className="text-sm text-foreground">{entry.user_question}</div>
+                            </div>
+                          )}
+                          
+                          {/* AI Response */}
                           <div className="text-sm leading-relaxed text-foreground">
+                            {entry.user_question && (
+                              <div className="text-xs text-muted-foreground mb-2 font-medium">Resposta da PrIscA:</div>
+                            )}
                             <div className="space-y-2">
                               {entry.message.split('\n').map((line, index) => {
                                 // Skip empty lines

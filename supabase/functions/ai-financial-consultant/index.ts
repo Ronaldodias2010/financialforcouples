@@ -363,7 +363,7 @@ serve(async (req) => {
     });
 
     // Save to AI history if this is an analysis or recommendation
-    await saveToAIHistory(supabaseClient, user.id, 'ai_analysis', aiResponseText);
+    await saveToAIHistory(supabaseClient, user.id, 'ai_analysis', aiResponseText, userMessage);
 
     // Get updated usage for response
     const { data: updatedUsage } = await supabaseClient
@@ -1411,14 +1411,15 @@ function generateIndividualContext(
   return context;
 }
 
-async function saveToAIHistory(supabase: any, userId: string, entryType: string, message: string) {
+async function saveToAIHistory(supabase: any, userId: string, entryType: string, message: string, userQuestion?: string) {
   try {
     await supabase
       .from('ai_history')
       .insert({
         user_id: userId,
         entry_type: entryType,
-        message: message
+        message: message,
+        user_question: userQuestion || null
       });
   } catch (error) {
     console.error('Error saving to AI history:', error);
