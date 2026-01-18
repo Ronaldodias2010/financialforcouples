@@ -1108,6 +1108,11 @@ const translations = {
     'cashFlow.table.noCategory': 'Sem categoria',
     'cashFlow.table.boleto': 'Boleto',
     'cashFlow.table.check': 'Cheque',
+    'cashFlow.chart.noDataPeriod': 'Sem dados para exibir no período selecionado',
+    'cashFlow.chart.balanceEvolution': 'Evolução do Saldo',
+    'cashFlow.chart.inflowsVsOutflows': 'Entradas vs Saídas',
+    'cashFlow.chart.expensesByPaymentMethod': 'Despesas por Forma de Pagamento',
+    'cashFlow.chart.noExpenseData': 'Sem dados de despesas',
     
     // Investments
     'investments.title': 'Investimentos',
@@ -3747,6 +3752,11 @@ const translations = {
     'cashFlow.table.noCategory': 'No category',
     'cashFlow.table.boleto': 'Bill',
     'cashFlow.table.check': 'Check',
+    'cashFlow.chart.noDataPeriod': 'No data to display for the selected period',
+    'cashFlow.chart.balanceEvolution': 'Balance Evolution',
+    'cashFlow.chart.inflowsVsOutflows': 'Inflows vs Outflows',
+    'cashFlow.chart.expensesByPaymentMethod': 'Expenses by Payment Method',
+    'cashFlow.chart.noExpenseData': 'No expense data',
     
     // Investments
     'investments.title': 'Investments',
@@ -6496,6 +6506,11 @@ const translations = {
     'cashFlow.table.noCategory': 'Sin categoría',
     'cashFlow.table.boleto': 'Boleto',
     'cashFlow.table.check': 'Cheque',
+    'cashFlow.chart.noDataPeriod': 'Sin datos para mostrar en el período seleccionado',
+    'cashFlow.chart.balanceEvolution': 'Evolución del Saldo',
+    'cashFlow.chart.inflowsVsOutflows': 'Entradas vs Salidas',
+    'cashFlow.chart.expensesByPaymentMethod': 'Gastos por Forma de Pago',
+    'cashFlow.chart.noExpenseData': 'Sin datos de gastos',
     
     // Investments
     'investments.title': 'Inversiones',
