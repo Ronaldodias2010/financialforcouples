@@ -913,8 +913,80 @@ const getTutorialContentPT = (): TutorialContent => ({
       ]
     },
     {
+      id: 'decisoes',
+      title: '16. Central de Decisões',
+      icon: '💕',
+      intro: 'Tome decisões financeiras em conjunto com seu parceiro(a) de forma estruturada, evitando conflitos e promovendo harmonia.',
+      subSections: [
+        {
+          title: 'O Que é a Central de Decisões',
+          content: 'Um espaço seguro para casais discutirem e votarem em decisões financeiras importantes, desde pequenas compras até grandes investimentos.',
+          features: [
+            { title: 'Wizard Guiado', desc: 'Processo em 6 etapas para criar decisões estruturadas com contexto completo, restrições e cenários.' },
+            { title: 'Sistema de Votação', desc: 'Cada parceiro pode votar: Concordar, Concordar com Condição, Discordar ou Pausar para reflexão.' },
+            { title: 'Simulação de Cenários', desc: 'Visualize o impacto financeiro de cada opção: à vista, parcelado ou adiar a decisão.' },
+            { title: 'Acordos Permanentes', desc: 'Crie acordos para decisões recorrentes, como limites de gastos sem consulta prévia.' },
+          ]
+        },
+        {
+          title: 'Como Criar uma Nova Decisão',
+          steps: [
+            { num: 1, title: 'Escolha o Tipo', desc: 'Selecione entre templates pré-definidos (Comprar vs Alugar, Pagar Dívida vs Investir, Trocar Carro, Viagem, Grande Compra) ou crie uma personalizada.' },
+            { num: 2, title: 'Descreva o Contexto', desc: 'Informe título, descrição, valor estimado, data desejada, urgência e quem quer (você, parceiro(a) ou ambos).' },
+            { num: 3, title: 'Defina Restrições', desc: 'Configure limite mensal, se pode parcelar, número máximo de parcelas e se afeta reserva de emergência ou metas.' },
+            { num: 4, title: 'Analise Cenários', desc: 'O sistema gera 3 cenários automaticamente: pagamento à vista, parcelado e adiar. Veja projeções de 3, 6 e 12 meses.' },
+            { num: 5, title: 'Vote na Decisão', desc: 'Escolha sua opção de voto e aguarde o voto do seu parceiro(a) para concluir.' },
+            { num: 6, title: 'Crie um Acordo', desc: 'Opcionalmente, transforme a decisão em um acordo permanente para situações futuras similares.' },
+          ]
+        },
+        {
+          title: 'Tipos de Voto',
+          features: [
+            { title: 'Concordar', desc: 'Aprovação total da decisão proposta no cenário escolhido.' },
+            { title: 'Concordar com Condição', desc: 'Aprovação mediante ajustes específicos (ex: "Só se for em 10x sem juros").' },
+            { title: 'Discordar', desc: 'Rejeição da proposta com explicação para promover diálogo construtivo.' },
+            { title: 'Pausar', desc: 'Solicitar mais tempo para pensar ou aguardar momento financeiro mais adequado.' },
+          ]
+        },
+        {
+          title: 'Acordos do Casal',
+          content: 'Acordos são regras permanentes criadas a partir de decisões comuns:',
+          bullets: [
+            'Limite de Compra Sem Consulta: Ex: "Compras até R$ 500 não precisam de aprovação prévia"',
+            'Categorias Prioritárias: Ex: "Gastos com saúde sempre são aprovados automaticamente"',
+            'Revisão Periódica: Acordos podem ter data de revisão para ajustes conforme mudanças na vida financeira',
+            'Histórico de Compliance: Acompanhe se os acordos estão sendo respeitados por ambos',
+          ]
+        },
+        {
+          title: 'Mensagens Anti-Conflito',
+          content: 'O sistema exibe mensagens motivacionais para manter a harmonia durante discussões financeiras:',
+          bullets: [
+            'Lembretes de que vocês são um time trabalhando pelo mesmo objetivo',
+            'Frases de encorajamento durante momentos de discordância',
+            'Celebrações quando decisões são tomadas em consenso',
+            'Sugestões para conversar presencialmente em casos complexos',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dicas para Decisões Harmoniosas',
+            content: 'Use a Central de Decisões como ferramenta de diálogo, não de confronto. Ouça a motivação do outro antes de votar. Para decisões grandes, agende uma conversa presencial usando os dados do sistema como base. Lembre-se: o objetivo é construir juntos, não "ganhar" uma discussão.'
+          }
+        },
+        {
+          title: '',
+          premiumBox: {
+            title: 'Recursos Premium de Decisões',
+            content: 'Usuários Premium têm acesso à mediadora IA PrIscA, que oferece sugestões imparciais, identifica pontos de acordo e propõe compromissos para decisões difíceis.'
+          }
+        }
+      ]
+    },
+    {
       id: 'relatorios',
-      title: '16. Relatórios e Análises',
+      title: '17. Relatórios e Análises',
       icon: '📊',
       intro: 'Visualize relatórios detalhados e análises das suas finanças para tomar melhores decisões.',
       subSections: [
@@ -980,7 +1052,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'configuracoes',
-      title: '17. Configurações e Perfil',
+      title: '18. Configurações e Perfil',
       icon: '⚙️',
       intro: 'Personalize sua experiência e configure preferências de segurança e privacidade.',
       subSections: [
@@ -1045,7 +1117,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'parcerias',
-      title: '18. Programa de Parcerias',
+      title: '19. Programa de Parcerias',
       icon: '🤝',
       intro: 'Monetize sua rede compartilhando o Couples Financials e ganhe comissões.',
       subSections: [
@@ -1101,7 +1173,7 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'solucoes',
-      title: '19. Solução de Problemas',
+      title: '20. Solução de Problemas',
       icon: '🛠️',
       intro: 'Encontre respostas para problemas comuns e saiba como obter suporte.',
       subSections: [
@@ -1203,10 +1275,11 @@ const getTutorialContentEN = (): TutorialContent => {
     '13. Converter de Extratos': '13. Statement Converter',
     '14. Recursos de IA': '14. AI Features',
     '15. Funcionalidades para Casais': '15. Couple Features',
-    '16. Relatórios e Análises': '16. Reports and Analytics',
-    '17. Configurações e Perfil': '17. Settings and Profile',
-    '18. Programa de Parcerias': '18. Partnership Program',
-    '19. Solução de Problemas': '19. Troubleshooting',
+    '16. Central de Decisões': '16. Decision Center',
+    '17. Relatórios e Análises': '17. Reports and Analytics',
+    '18. Configurações e Perfil': '18. Settings and Profile',
+    '19. Programa de Parcerias': '19. Partnership Program',
+    '20. Solução de Problemas': '20. Troubleshooting',
   };
 
   // Translation map for section intros
@@ -1226,6 +1299,7 @@ const getTutorialContentEN = (): TutorialContent => {
     'converter': 'Import and process bank statements automatically with OCR and AI technology.',
     'ia': 'Use artificial intelligence to get personalized financial insights and automate tasks.',
     'casais': 'Special tools for collaborative financial management between couples.',
+    'decisoes': 'Make financial decisions together with your partner in a structured way, avoiding conflicts and promoting harmony.',
     'relatorios': 'View detailed reports and analyses of your finances to make better decisions.',
     'configuracoes': 'Customize your experience and configure security and privacy preferences.',
     'parcerias': 'Monetize your network by sharing Couples Financials and earn commissions.',
@@ -1273,10 +1347,11 @@ const getTutorialContentES = (): TutorialContent => {
     '13. Converter de Extratos': '13. Convertidor de Extractos',
     '14. Recursos de IA': '14. Recursos de IA',
     '15. Funcionalidades para Casais': '15. Funcionalidades para Parejas',
-    '16. Relatórios e Análises': '16. Informes y Análisis',
-    '17. Configurações e Perfil': '17. Configuración y Perfil',
-    '18. Programa de Parcerias': '18. Programa de Socios',
-    '19. Solução de Problemas': '19. Solución de Problemas',
+    '16. Central de Decisões': '16. Central de Decisiones',
+    '17. Relatórios e Análises': '17. Informes y Análisis',
+    '18. Configurações e Perfil': '18. Configuración y Perfil',
+    '19. Programa de Parcerias': '19. Programa de Socios',
+    '20. Solução de Problemas': '20. Solución de Problemas',
   };
 
   // Translation map for section intros
@@ -1296,6 +1371,7 @@ const getTutorialContentES = (): TutorialContent => {
     'converter': 'Importa y procesa extractos bancarios automáticamente con tecnología OCR e IA.',
     'ia': 'Usa inteligencia artificial para obtener insights financieros personalizados y automatizar tareas.',
     'casais': 'Herramientas especiales para gestión financiera colaborativa entre parejas.',
+    'decisoes': 'Toma decisiones financieras junto con tu pareja de forma estructurada, evitando conflictos y promoviendo armonía.',
     'relatorios': 'Visualiza informes detallados y análisis de tus finanzas para tomar mejores decisiones.',
     'configuracoes': 'Personaliza tu experiencia y configura preferencias de seguridad y privacidad.',
     'parcerias': 'Monetiza tu red compartiendo Couples Financials y gana comisiones.',
