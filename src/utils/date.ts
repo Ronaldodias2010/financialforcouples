@@ -11,16 +11,31 @@ export const parseLocalDate = (dateString: string): Date => {
 };
 
 /**
+ * Gets the default date format string based on language
+ * English uses MM/dd/yyyy (American format)
+ * Portuguese and Spanish use dd/MM/yyyy
+ */
+export const getDateFormatByLanguage = (language: 'pt' | 'en' | 'es' = 'pt'): string => {
+  switch (language) {
+    case 'en': return 'MM/dd/yyyy';
+    case 'es': return 'dd/MM/yyyy';
+    default: return 'dd/MM/yyyy';
+  }
+};
+
+/**
  * Formats a date string as a local date with the given format and locale
+ * If no format is provided, uses the language-appropriate default
  */
 export const formatLocalDate = (
   dateString: string, 
-  formatStr: string = "dd/MM/yyyy",
+  formatStr?: string,
   language: 'pt' | 'en' | 'es' = 'pt'
 ): string => {
   const locale = getLocaleForLanguage(language);
   const date = parseLocalDate(dateString);
-  return format(date, formatStr, { locale });
+  const finalFormat = formatStr || getDateFormatByLanguage(language);
+  return format(date, finalFormat, { locale });
 };
 
 /**
