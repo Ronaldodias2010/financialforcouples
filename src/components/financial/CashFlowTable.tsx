@@ -17,10 +17,11 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR, enUS, es } from 'date-fns/locale';
 import { CashFlowEntry } from '@/hooks/useCashFlowHistory';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CashFlowTableProps {
   entries: CashFlowEntry[];
@@ -32,29 +33,50 @@ type SortField = 'movement_date' | 'amount' | 'balance_after';
 type SortOrder = 'asc' | 'desc';
 
 export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTableProps) {
+  const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<SortField>('movement_date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  const movementTypeLabels: Record<string, string> = {
-    'income': 'Receita',
-    'expense': 'Despesa',
-    'initial_balance': 'Saldo Inicial',
-    'adjustment': 'Ajuste',
-    'transfer_in': 'Transferência Entrada',
-    'transfer_out': 'Transferência Saída'
+  const getDateLocale = () => {
+    switch (language) {
+      case 'en': return enUS;
+      case 'es': return es;
+      default: return ptBR;
+    }
   };
 
-  const paymentMethodLabels: Record<string, string> = {
-    'cash': 'Dinheiro',
-    'pix': 'PIX',
-    'credit_card': 'Cartão de Crédito',
-    'debit_card': 'Cartão de Débito',
-    'transfer': 'Transferência',
-    'boleto': 'Boleto',
-    'check': 'Cheque',
-    'other': 'Outro'
+  const dateLocale = getDateLocale();
+
+  const getMovementTypeLabel = (type: string): string => {
+    switch (type) {
+      case 'income': return t('cashFlow.table.income');
+      case 'expense': return t('cashFlow.table.expense');
+      case 'initial_balance': return t('cashFlow.table.initialBalance');
+      case 'adjustment': return t('cashFlow.table.adjustment');
+      case 'transfer_in': return t('cashFlow.table.transferIn');
+      case 'transfer_out': return t('cashFlow.table.transferOut');
+      default: return type;
+    }
+  };
+
+  const getPaymentMethodLabel = (method: string): string => {
+    switch (method) {
+      case 'cash': return t('transactionForm.cash');
+      case 'pix': return 'PIX';
+      case 'credit_card': return t('transactionForm.creditCard');
+      case 'debit_card': return t('transactionForm.debitCard');
+      case 'transfer': return t('transactionForm.transfer');
+      case 'deposit': return t('transactionForm.deposit');
+      case 'account_transfer': return t('transactionForm.accountTransfer');
+      case 'account_investment': return t('transactionForm.accountInvestmentTransfer');
+      case 'payment_transfer': return t('transactionForm.paymentTransfer');
+      case 'boleto': return t('cashFlow.table.boleto');
+      case 'check': return t('cashFlow.table.check');
+      case 'other': return t('common.other');
+      default: return method;
+    }
   };
 
   const filteredAndSortedEntries = useMemo(() => {
@@ -124,7 +146,7 @@ export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTa
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Histórico de Movimentações</CardTitle>
+          <CardTitle>{t('cashFlow.table.historyTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -141,12 +163,12 @@ export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTa
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Histórico de Movimentações</CardTitle>
+          <CardTitle>{t('cashFlow.table.historyTitle')}</CardTitle>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar..."
+                placeholder={t('common.search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-8 w-[200px]"
@@ -155,14 +177,14 @@ export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTa
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Tipo" />
+                <SelectValue placeholder={t('cashFlow.table.type')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="income">Receitas</SelectItem>
-                <SelectItem value="expense">Despesas</SelectItem>
-                <SelectItem value="transfer_in">Transf. Entrada</SelectItem>
-                <SelectItem value="transfer_out">Transf. Saída</SelectItem>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
+                <SelectItem value="income">{t('cashFlow.table.incomes')}</SelectItem>
+                <SelectItem value="expense">{t('cashFlow.table.expenses')}</SelectItem>
+                <SelectItem value="transfer_in">{t('cashFlow.table.transferInShort')}</SelectItem>
+                <SelectItem value="transfer_out">{t('cashFlow.table.transferOutShort')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -178,21 +200,21 @@ export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTa
                   onClick={() => handleSort('movement_date')}
                 >
                   <div className="flex items-center">
-                    Data
+                    {t('cashFlow.table.date')}
                     <SortIcon field="movement_date" />
                   </div>
                 </TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Forma Pgto</TableHead>
-                <TableHead>Conta</TableHead>
+                <TableHead>{t('cashFlow.table.description')}</TableHead>
+                <TableHead>{t('cashFlow.table.type')}</TableHead>
+                <TableHead>{t('cashFlow.table.category')}</TableHead>
+                <TableHead>{t('cashFlow.table.paymentMethod')}</TableHead>
+                <TableHead>{t('cashFlow.table.account')}</TableHead>
                 <TableHead 
                   className="text-right cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center justify-end">
-                    Valor
+                    {t('cashFlow.table.value')}
                     <SortIcon field="amount" />
                   </div>
                 </TableHead>
@@ -201,25 +223,25 @@ export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTa
                   onClick={() => handleSort('balance_after')}
                 >
                   <div className="flex items-center justify-end">
-                    Saldo
+                    {t('cashFlow.table.balance')}
                     <SortIcon field="balance_after" />
                   </div>
                 </TableHead>
-                <TableHead className="w-[50px]">Status</TableHead>
+                <TableHead className="w-[50px]">{t('cashFlow.table.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredAndSortedEntries.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8">
-                    <p className="text-muted-foreground">Nenhuma movimentação encontrada</p>
+                    <p className="text-muted-foreground">{t('cashFlow.table.noMovements')}</p>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredAndSortedEntries.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell className="whitespace-nowrap">
-                      {format(new Date(entry.movement_date), 'dd/MM/yyyy', { locale: ptBR })}
+                      {format(new Date(entry.movement_date), 'dd/MM/yyyy', { locale: dateLocale })}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate" title={entry.description}>
                       {entry.description}
@@ -232,18 +254,18 @@ export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTa
                           <ArrowDownCircle className="h-4 w-4 text-red-500" />
                         )}
                         <span className="text-xs">
-                          {movementTypeLabels[entry.movement_type] || entry.movement_type}
+                          {getMovementTypeLabel(entry.movement_type)}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
-                        {entry.category_name || 'Sem categoria'}
+                        {entry.category_name || t('cashFlow.table.noCategory')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs">
                       {entry.payment_method ? 
-                        (paymentMethodLabels[entry.payment_method] || entry.payment_method) : 
+                        getPaymentMethodLabel(entry.payment_method) : 
                         '-'
                       }
                     </TableCell>
@@ -282,7 +304,7 @@ export function CashFlowTable({ entries, isLoading, onFilterChange }: CashFlowTa
         {/* Summary Footer */}
         {filteredAndSortedEntries.length > 0 && (
           <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground border-t pt-4">
-            <span>{filteredAndSortedEntries.length} movimentações</span>
+            <span>{filteredAndSortedEntries.length} {t('cashFlow.movements')}</span>
             <div className="flex gap-4">
               <span className="text-green-600">
                 + {formatCurrency(
