@@ -15,10 +15,13 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { useMileageAnalysis } from "@/hooks/useMileageAnalysis";
 import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User, Globe, MapPin, ArrowRight, Info } from "lucide-react";
 import { PromotionsSection } from './PromotionsSection';
 import { MileageRuleWizard, type RuleFormData } from './MileageRuleWizard';
+import { MileageGoalAnalysis } from './MileageGoalAnalysis';
+import { MileageSmartSummary } from './MileageSmartSummary';
 import { format } from "date-fns";
 import { parseLocalDate } from "@/utils/date";
 
@@ -83,6 +86,7 @@ export const MileageSystem = () => {
   const [mileageGoals, setMileageGoals] = useState<MileageGoal[]>([]);
   const [mileageHistory, setMileageHistory] = useState<MileageHistory[]>([]);
   const [totalMiles, setTotalMiles] = useState(0);
+  const [promotions, setPromotions] = useState<any[]>([]);
   
   // View mode state
   const [viewMode, setViewMode] = useState<'both' | 'user1' | 'user2'>('both');
@@ -158,9 +162,28 @@ export const MileageSystem = () => {
       loadMileageRules(),
       loadMileageGoals(),
       loadMileageHistory(),
-      loadTotalMiles()
+      loadTotalMiles(),
+      loadPromotions()
     ]);
   };
+
+  const loadPromotions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('airline_promotions')
+        .select('*')
+        .eq('is_active', true)
+        .gte('end_date', new Date().toISOString().split('T')[0])
+        .order('start_date', { ascending: false });
+
+      if (error) throw error;
+      setPromotions(data || []);
+    } catch (error) {
+      console.error('Error loading promotions:', error);
+      setPromotions([]);
+    }
+  };
+
 
   const loadCards = async () => {
     const userIds = getUserIdsToQuery();
@@ -766,13 +789,23 @@ export const MileageSystem = () => {
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">{t('mileage.goals')}</h3>
-            <Button onClick={() => setShowGoalForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('mileage.newGoal')}
-            </Button>
-          </div>
+          {/* Smart Summary - Intelligent Mileage Analysis */}
+          {(() => {
+            const mileageAnalysis = useMileageAnalysis(mileageGoals, promotions, totalMiles, mileageHistory);
+            return (
+              <>
+                <MileageSmartSummary analysis={mileageAnalysis} />
+                
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">{t('mileage.goals')}</h3>
+                  <Button onClick={() => setShowGoalForm(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('mileage.newGoal')}
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
 
           {showGoalForm && (
             <Card>
@@ -1173,7 +1206,16 @@ export const MileageSystem = () => {
       </Tabs>
 
       {/* Promoções de Companhias Aéreas */}
-      <PromotionsSection userTotalMiles={totalMiles} />
+      {(() => {
+        const mileageAnalysis = useMileageAnalysis(mileageGoals, promotions, totalMiles, mileageHistory);
+        return (
+          <PromotionsSection 
+            userTotalMiles={totalMiles} 
+            mileageGoals={mileageGoals}
+            promotionMatches={mileageAnalysis.promotionMatches}
+          />
+        );
+      })()}
     </div>
   );
 };
