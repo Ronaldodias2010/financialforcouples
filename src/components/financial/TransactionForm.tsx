@@ -1429,9 +1429,16 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                       </SelectTrigger>
                        <SelectContent>
                          {accounts.filter(acc => !acc.is_cash_account).map((account) => (
-                           <SelectItem key={account.id} value={account.id}>
+                           <SelectItem 
+                             key={account.id} 
+                             value={account.id}
+                             className={account.account_type === 'emergency' ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}
+                           >
                              <div className="flex items-center justify-between w-full">
-                               <span>{account.name}</span>
+                               <span className="flex items-center gap-1">
+                                 {account.account_type === 'emergency' && <Shield className="h-3 w-3 text-emerald-600" />}
+                                 {account.name}
+                               </span>
                                <span className="text-muted-foreground ml-2">
                                  {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                                </span>
@@ -1449,9 +1456,16 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                       </SelectTrigger>
                        <SelectContent>
                          {accounts.filter(acc => acc.id !== fromAccountId && !acc.is_cash_account).map((account) => (
-                           <SelectItem key={account.id} value={account.id}>
+                           <SelectItem 
+                             key={account.id} 
+                             value={account.id}
+                             className={account.account_type === 'emergency' ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}
+                           >
                              <div className="flex items-center justify-between w-full">
-                               <span>{account.name}</span>
+                               <span className="flex items-center gap-1">
+                                 {account.account_type === 'emergency' && <Shield className="h-3 w-3 text-emerald-600" />}
+                                 {account.name}
+                               </span>
                                <span className="text-muted-foreground ml-2">
                                  {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                                </span>
@@ -1475,9 +1489,16 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                       </SelectTrigger>
                        <SelectContent>
                          {accounts.filter(acc => !acc.is_cash_account).map((account) => (
-                           <SelectItem key={account.id} value={account.id}>
+                           <SelectItem 
+                             key={account.id} 
+                             value={account.id}
+                             className={account.account_type === 'emergency' ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}
+                           >
                              <div className="flex items-center justify-between w-full">
-                               <span>{account.name}</span>
+                               <span className="flex items-center gap-1">
+                                 {account.account_type === 'emergency' && <Shield className="h-3 w-3 text-emerald-600" />}
+                                 {account.name}
+                               </span>
                                <span className="text-muted-foreground ml-2">
                                  {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
                                </span>
