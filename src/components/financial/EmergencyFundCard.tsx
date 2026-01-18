@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Lightbulb, Plus, X, Bell } from "lucide-react";
+import { Shield, Lightbulb, X, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,12 +32,10 @@ interface EmergencyReminder {
 }
 
 interface EmergencyFundCardProps {
-  onDepositClick?: () => void;
   monthlyExpensesAverage?: number;
 }
 
 export const EmergencyFundCard = ({ 
-  onDepositClick,
   monthlyExpensesAverage = 0 
 }: EmergencyFundCardProps) => {
   const { user } = useAuth();
@@ -378,16 +376,6 @@ export const EmergencyFundCard = ({
           </div>
         )}
 
-        {/* Quick Deposit Button */}
-        {onDepositClick && (
-          <Button 
-            className="w-full bg-emerald-600 hover:bg-emerald-700"
-            onClick={onDepositClick}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {t('emergency.deposit') || 'Depositar na Reserva'}
-          </Button>
-        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 pt-2 border-t">
