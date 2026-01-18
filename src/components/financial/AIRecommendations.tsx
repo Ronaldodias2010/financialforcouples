@@ -63,28 +63,46 @@ const AIRecommendationsContent = ({ subscriptionTier }: { subscriptionTier: stri
       if (error) {
         console.error('AI Consultant error:', error);
         
+        // Try to parse error message if it contains JSON
+        let errorData = data;
+        try {
+          if (error.message && error.message.includes('{')) {
+            const jsonMatch = error.message.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              errorData = JSON.parse(jsonMatch[0]);
+            }
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+        
         // Handle specific error cases based on error code or message
-        if (data?.error === 'AI_ACCESS_DENIED' || error.message === 'AI_ACCESS_DENIED') {
+        if (errorData?.error === 'AI_ACCESS_DENIED' || error.message?.includes('AI_ACCESS_DENIED')) {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
             message: 'Acesso negado: Esta funcionalidade está disponível apenas para usuários Premium. Faça upgrade do seu plano para continuar.'
           }]);
-        } else if (data?.error === 'DAILY_LIMIT_REACHED' || error.message === 'DAILY_LIMIT_REACHED') {
+        } else if (errorData?.error === 'DAILY_LIMIT_REACHED' || error.message?.includes('DAILY_LIMIT_REACHED')) {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
             message: 'Limite diário de IA atingido. Você pode tentar novamente amanhã ou fazer upgrade do seu plano para ter mais acesso.'
           }]);
-        } else if (data?.error === 'TOKEN_LIMIT_WOULD_EXCEED') {
+        } else if (errorData?.error === 'TOKEN_LIMIT_WOULD_EXCEED' || error.message?.includes('TOKEN_LIMIT_WOULD_EXCEED')) {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
-            message: `Esta consulta excederia seu limite diário de tokens. Tente uma pergunta mais curta ou aguarde até amanhã.`
+            message: `Opa! 😅 Você já usou bastante a IA hoje. Esta consulta excederia seu limite diário de tokens. Tente uma pergunta mais curta ou aguarde até amanhã.`
           }]);
-        } else if (data?.error === 'AI_API_ERROR' || data?.error === 'OPENAI_API_ERROR') {
+          toast({
+            title: "Limite de tokens",
+            description: "Tente uma pergunta mais curta ou aguarde até amanhã.",
+            variant: "destructive"
+          });
+        } else if (errorData?.error === 'AI_API_ERROR' || errorData?.error === 'OPENAI_API_ERROR') {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
             message: 'PrIscA não conseguiu processar sua solicitação no momento. Tente novamente em alguns minutos.'
           }]);
-        } else if (data?.error === 'RATE_LIMIT_EXCEEDED') {
+        } else if (errorData?.error === 'RATE_LIMIT_EXCEEDED' || error.message?.includes('RATE_LIMIT')) {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
             message: 'PrIscA está sobrecarregada no momento. 🙄 Aguarde alguns minutos e tente novamente.'
@@ -94,7 +112,7 @@ const AIRecommendationsContent = ({ subscriptionTier }: { subscriptionTier: stri
             description: "Aguarde alguns minutos e tente novamente.",
             variant: "destructive"
           });
-        } else if (data?.error === 'CREDITS_EXHAUSTED') {
+        } else if (errorData?.error === 'CREDITS_EXHAUSTED' || error.message?.includes('CREDITS_EXHAUSTED')) {
           setChatHistory(prev => [...prev, { 
             role: 'ai', 
             message: 'Créditos de IA esgotados. Entre em contato com o suporte para resolver.'
