@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ExternalLink, Calendar, Plane, Gift, Percent, Target, Zap, Star, Heart, Filter, Clock, CheckCircle, X, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 import { SyncPromotionsButton } from './SyncPromotionsButton';
 import { PromotionFilters } from './PromotionFilters';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -12,14 +14,25 @@ import { usePromotionFilters } from '@/hooks/usePromotionFilters';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
+import type { PromotionGoalMatch } from '@/hooks/useMileageAnalysis';
 
 type AirlinePromotion = Database['public']['Tables']['airline_promotions']['Row'];
 
-interface PromotionsSectionProps {
-  userTotalMiles: number;
+interface MileageGoal {
+  id: string;
+  name: string;
+  target_miles: number;
+  current_miles: number;
 }
 
-export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) => {
+interface PromotionsSectionProps {
+  userTotalMiles: number;
+  mileageGoals?: MileageGoal[];
+  promotionMatches?: Map<string, PromotionGoalMatch>;
+}
+
+export const PromotionsSection = ({ userTotalMiles, mileageGoals = [], promotionMatches }: PromotionsSectionProps) => {
+  const { t } = useLanguage();
   const [promotions, setPromotions] = useState<AirlinePromotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -582,6 +595,10 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
               const daysRemaining = formatDaysRemaining(promotion.end_date);
               const isPromotionFavorite = isFavorite(promotion.id);
               
+              // Check if this promotion helps any goals
+              const matchedGoals = promotionMatches?.get(promotion.id);
+              const helpsGoals = matchedGoals && matchedGoals.goalNames.length > 0;
+              
               return (
                 <div
                   key={promotion.id}
@@ -609,8 +626,32 @@ export const PromotionsSection = ({ userTotalMiles }: PromotionsSectionProps) =>
                       )}
                       {isEligible && (
                         <Badge variant="default" className="bg-green-600 text-xs">
-                          Elegível
+                          {t('mileage.analysis.eligible')}
                         </Badge>
+                      )}
+                      {/* Goal Match Badge */}
+                      {helpsGoals && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge 
+                                variant="outline" 
+                                className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800 text-xs cursor-help"
+                              >
+                                <Target className="h-3 w-3 mr-1" />
+                                {t('mileage.analysis.helpsGoals').replace('{count}', String(matchedGoals.goalNames.length))}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p className="font-semibold text-xs mb-1">{t('mileage.analysis.helpsYourGoals')}:</p>
+                              <ul className="text-xs space-y-0.5">
+                                {matchedGoals.goalNames.map((name, idx) => (
+                                  <li key={idx}>• {name}</li>
+                                ))}
+                              </ul>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0 ml-2">
