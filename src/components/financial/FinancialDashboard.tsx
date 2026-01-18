@@ -19,7 +19,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 // TEMPORARIAMENTE REMOVIDO: import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain, MessageCircle, ArrowLeftRight, Banknote, Info } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, CreditCard, User, Settings, Plane, RotateCcw, Brain, MessageCircle, ArrowLeftRight, Banknote, Info, Heart } from "lucide-react";
 import { CashFlowDashboard } from "./CashFlowDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { openWhatsApp } from "@/utils/whatsapp";
@@ -39,6 +39,7 @@ import { useTodayFutureIncomes } from "@/hooks/useTodayFutureIncomes";
 import { useTodayFutureExpenses } from "@/hooks/useTodayFutureExpenses";
 import { TodayExpensesAlert } from "./future-expenses/TodayExpensesAlert";
 import { EmergencyFundCard } from "./EmergencyFundCard";
+import { DecisionCenter } from "../decisions/DecisionCenter";
 
 interface Transaction {
   id: string;
@@ -65,7 +66,7 @@ export const FinancialDashboard = () => {
   const { count: todayIncomesCount } = useTodayFutureIncomes();
   const { count: todayExpensesCount } = useTodayFutureExpenses();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage">("dashboard");
+  const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage" | "decisions">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [financialComparison, setFinancialComparison] = useState({ incomeChange: 0, expenseChange: 0, balanceChange: 0 });
@@ -250,6 +251,14 @@ export const FinancialDashboard = () => {
     );
   }
 
+  if (currentPage === "decisions") {
+    return (
+      <div className="container mx-auto p-6">
+        <DecisionCenter onBack={() => setCurrentPage("dashboard")} />
+      </div>
+    );
+  }
+
   const renderTabContent = () => {
     console.log('🔍 [DEBUG] Active Tab:', activeTab);
     
@@ -321,7 +330,7 @@ export const FinancialDashboard = () => {
             />
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <Button 
                 id="onboarding-accounts-btn"
                 variant="outline" 
@@ -347,6 +356,14 @@ export const FinancialDashboard = () => {
               >
                 <TrendingUp className="h-6 w-6" />
                 <span>{t('nav.investments')}</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 w-full border-rose-200 hover:border-rose-400 hover:bg-rose-50 dark:border-rose-800 dark:hover:border-rose-600 dark:hover:bg-rose-950"
+                onClick={() => setCurrentPage("decisions")}
+              >
+                <Heart className="h-6 w-6 text-rose-500" />
+                <span className="text-rose-700 dark:text-rose-300">{t('nav.decisions')}</span>
               </Button>
               <div className="w-full">
                 <PremiumFeatureGuard 

@@ -145,7 +145,7 @@ export const useDecisions = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('couple_decisions')
         .select('*')
         .eq('couple_id', couple.id)
@@ -167,7 +167,7 @@ export const useDecisions = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('couple_agreements')
         .select('*')
         .eq('couple_id', couple.id)
@@ -256,7 +256,7 @@ export const useDecisions = () => {
         status: decisionData.status || 'draft'
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('couple_decisions')
         .insert(insertData)
         .select()
@@ -295,7 +295,7 @@ export const useDecisions = () => {
         dbUpdates.restrictions = updates.restrictions as Json;
       }
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('couple_decisions')
         .update(dbUpdates)
         .eq('id', id);
@@ -324,7 +324,7 @@ export const useDecisions = () => {
     if (!user?.id) return false;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('couple_decision_votes')
         .upsert({
           decision_id: decisionId,
@@ -357,7 +357,7 @@ export const useDecisions = () => {
 
   const getVotesForDecision = async (decisionId: string): Promise<DecisionVote[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('couple_decision_votes')
         .select('*')
         .eq('decision_id', decisionId);
@@ -374,7 +374,7 @@ export const useDecisions = () => {
     if (!couple?.id || !user?.id) return null;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('couple_agreements')
         .insert({
           couple_id: couple.id,
