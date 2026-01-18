@@ -471,10 +471,7 @@ export const FinancialDashboard = () => {
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-green-500" />
                   <span className="text-xs text-green-400 font-medium">
-                    {language === 'pt' 
-                      ? 'WhatsApp Smart: (11) 98806-6403'
-                      : 'WhatsApp Smart: +55(11) 98806-6403'
-                    }
+                    WhatsApp Smart: {language === 'pt' ? '(11) 98806-6403' : '+55 11 98806 6403'}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground/70 mt-1">
