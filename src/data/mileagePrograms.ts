@@ -23,7 +23,7 @@ export const MILEAGE_PROGRAMS: MileageProgramConfig[] = [
   {
     code: 'smiles',
     name: 'Smiles',
-    logo: '/mileage-logos/smiles.svg',
+    logo: '/mileage-logos/smiles.png',
     primaryColor: '#FF6600',
     country: 'BR',
     hasOAuth: false,
