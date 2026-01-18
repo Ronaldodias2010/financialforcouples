@@ -363,7 +363,7 @@ serve(async (req) => {
     });
 
     // Save to AI history if this is an analysis or recommendation
-    await saveToAIHistory(supabaseClient, user.id, 'ai_analysis', aiResponseText, userMessage);
+    await saveToAIHistory(supabaseClient, user.id, 'ai_analysis', aiResponseText, message);
 
     // Get updated usage for response
     const { data: updatedUsage } = await supabaseClient
