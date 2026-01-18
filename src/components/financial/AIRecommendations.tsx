@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Brain, MessageSquare, Loader2, Lock, AlertCircle, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { Brain, MessageSquare, Loader2, Lock, AlertCircle, Mic, MicOff, Volume2, VolumeX, Save, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSubscription } from '@/hooks/useSubscription';
-import { AIHistorySection } from "./AIHistorySection";
+import { AIHistorySection, AIHistorySectionRef } from "./AIHistorySection";
 import { EducationalContentSection } from "@/components/educational/EducationalContentSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +24,8 @@ const AIRecommendationsContent = ({ subscriptionTier }: { subscriptionTier: stri
     type: 'last' | 'penultimate' | null;
     remaining: number;
   }>({ show: false, type: null, remaining: 0 });
-  
+  const [isSaving, setIsSaving] = useState(false);
+  const historyRef = useRef<AIHistorySectionRef>(null);
   // Voice functionality
   const {
     isListening,
@@ -165,6 +166,35 @@ const AIRecommendationsContent = ({ subscriptionTier }: { subscriptionTier: stri
     }
   };
 
+  const handleSaveAndContinue = async () => {
+    if (chatHistory.length === 0) return;
+    
+    setIsSaving(true);
+    try {
+      // The history is already saved automatically on each AI response
+      // So we just need to clear the chat and refresh the history section
+      setChatHistory([]);
+      setChatMessage("");
+      setUsageWarning({ show: false, type: null, remaining: 0 });
+      
+      // Refresh the history section to show the saved conversation
+      if (historyRef.current?.refresh) {
+        historyRef.current.refresh();
+      }
+      
+      toast({
+        title: language === 'pt' ? "Conversa salva!" : language === 'es' ? "¡Conversación guardada!" : "Conversation saved!",
+        description: language === 'pt' 
+          ? "Você pode iniciar uma nova conversa com a PrIscA." 
+          : language === 'es' 
+          ? "Puedes iniciar una nueva conversación con PrIscA."
+          : "You can start a new conversation with PrIscA.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Essential User Warning - Always visible */}
@@ -216,10 +246,35 @@ const AIRecommendationsContent = ({ subscriptionTier }: { subscriptionTier: stri
       {/* AI Chat Interface */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            {t('aiRecommendations.aiConsultant')}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              {t('aiRecommendations.aiConsultant')}
+            </CardTitle>
+            
+            {/* Save & New Chat Button */}
+            {chatHistory.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSaveAndContinue}
+                disabled={isSaving || isLoading}
+                className="gap-2"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {language === 'pt' ? 'Salvar e Nova Conversa' : language === 'es' ? 'Guardar y Nueva' : 'Save & New Chat'}
+                    </span>
+                    <RefreshCw className="h-4 w-4 sm:hidden" />
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -328,7 +383,7 @@ const AIRecommendationsContent = ({ subscriptionTier }: { subscriptionTier: stri
       </Card>
 
       {/* History Section */}
-      <AIHistorySection />
+      <AIHistorySection ref={historyRef} />
 
       {/* Educational Content */}
       <EducationalContentSection />

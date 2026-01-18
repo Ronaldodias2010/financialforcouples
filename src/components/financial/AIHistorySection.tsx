@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History, AlertTriangle, TrendingUp, Calendar, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,13 +25,24 @@ interface AIHistoryEntry {
   user_id: string;
 }
 
-export const AIHistorySection = () => {
+export interface AIHistorySectionRef {
+  refresh: () => void;
+}
+
+export const AIHistorySection = forwardRef<AIHistorySectionRef>((_, ref) => {
   const [historyEntries, setHistoryEntries] = useState<AIHistoryEntry[]>([]);
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const dateLocale = language === 'pt' ? ptBR : enUS;
+
+  // Expose refresh method to parent
+  useImperativeHandle(ref, () => ({
+    refresh: () => {
+      fetchHistory();
+    }
+  }));
 
   useEffect(() => {
     if (user) {
@@ -324,4 +335,6 @@ export const AIHistorySection = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+AIHistorySection.displayName = 'AIHistorySection';
