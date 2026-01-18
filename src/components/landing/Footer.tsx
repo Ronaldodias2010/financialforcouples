@@ -111,6 +111,9 @@ const Footer = () => {
                     {language === 'pt' ? '(11) 98806-6403' : '+55 11 98806 6403'}
                   </span>
                 </div>
+                <p className="text-xs text-green-400/60 mt-1 underline">
+                  wa.me/5511988066403
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />

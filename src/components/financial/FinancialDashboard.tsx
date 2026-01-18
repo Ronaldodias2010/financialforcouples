@@ -482,6 +482,9 @@ export const FinancialDashboard = () => {
                     : 'Send your expenses to our AI'
                   }
                 </p>
+                <p className="text-xs text-green-500/60 mt-1 underline">
+                  wa.me/5511988066403
+                </p>
               </div>
             </div>
             <div className="flex gap-2">
