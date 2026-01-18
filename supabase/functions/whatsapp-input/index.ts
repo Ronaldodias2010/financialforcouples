@@ -28,8 +28,15 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // ============================================================
 const CONVERSATION_TIMEOUT_MINUTES = 15;
 
-// Comandos que o usuário pode usar para cancelar/reiniciar conversa
-const RESET_COMMANDS = ['cancelar', 'reiniciar', 'nova', 'começar de novo', 'limpar', 'cancel', 'reset', 'novo'];
+// Comandos que o usuário pode usar para cancelar/reiniciar conversa (multi-idioma)
+const RESET_COMMANDS = [
+  // Português
+  'cancelar', 'reiniciar', 'nova', 'começar de novo', 'limpar', 'novo',
+  // English
+  'cancel', 'reset', 'new', 'start over', 'clear', 'restart',
+  // Español
+  'cancelar', 'reiniciar', 'nueva', 'nuevo', 'empezar de nuevo', 'limpiar'
+];
 
 /**
  * Verifica se a mensagem contém um comando de reset
@@ -41,18 +48,18 @@ function isResetCommand(message: string): boolean {
 
 /**
  * Detecta se a mensagem é uma nova transação (não continuação da conversa anterior)
- * Indicadores:
+ * Indicadores (multi-idioma):
  * - Começa com saudação + padrão de transação
  * - Menciona valor E cartão/conta diferente do existente
  */
 function isNewTransaction(newMessage: string, existingData: any): boolean {
   const msg = newMessage.toLowerCase().trim();
   
-  // Saudações indicam início de nova conversa
-  const startsWithGreeting = /^(ol[aá]|oi|hey|bom dia|boa tarde|boa noite|couples|ola couples|olá couples)/i.test(msg);
+  // Saudações indicam início de nova conversa (PT/EN/ES)
+  const startsWithGreeting = /^(ol[aá]|oi|hey|hello|hi|hola|buenos d[ií]as|buenas tardes|buenas noches|bom dia|boa tarde|boa noite|couples|ola couples|olá couples)/i.test(msg);
   
-  // Padrões de nova transação (gastei/paguei/comprei + valor)
-  const hasTransactionPattern = /(gastei|paguei|comprei|recebi|transferi|depositei|saquei).*(r\$|\d+[,\.]\d{2}|\d+\s*reais)/i.test(msg);
+  // Padrões de nova transação (multi-idioma: gastei/spent/gasté + valor)
+  const hasTransactionPattern = /(gastei|paguei|comprei|recebi|transferi|depositei|saquei|spent|paid|bought|received|transferred|deposited|withdrew|gasté|pagué|compré|recibí|transferí|deposité|retiré).*(r\$|\$|€|\d+[,\.]\d{2}|\d+\s*(reais|dollars?|euros?|pesos?))/i.test(msg);
   
   // Se começa com saudação E tem padrão de transação → nova transação
   if (startsWithGreeting && hasTransactionPattern) {

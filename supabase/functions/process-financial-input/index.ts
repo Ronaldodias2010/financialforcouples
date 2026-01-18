@@ -152,33 +152,83 @@ serve(async (req) => {
     let resolved_card_id: string | null = input.resolved_card_id;
     let resolved_account_id: string | null = input.resolved_account_id;
 
-    // 2.1 Resolver CATEGORIA se não tiver UUID válido (BUSCAR POR KEYWORDS DAS TAGS PRIMEIRO)
+    // 2.1 Resolver CATEGORIA se não tiver UUID válido (BUSCAR POR KEYWORDS DAS TAGS - MULTI-IDIOMA)
     if (!isValidUUID(resolved_category_id) && input.category_hint) {
       console.log('[process-financial-input] Resolving category from hint:', input.category_hint);
       const searchTerm = input.category_hint.trim().toLowerCase();
       
-      // 1) PRIMEIRO: Buscar tag por KEYWORDS_PT (match exato no array)
-      // Isso encontra "ifood" nas keywords ["ifood", "delivery", "comida"]
-      const { data: tagByKeyword } = await supabase
+      // 1) PRIMEIRO: Buscar tag por KEYWORDS em TODOS OS IDIOMAS (pt, en, es)
+      // Isso encontra "food" nas keywords_en, "comida" nas keywords_pt, etc.
+      let tagMatches: any[] = [];
+      
+      // Buscar em keywords_pt
+      const { data: tagByKeywordPt } = await supabase
         .from('category_tags')
-        .select('id, name_pt, keywords_pt')
+        .select('id, name_pt, name_en, name_es, keywords_pt, keywords_en, keywords_es')
         .contains('keywords_pt', [searchTerm]);
       
-      let tagMatches = tagByKeyword;
+      if (tagByKeywordPt && tagByKeywordPt.length > 0) {
+        console.log('[process-financial-input] Found tag via KEYWORDS_PT:', tagByKeywordPt.map((t: any) => t.name_pt));
+        tagMatches = tagByKeywordPt;
+      }
       
-      if (tagByKeyword && tagByKeyword.length > 0) {
-        console.log('[process-financial-input] Found tag via KEYWORDS_PT:', tagByKeyword.map((t: { name_pt: string }) => t.name_pt));
-      } else {
-        // 2) FALLBACK: Buscar tag por nome parcial (ex: "livro" → tag "livros")
-        console.log('[process-financial-input] No keyword match, trying name_pt ilike...');
-        const { data: tagByName } = await supabase
+      // Se não encontrou, buscar em keywords_en
+      if (tagMatches.length === 0) {
+        const { data: tagByKeywordEn } = await supabase
           .from('category_tags')
-          .select('id, name_pt, keywords_pt')
+          .select('id, name_pt, name_en, name_es, keywords_pt, keywords_en, keywords_es')
+          .contains('keywords_en', [searchTerm]);
+        
+        if (tagByKeywordEn && tagByKeywordEn.length > 0) {
+          console.log('[process-financial-input] Found tag via KEYWORDS_EN:', tagByKeywordEn.map((t: any) => t.name_en));
+          tagMatches = tagByKeywordEn;
+        }
+      }
+      
+      // Se não encontrou, buscar em keywords_es
+      if (tagMatches.length === 0) {
+        const { data: tagByKeywordEs } = await supabase
+          .from('category_tags')
+          .select('id, name_pt, name_en, name_es, keywords_pt, keywords_en, keywords_es')
+          .contains('keywords_es', [searchTerm]);
+        
+        if (tagByKeywordEs && tagByKeywordEs.length > 0) {
+          console.log('[process-financial-input] Found tag via KEYWORDS_ES:', tagByKeywordEs.map((t: any) => t.name_es));
+          tagMatches = tagByKeywordEs;
+        }
+      }
+      
+      // 2) FALLBACK: Buscar tag por nome parcial em todos os idiomas
+      if (tagMatches.length === 0) {
+        console.log('[process-financial-input] No keyword match, trying name ilike in all languages...');
+        
+        // Tentar por name_pt
+        let { data: tagByName } = await supabase
+          .from('category_tags')
+          .select('id, name_pt, name_en, name_es')
           .ilike('name_pt', `%${searchTerm}%`);
         
-        tagMatches = tagByName;
+        if (!tagByName || tagByName.length === 0) {
+          // Tentar por name_en
+          const { data: tagByNameEn } = await supabase
+            .from('category_tags')
+            .select('id, name_pt, name_en, name_es')
+            .ilike('name_en', `%${searchTerm}%`);
+          tagByName = tagByNameEn;
+        }
+        
+        if (!tagByName || tagByName.length === 0) {
+          // Tentar por name_es
+          const { data: tagByNameEs } = await supabase
+            .from('category_tags')
+            .select('id, name_pt, name_en, name_es')
+            .ilike('name_es', `%${searchTerm}%`);
+          tagByName = tagByNameEs;
+        }
+        
         if (tagByName && tagByName.length > 0) {
-          console.log('[process-financial-input] Found tag via NAME_PT:', tagByName.map((t: { name_pt: string }) => t.name_pt));
+          console.log('[process-financial-input] Found tag via NAME (multi-lang):', tagByName.map((t: any) => t.name_pt || t.name_en));
+          tagMatches = tagByName;
         }
       }
       
@@ -208,12 +258,12 @@ serve(async (req) => {
           
           if (userCategory) {
             resolved_category_id = userCategory.id;
-            console.log('[process-financial-input] Category resolved via TAG/KEYWORD:', searchTerm, '->', userCategory.name);
+            console.log('[process-financial-input] Category resolved via TAG/KEYWORD (multi-lang):', searchTerm, '->', userCategory.name);
           }
         }
       }
       
-      // 4) FALLBACK: Busca direta pelo nome da categoria
+      // 5) FALLBACK: Busca direta pelo nome da categoria do usuário
       if (!resolved_category_id) {
         console.log('[process-financial-input] Tag search failed, trying direct name match...');
         
