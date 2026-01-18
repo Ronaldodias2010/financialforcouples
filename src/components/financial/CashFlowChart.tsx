@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend, Area, AreaChart } from 'recharts';
 import { format, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, startOfDay } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR, enUS, es } from 'date-fns/locale';
 import { CashFlowEntry, CashFlowSummary } from '@/hooks/useCashFlowHistory';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CashFlowChartProps {
   entries: CashFlowEntry[];
@@ -15,6 +16,36 @@ interface CashFlowChartProps {
 const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProps) {
+  const { t, language } = useLanguage();
+
+  const getDateLocale = () => {
+    switch (language) {
+      case 'en': return enUS;
+      case 'es': return es;
+      default: return ptBR;
+    }
+  };
+
+  const dateLocale = getDateLocale();
+
+  const getPaymentMethodLabel = (method: string): string => {
+    switch (method) {
+      case 'cash': return t('transactionForm.cash');
+      case 'pix': return 'PIX';
+      case 'credit_card': return t('transactionForm.creditCard');
+      case 'debit_card': return t('transactionForm.debitCard');
+      case 'transfer': return t('transactionForm.transfer');
+      case 'deposit': return t('transactionForm.deposit');
+      case 'account_transfer': return t('transactionForm.accountTransfer');
+      case 'account_investment': return t('transactionForm.accountInvestmentTransfer');
+      case 'payment_transfer': return t('transactionForm.paymentTransfer');
+      case 'boleto': return t('cashFlow.table.boleto');
+      case 'check': return t('cashFlow.table.check');
+      case 'other': return t('common.other');
+      default: return method;
+    }
+  };
+
   // Calculate balance evolution data - using cumulative calculation from initial_balance
   const balanceEvolutionData = useMemo(() => {
     if (!summary) return [];
@@ -47,12 +78,12 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
       }
       
       return {
-        date: format(day, 'dd/MM', { locale: ptBR }),
+        date: format(day, 'dd/MM', { locale: dateLocale }),
         fullDate: dateKey,
         balance: runningBalance
       };
     });
-  }, [entries, summary, dateRange]);
+  }, [entries, summary, dateRange, dateLocale]);
 
   // Calculate income vs expense by period
   const incomeVsExpenseData = useMemo(() => {
@@ -90,30 +121,19 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
     const methodTotals = new Map<string, number>();
     
     entries.filter(e => e.movement_type === 'expense').forEach(entry => {
-      const method = entry.payment_method || 'Outro';
+      const method = entry.payment_method || 'other';
       const current = methodTotals.get(method) || 0;
       methodTotals.set(method, current + entry.amount);
     });
 
-    const methodLabels: Record<string, string> = {
-      'cash': 'Dinheiro',
-      'pix': 'PIX',
-      'credit_card': 'Cartão de Crédito',
-      'debit_card': 'Cartão de Débito',
-      'transfer': 'Transferência',
-      'boleto': 'Boleto',
-      'check': 'Cheque',
-      'other': 'Outro'
-    };
-
     return Array.from(methodTotals.entries())
       .map(([method, total], index) => ({
-        name: methodLabels[method] || method,
+        name: getPaymentMethodLabel(method),
         value: total,
         color: COLORS[index % COLORS.length]
       }))
       .sort((a, b) => b.value - a.value);
-  }, [entries]);
+  }, [entries, t]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -128,7 +148,7 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">Sem dados para exibir no período selecionado</p>
+          <p className="text-muted-foreground">{t('cashFlow.chart.noDataPeriod')}</p>
         </CardContent>
       </Card>
     );
@@ -139,7 +159,7 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
       {/* Balance Evolution Chart */}
       <Card className="md:col-span-2">
         <CardHeader>
-          <CardTitle className="text-lg">Evolução do Saldo</CardTitle>
+          <CardTitle className="text-lg">{t('cashFlow.chart.balanceEvolution')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -196,7 +216,7 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
       {/* Income vs Expense Bar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Entradas vs Saídas</CardTitle>
+          <CardTitle className="text-lg">{t('cashFlow.chart.inflowsVsOutflows')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[250px]">
@@ -233,8 +253,8 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
                     return null;
                   }}
                 />
-                <Bar dataKey="income" name="Entradas" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" name="Saídas" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="income" name={t('cashFlow.inflows')} fill="#22c55e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" name={t('cashFlow.outflows')} fill="#ef4444" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -244,7 +264,7 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
       {/* Payment Method Distribution */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Despesas por Forma de Pagamento</CardTitle>
+          <CardTitle className="text-lg">{t('cashFlow.chart.expensesByPaymentMethod')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[250px]">
@@ -285,7 +305,7 @@ export function CashFlowChart({ entries, summary, dateRange }: CashFlowChartProp
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">Sem dados de despesas</p>
+                <p className="text-muted-foreground">{t('cashFlow.chart.noExpenseData')}</p>
               </div>
             )}
           </div>
