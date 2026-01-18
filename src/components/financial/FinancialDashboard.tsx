@@ -149,10 +149,10 @@ export const FinancialDashboard = () => {
     const comparison = await getFinancialComparison();
     setFinancialComparison(comparison);
   };
-  const [onboardingStep, setOnboardingStep] = useState<0 | 1 | 2>(0);
+  const [onboardingStep, setOnboardingStep] = useState<0 | 1 | 2 | 3 | 4>(0);
 
   useEffect(() => {
-    const done = typeof window !== 'undefined' && localStorage.getItem('onboarding_v1_done') === 'true';
+    const done = typeof window !== 'undefined' && localStorage.getItem('onboarding_v2_done') === 'true';
     if (!done) {
       setOnboardingStep(1);
       
@@ -723,16 +723,20 @@ export const FinancialDashboard = () => {
                 <p className="text-sm">
                   {onboardingStep === 1
                     ? t('onboarding.step1')
-                    : t('onboarding.step2')}
+                    : onboardingStep === 2
+                    ? t('onboarding.step2')
+                    : onboardingStep === 3
+                    ? t('onboarding.step3')
+                    : t('onboarding.step4')}
                 </p>
                 <div className="mt-4 flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => { localStorage.setItem('onboarding_v1_done', 'true'); setOnboardingStep(0); }}>
+                  <Button variant="ghost" onClick={() => { localStorage.setItem('onboarding_v2_done', 'true'); setOnboardingStep(0); }}>
                     {t('onboarding.skip')}
                   </Button>
-                  {onboardingStep === 1 ? (
-                    <Button onClick={() => setOnboardingStep(2)}>{t('onboarding.next')}</Button>
+                  {onboardingStep < 4 ? (
+                    <Button onClick={() => setOnboardingStep((onboardingStep + 1) as 2 | 3 | 4)}>{t('onboarding.next')}</Button>
                   ) : (
-                    <Button onClick={() => { localStorage.setItem('onboarding_v1_done', 'true'); setOnboardingStep(0); }}>{t('onboarding.finish')}</Button>
+                    <Button onClick={() => { localStorage.setItem('onboarding_v2_done', 'true'); setOnboardingStep(0); }}>{t('onboarding.finish')}</Button>
                   )}
                 </div>
               </CardContent>
