@@ -84,6 +84,42 @@ Deno.serve(async (req) => {
 
     console.log('✅ Profile created successfully');
 
+    // Create Emergency Fund Account automatically for new users
+    console.log('🏦 Creating emergency fund account for user:', user.id);
+    
+    const { data: existingEmergencyAccount } = await supabase
+      .from('accounts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('account_type', 'emergency')
+      .maybeSingle();
+
+    if (!existingEmergencyAccount) {
+      const { error: accountError } = await supabase
+        .from('accounts')
+        .insert({
+          user_id: user.id,
+          owner_user: 'user1',
+          name: 'Reserva de Emergência',
+          account_type: 'emergency',
+          account_model: 'personal',
+          balance: 0,
+          overdraft_limit: 0,
+          currency: 'BRL',
+          is_active: true,
+          is_cash_account: false
+        });
+
+      if (accountError) {
+        console.error('❌ Error creating emergency account:', accountError);
+        // Don't throw - profile was created successfully, account is secondary
+      } else {
+        console.log('✅ Emergency fund account created successfully');
+      }
+    } else {
+      console.log('✅ Emergency fund account already exists');
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 

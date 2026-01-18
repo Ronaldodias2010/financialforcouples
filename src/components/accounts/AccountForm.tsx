@@ -94,7 +94,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
           user_id: user.id,
           owner_user: ownerUser,
           name: accountData.name,
-          account_type: accountData.account_type as "checking" | "savings" | "investment",
+          account_type: accountData.account_type as "checking" | "savings" | "investment" | "emergency",
           account_model: 'personal' as "personal",
           balance: signedBalance,
           overdraft_limit: parseMonetary(accountData.overdraft_limit),
@@ -160,6 +160,7 @@ export const AccountForm = ({ onAccountAdded }: AccountFormProps) => {
                 <SelectItem value="checking">{t('accounts.types.checking') || 'Conta Corrente'}</SelectItem>
                 <SelectItem value="savings">{t('accounts.types.savings') || 'Poupança'}</SelectItem>
                 <SelectItem value="investment">{t('accounts.types.investment') || 'Investimento'}</SelectItem>
+                <SelectItem value="emergency">{t('accounts.types.emergency') || 'Reserva de Emergência'}</SelectItem>
               </SelectContent>
             </Select>
           </div>

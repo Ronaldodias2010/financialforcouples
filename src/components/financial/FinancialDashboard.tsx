@@ -38,6 +38,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodayFutureIncomes } from "@/hooks/useTodayFutureIncomes";
 import { useTodayFutureExpenses } from "@/hooks/useTodayFutureExpenses";
 import { TodayExpensesAlert } from "./future-expenses/TodayExpensesAlert";
+import { EmergencyFundCard } from "./EmergencyFundCard";
 
 interface Transaction {
   id: string;
@@ -313,6 +314,12 @@ export const FinancialDashboard = () => {
             <div className="w-full">
               <ExpensesPieChart viewMode={viewMode} />
             </div>
+
+            {/* Emergency Fund Card */}
+            <EmergencyFundCard 
+              monthlyExpensesAverage={getTransactionsTotalOutflows(viewMode)}
+              onDepositClick={() => setCurrentPage("accounts")}
+            />
 
             {/* Quick Actions */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
