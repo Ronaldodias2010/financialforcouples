@@ -4,7 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Zap, Bot, Star, BarChart3 } from 'lucide-react';
+import { Crown, Zap, Bot, Star, BarChart3, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UpgradeModalProps {
@@ -36,6 +36,7 @@ export const UpgradeModal = ({ isOpen, onClose, feature }: UpgradeModalProps) =>
     { icon: <Bot className="h-4 w-4" />, key: 'voiceWhatsApp' },
     { icon: <Bot className="h-4 w-4" />, key: 'aiMiles' },
     { icon: <Bot className="h-4 w-4" />, key: 'aiPlanning' },
+    { icon: <Heart className="h-4 w-4 text-rose-500" />, key: 'decisions' },
     { icon: <Star className="h-4 w-4" />, key: 'personalizedInvestments' },
     { icon: <Star className="h-4 w-4" />, key: 'customGoals' },
     { icon: <BarChart3 className="h-4 w-4" />, key: 'advancedAnalytics' },
