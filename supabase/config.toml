@@ -1,5 +1,8 @@
 project_id = "elxttabdtddlavhseipz"
 
+[functions.whatsapp-message-router]
+verify_jwt = false
+
 [functions.stripe-payment-webhook]
 verify_jwt = false
 
