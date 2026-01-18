@@ -108,7 +108,7 @@ const Footer = () => {
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-green-500" />
                   <span className="text-green-300 font-mono text-sm font-bold">
-                    {language === 'pt' ? '(11) 98806-6403' : '+55(11) 98806-6403'}
+                    {language === 'pt' ? '(11) 98806-6403' : '+55 11 98806 6403'}
                   </span>
                 </div>
               </div>
