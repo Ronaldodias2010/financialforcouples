@@ -1881,6 +1881,9 @@ const translations = {
     'goals.saving': 'Salvando...',
     'goals.update': 'Atualizar',
     'goals.create': 'Criar',
+    'goals.whyGoals': 'Por que definir objetivos?',
+    'goals.goalsImportance': 'Ter objetivos financeiros claros é fundamental para o sucesso dos seus investimentos. Eles servem como bússola, orientando suas decisões e mantendo você motivado a longo prazo.',
+    'goals.goalsInvestmentLink': 'Ao criar um objetivo, você poderá vincular seus investimentos a ele. Assim, o sistema calculará automaticamente o progresso com base no valor atual dos investimentos associados, mostrando o quanto falta para alcançar sua meta.',
     
     // Portfolio Chart
     'portfolioChart.emptyState': 'Adicione investimentos para visualizar os gráficos do seu portfólio.',
@@ -4473,6 +4476,9 @@ const translations = {
     'goals.saving': 'Saving...',
     'goals.update': 'Update',
     'goals.create': 'Create',
+    'goals.whyGoals': 'Why set goals?',
+    'goals.goalsImportance': 'Having clear financial goals is essential for investment success. They serve as a compass, guiding your decisions and keeping you motivated long-term.',
+    'goals.goalsInvestmentLink': 'When you create a goal, you can link your investments to it. The system will automatically calculate progress based on the current value of associated investments, showing how much is left to reach your target.',
     
     // Portfolio Chart
     'portfolioChart.emptyState': 'Add investments to view your portfolio charts.',
@@ -7203,6 +7209,9 @@ const translations = {
     'goals.saving': 'Guardando...',
     'goals.update': 'Actualizar',
     'goals.create': 'Crear',
+    'goals.whyGoals': '¿Por qué definir objetivos?',
+    'goals.goalsImportance': 'Tener objetivos financieros claros es fundamental para el éxito de tus inversiones. Sirven como brújula, orientando tus decisiones y manteniéndote motivado a largo plazo.',
+    'goals.goalsInvestmentLink': 'Al crear un objetivo, podrás vincular tus inversiones a él. Así, el sistema calculará automáticamente el progreso basándose en el valor actual de las inversiones asociadas, mostrando cuánto falta para alcanzar tu meta.',
     
     // Portfolio Chart
     'portfolioChart.emptyState': 'Agrega inversiones para visualizar los gráficos de tu portafolio.',
