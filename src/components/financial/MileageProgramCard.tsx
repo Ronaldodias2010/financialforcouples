@@ -23,6 +23,9 @@ interface MileageProgramCardProps {
   onDisconnect: () => void;
 }
 
+// For now, no programs have real automatic sync - all use manual entry
+const PROGRAMS_WITH_AUTO_SYNC: string[] = []; // e.g., ['latam_pass'] when OAuth is implemented
+
 export function MileageProgramCard({
   program,
   isSyncing,
@@ -180,19 +183,33 @@ export function MileageProgramCard({
             )}
           </div>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSync}
-            disabled={isSyncing}
-            className="h-8"
-          >
-            {isSyncing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-          </Button>
+          {PROGRAMS_WITH_AUTO_SYNC.includes(program.program_code) ? (
+            // Programs with real sync capability
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSync}
+              disabled={isSyncing}
+              className="h-8"
+            >
+              {isSyncing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </Button>
+          ) : (
+            // Programs without auto sync - show edit button instead
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onEdit}
+              className="h-8 text-xs gap-1"
+            >
+              <Edit className="h-3 w-3" />
+              {t('mileage.programs.updateBalance')}
+            </Button>
+          )}
         </div>
       </div>
     </Card>

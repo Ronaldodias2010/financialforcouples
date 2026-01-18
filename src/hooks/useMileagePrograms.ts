@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getProgramByCode, MILEAGE_PROGRAMS } from '@/data/mileagePrograms';
@@ -29,11 +29,43 @@ export interface MileageProgramHistory {
   source: string;
 }
 
+const CONNECTING_TIMEOUT_MS = 60_000; // 1 minute timeout
+
 export function useMileagePrograms() {
   const { user } = useAuth();
   const [programs, setPrograms] = useState<MileageProgram[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const timeoutCheckRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check for stuck "connecting" programs and update them to error after 1 minute
+  const checkConnectingTimeouts = useCallback(async (programsList: MileageProgram[]) => {
+    const now = Date.now();
+    const stuckPrograms = programsList.filter(p => {
+      if (p.status !== 'connecting') return false;
+      const updatedAt = new Date(p.updated_at).getTime();
+      return now - updatedAt > CONNECTING_TIMEOUT_MS;
+    });
+
+    if (stuckPrograms.length > 0) {
+      console.log(`[useMileagePrograms] Found ${stuckPrograms.length} stuck programs, updating to error`);
+      
+      for (const program of stuckPrograms) {
+        await supabase
+          .from('mileage_programs')
+          .update({
+            status: 'error',
+            last_error: 'Tempo limite de 1 minuto excedido. Tente novamente.',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', program.id);
+      }
+
+      // Reload programs after updating
+      return true;
+    }
+    return false;
+  }, []);
 
   const loadPrograms = useCallback(async () => {
     if (!user) {
@@ -50,17 +82,47 @@ export function useMileagePrograms() {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setPrograms((data as MileageProgram[]) || []);
+      
+      const programsList = (data as MileageProgram[]) || [];
+      
+      // Check for timeout on connecting programs
+      const hadTimeouts = await checkConnectingTimeouts(programsList);
+      
+      if (hadTimeouts) {
+        // Reload after updating stuck programs
+        const { data: refreshedData } = await supabase
+          .from('mileage_programs')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true });
+        
+        setPrograms((refreshedData as MileageProgram[]) || []);
+      } else {
+        setPrograms(programsList);
+      }
     } catch (error) {
       console.error('Error loading mileage programs:', error);
       toast.error('Erro ao carregar programas de milhagem');
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, checkConnectingTimeouts]);
 
   useEffect(() => {
     loadPrograms();
+
+    // Set up periodic check for stuck programs (every 15 seconds)
+    timeoutCheckRef.current = setInterval(() => {
+      if (programs.some(p => p.status === 'connecting')) {
+        loadPrograms();
+      }
+    }, 15000);
+
+    return () => {
+      if (timeoutCheckRef.current) {
+        clearInterval(timeoutCheckRef.current);
+      }
+    };
   }, [loadPrograms]);
 
   const connectProgram = async (programCode: string, memberId?: string) => {
@@ -191,20 +253,30 @@ export function useMileagePrograms() {
 
   const syncProgram = async (programId: string) => {
     setSyncing(programId);
+    
     try {
-      // For now, just mark as attempting sync
-      // In a real implementation, this would call the edge function
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log(`[syncProgram] Calling edge function for program ${programId}`);
       
-      const { error } = await supabase
-        .from('mileage_programs')
-        .update({
-          last_sync_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', programId);
+      const { data, error } = await supabase.functions.invoke('sync-mileage-program', {
+        body: { programId }
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        toast.error('Erro ao sincronizar programa');
+        return;
+      }
+
+      if (data?.success) {
+        if (data.requiresManualUpdate) {
+          toast.info('Sincronização automática não disponível. Atualize o saldo manualmente.');
+        } else {
+          toast.success('Programa sincronizado com sucesso');
+        }
+      } else if (data?.error) {
+        toast.error(data.error);
+      }
+
       await loadPrograms();
     } catch (error) {
       console.error('Error syncing program:', error);
