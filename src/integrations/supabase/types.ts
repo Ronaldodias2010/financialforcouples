@@ -1027,6 +1027,39 @@ export type Database = {
         }
         Relationships: []
       }
+      emergency_fund_reminders: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          reminder_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          reminder_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          reminder_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exchange_rates: {
         Row: {
           base_currency: string
@@ -4666,7 +4699,7 @@ export type Database = {
       }
     }
     Enums: {
-      account_type: "checking" | "savings" | "investment"
+      account_type: "checking" | "savings" | "investment" | "emergency"
       card_type: "credit" | "debit"
       currency_type: "BRL" | "USD" | "EUR"
       transaction_type: "income" | "expense"
@@ -4798,7 +4831,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["checking", "savings", "investment"],
+      account_type: ["checking", "savings", "investment", "emergency"],
       card_type: ["credit", "debit"],
       currency_type: ["BRL", "USD", "EUR"],
       transaction_type: ["income", "expense"],
