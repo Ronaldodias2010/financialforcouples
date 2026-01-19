@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/hooks/useLanguage';
 import { BlogCard } from '@/components/blog/BlogCard';
 import { BlogHero } from '@/components/blog/BlogHero';
-import { Helmet } from 'react-helmet';
 import { Loader2, BookOpen, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +36,9 @@ export default function Blog() {
 
   useEffect(() => {
     fetchArticles();
-  }, []);
+    // Update document title
+    document.title = `${t('blog.pageTitle')} | Couples Financials`;
+  }, [t]);
 
   const fetchArticles = async () => {
     try {
@@ -83,67 +84,31 @@ export default function Blog() {
   };
 
   return (
-    <>
-      <Helmet>
-        <title>{t('blog.pageTitle')} | Couples Financials</title>
-        <meta name="description" content={getMetaDescription()} />
-        <link rel="canonical" href={getCanonicalUrl()} />
-        
-        {/* Open Graph */}
-        <meta property="og:title" content={`${t('blog.pageTitle')} | Couples Financials`} />
-        <meta property="og:description" content={getMetaDescription()} />
-        <meta property="og:url" content={getCanonicalUrl()} />
-        <meta property="og:type" content="blog" />
-        
-        {/* Twitter */}
-        <meta name="twitter:title" content={`${t('blog.pageTitle')} | Couples Financials`} />
-        <meta name="twitter:description" content={getMetaDescription()} />
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Blog",
-            "name": "Couples Financials Blog",
-            "description": getMetaDescription(),
-            "url": getCanonicalUrl(),
-            "publisher": {
-              "@type": "Organization",
-              "name": "Couples Financials",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "https://couplesfinancials.com/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png"
-              }
-            }
-          })}
-        </script>
-      </Helmet>
-
-      <div className="min-h-screen bg-background">
-        {/* Navigation */}
-        <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png" 
-                alt="Couples Financials" 
-                className="h-8 w-auto"
-              />
-              <span className="font-semibold text-lg hidden sm:inline">Couples Financials</span>
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png" 
+              alt="Couples Financials" 
+              className="h-8 w-auto"
+            />
+            <span className="font-semibold text-lg hidden sm:inline">Couples Financials</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {t('blog.backToHome')}
+              </Button>
             </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  {t('blog.backToHome')}
-                </Button>
-              </Link>
-              <Link to="/auth">
-                <Button size="sm">{t('header.login')}</Button>
-              </Link>
-            </div>
+            <Link to="/auth">
+              <Button size="sm">{t('header.login')}</Button>
+            </Link>
           </div>
-        </nav>
+        </div>
+      </nav>
 
         {/* Hero */}
         <BlogHero />
@@ -221,6 +186,5 @@ export default function Blog() {
           </div>
         </footer>
       </div>
-    </>
   );
 }
