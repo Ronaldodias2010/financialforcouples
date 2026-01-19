@@ -104,9 +104,13 @@ export default function Blog() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png" 
+              src="/lovable-uploads/couples-financials-logo-pwa.png" 
               alt="Couples Financials" 
               className="h-8 w-8 object-contain"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/lovable-uploads/couples-financials-icon-512.png";
+              }}
             />
             <span className="font-semibold text-lg hidden sm:inline text-foreground">Couples Financials</span>
           </Link>
