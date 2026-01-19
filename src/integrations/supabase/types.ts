@@ -3160,24 +3160,48 @@ export type Database = {
       }
       subcategories: {
         Row: {
-          category_id: string | null
+          category_id: string
+          color: string | null
           created_at: string
+          deleted_at: string | null
+          icon: string | null
           id: string
+          is_system: boolean | null
           name: string
+          name_en: string | null
+          name_es: string | null
+          source_tag_id: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          category_id?: string | null
+          category_id: string
+          color?: string | null
           created_at?: string
+          deleted_at?: string | null
+          icon?: string | null
           id?: string
+          is_system?: boolean | null
           name: string
+          name_en?: string | null
+          name_es?: string | null
+          source_tag_id?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          category_id?: string | null
+          category_id?: string
+          color?: string | null
           created_at?: string
+          deleted_at?: string | null
+          icon?: string | null
           id?: string
+          is_system?: boolean | null
           name?: string
+          name_en?: string | null
+          name_es?: string | null
+          source_tag_id?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -3561,6 +3585,7 @@ export type Database = {
           source: string | null
           status: string
           subcategory: string | null
+          subcategory_id: string | null
           tag_id: string | null
           total_installments: number | null
           transaction_date: string
@@ -3594,6 +3619,7 @@ export type Database = {
           source?: string | null
           status?: string
           subcategory?: string | null
+          subcategory_id?: string | null
           tag_id?: string | null
           total_installments?: number | null
           transaction_date?: string
@@ -3627,6 +3653,7 @@ export type Database = {
           source?: string | null
           status?: string
           subcategory?: string | null
+          subcategory_id?: string | null
           tag_id?: string | null
           total_installments?: number | null
           transaction_date?: string
@@ -3682,6 +3709,20 @@ export type Database = {
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "category_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "active_subcategories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
             referencedColumns: ["id"]
           },
         ]
@@ -4482,6 +4523,69 @@ export type Database = {
           },
         ]
       }
+      active_subcategories: {
+        Row: {
+          category_id: string | null
+          color: string | null
+          created_at: string | null
+          deleted_at: string | null
+          icon: string | null
+          id: string | null
+          is_system: boolean | null
+          name: string | null
+          name_en: string | null
+          name_es: string | null
+          source_tag_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          icon?: string | null
+          id?: string | null
+          is_system?: boolean | null
+          name?: string | null
+          name_en?: string | null
+          name_es?: string | null
+          source_tag_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          icon?: string | null
+          id?: string | null
+          is_system?: boolean | null
+          name?: string | null
+          name_en?: string | null
+          name_es?: string | null
+          source_tag_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       active_transactions: {
         Row: {
           account_id: string | null
@@ -4922,6 +5026,18 @@ export type Database = {
             }
             Returns: number
           }
+      get_subcategories_for_category: {
+        Args: { p_category_id: string }
+        Returns: {
+          color: string
+          icon: string
+          id: string
+          is_system: boolean
+          name: string
+          name_en: string
+          name_es: string
+        }[]
+      }
       get_temp_password_for_invite: {
         Args: { p_record_id: string }
         Returns: string
@@ -4966,6 +5082,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      migrate_tags_to_subcategories: { Args: never; Returns: Json }
       normalize_category_name: { Args: { input_name: string }; Returns: string }
       normalize_text_simple: { Args: { input: string }; Returns: string }
       populate_initial_cash_flow_history: {
