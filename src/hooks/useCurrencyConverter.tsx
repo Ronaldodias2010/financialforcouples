@@ -54,12 +54,12 @@ const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
           const rate = Number(row.rate);
           if (row.target_currency === 'USD') {
             rates.USD = rate;
+            // Only get rate_date from USD (most reliable source)
+            if (row.rate_date) {
+              latestRateDate = row.rate_date;
+            }
           } else if (row.target_currency === 'EUR') {
             rates.EUR = rate;
-          }
-          // Get the rate_date (should be same for all currencies)
-          if (row.rate_date) {
-            latestRateDate = row.rate_date;
           }
         });
         
