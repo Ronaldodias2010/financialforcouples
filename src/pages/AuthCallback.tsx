@@ -21,6 +21,7 @@ export default function AuthCallback() {
   const [selectedMethod, setSelectedMethod] = useState<TwoFactorMethod>('totp');
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [smsError, setSmsError] = useState(false);
   const [smsErrorMessage, setSmsErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
@@ -94,6 +95,7 @@ export default function AuthCallback() {
         }
 
         setCurrentUserId(session.user.id);
+        setCurrentUserEmail(session.user.email || null);
         console.log('AuthCallback: Session found, checking 2FA status...');
 
         // Verificar se usuário tem 2FA habilitado
@@ -317,6 +319,8 @@ export default function AuthCallback() {
         smsError={smsError}
         smsErrorMessage={smsErrorMessage}
         onRetrySMS={handleRetrySMS}
+        userId={currentUserId || undefined}
+        userEmail={currentUserEmail || undefined}
       />
 
       <TwoFactorWizard
