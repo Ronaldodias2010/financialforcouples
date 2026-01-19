@@ -1226,6 +1226,9 @@ export type Database = {
           created_at: string
           created_by_admin_id: string
           description: string | null
+          description_en: string | null
+          description_es: string | null
+          description_pt: string | null
           file_name: string | null
           file_type: string | null
           file_url: string | null
@@ -1234,8 +1237,14 @@ export type Database = {
           is_active: boolean
           sort_order: number | null
           title: string
+          title_en: string | null
+          title_es: string | null
+          title_pt: string | null
           updated_at: string
           web_content: string | null
+          web_content_en: string | null
+          web_content_es: string | null
+          web_content_pt: string | null
         }
         Insert: {
           category: string
@@ -1243,6 +1252,9 @@ export type Database = {
           created_at?: string
           created_by_admin_id: string
           description?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          description_pt?: string | null
           file_name?: string | null
           file_type?: string | null
           file_url?: string | null
@@ -1251,8 +1263,14 @@ export type Database = {
           is_active?: boolean
           sort_order?: number | null
           title: string
+          title_en?: string | null
+          title_es?: string | null
+          title_pt?: string | null
           updated_at?: string
           web_content?: string | null
+          web_content_en?: string | null
+          web_content_es?: string | null
+          web_content_pt?: string | null
         }
         Update: {
           category?: string
@@ -1260,6 +1278,9 @@ export type Database = {
           created_at?: string
           created_by_admin_id?: string
           description?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          description_pt?: string | null
           file_name?: string | null
           file_type?: string | null
           file_url?: string | null
@@ -1268,8 +1289,14 @@ export type Database = {
           is_active?: boolean
           sort_order?: number | null
           title?: string
+          title_en?: string | null
+          title_es?: string | null
+          title_pt?: string | null
           updated_at?: string
           web_content?: string | null
+          web_content_en?: string | null
+          web_content_es?: string | null
+          web_content_pt?: string | null
         }
         Relationships: []
       }

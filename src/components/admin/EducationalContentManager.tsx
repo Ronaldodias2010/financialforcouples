@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Upload, FileText, Video, Image, Trash2, Eye, EyeOff } from "lucide-react";
+import { Upload, FileText, Video, Image, Trash2, Eye, EyeOff, Languages, Loader2, RefreshCw } from "lucide-react";
 
 interface EducationalContent {
   id: string;
@@ -22,6 +22,16 @@ interface EducationalContent {
   content_type: string;
   image_url?: string;
   web_content?: string | null;
+  // Multilingual fields
+  title_pt?: string | null;
+  title_en?: string | null;
+  title_es?: string | null;
+  description_pt?: string | null;
+  description_en?: string | null;
+  description_es?: string | null;
+  web_content_pt?: string | null;
+  web_content_en?: string | null;
+  web_content_es?: string | null;
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -47,6 +57,7 @@ export const EducationalContentManager = () => {
   const [contents, setContents] = useState<EducationalContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -107,6 +118,35 @@ export const EducationalContentManager = () => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImage(file);
+    }
+  };
+
+  // Translate content using edge function
+  const translateContent = async (title: string, description?: string, webContent?: string) => {
+    try {
+      setTranslating(true);
+      
+      const { data, error } = await supabase.functions.invoke('translate-content', {
+        body: {
+          title,
+          description: description || undefined,
+          webContent: webContent || undefined,
+          targetLanguages: ['en', 'es']
+        }
+      });
+
+      if (error) {
+        console.error('Translation error:', error);
+        throw error;
+      }
+
+      return data.translations;
+    } catch (error) {
+      console.error('Translation failed:', error);
+      // Return null to indicate translation failed, will use Portuguese as fallback
+      return null;
+    } finally {
+      setTranslating(false);
     }
   };
 
@@ -194,10 +234,18 @@ export const EducationalContentManager = () => {
         imageUrl = imageUrlData.publicUrl;
       }
 
-      // Insert record into database
+      // Translate content to EN and ES
+      const translations = await translateContent(
+        formData.title,
+        formData.description,
+        isArticle ? formData.web_content : undefined
+      );
+
+      // Insert record into database with all language versions
       const { error: insertError } = await supabase
         .from('educational_content')
         .insert({
+          // Original fields (for backwards compatibility)
           title: formData.title,
           description: formData.description,
           category: formData.category,
@@ -208,14 +256,30 @@ export const EducationalContentManager = () => {
           image_url: imageUrl,
           web_content: isArticle ? formData.web_content : null,
           sort_order: formData.sort_order,
-          created_by_admin_id: (await supabase.auth.getUser()).data.user?.id
+          created_by_admin_id: (await supabase.auth.getUser()).data.user?.id,
+          // Portuguese (original)
+          title_pt: formData.title,
+          description_pt: formData.description || null,
+          web_content_pt: isArticle ? formData.web_content : null,
+          // English (translated)
+          title_en: translations?.en?.title || formData.title,
+          description_en: translations?.en?.description || formData.description || null,
+          web_content_en: translations?.en?.webContent || (isArticle ? formData.web_content : null),
+          // Spanish (translated)
+          title_es: translations?.es?.title || formData.title,
+          description_es: translations?.es?.description || formData.description || null,
+          web_content_es: translations?.es?.webContent || (isArticle ? formData.web_content : null),
         });
 
       if (insertError) throw insertError;
 
+      const translationStatus = translations 
+        ? t('admin.content.success.uploadWithTranslation') || 'Conteúdo salvo e traduzido com sucesso!'
+        : t('admin.content.success.uploadNoTranslation') || 'Conteúdo salvo (tradução pendente)';
+
       toast({
         title: t('common.success'),
-        description: t('admin.content.success.upload')
+        description: translationStatus
       });
 
       // Reset form
@@ -242,6 +306,58 @@ export const EducationalContentManager = () => {
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  // Retranslate an existing content
+  const retranslateContent = async (content: EducationalContent) => {
+    try {
+      setTranslating(true);
+      
+      const translations = await translateContent(
+        content.title_pt || content.title,
+        content.description_pt || content.description,
+        content.web_content_pt || content.web_content || undefined
+      );
+
+      if (!translations) {
+        toast({
+          title: t('common.error'),
+          description: t('admin.content.error.translation') || 'Falha ao traduzir. Tente novamente.',
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('educational_content')
+        .update({
+          title_en: translations.en?.title,
+          description_en: translations.en?.description || null,
+          web_content_en: translations.en?.webContent || null,
+          title_es: translations.es?.title,
+          description_es: translations.es?.description || null,
+          web_content_es: translations.es?.webContent || null,
+        })
+        .eq('id', content.id);
+
+      if (error) throw error;
+
+      toast({
+        title: t('common.success'),
+        description: t('admin.content.success.retranslation') || 'Conteúdo retraduzido com sucesso!'
+      });
+
+      fetchContents();
+    } catch (error) {
+      console.error('Retranslation error:', error);
+      toast({
+        title: t('common.error'),
+        description: t('admin.content.error.translation') || 'Falha ao traduzir.',
+        variant: "destructive"
+      });
+    } finally {
+      setTranslating(false);
     }
   };
 
@@ -315,6 +431,11 @@ export const EducationalContentManager = () => {
     return <Icon className="h-4 w-4" />;
   };
 
+  // Check if content has translations
+  const hasTranslations = (content: EducationalContent) => {
+    return !!(content.title_en && content.title_es);
+  };
+
   if (loading) {
     return <div className="text-center p-8">{t('admin.content.loading')}</div>;
   }
@@ -334,9 +455,20 @@ export const EducationalContentManager = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Auto-translation notice */}
+            <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+              <Languages className="h-5 w-5 text-primary" />
+              <p className="text-sm text-muted-foreground">
+                {t('admin.content.autoTranslationNotice') || 'O conteúdo será traduzido automaticamente para inglês e espanhol.'}
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">{t('admin.content.titleField')} *</label>
+                <label className="text-sm font-medium mb-2 block">
+                  {t('admin.content.titleField')} * 
+                  <span className="text-xs text-muted-foreground ml-1">(Português)</span>
+                </label>
                 <Input
                   type="text"
                   value={formData.title}
@@ -367,7 +499,10 @@ export const EducationalContentManager = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">{t('admin.content.descriptionField')}</label>
+              <label className="text-sm font-medium mb-2 block">
+                {t('admin.content.descriptionField')}
+                <span className="text-xs text-muted-foreground ml-1">(Português)</span>
+              </label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -416,6 +551,7 @@ export const EducationalContentManager = () => {
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   {t('admin.content.webContent') || 'Conteúdo do Artigo'} *
+                  <span className="text-xs text-muted-foreground ml-1">(Português)</span>
                 </label>
                 <Textarea
                   value={formData.web_content}
@@ -460,8 +596,20 @@ export const EducationalContentManager = () => {
               )}
             </div>
 
-            <Button type="submit" disabled={uploading} className="w-full">
-              {uploading ? t('admin.content.uploading') : t('admin.content.addButton')}
+            <Button type="submit" disabled={uploading || translating} className="w-full">
+              {uploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('admin.content.uploading')}
+                </>
+              ) : translating ? (
+                <>
+                  <Languages className="h-4 w-4 mr-2 animate-pulse" />
+                  {t('admin.content.translating') || 'Traduzindo...'}
+                </>
+              ) : (
+                t('admin.content.addButton')
+              )}
             </Button>
           </form>
         </CardContent>
@@ -487,6 +635,7 @@ export const EducationalContentManager = () => {
                   <TableHead>{t('admin.content.table.title')}</TableHead>
                   <TableHead>{t('admin.content.table.category')}</TableHead>
                   <TableHead>{t('admin.content.table.type')}</TableHead>
+                  <TableHead>{t('admin.content.translations') || 'Traduções'}</TableHead>
                   <TableHead>{t('admin.content.table.status')}</TableHead>
                   <TableHead>{t('admin.content.table.date')}</TableHead>
                   <TableHead>{t('admin.content.table.actions')}</TableHead>
@@ -495,40 +644,65 @@ export const EducationalContentManager = () => {
               <TableBody>
                 {contents.map((content) => (
                   <TableRow key={content.id}>
-                    <TableCell className="font-medium">{content.title}</TableCell>
-                    <TableCell>{getCategoryLabel(content.category)}</TableCell>
+                    <TableCell className="font-medium max-w-[200px] truncate">
+                      {content.title}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{getCategoryLabel(content.category)}</Badge>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {getContentTypeIcon(content.content_type)}
-                        {content.content_type}
+                        <span className="capitalize">{content.content_type}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {hasTranslations(content) ? (
+                          <>
+                            <Badge variant="secondary" className="text-xs">🇧🇷</Badge>
+                            <Badge variant="secondary" className="text-xs">🇺🇸</Badge>
+                            <Badge variant="secondary" className="text-xs">🇪🇸</Badge>
+                          </>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">🇧🇷 {t('admin.content.onlyPortuguese') || 'Apenas PT'}</Badge>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => retranslateContent(content)}
+                          disabled={translating}
+                          title={t('admin.content.retranslate') || 'Retraduzir'}
+                        >
+                          <RefreshCw className={`h-3 w-3 ${translating ? 'animate-spin' : ''}`} />
+                        </Button>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={content.is_active ? "default" : "secondary"}>
-                        {content.is_active ? t('admin.content.status.active') : t('admin.content.status.inactive')}
+                        {content.is_active ? t('admin.content.active') : t('admin.content.inactive')}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
                       {new Date(content.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         <Button
-                          size="sm"
-                          variant="outline"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => toggleContentStatus(content.id, content.is_active)}
+                          title={content.is_active ? t('admin.content.deactivate') : t('admin.content.activate')}
                         >
-                          {content.is_active ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
+                          {content.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deleteContent(content.id, content.file_url)}
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteContent(content.id, content.file_url || '')}
                           className="text-destructive hover:text-destructive"
+                          title={t('admin.content.delete')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
