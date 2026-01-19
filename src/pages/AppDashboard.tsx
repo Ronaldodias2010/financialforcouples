@@ -52,7 +52,13 @@ const AppDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 flex justify-end items-center">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          {/* Cotações à esquerda */}
+          <div className="flex-shrink-0">
+            <CurrencyRatesDisplay compact />
+          </div>
+          
+          {/* Controles à direita */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Nome do usuário - sempre visível */}
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
@@ -219,11 +225,8 @@ const AppDashboard = () => {
       <main>
         {currentPage === 'dashboard' ? (
           <div>
-            <div className="container mx-auto px-4 pt-2 pb-3 space-y-2">
+            <div className="container mx-auto px-4 pt-2 pb-2">
               <PremiumExpirationWarning />
-              <div className="flex justify-center">
-                <CurrencyRatesDisplay />
-              </div>
             </div>
             <FinancialDashboard />
           </div>
