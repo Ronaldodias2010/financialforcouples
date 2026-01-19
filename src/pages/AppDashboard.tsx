@@ -219,7 +219,7 @@ const AppDashboard = () => {
       <main>
         {currentPage === 'dashboard' ? (
           <div>
-            <div className="container mx-auto px-4 py-4 space-y-4">
+            <div className="container mx-auto px-4 pt-2 pb-3 space-y-2">
               <PremiumExpirationWarning />
               <div className="flex justify-center">
                 <CurrencyRatesDisplay />
