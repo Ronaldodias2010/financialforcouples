@@ -1,7 +1,7 @@
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Euro, PoundSterling, RefreshCw } from "lucide-react";
+import { DollarSign, Euro, PoundSterling, RefreshCw, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEffect } from "react";
 
@@ -66,45 +66,60 @@ export const CurrencyRatesDisplay = () => {
 
   const currencyData = getCurrencyData();
 
-  return (
-    <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/20 max-w-2xl mx-auto">
-      <CardContent className="p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1">
-            {currencyData.map((currency, index) => (
-              <div key={currency.code} className="flex items-center gap-2">
-                {index > 0 && <div className="w-px h-4 bg-border" />}
-                <currency.icon className={`h-3 w-3 ${currency.color}`} />
-                <div className="text-xs">
-                  <span className={`font-medium ${currency.color}`}>{currency.label}</span>
-                  <span className="text-muted-foreground ml-2">{currency.value}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+  // Get rate date from exchange rates if available
+  const rateDate = exchangeRates?.USD ? 
+    (exchangeRates as any).rate_date || lastUpdated?.toLocaleDateString() : 
+    null;
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground pl-3 sm:pl-4">
-            {lastUpdated && (
-              <span className="hidden sm:inline">
-                {formatTime(lastUpdated)}
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={refreshRates}
-              disabled={loading}
-              className="h-5 w-5 p-0"
-            >
-              <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
+  return (
+    <Card className="p-4 bg-card/50 border-border/30">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">
+            {language === 'pt' ? 'Cotações' : language === 'es' ? 'Cotizaciones' : 'Exchange Rates'}
+          </span>
         </div>
-        
-        <div className="text-xs text-muted-foreground mt-2 text-center">
-          💱 {t('currency.updatesInfo')}
-        </div>
-      </CardContent>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => refreshRates()}
+          disabled={loading}
+          className="h-7 w-7 p-0"
+        >
+          <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {currencyData.map((currency, index) => {
+          const IconComponent = currency.icon;
+          return (
+            <div key={index} className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <IconComponent className={`h-4 w-4 ${currency.color}`} />
+                <span className="text-muted-foreground">{currency.label}</span>
+              </div>
+              <span className="font-medium text-foreground">{currency.value}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 pt-2 border-t border-border/30">
+        <p className="text-xs text-muted-foreground text-center">
+          {lastUpdated && (
+            <>
+              {language === 'pt' ? 'Atualizado às' : language === 'es' ? 'Actualizado a las' : 'Updated at'} {formatTime(lastUpdated)}
+              {rateDate && (
+                <span className="block mt-0.5 text-primary/70">
+                  {language === 'pt' ? 'Cotação de' : language === 'es' ? 'Cotización de' : 'Rate from'} {rateDate}
+                </span>
+              )}
+            </>
+          )}
+        </p>
+      </div>
     </Card>
   );
 };

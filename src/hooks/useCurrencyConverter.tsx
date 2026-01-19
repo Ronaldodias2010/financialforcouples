@@ -7,6 +7,7 @@ interface ExchangeRates {
   BRL: number;
   USD: number;
   EUR: number;
+  rate_date?: string;
 }
 
 interface CurrencyInfo {
@@ -37,7 +38,7 @@ const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
       // Fetch centralized exchange rates from Supabase
       const { data, error } = await supabase
         .from('exchange_rates')
-        .select('base_currency, target_currency, rate')
+        .select('base_currency, target_currency, rate, rate_date, last_updated')
         .eq('base_currency', 'BRL');
       
       if (error) {
@@ -46,16 +47,25 @@ const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
       }
       
       if (data && data.length > 0) {
-const rates: ExchangeRates = { BRL: 1, USD: 0.1843, EUR: 0.1572 };
+        const rates: ExchangeRates = { BRL: 1, USD: 0.1843, EUR: 0.1572 };
+        let latestRateDate: string | undefined;
 
-data.forEach((row) => {
-  const rate = Number(row.rate); // Already BRL -> target currency
-  if (row.target_currency === 'USD') {
-    rates.USD = rate;
-  } else if (row.target_currency === 'EUR') {
-    rates.EUR = rate;
-  }
-});
+        data.forEach((row: any) => {
+          const rate = Number(row.rate);
+          if (row.target_currency === 'USD') {
+            rates.USD = rate;
+          } else if (row.target_currency === 'EUR') {
+            rates.EUR = rate;
+          }
+          // Get the rate_date (should be same for all currencies)
+          if (row.rate_date) {
+            latestRateDate = row.rate_date;
+          }
+        });
+        
+        if (latestRateDate) {
+          rates.rate_date = latestRateDate;
+        }
         
         console.log('[FX] Using exchange rates (BRL->currency):', rates);
         setExchangeRates(rates);
