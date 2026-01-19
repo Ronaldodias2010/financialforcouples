@@ -9,6 +9,113 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+// ============================================================
+// LANGUAGE DETECTION PATTERNS
+// ============================================================
+const LANGUAGE_PATTERNS = {
+  pt: {
+    words: ['gastei', 'paguei', 'comprei', 'recebi', 'transferi', 'depositei', 'saquei', 'qual', 'quanto', 'meu', 'minha', 'meus', 'minhas', 'hoje', 'ontem', 'amanhã', 'reais', 'cartão', 'conta', 'saldo', 'despesas', 'gastos', 'receitas', 'mês', 'mes', 'semana', 'categoria', 'categorias', 'total', 'resumo', 'olá', 'oi', 'bom dia', 'boa tarde', 'boa noite', 'obrigado', 'obrigada', 'por favor', 'já', 'não', 'sim', 'como', 'onde', 'porque', 'porquê'],
+    patterns: [/r\$\s*[\d.,]+/i, /\d+\s*reais/i, /\bno\b/, /\bna\b/, /\bdo\b/, /\bda\b/, /\bde\b/, /ção\b/, /ções\b/]
+  },
+  en: {
+    words: ['spent', 'paid', 'bought', 'received', 'transferred', 'deposited', 'withdrew', 'what', 'how', 'much', 'my', 'mine', 'today', 'yesterday', 'tomorrow', 'dollars', 'card', 'account', 'balance', 'expenses', 'spending', 'income', 'month', 'week', 'category', 'categories', 'total', 'summary', 'hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'thank you', 'thanks', 'please', 'already', 'not', 'yes', 'where', 'why', 'because', 'the', 'this', 'that', 'with', 'from', 'for'],
+    patterns: [/\$\s*[\d.,]+/, /\d+\s*dollars?/i, /\bthe\b/i, /\bwith\b/i, /\bfor\b/i, /\bfrom\b/i, /tion\b/, /ing\b/]
+  },
+  es: {
+    words: ['gasté', 'pagué', 'compré', 'recibí', 'transferí', 'deposité', 'retiré', 'cuál', 'cuánto', 'mi', 'mis', 'hoy', 'ayer', 'mañana', 'pesos', 'euros', 'tarjeta', 'cuenta', 'saldo', 'gastos', 'ingresos', 'mes', 'semana', 'categoría', 'categorías', 'total', 'resumen', 'hola', 'buenos días', 'buenas tardes', 'buenas noches', 'gracias', 'por favor', 'ya', 'no', 'sí', 'como', 'donde', 'porque', 'qué', 'cómo', 'dónde', 'cuándo'],
+    patterns: [/€\s*[\d.,]+/, /\d+\s*pesos?/i, /\d+\s*euros?/i, /\bel\b/, /\bla\b/, /\blos\b/, /\blas\b/, /ción\b/, /ciones\b/]
+  }
+};
+
+// ============================================================
+// RESPONSE MESSAGES (MULTI-LANGUAGE)
+// ============================================================
+const RESPONSE_MESSAGES = {
+  pt: {
+    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+      if (rate && currencyOriginal !== currencyConverted) {
+        return `💳 Gasto registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (câmbio ${rate.toFixed(4)})\n📁 ${category}`;
+      }
+      return `💳 Gasto registrado\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+    },
+    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+      if (rate && currencyOriginal !== currencyConverted) {
+        return `💰 Receita registrada\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (câmbio ${rate.toFixed(4)})\n📁 ${category}`;
+      }
+      return `💰 Receita registrada\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+    }
+  },
+  en: {
+    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+      if (rate && currencyOriginal !== currencyConverted) {
+        return `💳 Expense recorded\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (exchange rate ${rate.toFixed(4)})\n📁 ${category}`;
+      }
+      return `💳 Expense recorded\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+    },
+    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+      if (rate && currencyOriginal !== currencyConverted) {
+        return `💰 Income recorded\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (exchange rate ${rate.toFixed(4)})\n📁 ${category}`;
+      }
+      return `💰 Income recorded\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+    }
+  },
+  es: {
+    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+      if (rate && currencyOriginal !== currencyConverted) {
+        return `💳 Gasto registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (cambio ${rate.toFixed(4)})\n📁 ${category}`;
+      }
+      return `💳 Gasto registrado\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+    },
+    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+      if (rate && currencyOriginal !== currencyConverted) {
+        return `💰 Ingreso registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (cambio ${rate.toFixed(4)})\n📁 ${category}`;
+      }
+      return `💰 Ingreso registrado\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+    }
+  }
+};
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+// Detect language from message
+function detectLanguage(message: string): 'pt' | 'en' | 'es' {
+  const msgLower = message.toLowerCase();
+  const scores = { pt: 0, en: 0, es: 0 };
+  
+  for (const [lang, config] of Object.entries(LANGUAGE_PATTERNS)) {
+    const langKey = lang as 'pt' | 'en' | 'es';
+    
+    for (const word of config.words) {
+      const regex = new RegExp(`\\b${word}\\b`, 'i');
+      if (regex.test(msgLower)) {
+        scores[langKey] += 2;
+      }
+    }
+    
+    for (const pattern of config.patterns) {
+      if (pattern.test(msgLower)) {
+        scores[langKey] += 1;
+      }
+    }
+  }
+  
+  const maxScore = Math.max(scores.pt, scores.en, scores.es);
+  if (maxScore === 0) return 'pt';
+  
+  if (scores.en > scores.pt && scores.en > scores.es) return 'en';
+  if (scores.es > scores.pt && scores.es > scores.en) return 'es';
+  return 'pt';
+}
+
+// Format currency for display
+function formatCurrencyDisplay(amount: number, currency: string): string {
+  const symbols: Record<string, string> = { BRL: 'R$', USD: '$', EUR: '€' };
+  const symbol = symbols[currency] || currency;
+  return `${symbol} ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 // Helper: Validar se é um UUID válido
 function isValidUUID(str: string | null | undefined): boolean {
   if (!str) return false;
@@ -28,6 +135,102 @@ function normalizeText(text: string): string {
     .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
     .replace(/[^a-z0-9\s]/g, '')     // Remove caracteres especiais
     .trim();
+}
+
+// ============================================================
+// CURRENCY CONVERSION FUNCTIONS
+// ============================================================
+
+interface ExchangeRate {
+  base_currency: string;
+  target_currency: string;
+  rate: number;
+}
+
+// Get exchange rate from database
+async function getExchangeRate(
+  supabase: any,
+  fromCurrency: string,
+  toCurrency: string
+): Promise<number | null> {
+  if (fromCurrency === toCurrency) return 1;
+  
+  console.log(`[process-financial-input] Looking up exchange rate: ${fromCurrency} -> ${toCurrency}`);
+  
+  // Rates are stored as BRL -> target currency
+  // So if we need USD -> BRL, we need 1 / (BRL -> USD rate)
+  
+  if (fromCurrency === 'BRL') {
+    // BRL -> target currency (direct lookup)
+    const { data, error } = await supabase
+      .from('exchange_rates')
+      .select('rate')
+      .eq('base_currency', 'BRL')
+      .eq('target_currency', toCurrency)
+      .single();
+    
+    if (error || !data) {
+      console.warn('[process-financial-input] Exchange rate not found:', error);
+      return null;
+    }
+    
+    console.log(`[process-financial-input] Found rate BRL -> ${toCurrency}: ${data.rate}`);
+    return data.rate;
+  } else if (toCurrency === 'BRL') {
+    // target currency -> BRL (inverse of BRL -> source)
+    const { data, error } = await supabase
+      .from('exchange_rates')
+      .select('rate')
+      .eq('base_currency', 'BRL')
+      .eq('target_currency', fromCurrency)
+      .single();
+    
+    if (error || !data) {
+      console.warn('[process-financial-input] Exchange rate not found:', error);
+      return null;
+    }
+    
+    // Inverse: if BRL -> USD is 0.18, then USD -> BRL is 1/0.18 = 5.55
+    const inverseRate = 1 / data.rate;
+    console.log(`[process-financial-input] Found inverse rate ${fromCurrency} -> BRL: ${inverseRate} (from ${data.rate})`);
+    return inverseRate;
+  } else {
+    // Cross-rate: USD -> EUR = (USD -> BRL) * (BRL -> EUR)
+    const { data: rateFrom } = await supabase
+      .from('exchange_rates')
+      .select('rate')
+      .eq('base_currency', 'BRL')
+      .eq('target_currency', fromCurrency)
+      .single();
+    
+    const { data: rateTo } = await supabase
+      .from('exchange_rates')
+      .select('rate')
+      .eq('base_currency', 'BRL')
+      .eq('target_currency', toCurrency)
+      .single();
+    
+    if (!rateFrom || !rateTo) {
+      console.warn('[process-financial-input] Cross-rate not found');
+      return null;
+    }
+    
+    // Cross rate: (1/rateFrom) * rateTo
+    const crossRate = rateTo.rate / rateFrom.rate;
+    console.log(`[process-financial-input] Cross rate ${fromCurrency} -> ${toCurrency}: ${crossRate}`);
+    return crossRate;
+  }
+}
+
+// Convert amount between currencies
+function convertCurrency(
+  amount: number,
+  rate: number
+): number {
+  // Work with cents to avoid floating point errors
+  const amountCents = Math.round(amount * 100);
+  const resultCents = Math.round(amountCents * rate);
+  return resultCents / 100;
 }
 
 serve(async (req) => {
@@ -516,7 +719,82 @@ serve(async (req) => {
     console.log('[process-financial-input] Input updated with resolved IDs');
 
     // ========================================
-    // PASSO 4.5: VALIDAR SALDO DA CONTA (se for despesa e usar conta)
+    // PASSO 4.5: DETECTAR MOEDAS E CONVERTER SE NECESSÁRIO
+    // (Precisa vir antes da validação de saldo)
+    // ========================================
+    const detectedLanguage = detectLanguage(input.raw_message || '');
+    console.log('[process-financial-input] Detected language:', detectedLanguage);
+    
+    // Moeda original do gasto (extraída pela IA)
+    const originalCurrency = input.currency || 'BRL';
+    const originalAmount = Math.abs(input.amount);
+    
+    // Buscar moeda da conta/cartão destino
+    let targetCurrency = 'BRL';
+    let targetResourceName = '';
+    
+    if (resource_type === 'account' && resolved_account_id) {
+      const { data: accountCurrencyData } = await supabase
+        .from('accounts')
+        .select('currency, name')
+        .eq('id', resolved_account_id)
+        .single();
+      
+      if (accountCurrencyData) {
+        targetCurrency = accountCurrencyData.currency || 'BRL';
+        targetResourceName = accountCurrencyData.name;
+      }
+    } else if (resource_type === 'card' && resolved_card_id) {
+      const { data: cardCurrencyData } = await supabase
+        .from('cards')
+        .select('currency, name')
+        .eq('id', resolved_card_id)
+        .single();
+      
+      if (cardCurrencyData) {
+        targetCurrency = cardCurrencyData.currency || 'BRL';
+        targetResourceName = cardCurrencyData.name;
+      }
+    }
+    
+    console.log('[process-financial-input] Currency check:', { 
+      originalCurrency, 
+      targetCurrency, 
+      resourceName: targetResourceName 
+    });
+    
+    // Converter moeda se necessário
+    let finalAmount = originalAmount;
+    let exchangeRateUsed: number | null = null;
+    let amountOriginal: number | null = null;
+    let currencyOriginal: string | null = null;
+    
+    if (originalCurrency !== targetCurrency) {
+      console.log('[process-financial-input] Currency conversion needed:', originalCurrency, '->', targetCurrency);
+      
+      const rate = await getExchangeRate(supabase, originalCurrency, targetCurrency);
+      
+      if (rate) {
+        exchangeRateUsed = rate;
+        amountOriginal = originalAmount;
+        currencyOriginal = originalCurrency;
+        finalAmount = convertCurrency(originalAmount, rate);
+        
+        console.log('[process-financial-input] Conversion result:', {
+          originalAmount,
+          originalCurrency,
+          rate,
+          finalAmount,
+          targetCurrency
+        });
+      } else {
+        console.warn('[process-financial-input] Exchange rate not found, using original amount');
+      }
+    }
+
+    // ========================================
+    // PASSO 4.6: VALIDAR SALDO DA CONTA (se for despesa e usar conta)
+    // Agora usando o valor CONVERTIDO
     // ========================================
     if (resource_type === 'account' && resolved_account_id && input.transaction_type === 'expense') {
       console.log('[process-financial-input] Validating account balance for expense...');
@@ -545,33 +823,25 @@ serve(async (req) => {
       const currentBalance = accountData.balance || 0;
       const overdraftLimit = accountData.overdraft_limit || 0;
       const availableBalance = currentBalance + overdraftLimit;
-      const transactionAmount = Math.abs(input.amount);
+      // Usar valor CONVERTIDO para validação de saldo
+      const transactionAmount = finalAmount;
 
-      console.log('[process-financial-input] Balance check:', { 
+      console.log('[process-financial-input] Balance check (converted amount):', { 
         currentBalance, 
         overdraftLimit, 
         availableBalance, 
         transactionAmount,
-        accountName: accountData.name
+        accountName: accountData.name,
+        originalAmount: amountOriginal,
+        originalCurrency: currencyOriginal
       });
 
       if (transactionAmount > availableBalance) {
         console.log('[process-financial-input] INSUFFICIENT_BALANCE - Rejecting transaction');
         
-        const formattedBalance = new Intl.NumberFormat('pt-BR', { 
-          style: 'currency', 
-          currency: accountData.currency || 'BRL' 
-        }).format(currentBalance);
-        
-        const formattedAvailable = new Intl.NumberFormat('pt-BR', { 
-          style: 'currency', 
-          currency: accountData.currency || 'BRL' 
-        }).format(availableBalance);
-        
-        const formattedAmount = new Intl.NumberFormat('pt-BR', { 
-          style: 'currency', 
-          currency: input.currency || 'BRL' 
-        }).format(transactionAmount);
+        const formattedBalance = formatCurrencyDisplay(currentBalance, accountData.currency || 'BRL');
+        const formattedAvailable = formatCurrencyDisplay(availableBalance, accountData.currency || 'BRL');
+        const formattedAmount = formatCurrencyDisplay(transactionAmount, targetCurrency);
 
         return new Response(
           JSON.stringify({ 
@@ -593,8 +863,10 @@ serve(async (req) => {
       }
     }
 
+
+
     // ========================================
-    // PASSO 5: CRIAR TRANSAÇÃO
+    // PASSO 6: CRIAR TRANSAÇÃO
     // ========================================
     console.log('[process-financial-input] Creating transaction...');
 
@@ -604,14 +876,18 @@ serve(async (req) => {
     // Criar transação (owner_user é definido automaticamente pelo trigger set_owner_user_on_insert)
     const transactionData: any = {
       user_id: input.user_id,
-      amount: Math.abs(input.amount),
+      amount: finalAmount, // Valor convertido (ou original se mesma moeda)
       type: input.transaction_type,
       description: description,
       transaction_date: transactionDate,
       category_id: resolved_category_id,
       payment_method: input.payment_method || 'pix',
-      currency: input.currency || 'BRL',
-      status: 'completed'
+      currency: targetCurrency, // Moeda da conta/cartão
+      status: 'completed',
+      // Campos de rastreamento de conversão
+      amount_original: amountOriginal,
+      currency_original: currencyOriginal,
+      exchange_rate_used: exchangeRateUsed
     };
 
     // Adicionar card_id ou account_id conforme o tipo
@@ -637,12 +913,12 @@ serve(async (req) => {
     console.log('[process-financial-input] Transaction created:', transaction.id);
 
     // ========================================
-    // PASSO 6: ATUALIZAR SALDO (se for conta)
+    // PASSO 7: ATUALIZAR SALDO (se for conta)
     // ========================================
     if (resource_type === 'account' && resolved_account_id) {
       const balanceChange = input.transaction_type === 'income' 
-        ? Math.abs(input.amount) 
-        : -Math.abs(input.amount);
+        ? finalAmount 
+        : -finalAmount;
 
       const { error: balanceError } = await supabase.rpc('update_account_balance', {
         p_account_id: resolved_account_id,
@@ -658,7 +934,7 @@ serve(async (req) => {
     }
 
     // ========================================
-    // PASSO 7: ATUALIZAR SALDO DO CARTÃO (se for cartão)
+    // PASSO 8: ATUALIZAR SALDO DO CARTÃO (se for cartão)
     // ========================================
     if (resource_type === 'card' && resolved_card_id && input.transaction_type === 'expense') {
       const { error: cardBalanceError } = await supabase
@@ -676,7 +952,7 @@ serve(async (req) => {
         .single();
 
       if (currentCard) {
-        const newBalance = (currentCard.current_balance || 0) + Math.abs(input.amount);
+        const newBalance = (currentCard.current_balance || 0) + finalAmount;
         await supabase
           .from('cards')
           .update({ current_balance: newBalance })
@@ -687,7 +963,7 @@ serve(async (req) => {
     }
 
     // ========================================
-    // PASSO 8: CRIAR REGISTRO NO CASH FLOW (se for conta)
+    // PASSO 9: CRIAR REGISTRO NO CASH FLOW (se for conta)
     // ========================================
     if (resource_type === 'account' && resolved_account_id) {
       const { data: accountData } = await supabase
@@ -698,8 +974,8 @@ serve(async (req) => {
 
       if (accountData) {
         const balanceChange = input.transaction_type === 'income' 
-          ? Math.abs(input.amount) 
-          : -Math.abs(input.amount);
+          ? finalAmount 
+          : -finalAmount;
 
         const cashFlowData = {
           user_id: input.user_id,
@@ -707,13 +983,13 @@ serve(async (req) => {
           account_id: resolved_account_id,
           account_name: accountData.name,
           category_id: resolved_category_id,
-          amount: Math.abs(input.amount),
+          amount: finalAmount,
           movement_type: input.transaction_type,
           movement_date: transactionDate,
           description: description,
           balance_before: accountData.balance - balanceChange,
           balance_after: accountData.balance,
-          currency: input.currency || 'BRL',
+          currency: targetCurrency,
           owner_user: input.owner_user || 'user1',
           payment_method: input.payment_method || 'pix'
         };
@@ -731,7 +1007,7 @@ serve(async (req) => {
     }
 
     // ========================================
-    // PASSO 9: MARCAR INPUT COMO PROCESSADO
+    // PASSO 10: MARCAR INPUT COMO PROCESSADO
     // ========================================
     const { error: finalUpdateError } = await supabase
       .from('incoming_financial_inputs')
@@ -750,19 +1026,67 @@ serve(async (req) => {
     console.log('[process-financial-input] SUCCESS - Transaction created:', transaction.id);
 
     // ========================================
-    // RESPOSTA FINAL
+    // PASSO 11: BUSCAR NOME DA CATEGORIA
     // ========================================
+    let categoryName = 'Sem categoria';
+    if (resolved_category_id) {
+      const { data: categoryData } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('id', resolved_category_id)
+        .single();
+      
+      if (categoryData) {
+        categoryName = categoryData.name;
+      }
+    }
+
+    // ========================================
+    // RESPOSTA FINAL (MULTI-IDIOMA)
+    // ========================================
+    const msgs = RESPONSE_MESSAGES[detectedLanguage];
+    const formattedOriginal = formatCurrencyDisplay(originalAmount, originalCurrency);
+    const formattedConverted = formatCurrencyDisplay(finalAmount, targetCurrency);
+    
+    let responseMessage: string;
+    if (input.transaction_type === 'income') {
+      responseMessage = msgs.incomeRecorded(
+        formattedOriginal.split(' ')[1] || formattedOriginal, // Amount without symbol
+        originalCurrency,
+        formattedConverted.split(' ')[1] || formattedConverted,
+        targetCurrency,
+        exchangeRateUsed,
+        categoryName
+      );
+    } else {
+      responseMessage = msgs.expenseRecorded(
+        formattedOriginal.split(' ')[1] || formattedOriginal,
+        originalCurrency,
+        formattedConverted.split(' ')[1] || formattedConverted,
+        targetCurrency,
+        exchangeRateUsed,
+        categoryName
+      );
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         status: 'processed',
         transaction_id: transaction.id,
-        message: `Transação de ${input.transaction_type === 'expense' ? 'despesa' : 'receita'} criada com sucesso`,
+        message: responseMessage,
+        language: detectedLanguage,
         details: {
-          amount: input.amount,
+          amount: finalAmount,
+          amount_original: amountOriginal,
+          currency: targetCurrency,
+          currency_original: currencyOriginal,
+          exchange_rate: exchangeRateUsed,
           category_id: resolved_category_id,
+          category_name: categoryName,
           resource_type,
-          resource_id
+          resource_id,
+          transaction_type: input.transaction_type
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
