@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { BookOpen, TrendingUp, PiggyBank, Users } from 'lucide-react';
 
 export const BlogHero = () => {
