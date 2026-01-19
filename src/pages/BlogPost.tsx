@@ -253,13 +253,9 @@ export default function BlogPost() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/couples-financials-logo-pwa.png" 
+              src="/lovable-uploads/couples-financials-logo-new.png" 
               alt="Couples Financials" 
-              className="h-8 w-8 object-contain"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = "/lovable-uploads/couples-financials-icon-512.png";
-              }}
+              className="h-10 w-10 object-contain"
             />
             <span className="font-semibold text-lg hidden sm:inline text-foreground">Couples Financials</span>
           </Link>
