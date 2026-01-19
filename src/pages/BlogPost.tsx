@@ -29,6 +29,7 @@ interface EducationalContent {
   file_name: string | null;
   file_type: string | null;
   image_url: string | null;
+  web_content: string | null;
   created_at: string;
   is_active: boolean;
 }
@@ -221,9 +222,11 @@ export default function BlogPost() {
     return categoryLabels[category]?.[language] || category;
   };
 
-  const isPDF = article?.content_type === 'pdf' || 
+  const isWebArticle = article?.content_type === 'article' && article?.web_content;
+
+  const isPDF = !isWebArticle && (article?.content_type === 'pdf' || 
     article?.file_type?.toLowerCase().includes('pdf') ||
-    article?.file_name?.toLowerCase().endsWith('.pdf');
+    article?.file_name?.toLowerCase().endsWith('.pdf'));
 
   const isVideo = article?.content_type === 'video' || 
     article?.file_type?.toLowerCase().includes('video') ||
@@ -361,14 +364,32 @@ export default function BlogPost() {
 
             {/* Content Viewer */}
             <div className="border rounded-lg p-4 bg-card">
+              {/* Web Article Content - Native HTML */}
+              {isWebArticle && article.web_content && (
+                <div className="prose prose-lg dark:prose-invert max-w-none p-6">
+                  {article.web_content.split('\n\n').map((paragraph, index) => (
+                    paragraph.trim() && (
+                      <p key={index} className="mb-4 leading-relaxed text-foreground">
+                        {paragraph.split('\n').map((line, lineIndex) => (
+                          <span key={lineIndex}>
+                            {line}
+                            {lineIndex < paragraph.split('\n').length - 1 && <br />}
+                          </span>
+                        ))}
+                      </p>
+                    )
+                  ))}
+                </div>
+              )}
+
               {/* PDF Loading State */}
               {isPDF && (loadingPdf || extractingText) && (
                 <div className="flex flex-col items-center justify-center py-20">
                   <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                   <p className="text-muted-foreground">
                     {extractingText 
-                      ? (t('blog.extractingText') || 'Extraindo conteúdo...') 
-                      : (t('blog.loadingPdf') || 'Carregando PDF...')}
+                      ? t('blog.extractingText')
+                      : t('blog.loadingPdf')}
                   </p>
                 </div>
               )}
@@ -476,8 +497,19 @@ export default function BlogPost() {
                 </div>
               )}
 
+              {/* Cover Image for web articles */}
+              {isWebArticle && article.image_url && (
+                <div className="flex justify-center mt-6 border-t pt-6">
+                  <img
+                    src={article.image_url}
+                    alt={article.title}
+                    className="max-w-full rounded-lg"
+                  />
+                </div>
+              )}
+
               {/* Cover Image */}
-              {article.image_url && !article.file_url && (
+              {article.image_url && !article.file_url && !isWebArticle && (
                 <div className="flex justify-center">
                   <img
                     src={article.image_url}

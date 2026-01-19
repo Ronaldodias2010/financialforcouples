@@ -2795,6 +2795,12 @@ const translations = {
     'blog.ctaButton': 'Começar Agora',
     'blog.learnMore': 'Saiba Mais',
     'blog.moreArticles': 'Mais Artigos',
+    'blog.loadingContent': 'Carregando conteúdo...',
+    'blog.noTextContent': 'Esta página não contém texto extraível.',
+    'blog.extractingText': 'Extraindo conteúdo...',
+    'blog.loadingPdf': 'Carregando PDF...',
+    'blog.downloadError': 'Erro ao baixar arquivo',
+    'blog.noContentAvailable': 'Não foi possível exibir o conteúdo deste PDF.',
   },
   
    en: {
@@ -5544,6 +5550,12 @@ const translations = {
     'blog.ctaButton': 'Get Started',
     'blog.learnMore': 'Learn More',
     'blog.moreArticles': 'More Articles',
+    'blog.loadingContent': 'Loading content...',
+    'blog.noTextContent': 'This page has no extractable text.',
+    'blog.extractingText': 'Extracting content...',
+    'blog.loadingPdf': 'Loading PDF...',
+    'blog.downloadError': 'Error downloading file',
+    'blog.noContentAvailable': 'Could not display this PDF content.',
    },
   
    es: {
@@ -8258,6 +8270,12 @@ const translations = {
     'blog.ctaButton': 'Comenzar Ahora',
     'blog.learnMore': 'Saber Más',
     'blog.moreArticles': 'Más Artículos',
+    'blog.loadingContent': 'Cargando contenido...',
+    'blog.noTextContent': 'Esta página no tiene texto extraíble.',
+    'blog.extractingText': 'Extrayendo contenido...',
+    'blog.loadingPdf': 'Cargando PDF...',
+    'blog.downloadError': 'Error al descargar archivo',
+    'blog.noContentAvailable': 'No se pudo mostrar el contenido de este PDF.',
    },
 };
 
