@@ -25,7 +25,7 @@ export const BlogHero = () => {
             <span className="text-sm font-medium">{t('blog.hero.badge')}</span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground leading-tight py-1">
             {t('blog.hero.title')}
           </h1>
 
