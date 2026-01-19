@@ -3,11 +3,11 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage, Language } from '@/contexts/LanguageContext';
-import { Loader2, ArrowLeft, Download, Share2, Calendar, Sun, Moon, Globe } from 'lucide-react';
+import { Loader2, Download, Share2, Calendar, Sun, Moon, Globe, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { pdfjs } from 'react-pdf';
 import { useTheme } from '@/hooks/useTheme';
 import {
   DropdownMenu,
@@ -49,10 +49,12 @@ export default function BlogPost() {
   const [loading, setLoading] = useState(true);
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState(1.2);
+  
   const [pdfError, setPdfError] = useState(false);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
+  const [pdfTextContent, setPdfTextContent] = useState<string[]>([]);
+  const [extractingText, setExtractingText] = useState(false);
 
   const languages = [
     { code: 'pt' as Language, label: 'Português', flag: '🇧🇷' },
@@ -79,8 +81,39 @@ export default function BlogPost() {
       setNumPages(0);
       setPdfError(false);
       setPdfBlobUrl(null);
+      setPdfTextContent([]);
     }
   }, [article?.id]);
+
+  // Extract text content from PDF using pdfjs
+  const extractTextFromPdf = async (pdfUrl: string) => {
+    try {
+      setExtractingText(true);
+      const loadingTask = pdfjs.getDocument(pdfUrl);
+      const pdf = await loadingTask.promise;
+      const textPages: string[] = [];
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (pageText) {
+          textPages.push(pageText);
+        }
+      }
+      
+      setPdfTextContent(textPages);
+      setNumPages(pdf.numPages);
+    } catch (err) {
+      console.error('Failed to extract PDF text:', err);
+    } finally {
+      setExtractingText(false);
+    }
+  };
 
   // Load PDF as blob to avoid CORS issues and hide Supabase URLs
   useEffect(() => {
@@ -101,6 +134,8 @@ export default function BlogPost() {
           const blob = new Blob([buffer], { type: 'application/pdf' });
           const url = URL.createObjectURL(blob);
           setPdfBlobUrl(url);
+          // Also extract text content for web view
+          extractTextFromPdf(url);
         })
         .catch(err => {
           console.error('Failed to fetch PDF:', err);
@@ -331,72 +366,97 @@ export default function BlogPost() {
             {/* Content Viewer */}
             <div className="border rounded-lg p-4 bg-card">
               {/* PDF Loading State */}
-              {isPDF && loadingPdf && (
+              {isPDF && (loadingPdf || extractingText) && (
                 <div className="flex flex-col items-center justify-center py-20">
                   <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-                  <p className="text-muted-foreground">{t('blog.loadingPdf') || 'Carregando PDF...'}</p>
+                  <p className="text-muted-foreground">
+                    {extractingText 
+                      ? (t('blog.extractingText') || 'Extraindo conteúdo...') 
+                      : (t('blog.loadingPdf') || 'Carregando PDF...')}
+                  </p>
                 </div>
               )}
 
-              {/* PDF Viewer */}
-              {isPDF && pdfBlobUrl && !pdfError && !loadingPdf && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
+              {/* PDF Text Content - Web View */}
+              {isPDF && !loadingPdf && !extractingText && pdfTextContent.length > 0 && (
+                <div className="space-y-6">
+                  {/* Page Navigation */}
+                  <div className="flex items-center justify-between flex-wrap gap-2 border-b pb-4">
                     <div className="text-sm text-muted-foreground">
-                      {numPages ? (
-                        <span>{t('blog.page')} {pageNumber} / {numPages}</span>
-                      ) : (
-                        <span>{t('blog.loading')}...</span>
-                      )}
+                      <span>{t('blog.page')} {pageNumber} / {numPages || pdfTextContent.length}</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                      <Button size="sm" variant="outline" onClick={() => setScale(s => Math.max(0.5, s - 0.1))}>-</Button>
-                      <Button size="sm" variant="outline" onClick={() => setScale(s => Math.min(2, s + 0.1))}>+</Button>
-                      <Button size="sm" variant="outline" onClick={() => setPageNumber(p => Math.max(1, p - 1))} disabled={pageNumber <= 1}>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setPageNumber(p => Math.max(1, p - 1))} 
+                        disabled={pageNumber <= 1}
+                      >
                         {t('nav.previous')}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setPageNumber(p => Math.min(numPages || 1, p + 1))} disabled={!numPages || pageNumber >= numPages}>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setPageNumber(p => Math.min(pdfTextContent.length, p + 1))} 
+                        disabled={pageNumber >= pdfTextContent.length}
+                      >
                         {t('nav.next')}
                       </Button>
                     </div>
                   </div>
                   
-                  <div className="w-full max-h-[80vh] overflow-auto rounded-lg border p-2 bg-muted/30">
-                    <Document
-                      file={pdfBlobUrl}
-                      onLoadSuccess={({ numPages }) => {
-                        setNumPages(numPages);
-                      }}
-                      onLoadError={(err) => {
-                        console.error('PDF render error', err);
-                        setPdfError(true);
-                      }}
-                      loading={
-                        <div className="flex items-center justify-center py-20">
-                          <Loader2 className="h-8 w-8 animate-spin" />
-                        </div>
-                      }
-                    >
-                      <Page
-                        key={`page-${pageNumber}-${scale}`}
-                        pageNumber={pageNumber}
-                        scale={scale}
-                        renderTextLayer={false}
-                        renderAnnotationLayer={false}
-                      />
-                    </Document>
+                  {/* Text Content Display */}
+                  <div className="prose prose-lg dark:prose-invert max-w-none">
+                    <div className="p-6 bg-muted/20 rounded-lg min-h-[400px]">
+                      {pdfTextContent[pageNumber - 1] ? (
+                        <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+                          {pdfTextContent[pageNumber - 1]}
+                        </p>
+                      ) : (
+                        <p className="text-muted-foreground italic text-center">
+                          {t('blog.noTextContent') || 'Esta página não contém texto extraível.'}
+                        </p>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Page Dots/Indicators */}
+                  {pdfTextContent.length > 1 && pdfTextContent.length <= 10 && (
+                    <div className="flex justify-center gap-2 pt-4">
+                      {pdfTextContent.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setPageNumber(index + 1)}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            pageNumber === index + 1 
+                              ? 'bg-primary' 
+                              : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                          }`}
+                          aria-label={`Página ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* PDF Error State */}
-              {isPDF && pdfError && !loadingPdf && (
+              {/* PDF Error State - No text could be extracted */}
+              {isPDF && !loadingPdf && !extractingText && pdfTextContent.length === 0 && pdfError && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground mb-4">{t('blog.pdfError')}</p>
                   <Button onClick={handleSecureDownload}>
                     <Download className="h-4 w-4 mr-2" />
                     {t('blog.download')}
                   </Button>
+                </div>
+              )}
+
+              {/* Fallback: Still loading but no content yet */}
+              {isPDF && !loadingPdf && !extractingText && pdfTextContent.length === 0 && !pdfError && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">
+                    {t('blog.loadingContent') || 'Carregando conteúdo...'}
+                  </p>
                 </div>
               )}
 
