@@ -2728,6 +2728,7 @@ const translations = {
     
     // Decision Center Landing Section
     'decisionSection.badge': 'Exclusivo Premium',
+    'decisionSection.dividerText': 'Decisões Inteligentes',
     'decisionSection.title': 'Decisões a Dois. Sem Drama.',
     'decisionSection.subtitle': 'Chega de brigas por dinheiro. Nossa IA ajuda vocês a analisarem prós e contras, verem projeções financeiras e chegarem a um consenso juntos.',
     'decisionSection.howItWorks': 'Como funciona?',
@@ -5444,6 +5445,7 @@ const translations = {
     
     // Decision Center Landing Section
     'decisionSection.badge': 'Premium Exclusive',
+    'decisionSection.dividerText': 'Smart Decisions',
     'decisionSection.title': 'Decisions Together. Drama-Free.',
     'decisionSection.subtitle': 'No more fights about money. Our AI helps you analyze pros and cons, see financial projections, and reach consensus together.',
     'decisionSection.howItWorks': 'How it works?',
@@ -8125,6 +8127,7 @@ const translations = {
     
     // Decision Center Landing Section
     'decisionSection.badge': 'Exclusivo Premium',
+    'decisionSection.dividerText': 'Decisiones Inteligentes',
     'decisionSection.title': 'Decisiones en Pareja. Sin Drama.',
     'decisionSection.subtitle': 'No más peleas por dinero. Nuestra IA les ayuda a analizar pros y contras, ver proyecciones financieras y llegar a un consenso juntos.',
     'decisionSection.howItWorks': '¿Cómo funciona?',
