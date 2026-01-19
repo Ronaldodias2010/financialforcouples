@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage, Language } from '@/contexts/LanguageContext';
-import { Loader2, ArrowLeft, Download, Share2, Calendar, ExternalLink, Sun, Moon, Globe } from 'lucide-react';
+import { Loader2, ArrowLeft, Download, Share2, Calendar, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -51,6 +51,8 @@ export default function BlogPost() {
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState(1.2);
   const [pdfError, setPdfError] = useState(false);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
 
   const languages = [
     { code: 'pt' as Language, label: 'Português', flag: '🇧🇷' },
@@ -70,13 +72,73 @@ export default function BlogPost() {
     }
   }, [article?.title]);
 
+  // Reset PDF state when article changes
   useEffect(() => {
     if (article?.id) {
       setPageNumber(1);
       setNumPages(0);
       setPdfError(false);
+      setPdfBlobUrl(null);
     }
   }, [article?.id]);
+
+  // Load PDF as blob to avoid CORS issues and hide Supabase URLs
+  useEffect(() => {
+    const isPdfContent = article?.content_type === 'pdf' || 
+      article?.file_type?.toLowerCase().includes('pdf') ||
+      article?.file_name?.toLowerCase().endsWith('.pdf');
+
+    if (article?.file_url && isPdfContent) {
+      setLoadingPdf(true);
+      setPdfError(false);
+      
+      fetch(article.file_url)
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to fetch PDF');
+          return response.arrayBuffer();
+        })
+        .then(buffer => {
+          const blob = new Blob([buffer], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          setPdfBlobUrl(url);
+        })
+        .catch(err => {
+          console.error('Failed to fetch PDF:', err);
+          setPdfError(true);
+        })
+        .finally(() => setLoadingPdf(false));
+    }
+
+    // Cleanup blob URL on unmount or article change
+    return () => {
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl);
+      }
+    };
+  }, [article?.file_url, article?.content_type, article?.file_type, article?.file_name]);
+
+  // Secure download handler that uses blob
+  const handleSecureDownload = async () => {
+    if (!article?.file_url) return;
+    
+    try {
+      const response = await fetch(article.file_url);
+      if (!response.ok) throw new Error('Download failed');
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = article.file_name || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download error:', err);
+      toast.error(t('blog.downloadError') || 'Download failed');
+    }
+  };
 
   const fetchArticle = async () => {
     try {
@@ -97,17 +159,6 @@ export default function BlogPost() {
     }
   };
 
-  const handleDownload = () => {
-    if (!article?.file_url) return;
-    const link = document.createElement('a');
-    link.href = article.file_url;
-    link.download = article.file_name || 'download';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleShare = async () => {
     const url = window.location.href;
     const title = article?.title || 'Couples Financials Blog';
@@ -121,12 +172,6 @@ export default function BlogPost() {
     } else {
       await navigator.clipboard.writeText(url);
       toast.success(t('blog.linkCopied'));
-    }
-  };
-
-  const openInNewTab = () => {
-    if (article?.file_url) {
-      window.open(article.file_url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -271,7 +316,7 @@ export default function BlogPost() {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 mt-6">
                 {article.file_url && (
-                  <Button onClick={handleDownload} variant="outline">
+                  <Button onClick={handleSecureDownload} variant="outline">
                     <Download className="h-4 w-4 mr-2" />
                     {t('blog.download')}
                   </Button>
@@ -280,18 +325,21 @@ export default function BlogPost() {
                   <Share2 className="h-4 w-4 mr-2" />
                   {t('blog.share')}
                 </Button>
-                {article.file_url && (
-                  <Button onClick={openInNewTab} variant="outline">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    {t('blog.openNewTab')}
-                  </Button>
-                )}
               </div>
             </header>
 
             {/* Content Viewer */}
             <div className="border rounded-lg p-4 bg-card">
-              {isPDF && article.file_url && !pdfError && (
+              {/* PDF Loading State */}
+              {isPDF && loadingPdf && (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                  <p className="text-muted-foreground">{t('blog.loadingPdf') || 'Carregando PDF...'}</p>
+                </div>
+              )}
+
+              {/* PDF Viewer */}
+              {isPDF && pdfBlobUrl && !pdfError && !loadingPdf && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="text-sm text-muted-foreground">
@@ -315,7 +363,7 @@ export default function BlogPost() {
                   
                   <div className="w-full max-h-[80vh] overflow-auto rounded-lg border p-2 bg-muted/30">
                     <Document
-                      file={article.file_url}
+                      file={pdfBlobUrl}
                       onLoadSuccess={({ numPages }) => {
                         setNumPages(numPages);
                       }}
@@ -341,19 +389,14 @@ export default function BlogPost() {
                 </div>
               )}
 
-              {isPDF && pdfError && (
+              {/* PDF Error State */}
+              {isPDF && pdfError && !loadingPdf && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground mb-4">{t('blog.pdfError')}</p>
-                  <div className="flex gap-2 justify-center">
-                    <Button onClick={openInNewTab}>
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      {t('blog.openNewTab')}
-                    </Button>
-                    <Button onClick={handleDownload} variant="outline">
-                      <Download className="h-4 w-4 mr-2" />
-                      {t('blog.download')}
-                    </Button>
-                  </div>
+                  <Button onClick={handleSecureDownload}>
+                    <Download className="h-4 w-4 mr-2" />
+                    {t('blog.download')}
+                  </Button>
                 </div>
               )}
 
