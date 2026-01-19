@@ -26,6 +26,13 @@ interface EducationalContent {
   image_url: string | null;
   created_at: string;
   is_active: boolean;
+  // Multilingual fields
+  title_pt: string | null;
+  title_en: string | null;
+  title_es: string | null;
+  description_pt: string | null;
+  description_en: string | null;
+  description_es: string | null;
 }
 
 const categoryColors: Record<string, string> = {
@@ -82,6 +89,35 @@ export default function Blog() {
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
     : articles.filter(a => a.category === selectedCategory);
+
+  // Get localized title based on current language
+  const getLocalizedTitle = (article: EducationalContent): string => {
+    if (language === 'en' && article.title_en) {
+      return article.title_en;
+    }
+    if (language === 'es' && article.title_es) {
+      return article.title_es;
+    }
+    return article.title_pt || article.title;
+  };
+
+  // Get localized description based on current language
+  const getLocalizedDescription = (article: EducationalContent): string | null => {
+    if (language === 'en' && article.description_en) {
+      return article.description_en;
+    }
+    if (language === 'es' && article.description_es) {
+      return article.description_es;
+    }
+    return article.description_pt || article.description;
+  };
+
+  // Transform articles with localized content
+  const localizedArticles = filteredArticles.map(article => ({
+    ...article,
+    title: getLocalizedTitle(article),
+    description: getLocalizedDescription(article)
+  }));
 
   const getMetaDescription = () => {
     if (language === 'en') {
@@ -183,7 +219,7 @@ export default function Blog() {
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : filteredArticles.length === 0 ? (
+          ) : localizedArticles.length === 0 ? (
             <div className="text-center py-20">
               <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold mb-2">{t('blog.noArticles')}</h3>
@@ -196,7 +232,7 @@ export default function Blog() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              {filteredArticles.map((article, index) => (
+              {localizedArticles.map((article, index) => (
                 <BlogCard 
                   key={article.id} 
                   article={article} 

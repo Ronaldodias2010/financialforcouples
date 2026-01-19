@@ -125,3 +125,6 @@ verify_jwt = false
 
 [functions.whatsapp-query]
 verify_jwt = false
+
+[functions.translate-content]
+verify_jwt = true

@@ -32,6 +32,16 @@ interface EducationalContent {
   web_content: string | null;
   created_at: string;
   is_active: boolean;
+  // Multilingual fields
+  title_pt: string | null;
+  title_en: string | null;
+  title_es: string | null;
+  description_pt: string | null;
+  description_en: string | null;
+  description_es: string | null;
+  web_content_pt: string | null;
+  web_content_en: string | null;
+  web_content_es: string | null;
 }
 
 const categoryLabels: Record<string, Record<string, string>> = {
@@ -69,11 +79,47 @@ export default function BlogPost() {
     }
   }, [id]);
 
-  useEffect(() => {
-    if (article?.title) {
-      document.title = `${article.title} | Blog Couples Financials`;
+  // Get localized title
+  const getLocalizedTitle = (): string => {
+    if (!article) return '';
+    if (language === 'en' && article.title_en) {
+      return article.title_en;
     }
-  }, [article?.title]);
+    if (language === 'es' && article.title_es) {
+      return article.title_es;
+    }
+    return article.title_pt || article.title;
+  };
+
+  // Get localized description
+  const getLocalizedDescription = (): string | null => {
+    if (!article) return null;
+    if (language === 'en' && article.description_en) {
+      return article.description_en;
+    }
+    if (language === 'es' && article.description_es) {
+      return article.description_es;
+    }
+    return article.description_pt || article.description;
+  };
+
+  // Get localized web content
+  const getLocalizedWebContent = (): string | null => {
+    if (!article) return null;
+    if (language === 'en' && article.web_content_en) {
+      return article.web_content_en;
+    }
+    if (language === 'es' && article.web_content_es) {
+      return article.web_content_es;
+    }
+    return article.web_content_pt || article.web_content;
+  };
+
+  useEffect(() => {
+    if (article) {
+      document.title = `${getLocalizedTitle()} | Blog Couples Financials`;
+    }
+  }, [article, language]);
 
   // Reset PDF state when article changes
   useEffect(() => {
@@ -197,7 +243,7 @@ export default function BlogPost() {
 
   const handleShare = async () => {
     const url = window.location.href;
-    const title = article?.title || 'Couples Financials Blog';
+    const title = getLocalizedTitle() || 'Couples Financials Blog';
     
     if (navigator.share) {
       try {
@@ -222,7 +268,8 @@ export default function BlogPost() {
     return categoryLabels[category]?.[language] || category;
   };
 
-  const isWebArticle = article?.content_type === 'article' && article?.web_content;
+  const localizedWebContent = getLocalizedWebContent();
+  const isWebArticle = article?.content_type === 'article' && localizedWebContent;
 
   const isPDF = !isWebArticle && (article?.content_type === 'pdf' || 
     article?.file_type?.toLowerCase().includes('pdf') ||
@@ -248,6 +295,8 @@ export default function BlogPost() {
     return null;
   }
 
+  const localizedTitle = getLocalizedTitle();
+  const localizedDescription = getLocalizedDescription();
 
   return (
     <div className="min-h-screen bg-background">
@@ -319,7 +368,7 @@ export default function BlogPost() {
               <li>/</li>
               <li><Link to="/blog" className="hover:text-foreground">Blog</Link></li>
               <li>/</li>
-              <li className="text-foreground truncate max-w-[200px]">{article.title}</li>
+              <li className="text-foreground truncate max-w-[200px]">{localizedTitle}</li>
             </ol>
           </nav>
         </div>
@@ -341,10 +390,10 @@ export default function BlogPost() {
                 </span>
               </div>
               
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">{article.title}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">{localizedTitle}</h1>
               
-              {article.description && (
-                <p className="text-lg text-muted-foreground">{article.description}</p>
+              {localizedDescription && (
+                <p className="text-lg text-muted-foreground">{localizedDescription}</p>
               )}
 
               {/* Action Buttons */}
@@ -365,9 +414,9 @@ export default function BlogPost() {
             {/* Content Viewer */}
             <div className="border rounded-lg p-4 bg-card">
               {/* Web Article Content - Native HTML */}
-              {isWebArticle && article.web_content && (
+              {isWebArticle && localizedWebContent && (
                 <div className="prose prose-lg dark:prose-invert max-w-none p-6">
-                  {article.web_content.split('\n\n').map((paragraph, index) => (
+                  {localizedWebContent.split('\n\n').map((paragraph, index) => (
                     paragraph.trim() && (
                       <p key={index} className="mb-4 leading-relaxed text-foreground">
                         {paragraph.split('\n').map((line, lineIndex) => (
@@ -472,49 +521,37 @@ export default function BlogPost() {
               {isPDF && !loadingPdf && !extractingText && pdfTextContent.length === 0 && !pdfError && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground mb-4">
-                    {t('blog.loadingContent') || 'Carregando conteúdo...'}
+                    {t('blog.pdfNoContent') || 'Este PDF não possui texto extraível.'}
                   </p>
+                  <Button onClick={handleSecureDownload}>
+                    <Download className="h-4 w-4 mr-2" />
+                    {t('blog.download')}
+                  </Button>
                 </div>
               )}
 
+              {/* Video Content */}
               {isVideo && article.file_url && (
-                <video
-                  controls
-                  className="w-full max-h-[70vh] rounded-lg"
-                >
-                  <source src={article.file_url} />
-                  {t('blog.videoNotSupported')}
-                </video>
+                <div className="aspect-video">
+                  <video
+                    controls
+                    className="w-full h-full rounded-lg"
+                    src={article.file_url}
+                    preload="metadata"
+                  >
+                    {t('blog.videoNotSupported')}
+                  </video>
+                </div>
               )}
 
+              {/* Image Content */}
               {isImage && article.file_url && (
                 <div className="flex justify-center">
                   <img
                     src={article.file_url}
-                    alt={article.title}
-                    className="max-w-full max-h-[80vh] rounded-lg"
-                  />
-                </div>
-              )}
-
-              {/* Cover Image for web articles */}
-              {isWebArticle && article.image_url && (
-                <div className="flex justify-center mt-6 border-t pt-6">
-                  <img
-                    src={article.image_url}
-                    alt={article.title}
-                    className="max-w-full rounded-lg"
-                  />
-                </div>
-              )}
-
-              {/* Cover Image */}
-              {article.image_url && !article.file_url && !isWebArticle && (
-                <div className="flex justify-center">
-                  <img
-                    src={article.image_url}
-                    alt={article.title}
-                    className="max-w-full rounded-lg"
+                    alt={localizedTitle}
+                    className="max-w-full h-auto rounded-lg"
+                    loading="lazy"
                   />
                 </div>
               )}
@@ -532,7 +569,7 @@ export default function BlogPost() {
                 <Button size="lg">{t('blog.ctaButton')}</Button>
               </Link>
               <Link to="/blog">
-                <Button variant="outline" size="lg">{t('blog.moreArticles')}</Button>
+                <Button variant="outline" size="lg">{t('blog.backToList')}</Button>
               </Link>
             </div>
           </div>
