@@ -3,8 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Helmet } from 'react-helmet';
-import { Loader2, ArrowLeft, Download, Share2, Calendar, Tag, ExternalLink } from 'lucide-react';
+import { Loader2, ArrowLeft, Download, Share2, Calendar, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -138,66 +137,30 @@ export default function BlogPost() {
     return null;
   }
 
-  return (
-    <>
-      <Helmet>
-        <title>{article.title} | Blog Couples Financials</title>
-        <meta name="description" content={article.description || ''} />
-        <link rel="canonical" href={`https://couplesfinancials.com/blog/${article.id}`} />
-        
-        {/* Open Graph */}
-        <meta property="og:title" content={article.title} />
-        <meta property="og:description" content={article.description || ''} />
-        <meta property="og:url" content={`https://couplesfinancials.com/blog/${article.id}`} />
-        <meta property="og:type" content="article" />
-        {article.image_url && <meta property="og:image" content={article.image_url} />}
-        
-        {/* Twitter */}
-        <meta name="twitter:title" content={article.title} />
-        <meta name="twitter:description" content={article.description || ''} />
-        {article.image_url && <meta name="twitter:image" content={article.image_url} />}
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": article.title,
-            "description": article.description,
-            "datePublished": article.created_at,
-            "url": `https://couplesfinancials.com/blog/${article.id}`,
-            "publisher": {
-              "@type": "Organization",
-              "name": "Couples Financials",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "https://couplesfinancials.com/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png"
-              }
-            },
-            "author": {
-              "@type": "Organization",
-              "name": "Couples Financials"
-            }
-          })}
-        </script>
-      </Helmet>
+  // Update document title
+  useEffect(() => {
+    if (article) {
+      document.title = `${article.title} | Blog Couples Financials`;
+    }
+  }, [article]);
 
-      <div className="min-h-screen bg-background">
-        {/* Navigation */}
-        <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png" 
-                alt="Couples Financials" 
-                className="h-8 w-auto"
-              />
-              <span className="font-semibold text-lg hidden sm:inline">Couples Financials</span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/blog">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png" 
+              alt="Couples Financials" 
+              className="h-8 w-auto"
+            />
+            <span className="font-semibold text-lg hidden sm:inline">Couples Financials</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/blog">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
                   {t('blog.backToList')}
                 </Button>
               </Link>
@@ -393,6 +356,5 @@ export default function BlogPost() {
           </div>
         </footer>
       </div>
-    </>
   );
 }
