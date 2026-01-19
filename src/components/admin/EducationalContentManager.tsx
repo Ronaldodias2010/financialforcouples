@@ -16,11 +16,12 @@ interface EducationalContent {
   title: string;
   description: string;
   category: string;
-  file_url: string;
-  file_name: string;
-  file_type: string;
+  file_url: string | null;
+  file_name: string | null;
+  file_type: string | null;
   content_type: string;
   image_url?: string;
+  web_content?: string | null;
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -51,7 +52,8 @@ export const EducationalContentManager = () => {
     description: '',
     category: '',
     content_type: '',
-    sort_order: 0
+    sort_order: 0,
+    web_content: ''
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -111,7 +113,31 @@ export const EducationalContentManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedFile || !formData.title || !formData.category || !formData.content_type) {
+    // Validate: articles need web_content, other types need file
+    const isArticle = formData.content_type === 'article';
+    const hasWebContent = formData.web_content.trim().length > 0;
+    const hasFile = !!selectedFile;
+    
+    if (!formData.title || !formData.category || !formData.content_type) {
+      toast({
+        title: t('common.error'),
+        description: t('admin.content.error.fields'),
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // For articles, require web_content; for other types, require file
+    if (isArticle && !hasWebContent) {
+      toast({
+        title: t('common.error'),
+        description: t('admin.content.error.webContentRequired') || 'O conteúdo do artigo é obrigatório.',
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!isArticle && !hasFile) {
       toast({
         title: t('common.error'),
         description: t('admin.content.error.fields'),
@@ -123,21 +149,30 @@ export const EducationalContentManager = () => {
     setUploading(true);
 
     try {
-      // Upload file to storage
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${formData.category}/${fileName}`;
+      let fileUrl = null;
+      let fileName = null;
+      let fileType = null;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('educational-content')
-        .upload(filePath, selectedFile);
+      // Only upload file if one was selected (not for web articles)
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const generatedFileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${formData.category}/${generatedFileName}`;
 
-      if (uploadError) throw uploadError;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('educational-content')
+          .upload(filePath, selectedFile);
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('educational-content')
-        .getPublicUrl(filePath);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('educational-content')
+          .getPublicUrl(filePath);
+
+        fileUrl = urlData.publicUrl;
+        fileName = selectedFile.name;
+        fileType = fileExt;
+      }
 
       // Upload image if provided
       let imageUrl = null;
@@ -166,11 +201,12 @@ export const EducationalContentManager = () => {
           title: formData.title,
           description: formData.description,
           category: formData.category,
-          file_url: urlData.publicUrl,
-          file_name: selectedFile.name,
-          file_type: fileExt,
+          file_url: fileUrl,
+          file_name: fileName,
+          file_type: fileType,
           content_type: formData.content_type,
           image_url: imageUrl,
+          web_content: isArticle ? formData.web_content : null,
           sort_order: formData.sort_order,
           created_by_admin_id: (await supabase.auth.getUser()).data.user?.id
         });
@@ -188,7 +224,8 @@ export const EducationalContentManager = () => {
         description: '',
         category: '',
         content_type: '',
-        sort_order: 0
+        sort_order: 0,
+        web_content: ''
       });
       setSelectedFile(null);
       setSelectedImage(null);
@@ -374,20 +411,40 @@ export const EducationalContentManager = () => {
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">{t('admin.content.file')} *</label>
-              <Input
-                type="file"
-                onChange={handleFileSelect}
-                accept=".pdf,.mp4,.webm,.mov,.avi,.jpg,.jpeg,.png,.gif,.webp"
-                required
-              />
-              {selectedFile && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t('admin.content.fileSelected')}: {selectedFile.name}
+            {/* Web Content for Articles */}
+            {formData.content_type === 'article' && (
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  {t('admin.content.webContent') || 'Conteúdo do Artigo'} *
+                </label>
+                <Textarea
+                  value={formData.web_content}
+                  onChange={(e) => setFormData(prev => ({ ...prev, web_content: e.target.value }))}
+                  placeholder={t('admin.content.webContentPlaceholder') || 'Digite o conteúdo do artigo aqui...\n\nUse parágrafos separados por linha em branco para melhor formatação.'}
+                  className="min-h-[300px] font-mono"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('admin.content.webContentHint') || 'Dica: Separe parágrafos com linha em branco para melhor visualização no blog.'}
                 </p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* File upload - only show for non-article types */}
+            {formData.content_type !== 'article' && (
+              <div>
+                <label className="text-sm font-medium mb-2 block">{t('admin.content.file')} *</label>
+                <Input
+                  type="file"
+                  onChange={handleFileSelect}
+                  accept=".pdf,.mp4,.webm,.mov,.avi,.jpg,.jpeg,.png,.gif,.webp"
+                />
+                {selectedFile && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t('admin.content.fileSelected')}: {selectedFile.name}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="text-sm font-medium mb-2 block">{t('admin.content.image')} (opcional)</label>
