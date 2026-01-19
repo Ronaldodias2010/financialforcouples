@@ -3505,15 +3505,18 @@ export type Database = {
         Row: {
           account_id: string | null
           amount: number
+          amount_original: number | null
           business_at: string | null
           card_id: string | null
           card_transaction_type: string | null
           category_id: string | null
           created_at: string
           currency: Database["public"]["Enums"]["currency_type"]
+          currency_original: string | null
           deleted_at: string | null
           description: string
           due_date: string | null
+          exchange_rate_used: number | null
           expense_source_type: string | null
           external_reference_id: string | null
           id: string
@@ -3535,15 +3538,18 @@ export type Database = {
         Insert: {
           account_id?: string | null
           amount: number
+          amount_original?: number | null
           business_at?: string | null
           card_id?: string | null
           card_transaction_type?: string | null
           category_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          currency_original?: string | null
           deleted_at?: string | null
           description: string
           due_date?: string | null
+          exchange_rate_used?: number | null
           expense_source_type?: string | null
           external_reference_id?: string | null
           id?: string
@@ -3565,15 +3571,18 @@ export type Database = {
         Update: {
           account_id?: string | null
           amount?: number
+          amount_original?: number | null
           business_at?: string | null
           card_id?: string | null
           card_transaction_type?: string | null
           category_id?: string | null
           created_at?: string
           currency?: Database["public"]["Enums"]["currency_type"]
+          currency_original?: string | null
           deleted_at?: string | null
           description?: string
           due_date?: string | null
+          exchange_rate_used?: number | null
           expense_source_type?: string | null
           external_reference_id?: string | null
           id?: string
