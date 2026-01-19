@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -501,11 +501,51 @@ export const MileageSystem = () => {
     }
   };
 
-  const toggleRuleStatus = async (ruleId: string, currentStatus: boolean) => {
+  // Group rules by card_id for consolidated display
+  const groupedRules = useMemo(() => {
+    const groups = new Map<string, MileageRule[]>();
+    
+    mileageRules.forEach(rule => {
+      const key = rule.card_id || rule.id;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(rule);
+    });
+    
+    return Array.from(groups.entries()).map(([cardId, rules]) => ({
+      cardId,
+      rules,
+      card: rules[0].card,
+      bank_name: rules[0].bank_name,
+      card_brand: rules[0].card_brand,
+      user_id: rules[0].user_id,
+      // Sum existing miles from all rules (usually only domestic has it)
+      totalExistingMiles: rules.reduce((sum, r) => sum + (r.existing_miles || 0), 0),
+      // Check activation status
+      allActive: rules.every(r => r.is_active),
+      someActive: rules.some(r => r.is_active),
+      // Purchase types present
+      purchaseTypes: rules.map(r => r.purchase_type || 'domestic'),
+      // Rates by type for display
+      ratesByType: rules.reduce((acc, r) => {
+        acc[r.purchase_type || 'domestic'] = {
+          miles_per_amount: r.miles_per_amount,
+          amount_threshold: r.amount_threshold,
+          currency: r.currency
+        };
+        return acc;
+      }, {} as Record<string, { miles_per_amount: number; amount_threshold: number; currency: string }>),
+      // Get all rule IDs for bulk operations
+      ruleIds: rules.map(r => r.id)
+    }));
+  }, [mileageRules]);
+
+  const toggleRuleStatus = async (ruleIds: string[], currentStatus: boolean) => {
     const { error } = await supabase
       .from("card_mileage_rules")
       .update({ is_active: !currentStatus })
-      .eq("id", ruleId);
+      .in("id", ruleIds);
 
     if (error) {
       toast({
@@ -520,11 +560,11 @@ export const MileageSystem = () => {
     loadTotalMiles();
   };
 
-  const deleteRule = async (ruleId: string) => {
+  const deleteRule = async (ruleIds: string[]) => {
     const { error } = await supabase
       .from("card_mileage_rules")
       .delete()
-      .eq("id", ruleId);
+      .in("id", ruleIds);
 
     if (error) {
       toast({
@@ -673,7 +713,7 @@ export const MileageSystem = () => {
             />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mileageRules.filter(r => r.is_active).length}</div>
+            <div className="text-2xl font-bold">{groupedRules.filter(g => g.someActive).length}</div>
             <p className="text-xs text-muted-foreground">{t('mileage.rulesConfigured')}</p>
           </CardContent>
         </Card>
@@ -729,68 +769,112 @@ export const MileageSystem = () => {
           )}
 
           <div className="grid gap-4 md:grid-cols-2">
-            {mileageRules.map((rule) => (
-              <Card key={rule.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-semibold">{rule.card?.name}</h4>
-                        <Badge variant={rule.is_active ? "default" : "secondary"}>
-                          {rule.is_active ? t('mileage.active') : t('mileage.inactive')}
-                        </Badge>
-                        {/* Badge para tipo de compra */}
-                        <Badge 
-                          variant="outline" 
-                          className={rule.purchase_type === 'international' 
-                            ? "border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950" 
-                            : "border-green-500 text-green-600 bg-green-50 dark:bg-green-950"
-                          }
-                        >
-                          {rule.purchase_type === 'international' ? (
-                            <><Globe className="h-3 w-3 mr-1" />Internacional</>
-                          ) : (
-                            <><MapPin className="h-3 w-3 mr-1" />Nacional</>
+            {groupedRules.map((group) => {
+              const hasDomestic = group.purchaseTypes.includes('domestic');
+              const hasInternational = group.purchaseTypes.includes('international');
+              const domesticRate = group.ratesByType['domestic'];
+              const internationalRate = group.ratesByType['international'];
+              
+              // Check if rates are the same (for display purposes)
+              const ratesAreSame = domesticRate && internationalRate && 
+                domesticRate.miles_per_amount === internationalRate.miles_per_amount &&
+                domesticRate.amount_threshold === internationalRate.amount_threshold &&
+                domesticRate.currency === internationalRate.currency;
+              
+              return (
+                <Card key={group.cardId}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-semibold">{group.card?.name}</h4>
+                          <Badge variant={group.allActive ? "default" : group.someActive ? "outline" : "secondary"}>
+                            {group.allActive ? t('mileage.active') : group.someActive ? "Parcial" : t('mileage.inactive')}
+                          </Badge>
+                          {/* Badges for purchase types */}
+                          {hasDomestic && (
+                            <Badge 
+                              variant="outline" 
+                              className="border-green-500 text-green-600 bg-green-50 dark:bg-green-950"
+                            >
+                              <MapPin className="h-3 w-3 mr-1" />Nacional
+                            </Badge>
                           )}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {rule.bank_name} • {rule.card_brand}
-                      </p>
-                      <div className="text-sm">
-                        <span className="font-medium">{rule.miles_per_amount} pontos</span> por {rule.currency} {rule.amount_threshold}
-                        {rule.currency !== 'BRL' && (rule.purchase_type === 'domestic' || !rule.purchase_type) && (
-                          <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
-                            (converte BRL → {rule.currency})
-                          </span>
+                          {hasInternational && (
+                            <Badge 
+                              variant="outline" 
+                              className="border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950"
+                            >
+                              <Globe className="h-3 w-3 mr-1" />Internacional
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {group.bank_name} • {group.card_brand}
+                        </p>
+                        
+                        {/* Rate display */}
+                        <div className="text-sm space-y-0.5">
+                          {ratesAreSame || (hasDomestic && !hasInternational) || (!hasDomestic && hasInternational) ? (
+                            // Single rate display
+                            <div>
+                              <span className="font-medium">
+                                {(domesticRate || internationalRate).miles_per_amount} pontos
+                              </span> por {(domesticRate || internationalRate).currency} {(domesticRate || internationalRate).amount_threshold}
+                              {(domesticRate || internationalRate).currency !== 'BRL' && hasDomestic && (
+                                <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                                  (converte BRL → {(domesticRate || internationalRate).currency})
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            // Different rates display
+                            <>
+                              {domesticRate && (
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3 text-green-600" />
+                                  <span className="font-medium">{domesticRate.miles_per_amount} pts</span>
+                                  <span className="text-muted-foreground">por {domesticRate.currency} {domesticRate.amount_threshold}</span>
+                                </div>
+                              )}
+                              {internationalRate && (
+                                <div className="flex items-center gap-1">
+                                  <Globe className="h-3 w-3 text-blue-600" />
+                                  <span className="font-medium">{internationalRate.miles_per_amount} pts</span>
+                                  <span className="text-muted-foreground">por {internationalRate.currency} {internationalRate.amount_threshold}</span>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        
+                        {group.totalExistingMiles > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            Milhas existentes: {Math.floor(group.totalExistingMiles).toLocaleString()}
+                          </p>
                         )}
                       </div>
-                      {rule.existing_miles && rule.existing_miles > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          Milhas existentes: {Math.floor(rule.existing_miles).toLocaleString()}
-                        </p>
-                      )}
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleRuleStatus(group.ruleIds, group.allActive)}
+                        >
+                          {group.allActive ? t('mileage.deactivate') : t('mileage.activate')}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deleteRule(group.ruleIds)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => toggleRuleStatus(rule.id, rule.is_active)}
-                      >
-                        {rule.is_active ? t('mileage.deactivate') : t('mileage.activate')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => deleteRule(rule.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
 
