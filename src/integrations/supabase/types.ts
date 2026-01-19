@@ -1310,6 +1310,7 @@ export type Database = {
           id: string
           last_updated: string
           rate: number
+          rate_date: string | null
           target_currency: string
         }
         Insert: {
@@ -1318,6 +1319,7 @@ export type Database = {
           id?: string
           last_updated?: string
           rate: number
+          rate_date?: string | null
           target_currency: string
         }
         Update: {
@@ -1326,6 +1328,7 @@ export type Database = {
           id?: string
           last_updated?: string
           rate?: number
+          rate_date?: string | null
           target_currency?: string
         }
         Relationships: []
