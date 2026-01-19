@@ -12,6 +12,7 @@ import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
 import Footer from "@/components/landing/Footer";
 import IncomeTaxSection from "@/components/landing/IncomeTaxSection";
+import DecisionCenterSection from "@/components/landing/DecisionCenterSection";
 import { useLayoutEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import "@/styles/landing-theme.css";
@@ -46,6 +47,7 @@ const Landing = () => {
         <WhatsAppSection />
         <SmartMileageSection />
         <AIRecommendationsSection />
+        <DecisionCenterSection />
         <PDFConverterSection />
         {showIncomeTaxSection && <IncomeTaxSection />}
         <SecuritySection />

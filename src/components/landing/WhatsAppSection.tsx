@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, Mic, Sparkles, Zap, BarChart3 } from "lucide-react";
+import { MessageCircle, Mic, Sparkles, Zap, BarChart3, Coins, ArrowRightLeft, Globe } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import whatsappChat from "@/assets/whatsapp-chat.jpg";
 import { openWhatsApp } from "@/utils/whatsapp";
@@ -109,6 +109,38 @@ const WhatsAppSection = () => {
                 </Card>
               </div>
             </div>
+            
+            {/* Multi-Currency Feature Highlight */}
+            <Card className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 dark:from-amber-950/30 dark:to-orange-950/30 dark:border-amber-800">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center shrink-0">
+                  <Globe className="w-6 h-6" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-semibold text-foreground">{t('whatsapp.multiCurrency.title')}</h4>
+                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
+                      <ArrowRightLeft className="w-3 h-3" />
+                      {t('whatsapp.multiCurrency.badge')}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    {t('whatsapp.multiCurrency.description')}
+                  </p>
+                  <div className="flex items-center gap-2 bg-white/60 dark:bg-black/20 rounded-lg px-3 py-2 w-fit">
+                    <Coins className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-mono">
+                      <span className="text-muted-foreground">$50 USD</span>
+                      <ArrowRightLeft className="w-3 h-3 inline mx-2 text-amber-500" />
+                      <span className="text-foreground font-semibold">R$ 302,50</span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t('whatsapp.multiCurrency.source')}
+                  </p>
+                </div>
+              </div>
+            </Card>
             
             {/* Benefits */}
             <div className="space-y-4">
