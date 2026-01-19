@@ -53,6 +53,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-background/70">
               <li><a href="#benefits" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('benefits')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.features')}</a></li>
               <li><a href="#pricing" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.pricing')}</a></li>
+              <li><Link to="/blog" className="hover:text-background transition-colors">Blog</Link></li>
               <li><a href="#" className="hover:text-background transition-colors">{t('footer.download')}</a></li>
             </ul>
           </div>

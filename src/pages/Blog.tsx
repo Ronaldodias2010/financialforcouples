@@ -2,12 +2,19 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useLanguage, Language } from '@/contexts/LanguageContext';
 import { BlogCard } from '@/components/blog/BlogCard';
 import { BlogHero } from '@/components/blog/BlogHero';
-import { Loader2, BookOpen, ArrowLeft } from 'lucide-react';
+import { Loader2, BookOpen, ArrowLeft, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useTheme } from '@/hooks/useTheme';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface EducationalContent {
   id: string;
@@ -29,10 +36,17 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function Blog() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [articles, setArticles] = useState<EducationalContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const languages = [
+    { code: 'pt' as Language, label: 'Português', flag: '🇧🇷' },
+    { code: 'en' as Language, label: 'English', flag: '🇺🇸' },
+    { code: 'es' as Language, label: 'Español', flag: '🇪🇸' },
+  ];
 
   useEffect(() => {
     fetchArticles();
@@ -92,12 +106,47 @@ export default function Blog() {
             <img 
               src="/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png" 
               alt="Couples Financials" 
-              className="h-8 w-auto"
+              className="h-8 w-8 object-contain"
             />
-            <span className="font-semibold text-lg hidden sm:inline">Couples Financials</span>
+            <span className="font-semibold text-lg hidden sm:inline text-foreground">Couples Financials</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/">
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Language Switcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Globe className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {languages.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => setLanguage(lang.code)}
+                    className={language === lang.code ? 'bg-accent' : ''}
+                  >
+                    <span className="mr-2">{lang.flag}</span>
+                    {lang.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+
+            <Link to="/" className="hidden sm:block">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t('blog.backToHome')}
