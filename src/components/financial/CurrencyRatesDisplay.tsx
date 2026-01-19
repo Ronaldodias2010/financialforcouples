@@ -1,13 +1,17 @@
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Euro, PoundSterling, RefreshCw, TrendingUp } from "lucide-react";
+import { DollarSign, Euro, RefreshCw, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useEffect } from "react";
 
-export const CurrencyRatesDisplay = () => {
+interface CurrencyRatesDisplayProps {
+  compact?: boolean;
+}
+
+export const CurrencyRatesDisplay = ({ compact = false }: CurrencyRatesDisplayProps) => {
   const { exchangeRates, loading, lastUpdated, refreshRates } = useCurrencyConverter();
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (!lastUpdated || (Date.now() - lastUpdated.getTime()) > 6 * 60 * 60 * 1000) {
@@ -24,7 +28,6 @@ export const CurrencyRatesDisplay = () => {
 
   const getCurrencyData = () => {
     if (language === 'pt') {
-      // PT: Show how much 1 foreign currency is worth in BRL
       return [
         {
           icon: DollarSign,
@@ -42,9 +45,7 @@ export const CurrencyRatesDisplay = () => {
         }
       ];
     } else {
-      // EN/ES: Show how much 1 foreign currency is worth in USD
       const eurToUsd = exchangeRates.USD / exchangeRates.EUR;
-
       return [
         {
           icon: DollarSign,
@@ -65,12 +66,48 @@ export const CurrencyRatesDisplay = () => {
   };
 
   const currencyData = getCurrencyData();
+  const rateDate = exchangeRates?.rate_date || null;
 
-  // Get rate date from exchange rates if available
-  const rateDate = exchangeRates?.USD ? 
-    (exchangeRates as any).rate_date || lastUpdated?.toLocaleDateString() : 
-    null;
+  // Compact version for header
+  if (compact) {
+    return (
+      <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-1.5">
+          <TrendingUp className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
+            {language === 'pt' ? 'Cotações' : language === 'es' ? 'Cotizaciones' : 'Rates'}:
+          </span>
+        </div>
+        {currencyData.map((currency, index) => {
+          const IconComponent = currency.icon;
+          return (
+            <div key={index} className="flex items-center gap-1">
+              <IconComponent className={`h-3.5 w-3.5 ${currency.color}`} />
+              <span className="text-xs text-muted-foreground">{currency.label}</span>
+              <span className="font-medium text-foreground text-xs">{currency.value}</span>
+            </div>
+          );
+        })}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => refreshRates()}
+          disabled={loading}
+          className="h-6 w-6 p-0"
+        >
+          <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+        {lastUpdated && (
+          <span className="text-[10px] text-muted-foreground hidden lg:inline">
+            {formatTime(lastUpdated)}
+            {rateDate && ` (${rateDate})`}
+          </span>
+        )}
+      </div>
+    );
+  }
 
+  // Full card version
   return (
     <Card className="p-4 bg-card/50 border-border/30">
       <div className="flex items-center justify-between mb-3">
