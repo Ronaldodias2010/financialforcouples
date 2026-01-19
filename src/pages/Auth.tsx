@@ -32,6 +32,10 @@ export default function Auth() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [show2FAVerification, setShow2FAVerification] = useState(false);
   const [twoFactorMethod, setTwoFactorMethod] = useState<TwoFactorMethod>('none');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [smsError, setSmsError] = useState(false);
+  const [smsErrorMessage, setSmsErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
   const { has2FAEnabled, isLoaded: is2FAStatusLoaded } = use2FAStatus();
@@ -149,6 +153,8 @@ export default function Auth() {
       
       if (data.user) {
         trackLogin('email');
+        setCurrentUserId(data.user.id);
+        setCurrentUserEmail(data.user.email || email);
         
         // Verificar se usuário tem 2FA habilitado
         try {
@@ -157,13 +163,24 @@ export default function Auth() {
           });
 
           if (tfaResponse?.is_enabled && tfaResponse?.method && tfaResponse.method !== 'none') {
+            // Reset SMS error state
+            setSmsError(false);
+            setSmsErrorMessage(null);
+            
             // Enviar código no canal correto
             if (tfaResponse.method === 'sms') {
               const phone = tfaResponse.phone_number;
               if (phone) {
-                await supabase.functions.invoke('send-phone-verification', {
-                  body: { phoneNumber: phone, language }
+                const { data: smsResponse, error: smsNetworkError } = await supabase.functions.invoke('send-phone-verification', {
+                  body: { phoneNumber: phone, language, userId: data.user.id }
                 });
+                
+                // Check if SMS failed
+                if (smsNetworkError || smsResponse?.error) {
+                  console.warn('[Auth] SMS failed:', smsNetworkError || smsResponse);
+                  setSmsError(true);
+                  setSmsErrorMessage(smsResponse?.error_code || smsResponse?.error_message || 'SMS_FAILED');
+                }
               }
             } else if (tfaResponse.method === 'email') {
               await supabase.functions.invoke('send-2fa-email', {
@@ -235,6 +252,58 @@ export default function Auth() {
     await supabase.auth.signOut();
     setShow2FAVerification(false);
     setTwoFactorMethod('none');
+    setSmsError(false);
+    setSmsErrorMessage(null);
+  };
+
+  const handleRetrySMS = async () => {
+    if (!currentUserId) return;
+    
+    setSmsError(false);
+    setSmsErrorMessage(null);
+    
+    try {
+      const { data: tfaResponse } = await supabase.functions.invoke('check-2fa-status', {
+        body: { userId: currentUserId }
+      });
+      
+      if (tfaResponse?.phone_number) {
+        const { data: smsResponse, error: smsError } = await supabase.functions.invoke('send-phone-verification', {
+          body: { 
+            phoneNumber: tfaResponse.phone_number, 
+            language,
+            userId: currentUserId
+          }
+        });
+        
+        if (smsError || smsResponse?.error) {
+          setSmsError(true);
+          setSmsErrorMessage(smsResponse?.error_code || smsResponse?.error_message || 'SMS_FAILED');
+          toast({
+            variant: 'destructive',
+            title: language === 'en' ? 'SMS Error' : language === 'es' ? 'Error de SMS' : 'Erro de SMS',
+            description: language === 'en' 
+              ? 'Could not send SMS. Try email as backup.'
+              : language === 'es'
+              ? 'No se pudo enviar el SMS. Intente correo como respaldo.'
+              : 'Não foi possível enviar o SMS. Tente email como backup.',
+          });
+        } else {
+          toast({
+            title: language === 'en' ? 'SMS Sent' : language === 'es' ? 'SMS Enviado' : 'SMS Enviado',
+            description: language === 'en' 
+              ? 'A new verification code has been sent.'
+              : language === 'es'
+              ? 'Se ha enviado un nuevo código de verificación.'
+              : 'Um novo código de verificação foi enviado.',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Retry SMS failed:', error);
+      setSmsError(true);
+      setSmsErrorMessage('EXCEPTION');
+    }
   };
 
 
@@ -675,6 +744,11 @@ export default function Auth() {
         method={twoFactorMethod}
         onVerified={handle2FAVerified}
         onCancel={handle2FACancel}
+        smsError={smsError}
+        smsErrorMessage={smsErrorMessage}
+        onRetrySMS={handleRetrySMS}
+        userId={currentUserId || undefined}
+        userEmail={currentUserEmail || undefined}
       />
     </div>
   );
