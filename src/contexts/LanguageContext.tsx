@@ -1714,6 +1714,10 @@ const translations = {
     'admin.content.error.statusToggle': 'Erro ao alterar status do conteúdo',
     'admin.content.error.delete': 'Erro ao excluir conteúdo',
     'admin.content.error.load': 'Erro ao carregar conteúdo educacional',
+    'admin.content.webContent': 'Conteúdo do Artigo',
+    'admin.content.webContentPlaceholder': 'Digite o conteúdo do artigo aqui...\n\nUse parágrafos separados por linha em branco para melhor formatação.',
+    'admin.content.webContentHint': 'Dica: Separe parágrafos com linha em branco para melhor visualização no blog.',
+    'admin.content.error.webContentRequired': 'O conteúdo do artigo é obrigatório',
     
     // Educational Content Section
     'educational.exclusiveContent': 'Conteúdo educacional exclusivo para usuários premium',
@@ -4437,6 +4441,10 @@ const translations = {
     'admin.content.error.statusToggle': 'Error changing content status',
     'admin.content.error.delete': 'Error deleting content',
     'admin.content.error.load': 'Error loading educational content',
+    'admin.content.webContent': 'Article Content',
+    'admin.content.webContentPlaceholder': 'Type the article content here...\n\nUse paragraphs separated by blank lines for better formatting.',
+    'admin.content.webContentHint': 'Tip: Separate paragraphs with blank lines for better display on the blog.',
+    'admin.content.error.webContentRequired': 'Article content is required',
     
     // Educational Content Section
     'educational.exclusiveContent': 'Educational content exclusive for premium users',
@@ -7246,6 +7254,10 @@ const translations = {
     'admin.content.error.statusToggle': 'Error al cambiar el estado del contenido',
     'admin.content.error.delete': 'Error al eliminar contenido',
     'admin.content.error.load': 'Error al cargar contenido educativo',
+    'admin.content.webContent': 'Contenido del Artículo',
+    'admin.content.webContentPlaceholder': 'Escribe el contenido del artículo aquí...\n\nUsa párrafos separados por línea en blanco para mejor formato.',
+    'admin.content.webContentHint': 'Consejo: Separa párrafos con línea en blanco para mejor visualización en el blog.',
+    'admin.content.error.webContentRequired': 'El contenido del artículo es obligatorio',
     
     // Educational Content Section
     'educational.exclusiveContent': 'Contenido educativo exclusivo para usuarios premium',
