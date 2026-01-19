@@ -64,6 +64,20 @@ export default function BlogPost() {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (article?.title) {
+      document.title = `${article.title} | Blog Couples Financials`;
+    }
+  }, [article?.title]);
+
+  useEffect(() => {
+    if (article?.id) {
+      setPageNumber(1);
+      setNumPages(0);
+      setPdfError(false);
+    }
+  }, [article?.id]);
+
   const fetchArticle = async () => {
     try {
       const { data, error } = await supabase
@@ -151,12 +165,6 @@ export default function BlogPost() {
     return null;
   }
 
-  // Update document title
-  useEffect(() => {
-    if (article) {
-      document.title = `${article.title} | Blog Couples Financials`;
-    }
-  }, [article]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -165,9 +173,13 @@ export default function BlogPost() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/9eec3d41-a87a-4b2e-8e69-7c67c7b0f4cf.png" 
+              src="/lovable-uploads/couples-financials-logo-pwa.png" 
               alt="Couples Financials" 
               className="h-8 w-8 object-contain"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/lovable-uploads/couples-financials-icon-512.png";
+              }}
             />
             <span className="font-semibold text-lg hidden sm:inline text-foreground">Couples Financials</span>
           </Link>
@@ -318,6 +330,7 @@ export default function BlogPost() {
                       }
                     >
                       <Page
+                        key={`page-${pageNumber}-${scale}`}
                         pageNumber={pageNumber}
                         scale={scale}
                         renderTextLayer={false}
