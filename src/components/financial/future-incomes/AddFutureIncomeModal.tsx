@@ -81,19 +81,56 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
   };
 
   const fetchSubcategories = async (categoryId: string) => {
-    if (!categoryId) {
+    if (!categoryId || !user) {
       setSubcategories([]);
       return;
     }
 
+    // Get selected category name to find equivalent categories from partner
+    const selectedCategory = categories.find(c => c.id === categoryId);
+    if (!selectedCategory) {
+      setSubcategories([]);
+      return;
+    }
+
+    // Get couple info to include partner's subcategories
+    const { data: coupleData } = await supabase
+      .from('user_couples')
+      .select('user1_id, user2_id')
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    const userIds = coupleData ? [coupleData.user1_id, coupleData.user2_id] : [user.id];
+
+    // Find all equivalent categories (same name) from the couple
+    const { data: equivalentCategories } = await supabase
+      .from('categories')
+      .select('id')
+      .in('user_id', userIds)
+      .eq('name', selectedCategory.name)
+      .eq('category_type', 'income');
+
+    const categoryIds = equivalentCategories?.map(c => c.id) || [categoryId];
+
+    // Fetch subcategories from all equivalent categories
     const { data } = await supabase
       .from('subcategories')
       .select('id, name, name_en, name_es')
-      .eq('category_id', categoryId)
+      .in('category_id', categoryIds)
       .is('deleted_at', null)
       .order('name');
 
-    setSubcategories(data || []);
+    // Deduplicate by name (lowercase)
+    const uniqueSubs = new Map<string, Subcategory>();
+    (data || []).forEach(sub => {
+      const key = sub.name.toLowerCase();
+      if (!uniqueSubs.has(key)) {
+        uniqueSubs.set(key, sub);
+      }
+    });
+
+    setSubcategories(Array.from(uniqueSubs.values()));
   };
 
   const fetchAccounts = async () => {
@@ -228,13 +265,13 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
 
           {subcategories.length > 0 && (
             <div>
-              <Label htmlFor="subcategory">{t('monthlyIncome.subcategoryLabel') || 'Subcategoria'}</Label>
+              <Label htmlFor="subcategory">{t('futureIncomes.subcategory')}</Label>
               <Select
                 value={formData.subcategory_id}
                 onValueChange={(value) => setFormData({ ...formData, subcategory_id: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('monthlyIncome.subcategoryPlaceholder') || 'Selecione uma subcategoria (opcional)'} />
+                  <SelectValue placeholder={t('futureIncomes.subcategoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {subcategories.map((sub) => (

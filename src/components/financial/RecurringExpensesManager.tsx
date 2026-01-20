@@ -566,10 +566,10 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
 
               {subcategories.length > 0 && (
                 <div>
-                  <Label>{t('recurring.subcategory') || 'Subcategoria'}</Label>
+                  <Label>{t('recurring.subcategory')}</Label>
                   <Select value={subcategoryId} onValueChange={setSubcategoryId}>
                     <SelectTrigger>
-                      <SelectValue placeholder={t('recurring.subcategoryPlaceholder') || 'Selecione uma subcategoria (opcional)'} />
+                      <SelectValue placeholder={t('recurring.subcategoryPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {subcategories.map((sub) => (
