@@ -101,6 +101,68 @@ export const useSubcategories = () => {
     return subcategories.filter(sub => sub.category_id === categoryId);
   }, [subcategories]);
 
+  // Parse trigger error messages
+  const parseErrorMessage = useCallback((error: { message?: string; code?: string }): { type: string; message: string } | null => {
+    if (!error.message) return null;
+    
+    // Check for custom trigger errors
+    if (error.message.includes('SUBCATEGORY_IS_CATEGORY:')) {
+      const msg = error.message.split('SUBCATEGORY_IS_CATEGORY:')[1]?.trim();
+      return { type: 'SUBCATEGORY_IS_CATEGORY', message: msg || '' };
+    }
+    if (error.message.includes('SUBCATEGORY_DUPLICATE:')) {
+      const msg = error.message.split('SUBCATEGORY_DUPLICATE:')[1]?.trim();
+      return { type: 'SUBCATEGORY_DUPLICATE', message: msg || '' };
+    }
+    // Unique constraint violation
+    if (error.code === '23505') {
+      return { type: 'UNIQUE_VIOLATION', message: '' };
+    }
+    return null;
+  }, []);
+
+  // Get localized error message
+  const getErrorToast = useCallback((parsed: { type: string; message: string }): { title: string; description: string } => {
+    switch (parsed.type) {
+      case 'SUBCATEGORY_IS_CATEGORY':
+        return {
+          title: language === 'pt' ? 'Nome inválido' : language === 'es' ? 'Nombre inválido' : 'Invalid name',
+          description: language === 'pt' 
+            ? 'Este nome já existe como categoria. Escolha outro nome.'
+            : language === 'es'
+            ? 'Este nombre ya existe como categoría. Elija otro nombre.'
+            : 'This name already exists as a category. Choose another name.',
+        };
+      case 'SUBCATEGORY_DUPLICATE':
+        return {
+          title: language === 'pt' ? 'Subcategoria duplicada' : language === 'es' ? 'Subcategoría duplicada' : 'Duplicate subcategory',
+          description: parsed.message || (language === 'pt' 
+            ? 'Esta subcategoria já existe em outra categoria.'
+            : language === 'es'
+            ? 'Esta subcategoría ya existe en otra categoría.'
+            : 'This subcategory already exists in another category.'),
+        };
+      case 'UNIQUE_VIOLATION':
+        return {
+          title: language === 'pt' ? 'Subcategoria já existe' : language === 'es' ? 'Subcategoría ya existe' : 'Subcategory already exists',
+          description: language === 'pt' 
+            ? 'Uma subcategoria com este nome já existe nesta categoria.'
+            : language === 'es'
+            ? 'Una subcategoría con este nombre ya existe en esta categoría.'
+            : 'A subcategory with this name already exists in this category.',
+        };
+      default:
+        return {
+          title: language === 'pt' ? 'Erro' : language === 'es' ? 'Error' : 'Error',
+          description: language === 'pt' 
+            ? 'Não foi possível adicionar a subcategoria.'
+            : language === 'es'
+            ? 'No se pudo agregar la subcategoría.'
+            : 'Could not add subcategory.',
+        };
+    }
+  }, [language]);
+
   // Add a new subcategory
   const addSubcategory = useCallback(async (
     categoryId: string, 
@@ -118,8 +180,8 @@ export const useSubcategories = () => {
           user_id: user.id,
           category_id: categoryId,
           name: name.trim(),
-          name_en: nameEn || null,
-          name_es: nameEs || null,
+          name_en: nameEn?.trim() || null,
+          name_es: nameEs?.trim() || null,
           color: color || '#6366f1',
           is_system: false,
         })
@@ -127,20 +189,26 @@ export const useSubcategories = () => {
         .single();
 
       if (error) {
-        if (error.code === '23505') { // Unique constraint violation
-          toast({
-            title: language === 'pt' ? 'Subcategoria já existe' : 'Subcategory already exists',
-            description: language === 'pt' 
-              ? 'Uma subcategoria com este nome já existe nesta categoria.'
-              : 'A subcategory with this name already exists in this category.',
-            variant: 'destructive',
-          });
+        const parsed = parseErrorMessage(error);
+        if (parsed) {
+          const { title, description } = getErrorToast(parsed);
+          toast({ title, description, variant: 'destructive' });
           return null;
         }
         throw error;
       }
 
       await fetchAllSubcategories();
+      
+      toast({
+        title: language === 'pt' ? 'Sucesso' : language === 'es' ? 'Éxito' : 'Success',
+        description: language === 'pt' 
+          ? 'Subcategoria adicionada com sucesso.'
+          : language === 'es'
+          ? 'Subcategoría agregada con éxito.'
+          : 'Subcategory added successfully.',
+      });
+      
       return data;
     } catch (error) {
       console.error('Error adding subcategory:', error);
@@ -153,7 +221,7 @@ export const useSubcategories = () => {
       });
       return null;
     }
-  }, [user, language, toast, fetchAllSubcategories]);
+  }, [user, language, toast, fetchAllSubcategories, parseErrorMessage, getErrorToast]);
 
   // Update a subcategory
   const updateSubcategory = useCallback(async (

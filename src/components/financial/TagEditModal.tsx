@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Tag } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { X, Plus, Tag, Globe } from "lucide-react";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
+import { useSubcategories } from "@/hooks/useSubcategories";
 import { useLanguage } from "@/hooks/useLanguage";
 
 interface CategoryTag {
@@ -63,57 +65,132 @@ export const TagEditModal = ({
   onRestoreSystemTag,
 }: TagEditModalProps) => {
   const [newTagName, setNewTagName] = useState("");
+  const [newTagNameEn, setNewTagNameEn] = useState("");
+  const [newTagNameEs, setNewTagNameEs] = useState("");
+  const [showTranslations, setShowTranslations] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { addUserTag, removeUserTag, getUserTagsForCategory } = useUserCategoryTags();
+  const { addSubcategory, deleteSubcategory, getSubcategoriesForCategory, getLocalizedName } = useSubcategories();
   const { language, t } = useLanguage();
 
   const userTags = getUserTagsForCategory(categoryId);
+  const subcategories = getSubcategoriesForCategory(categoryId).filter(s => !s.is_system);
 
-  const handleAddUserTag = async () => {
-    if (!newTagName.trim()) return;
+  const handleAddSubcategory = async () => {
+    if (!newTagName.trim() || isSubmitting) return;
     
-    const success = await addUserTag(categoryId, newTagName.trim());
-    if (success) {
-      setNewTagName("");
+    setIsSubmitting(true);
+    try {
+      const result = await addSubcategory(
+        categoryId, 
+        newTagName.trim(),
+        undefined,
+        newTagNameEn.trim() || undefined,
+        newTagNameEs.trim() || undefined
+      );
+      
+      if (result) {
+        setNewTagName("");
+        setNewTagNameEn("");
+        setNewTagNameEs("");
+        setShowTranslations(false);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleAddUserTag();
+      handleAddSubcategory();
     }
+  };
+
+  const getTranslationPlaceholder = (lang: 'en' | 'es'): string => {
+    const placeholders = {
+      en: { pt: 'Nome em inglês', en: 'English name', es: 'Nombre en inglés' },
+      es: { pt: 'Nome em espanhol', en: 'Spanish name', es: 'Nombre en español' },
+    };
+    return placeholders[lang][language as 'pt' | 'en' | 'es'] || placeholders[lang].en;
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Tag className="h-5 w-5" />
             {t('tags.title')} - {categoryName}
           </DialogTitle>
+          <DialogDescription>
+            {language === 'pt' 
+              ? 'Gerencie as subcategorias desta categoria.' 
+              : language === 'es'
+              ? 'Gestione las subcategorías de esta categoría.'
+              : 'Manage subcategories for this category.'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Add new tag */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{t('tags.addNew')}</label>
+          {/* Add new subcategory */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">
+              {language === 'pt' ? 'Adicionar subcategoria' : language === 'es' ? 'Agregar subcategoría' : 'Add subcategory'}
+            </Label>
+            
             <div className="flex gap-2">
               <Input
-                placeholder={t('tags.placeholder')}
+                placeholder={language === 'pt' ? 'Nome em português' : language === 'es' ? 'Nombre en portugués' : 'Portuguese name'}
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="flex-1"
               />
               <Button 
-                onClick={handleAddUserTag}
-                disabled={!newTagName.trim()}
-                size="sm"
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowTranslations(!showTranslations)}
+                className={showTranslations ? 'bg-accent' : ''}
+                title={language === 'pt' ? 'Adicionar traduções' : language === 'es' ? 'Agregar traducciones' : 'Add translations'}
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+              <Button 
+                onClick={handleAddSubcategory}
+                disabled={!newTagName.trim() || isSubmitting}
+                size="icon"
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+
+            {showTranslations && (
+              <div className="space-y-2 pl-2 border-l-2 border-accent">
+                <Input
+                  placeholder={getTranslationPlaceholder('en')}
+                  value={newTagNameEn}
+                  onChange={(e) => setNewTagNameEn(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="text-sm"
+                />
+                <Input
+                  placeholder={getTranslationPlaceholder('es')}
+                  value={newTagNameEs}
+                  onChange={(e) => setNewTagNameEs(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {language === 'pt' 
+                    ? 'Traduções são opcionais. Se não fornecidas, será usado o nome em português.'
+                    : language === 'es'
+                    ? 'Las traducciones son opcionales. Si no se proporcionan, se usará el nombre en portugués.'
+                    : 'Translations are optional. If not provided, the Portuguese name will be used.'}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* System Tags */}
@@ -151,7 +228,29 @@ export const TagEditModal = ({
             </div>
           </div>
 
-          {/* User Tags */}
+          {/* User Subcategories */}
+          {subcategories.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {language === 'pt' ? 'Suas subcategorias' : language === 'es' ? 'Sus subcategorías' : 'Your subcategories'}
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {subcategories.map(sub => (
+                  <Badge
+                    key={sub.id}
+                    variant="outline"
+                    className="text-xs bg-accent/30 hover:bg-destructive/10 cursor-pointer transition-colors"
+                    onClick={() => deleteSubcategory(sub.id)}
+                  >
+                    {getLocalizedName(sub)}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Legacy User Tags (for backward compatibility) */}
           {userTags.length > 0 && (
             <div className="space-y-3">
               <h4 className="text-sm font-medium text-muted-foreground">{t('tags.yourTags')}</h4>
