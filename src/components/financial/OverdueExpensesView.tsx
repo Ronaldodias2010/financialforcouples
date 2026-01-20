@@ -30,6 +30,8 @@ interface OverdueExpense {
   dueDate: string;
   categoryId?: string;
   categoryName?: string;
+  subcategoryId?: string;   // NEW: Subcategory ID
+  subcategoryName?: string; // NEW: Subcategory name
   ownerUser: string;
   sourceType: 'manual' | 'recurring';
   sourceId: string;
@@ -122,10 +124,12 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         throw manualFutureError;
       }
 
-      // Get unique category IDs
+      // Get unique category IDs and subcategory IDs
       const categoryIds = new Set<string>();
+      const subcategoryIds = new Set<string>();
       transactionsData?.forEach((item: any) => {
         if (item.category_id) categoryIds.add(item.category_id);
+        if (item.subcategory_id) subcategoryIds.add(item.subcategory_id);
       });
       recurringData?.forEach((item: any) => {
         if (item.category_id) categoryIds.add(item.category_id);
@@ -147,6 +151,22 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
         });
       }
 
+      // Fetch subcategories
+      const subcategoriesMap = new Map<string, string>();
+      if (subcategoryIds.size > 0) {
+        const { data: subcategoriesData } = await supabase
+          .from('subcategories')
+          .select('id, name, name_en, name_es')
+          .in('id', Array.from(subcategoryIds));
+        
+        subcategoriesData?.forEach((sub: any) => {
+          // Localize name based on language
+          const localizedName = language === 'en' ? (sub.name_en || sub.name) :
+                               language === 'es' ? (sub.name_es || sub.name) : sub.name;
+          subcategoriesMap.set(sub.id, localizedName);
+        });
+      }
+
       // Combine and format data
       const expenses: OverdueExpense[] = [];
 
@@ -163,6 +183,8 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
           dueDate: item.due_date,
           categoryId: item.category_id,
           categoryName: item.category?.name || (item.category_id ? categoriesMap.get(item.category_id) || '' : ''),
+          subcategoryId: item.subcategory_id,
+          subcategoryName: item.subcategory_id ? subcategoriesMap.get(item.subcategory_id) : undefined,
           ownerUser: item.owner_user || 'user1',
           sourceType: 'manual',
           sourceId: item.id,
@@ -522,6 +544,9 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
                                 <h4 className="font-semibold text-foreground">{expense.description}</h4>
                                 <p className="text-sm text-muted-foreground">
                                   {expense.categoryName || t('common.noCategory')}
+                                  {expense.subcategoryName && (
+                                    <span className="text-primary"> • {expense.subcategoryName}</span>
+                                  )}
                                 </p>
                               </div>
                               <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getOverdueBadgeColor(expense.daysOverdue)}`}>

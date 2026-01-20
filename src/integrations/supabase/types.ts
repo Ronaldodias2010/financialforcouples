@@ -5153,6 +5153,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      migrate_all_tags_to_subcategories: {
+        Args: never
+        Returns: {
+          migrated_count: number
+          skipped_count: number
+        }[]
+      }
       migrate_tags_to_subcategories: { Args: never; Returns: Json }
       normalize_category_name: { Args: { input_name: string }; Returns: string }
       normalize_text_simple: { Args: { input: string }; Returns: string }
