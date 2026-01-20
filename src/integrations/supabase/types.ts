@@ -1219,6 +1219,53 @@ export type Database = {
         }
         Relationships: []
       }
+      default_subcategories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          default_category_id: string | null
+          icon: string | null
+          id: string
+          name: string
+          name_en: string | null
+          name_es: string | null
+          name_pt: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          default_category_id?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          name_en?: string | null
+          name_es?: string | null
+          name_pt?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          default_category_id?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          name_en?: string | null
+          name_es?: string | null
+          name_pt?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "default_subcategories_default_category_id_fkey"
+            columns: ["default_category_id"]
+            isOneToOne: false
+            referencedRelation: "default_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       educational_content: {
         Row: {
           category: string
