@@ -2017,6 +2017,7 @@ export type Database = {
           payment_method: string
           received_at: string | null
           received_late: boolean | null
+          subcategory_id: string | null
           transaction_id: string | null
           updated_at: string
           user_id: string
@@ -2038,6 +2039,7 @@ export type Database = {
           payment_method?: string
           received_at?: string | null
           received_late?: boolean | null
+          subcategory_id?: string | null
           transaction_id?: string | null
           updated_at?: string
           user_id: string
@@ -2059,6 +2061,7 @@ export type Database = {
           payment_method?: string
           received_at?: string | null
           received_late?: boolean | null
+          subcategory_id?: string | null
           transaction_id?: string | null
           updated_at?: string
           user_id?: string
@@ -2090,6 +2093,20 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_future_incomes_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "active_subcategories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_future_incomes_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
             referencedColumns: ["id"]
           },
         ]
@@ -2934,6 +2951,7 @@ export type Database = {
           next_due_date: string
           owner_user: string | null
           remaining_installments: number | null
+          subcategory_id: string | null
           total_installments: number | null
           updated_at: string
           user_id: string
@@ -2957,6 +2975,7 @@ export type Database = {
           next_due_date: string
           owner_user?: string | null
           remaining_installments?: number | null
+          subcategory_id?: string | null
           total_installments?: number | null
           updated_at?: string
           user_id: string
@@ -2980,6 +2999,7 @@ export type Database = {
           next_due_date?: string
           owner_user?: string | null
           remaining_installments?: number | null
+          subcategory_id?: string | null
           total_installments?: number | null
           updated_at?: string
           user_id?: string
@@ -3025,6 +3045,20 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "active_subcategories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
             referencedColumns: ["id"]
           },
         ]

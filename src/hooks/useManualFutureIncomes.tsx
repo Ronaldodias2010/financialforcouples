@@ -11,6 +11,7 @@ export interface ManualFutureIncome {
   amount: number;
   due_date: string;
   category_id?: string;
+  subcategory_id?: string;
   account_id?: string;
   payment_method: string;
   notes?: string;
@@ -27,6 +28,11 @@ export interface ManualFutureIncome {
     name: string;
     color: string;
     icon?: string;
+  };
+  subcategory?: {
+    name: string;
+    name_en: string | null;
+    name_es: string | null;
   };
   account?: {
     name: string;
@@ -77,6 +83,13 @@ export const useManualFutureIncomes = (viewMode: 'individual' | 'couple') => {
         .in('user_id', userIds)
         .eq('category_type', 'income');
 
+      // Fetch subcategories
+      const { data: subcategoriesData } = await supabase
+        .from('subcategories')
+        .select('id, name, name_en, name_es')
+        .in('user_id', userIds)
+        .is('deleted_at', null);
+
       // Fetch accounts
       const { data: accountsData } = await supabase
         .from('accounts')
@@ -87,6 +100,9 @@ export const useManualFutureIncomes = (viewMode: 'individual' | 'couple') => {
       const categoryMap = new Map(
         (categoriesData || []).map(cat => [cat.id, cat])
       );
+      const subcategoryMap = new Map(
+        (subcategoriesData || []).map(sub => [sub.id, sub])
+      );
       const accountMap = new Map(
         (accountsData || []).map(acc => [acc.id, acc])
       );
@@ -95,6 +111,7 @@ export const useManualFutureIncomes = (viewMode: 'individual' | 'couple') => {
       const incomes = (incomesData || []).map(income => ({
         ...income,
         category: income.category_id ? categoryMap.get(income.category_id) : undefined,
+        subcategory: income.subcategory_id ? subcategoryMap.get(income.subcategory_id) : undefined,
         account: income.account_id ? accountMap.get(income.account_id) : undefined,
       }));
 
