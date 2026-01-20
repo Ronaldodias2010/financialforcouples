@@ -1846,7 +1846,12 @@ const translations = {
     'recurring.installments': 'parcelas',
     'recurring.installmentsLabel': 'Parcelas',
     'recurring.progressLabel': 'Progresso',
+    'recurring.subcategory': 'Subcategoria',
+    'recurring.subcategoryPlaceholder': 'Selecione uma subcategoria (opcional)',
     
+    // Future Incomes Subcategory
+    'futureIncomes.subcategory': 'Subcategoria',
+    'futureIncomes.subcategoryPlaceholder': 'Selecione uma subcategoria (opcional)',
     'subscription.upgradeToPremium': 'Fazer Upgrade para Premium',
     'subscription.features.aiFinancialPlanning': 'Planejamento financeiro com IA',
     'subscription.features.voiceInput': 'Input por voz via WhatsApp',
@@ -4705,7 +4710,12 @@ const translations = {
     'recurring.installments': 'installments',
     'recurring.installmentsLabel': 'Installments',
     'recurring.progressLabel': 'Progress',
+    'recurring.subcategory': 'Subcategory',
+    'recurring.subcategoryPlaceholder': 'Select a subcategory (optional)',
     
+    // Future Incomes Subcategory
+    'futureIncomes.subcategory': 'Subcategory',
+    'futureIncomes.subcategoryPlaceholder': 'Select a subcategory (optional)',
     // Category Manager (moved to avoid duplicates)
     'categories.customTags': 'Custom Tags (Optional)',
     'categories.customTagsPlaceholder': 'Add tags for this category...',
@@ -7525,7 +7535,13 @@ const translations = {
     'recurring.remaining': 'Restantes',
     'recurring.installments': 'cuotas',
     'recurring.installmentsLabel': 'Cuotas',
+    'recurring.progressLabel': 'Progreso',
+    'recurring.subcategory': 'Subcategoría',
+    'recurring.subcategoryPlaceholder': 'Seleccione una subcategoría (opcional)',
     
+    // Future Incomes Subcategory
+    'futureIncomes.subcategory': 'Subcategoría',
+    'futureIncomes.subcategoryPlaceholder': 'Seleccione una subcategoría (opcional)',
     // Category Manager (moved to avoid duplicates) 
     'categories.customTags': 'Etiquetas Personalizadas (Opcional)',
     'categories.customTagsPlaceholder': 'Agrega etiquetas para esta categoría...',
