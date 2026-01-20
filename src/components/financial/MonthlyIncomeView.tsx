@@ -73,7 +73,9 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: string; ids: string[] }[]>([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("all");
+  const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: string; ids: string[] }[]>([]);
+  const [subcategoryOptions, setSubcategoryOptions] = useState<{ id: string; name: string }[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { names } = usePartnerNames();
@@ -83,7 +85,7 @@ const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: stri
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
-  }, [selectedMonth, selectedCategory, viewMode, language]);
+  }, [selectedMonth, selectedCategory, selectedSubcategory, viewMode, language]);
 
   // Auto-refresh when selectedMonth changes to current month
   useEffect(() => {
@@ -92,6 +94,21 @@ const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: stri
       fetchTransactions();
     }
   }, [selectedMonth]);
+
+  // Fetch subcategories when category changes
+  useEffect(() => {
+    if (selectedCategory !== 'all') {
+      const opt = categoryOptions.find(o => o.key === selectedCategory);
+      if (opt && opt.ids.length) {
+        fetchSubcategories(opt.ids);
+      } else {
+        setSubcategoryOptions([]);
+      }
+    } else {
+      setSubcategoryOptions([]);
+    }
+    setSelectedSubcategory('all');
+  }, [selectedCategory, categoryOptions]);
 
   useEffect(() => {
     if (!user) return;
@@ -109,7 +126,39 @@ const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: stri
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, selectedMonth, selectedCategory, viewMode]);
+  }, [user, selectedMonth, selectedCategory, selectedSubcategory, viewMode]);
+
+  const fetchSubcategories = async (categoryIds: string[]) => {
+    if (!categoryIds.length) {
+      setSubcategoryOptions([]);
+      return;
+    }
+
+    try {
+      const { data } = await supabase
+        .from('subcategories')
+        .select('id, name, name_en, name_es')
+        .in('category_id', categoryIds)
+        .is('deleted_at', null)
+        .order('name');
+
+      // Deduplicate by normalized name
+      const unique = new Map<string, { id: string; name: string }>();
+      (data || []).forEach(sub => {
+        const key = sub.name.toLowerCase();
+        if (!unique.has(key)) {
+          const localizedName = language === 'en' ? sub.name_en : 
+                               language === 'es' ? sub.name_es : sub.name;
+          unique.set(key, { id: sub.id, name: localizedName || sub.name });
+        }
+      });
+
+      setSubcategoryOptions(Array.from(unique.values()));
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+      setSubcategoryOptions([]);
+    }
+  };
 
 const fetchCategories = async () => {
     try {
@@ -194,11 +243,16 @@ const fetchCategories = async () => {
         .lte('transaction_date', endDate)
         .order('transaction_date', { ascending: false });
 
-if (selectedCategory !== "all") {
+      if (selectedCategory !== "all") {
         const opt = categoryOptions.find(o => o.key === selectedCategory);
         if (opt && opt.ids.length) {
           query = query.in('category_id', opt.ids);
         }
+      }
+
+      // Filter by subcategory if selected
+      if (selectedSubcategory !== "all") {
+        query = query.eq('subcategory_id', selectedSubcategory);
       }
 
       const { data, error } = await query;
@@ -360,6 +414,26 @@ if (selectedCategory !== "all") {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Subcategory filter - only show when category is selected */}
+          {selectedCategory !== 'all' && subcategoryOptions.length > 0 && (
+            <div>
+              <Label>{t('monthlyIncome.subcategoryLabel')}</Label>
+              <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('monthlyIncome.allSubcategories')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('monthlyIncome.allSubcategories')}</SelectItem>
+                  {subcategoryOptions.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

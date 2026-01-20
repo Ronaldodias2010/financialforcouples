@@ -1852,6 +1852,7 @@ const translations = {
     // Future Incomes Subcategory
     'futureIncomes.subcategory': 'Subcategoria',
     'futureIncomes.subcategoryPlaceholder': 'Selecione uma subcategoria (opcional)',
+    'futureIncomes.noSubcategories': 'Nenhuma subcategoria disponível para esta categoria',
     'subscription.upgradeToPremium': 'Fazer Upgrade para Premium',
     'subscription.features.aiFinancialPlanning': 'Planejamento financeiro com IA',
     'subscription.features.voiceInput': 'Input por voz via WhatsApp',
@@ -2053,6 +2054,7 @@ const translations = {
     'monthlyIncome.selectMonth': 'Selecionar mês',
     'monthlyIncome.categoryLabel': 'Categoria',
     'monthlyIncome.allCategories': 'Todas as categorias',
+    'monthlyIncome.allSubcategories': 'Todas as subcategorias',
     'monthlyIncome.totalIncome': 'Receita Total do Período',
     'monthlyIncome.periodIncome': 'Receitas do Período',
     'monthlyIncome.noneFound': 'Nenhuma receita encontrada para este período',
@@ -4716,6 +4718,7 @@ const translations = {
     // Future Incomes Subcategory
     'futureIncomes.subcategory': 'Subcategory',
     'futureIncomes.subcategoryPlaceholder': 'Select a subcategory (optional)',
+    'futureIncomes.noSubcategories': 'No subcategories available for this category',
     // Category Manager (moved to avoid duplicates)
     'categories.customTags': 'Custom Tags (Optional)',
     'categories.customTagsPlaceholder': 'Add tags for this category...',
@@ -4824,6 +4827,7 @@ const translations = {
     'monthlyIncome.selectMonth': 'Select month',
     'monthlyIncome.categoryLabel': 'Category',
     'monthlyIncome.allCategories': 'All categories',
+    'monthlyIncome.allSubcategories': 'All subcategories',
     'monthlyIncome.totalIncome': 'Total Period Income',
     'monthlyIncome.periodIncome': 'Period Income',
     'monthlyIncome.noneFound': 'No income found for this period',
@@ -6190,6 +6194,7 @@ const translations = {
     'monthlyIncome.selectMonth': 'Seleccionar mes',
     'monthlyIncome.categoryLabel': 'Categoría',
     'monthlyIncome.allCategories': 'Todas las categorías',
+    'monthlyIncome.allSubcategories': 'Todas las subcategorías',
     'monthlyIncome.totalIncome': 'Total de Ingresos del Período',
     'monthlyIncome.periodIncome': 'Ingresos del Período',
     'monthlyIncome.noneFound': 'No se encontraron ingresos para este período',
@@ -7542,6 +7547,7 @@ const translations = {
     // Future Incomes Subcategory
     'futureIncomes.subcategory': 'Subcategoría',
     'futureIncomes.subcategoryPlaceholder': 'Seleccione una subcategoría (opcional)',
+    'futureIncomes.noSubcategories': 'No hay subcategorías disponibles para esta categoría',
     // Category Manager (moved to avoid duplicates) 
     'categories.customTags': 'Etiquetas Personalizadas (Opcional)',
     'categories.customTagsPlaceholder': 'Agrega etiquetas para esta categoría...',
