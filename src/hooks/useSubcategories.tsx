@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useCouple } from '@/hooks/useCouple';
 
 export interface Subcategory {
   id: string;
@@ -19,18 +20,32 @@ export const useSubcategories = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { couple, isPartOfCouple } = useCouple();
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch all subcategories for the user
+  // Get user IDs to query (including partner if in a couple)
+  const getUserIds = useCallback((): string[] => {
+    if (!user) return [];
+    if (isPartOfCouple && couple) {
+      return [couple.user1_id, couple.user2_id].filter(Boolean);
+    }
+    return [user.id];
+  }, [user, couple, isPartOfCouple]);
+
+  // Fetch all subcategories for the user (and partner if coupled)
   const fetchAllSubcategories = useCallback(async () => {
     if (!user) return;
+    
+    const userIds = getUserIds();
+    if (userIds.length === 0) return;
     
     setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('subcategories')
         .select('id, name, name_en, name_es, color, icon, is_system, category_id')
+        .in('user_id', userIds)
         .is('deleted_at', null)
         .order('is_system', { ascending: false })
         .order('name');
@@ -42,29 +57,22 @@ export const useSubcategories = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, getUserIds]);
 
   // Fetch subcategories for a specific category
   const fetchSubcategoriesForCategory = useCallback(async (categoryId: string): Promise<Subcategory[]> => {
     if (!user || !categoryId) return [];
 
+    const userIds = getUserIds();
+    if (userIds.length === 0) return [];
+
     try {
-      // Try using the RPC function first
-      const { data: rpcData, error: rpcError } = await supabase
-        .rpc('get_subcategories_for_category', { p_category_id: categoryId });
-
-      if (!rpcError && rpcData) {
-        return rpcData.map((item: any) => ({
-          ...item,
-          category_id: categoryId,
-        }));
-      }
-
-      // Fallback to direct query
+      // Direct query with user_id filter
       const { data, error } = await supabase
         .from('subcategories')
         .select('id, name, name_en, name_es, color, icon, is_system, category_id')
         .eq('category_id', categoryId)
+        .in('user_id', userIds)
         .is('deleted_at', null)
         .order('is_system', { ascending: false })
         .order('name');
@@ -75,7 +83,7 @@ export const useSubcategories = () => {
       console.error('Error fetching subcategories for category:', error);
       return [];
     }
-  }, [user]);
+  }, [user, getUserIds]);
 
   // Get localized name for a subcategory
   const getLocalizedName = useCallback((subcategory: Subcategory): string => {
