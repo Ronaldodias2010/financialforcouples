@@ -28,52 +28,487 @@ const LANGUAGE_PATTERNS = {
 };
 
 // ============================================================
-// RESPONSE MESSAGES (MULTI-LANGUAGE)
+// RESPONSE MESSAGES (MULTI-LANGUAGE) - Updated with subcategory support
 // ============================================================
 const RESPONSE_MESSAGES = {
   pt: {
-    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string, subcategory?: string | null) => {
+      const categoryDisplay = subcategory ? `${category} > ${subcategory}` : category;
       if (rate && currencyOriginal !== currencyConverted) {
-        return `💳 Gasto registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (câmbio ${rate.toFixed(4)})\n📁 ${category}`;
+        return `💳 Gasto registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (câmbio ${rate.toFixed(4)})\n📁 ${categoryDisplay}`;
       }
-      return `💳 Gasto registrado\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+      return `💳 Gasto registrado\n${currencyConverted} ${amountConverted}\n📁 ${categoryDisplay}`;
     },
-    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string, subcategory?: string | null) => {
+      const categoryDisplay = subcategory ? `${category} > ${subcategory}` : category;
       if (rate && currencyOriginal !== currencyConverted) {
-        return `💰 Receita registrada\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (câmbio ${rate.toFixed(4)})\n📁 ${category}`;
+        return `💰 Receita registrada\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (câmbio ${rate.toFixed(4)})\n📁 ${categoryDisplay}`;
       }
-      return `💰 Receita registrada\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+      return `💰 Receita registrada\n${currencyConverted} ${amountConverted}\n📁 ${categoryDisplay}`;
     }
   },
   en: {
-    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string, subcategory?: string | null) => {
+      const categoryDisplay = subcategory ? `${category} > ${subcategory}` : category;
       if (rate && currencyOriginal !== currencyConverted) {
-        return `💳 Expense recorded\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (exchange rate ${rate.toFixed(4)})\n📁 ${category}`;
+        return `💳 Expense recorded\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (exchange rate ${rate.toFixed(4)})\n📁 ${categoryDisplay}`;
       }
-      return `💳 Expense recorded\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+      return `💳 Expense recorded\n${currencyConverted} ${amountConverted}\n📁 ${categoryDisplay}`;
     },
-    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string, subcategory?: string | null) => {
+      const categoryDisplay = subcategory ? `${category} > ${subcategory}` : category;
       if (rate && currencyOriginal !== currencyConverted) {
-        return `💰 Income recorded\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (exchange rate ${rate.toFixed(4)})\n📁 ${category}`;
+        return `💰 Income recorded\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (exchange rate ${rate.toFixed(4)})\n📁 ${categoryDisplay}`;
       }
-      return `💰 Income recorded\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+      return `💰 Income recorded\n${currencyConverted} ${amountConverted}\n📁 ${categoryDisplay}`;
     }
   },
   es: {
-    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+    expenseRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string, subcategory?: string | null) => {
+      const categoryDisplay = subcategory ? `${category} > ${subcategory}` : category;
       if (rate && currencyOriginal !== currencyConverted) {
-        return `💳 Gasto registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (cambio ${rate.toFixed(4)})\n📁 ${category}`;
+        return `💳 Gasto registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (cambio ${rate.toFixed(4)})\n📁 ${categoryDisplay}`;
       }
-      return `💳 Gasto registrado\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+      return `💳 Gasto registrado\n${currencyConverted} ${amountConverted}\n📁 ${categoryDisplay}`;
     },
-    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string) => {
+    incomeRecorded: (amountOriginal: string, currencyOriginal: string, amountConverted: string, currencyConverted: string, rate: number | null, category: string, subcategory?: string | null) => {
+      const categoryDisplay = subcategory ? `${category} > ${subcategory}` : category;
       if (rate && currencyOriginal !== currencyConverted) {
-        return `💰 Ingreso registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (cambio ${rate.toFixed(4)})\n📁 ${category}`;
+        return `💰 Ingreso registrado\n${currencyOriginal} ${amountOriginal} → ${currencyConverted} ${amountConverted} (cambio ${rate.toFixed(4)})\n📁 ${categoryDisplay}`;
       }
-      return `💰 Ingreso registrado\n${currencyConverted} ${amountConverted}\n📁 ${category}`;
+      return `💰 Ingreso registrado\n${currencyConverted} ${amountConverted}\n📁 ${categoryDisplay}`;
     }
   }
 };
+
+// ============================================================
+// EDGE LAYER: SUBCATEGORY SEMANTIC KEYWORDS (MULTI-LANGUAGE)
+// ============================================================
+const SUBCATEGORY_KEYWORDS: Record<string, { name_pt: string; name_en: string; name_es: string; keywords_pt: string[]; keywords_en: string[]; keywords_es: string[] }[]> = {
+  // Alimentação / Food / Alimentación
+  'alimentacao': [
+    { 
+      name_pt: 'Restaurante', name_en: 'Restaurant', name_es: 'Restaurante',
+      keywords_pt: ['restaurante', 'almoco', 'almoço', 'jantar', 'outback', 'madero', 'applebees', 'applebee', 'churrascaria', 'pizzaria', 'rodizio', 'rodízio', 'bistro', 'bistrô', 'cantina', 'sushi', 'japa', 'japones', 'japonês', 'italiano', 'mexicano', 'chinês', 'chines', 'árabe', 'arabe', 'self service', 'buffet', 'bufê'],
+      keywords_en: ['restaurant', 'lunch', 'dinner', 'outback', 'steakhouse', 'pizzeria', 'bistro', 'sushi', 'japanese', 'italian', 'mexican', 'chinese', 'arab', 'buffet', 'diner', 'eatery', 'grill'],
+      keywords_es: ['restaurante', 'almuerzo', 'cena', 'asador', 'pizzeria', 'bistro', 'sushi', 'japonés', 'italiano', 'mexicano', 'chino', 'árabe', 'buffet', 'parrilla']
+    },
+    { 
+      name_pt: 'Supermercado', name_en: 'Supermarket', name_es: 'Supermercado',
+      keywords_pt: ['mercado', 'supermercado', 'extra', 'carrefour', 'pao de acucar', 'pão de açúcar', 'atacadao', 'atacadão', 'assai', 'assaí', 'big', 'walmart', 'makro', 'sam', 'sams club', 'dia', 'oba', 'natural da terra', 'hortifruti', 'sacolao', 'sacolão', 'feira', 'quitanda', 'mercearia', 'armazem', 'armazém'],
+      keywords_en: ['market', 'supermarket', 'grocery', 'groceries', 'walmart', 'costco', 'target', 'whole foods', 'trader joes', 'aldi', 'lidl', 'safeway', 'kroger', 'publix'],
+      keywords_es: ['supermercado', 'mercado', 'abarrotes', 'tienda', 'walmart', 'costco', 'carrefour', 'lidl', 'aldi', 'mercadona', 'soriana', 'chedraui']
+    },
+    { 
+      name_pt: 'Delivery', name_en: 'Delivery', name_es: 'Delivery',
+      keywords_pt: ['ifood', 'rappi', 'uber eats', 'ubereats', 'delivery', 'entrega', 'pedido', '99food', 'aiqfome', 'zé delivery', 'ze delivery', 'james delivery', 'goomer'],
+      keywords_en: ['delivery', 'uber eats', 'doordash', 'grubhub', 'postmates', 'seamless', 'caviar', 'instacart', 'gopuff'],
+      keywords_es: ['delivery', 'rappi', 'uber eats', 'didi food', 'pedidos ya', 'glovo', 'cornershop', 'entrega']
+    },
+    { 
+      name_pt: 'Fast Food', name_en: 'Fast Food', name_es: 'Comida Rápida',
+      keywords_pt: ['mcdonalds', 'mcdonald', 'mc donalds', 'burger king', 'bk', 'bob', 'bobs', "bob's", 'kfc', 'subway', 'habib', 'habibs', "habib's", 'giraffas', 'popeyes', 'wendys', "wendy's", 'taco bell', 'pizza hut', 'dominos', "domino's", 'spoleto', 'china in box', 'china box', 'coco bambu', 'fast food', 'lanchonete', 'hot dog', 'cachorro quente', 'pastel', 'pastelaria', 'coxinha', 'salgado', 'salgadinho', 'esfiha', 'esfirra'],
+      keywords_en: ['mcdonalds', 'burger king', 'wendys', 'kfc', 'subway', 'taco bell', 'pizza hut', 'dominos', 'popeyes', 'chick fil a', 'chipotle', 'five guys', 'in n out', 'sonic', 'arbys', 'fast food', 'quick bite'],
+      keywords_es: ['mcdonalds', 'burger king', 'wendys', 'kfc', 'subway', 'taco bell', 'pizza hut', 'dominos', 'popeyes', 'comida rapida', 'hamburguesa']
+    },
+    { 
+      name_pt: 'Café/Padaria', name_en: 'Bakery/Coffee', name_es: 'Panadería/Café',
+      keywords_pt: ['cafe', 'café', 'cafeteria', 'padaria', 'padoca', 'confeitaria', 'doceria', 'starbucks', 'cacau show', 'kopenhagen', 'brasil cacau', 'croissant', 'pao', 'pão', 'bolo', 'doce', 'sobremesa', 'lanche', 'breakfast', 'cafe da manha', 'café da manhã', 'cappuccino', 'espresso', 'expresso'],
+      keywords_en: ['coffee', 'cafe', 'bakery', 'starbucks', 'dunkin', 'panera', 'peets', 'blue bottle', 'pastry', 'croissant', 'donut', 'doughnut', 'muffin', 'breakfast', 'brunch', 'espresso', 'cappuccino', 'latte'],
+      keywords_es: ['cafe', 'café', 'cafeteria', 'panadería', 'pastelería', 'starbucks', 'croissant', 'pan', 'desayuno', 'pastel', 'dulce', 'espresso', 'cappuccino']
+    },
+    { 
+      name_pt: 'Bar/Bebidas', name_en: 'Bar/Drinks', name_es: 'Bar/Bebidas',
+      keywords_pt: ['bar', 'boteco', 'botequim', 'pub', 'balada', 'cerveja', 'chopp', 'chope', 'vinho', 'whisky', 'whiskey', 'vodka', 'gin', 'drink', 'drinks', 'coquetel', 'cocktail', 'happy hour', 'adega', 'emporio', 'empório', 'bebida', 'alcool', 'álcool', 'destilado', 'cachaça', 'caipirinha'],
+      keywords_en: ['bar', 'pub', 'tavern', 'club', 'nightclub', 'beer', 'wine', 'whisky', 'whiskey', 'vodka', 'gin', 'drink', 'drinks', 'cocktail', 'happy hour', 'liquor', 'alcohol', 'brewery'],
+      keywords_es: ['bar', 'pub', 'discoteca', 'cerveza', 'vino', 'whisky', 'vodka', 'gin', 'bebida', 'coctel', 'happy hour', 'licor', 'alcohol', 'cantina']
+    }
+  ],
+  // Transporte / Transportation / Transporte  
+  'transporte': [
+    { 
+      name_pt: 'Uber/99/Táxi', name_en: 'Rideshare/Taxi', name_es: 'Taxi/App',
+      keywords_pt: ['uber', '99', 'noventa e nove', 'taxi', 'táxi', 'cabify', 'indriver', 'corrida', 'motorista', 'app de carona', 'carro de aplicativo', '99pop', '99taxi', 'pop', 'lyft'],
+      keywords_en: ['uber', 'lyft', 'taxi', 'cab', 'rideshare', 'ride', 'driver', 'cabify', 'via'],
+      keywords_es: ['uber', 'didi', 'cabify', 'taxi', 'beat', 'indriver', 'chofer', 'viaje']
+    },
+    { 
+      name_pt: 'Combustível', name_en: 'Fuel', name_es: 'Combustible',
+      keywords_pt: ['gasolina', 'combustivel', 'combustível', 'posto', 'shell', 'ipiranga', 'br', 'petrobras', 'ale', 'texaco', 'esso', 'etanol', 'alcool', 'álcool', 'diesel', 'gnv', 'abasteci', 'abastecer', 'tanque'],
+      keywords_en: ['gas', 'gasoline', 'fuel', 'petrol', 'diesel', 'shell', 'exxon', 'chevron', 'bp', 'mobil', 'tank', 'fill up'],
+      keywords_es: ['gasolina', 'combustible', 'diesel', 'gasolinera', 'estación', 'tanque', 'llenar']
+    },
+    { 
+      name_pt: 'Estacionamento', name_en: 'Parking', name_es: 'Estacionamiento',
+      keywords_pt: ['estacionamento', 'parkimetro', 'parquimetro', 'parquímetro', 'vaga', 'garagem', 'parking', 'zona azul', 'rotativo', 'manobrista', 'valet'],
+      keywords_en: ['parking', 'garage', 'valet', 'lot', 'meter', 'park'],
+      keywords_es: ['estacionamiento', 'parking', 'parqueadero', 'garaje', 'valet', 'parquímetro']
+    },
+    { 
+      name_pt: 'Transporte Público', name_en: 'Public Transit', name_es: 'Transporte Público',
+      keywords_pt: ['onibus', 'ônibus', 'metro', 'metrô', 'trem', 'barca', 'balsa', 'vlt', 'brt', 'bilhete unico', 'bilhete único', 'passagem', 'integracao', 'integração', 'cartao transporte', 'cartão transporte', 'sptrans', 'cptm'],
+      keywords_en: ['bus', 'metro', 'subway', 'train', 'tram', 'transit', 'fare', 'ticket', 'pass', 'commute', 'public transport'],
+      keywords_es: ['bus', 'metro', 'tren', 'tranvía', 'pasaje', 'boleto', 'transporte público', 'autobús']
+    },
+    { 
+      name_pt: 'Pedágio', name_en: 'Toll', name_es: 'Peaje',
+      keywords_pt: ['pedagio', 'pedágio', 'sem parar', 'veloe', 'move mais', 'conectcar', 'conect car', 'caseta', 'praca de pedagio', 'praça de pedágio', 'tag'],
+      keywords_en: ['toll', 'tollway', 'turnpike', 'ez pass', 'fastrak', 'sunpass'],
+      keywords_es: ['peaje', 'caseta', 'autopista', 'telepeaje', 'tag']
+    },
+    { 
+      name_pt: 'Manutenção Veículo', name_en: 'Vehicle Maintenance', name_es: 'Mantenimiento Vehículo',
+      keywords_pt: ['mecanico', 'mecânico', 'oficina', 'borracheiro', 'pneu', 'troca de oleo', 'troca de óleo', 'revisao', 'revisão', 'manutencao', 'manutenção', 'funilaria', 'conserto', 'pecas', 'peças', 'autopeças', 'lava jato', 'lavagem', 'polimento', 'alinhamento', 'balanceamento'],
+      keywords_en: ['mechanic', 'garage', 'repair', 'tire', 'oil change', 'service', 'maintenance', 'parts', 'car wash', 'detailing', 'alignment'],
+      keywords_es: ['mecánico', 'taller', 'llanta', 'cambio de aceite', 'revisión', 'mantenimiento', 'repuestos', 'lavado']
+    }
+  ],
+  // Moradia / Housing / Vivienda
+  'moradia': [
+    { 
+      name_pt: 'Aluguel', name_en: 'Rent', name_es: 'Alquiler',
+      keywords_pt: ['aluguel', 'aluguer', 'mensalidade', 'arrendamento', 'locacao', 'locação', 'imobiliaria', 'imobiliária', 'quinto andar', 'quintoandar', 'zap', 'loft'],
+      keywords_en: ['rent', 'rental', 'lease', 'landlord', 'tenant', 'apartment', 'flat'],
+      keywords_es: ['alquiler', 'renta', 'arrendamiento', 'mensualidad', 'inmobiliaria']
+    },
+    { 
+      name_pt: 'Água', name_en: 'Water', name_es: 'Agua',
+      keywords_pt: ['agua', 'água', 'sabesp', 'copasa', 'cedae', 'sanepar', 'embasa', 'cagece', 'conta de agua', 'conta de água', 'saneamento'],
+      keywords_en: ['water', 'water bill', 'utility'],
+      keywords_es: ['agua', 'servicio de agua', 'factura de agua']
+    },
+    { 
+      name_pt: 'Luz/Energia', name_en: 'Electricity', name_es: 'Electricidad',
+      keywords_pt: ['luz', 'energia', 'eletricidade', 'conta de luz', 'enel', 'cpfl', 'cemig', 'light', 'celpe', 'coelba', 'elektro', 'eletropaulo', 'bandeira vermelha', 'bandeira amarela', 'kwh'],
+      keywords_en: ['electricity', 'power', 'electric bill', 'utility', 'energy'],
+      keywords_es: ['luz', 'electricidad', 'energía', 'factura de luz', 'cfe']
+    },
+    { 
+      name_pt: 'Gás', name_en: 'Gas', name_es: 'Gas',
+      keywords_pt: ['gas', 'gás', 'gas de cozinha', 'gás de cozinha', 'botijao', 'botijão', 'comgas', 'comgás', 'ultragaz', 'liquigas', 'liquigás', 'ceg', 'encanado', 'glp'],
+      keywords_en: ['gas', 'natural gas', 'propane', 'cooking gas'],
+      keywords_es: ['gas', 'gas natural', 'propano', 'gas de cocina', 'cilindro']
+    },
+    { 
+      name_pt: 'Internet/TV', name_en: 'Internet/TV', name_es: 'Internet/TV',
+      keywords_pt: ['internet', 'fibra', 'wifi', 'wi-fi', 'banda larga', 'tv a cabo', 'tv por assinatura', 'vivo', 'claro', 'tim', 'oi', 'net', 'sky', 'directv', 'netflix', 'globoplay', 'prime video', 'hbo', 'streaming', 'modem', 'roteador'],
+      keywords_en: ['internet', 'wifi', 'fiber', 'broadband', 'cable', 'streaming', 'netflix', 'hulu', 'disney+', 'hbo'],
+      keywords_es: ['internet', 'wifi', 'fibra', 'banda ancha', 'cable', 'streaming', 'netflix']
+    },
+    { 
+      name_pt: 'Condomínio', name_en: 'Condo Fee', name_es: 'Condominio',
+      keywords_pt: ['condominio', 'condomínio', 'taxa condominial', 'sindico', 'síndico', 'fundo de reserva', 'area comum', 'área comum'],
+      keywords_en: ['condo', 'hoa', 'maintenance fee', 'association', 'building fee'],
+      keywords_es: ['condominio', 'cuota', 'expensas', 'gastos comunes', 'administración']
+    },
+    { 
+      name_pt: 'Telefone', name_en: 'Phone', name_es: 'Teléfono',
+      keywords_pt: ['telefone', 'celular', 'plano', 'vivo', 'claro', 'tim', 'oi', 'nextel', 'recarga', 'credito celular', 'crédito celular', 'conta telefone', 'linha', 'chip'],
+      keywords_en: ['phone', 'mobile', 'cell', 'cellular', 'plan', 'verizon', 'att', 't-mobile', 'sprint'],
+      keywords_es: ['teléfono', 'celular', 'móvil', 'plan', 'recarga', 'chip', 'línea']
+    }
+  ],
+  // Saúde / Health / Salud
+  'saude': [
+    { 
+      name_pt: 'Farmácia', name_en: 'Pharmacy', name_es: 'Farmacia',
+      keywords_pt: ['farmacia', 'farmácia', 'drogaria', 'remedio', 'remédio', 'medicamento', 'droga raia', 'drogasil', 'panvel', 'pague menos', 'araujo', 'araújo', 'ultrafarma', 'drogal', 'receita', 'antibiotico', 'antibiótico', 'vitamina', 'suplemento'],
+      keywords_en: ['pharmacy', 'drugstore', 'medicine', 'medication', 'prescription', 'cvs', 'walgreens', 'rite aid', 'drug', 'vitamin', 'supplement'],
+      keywords_es: ['farmacia', 'droguería', 'medicamento', 'medicina', 'receta', 'vitamina', 'suplemento']
+    },
+    { 
+      name_pt: 'Consulta Médica', name_en: 'Doctor Visit', name_es: 'Consulta Médica',
+      keywords_pt: ['medico', 'médico', 'consulta', 'doutor', 'dr', 'clinica', 'clínica', 'consultorio', 'consultório', 'especialista', 'cardiologista', 'dermatologista', 'ortopedista', 'pediatra', 'ginecologista', 'urologista', 'oftalmologista', 'neurologista', 'retorno'],
+      keywords_en: ['doctor', 'physician', 'appointment', 'clinic', 'checkup', 'specialist', 'cardiologist', 'dermatologist', 'pediatrician'],
+      keywords_es: ['médico', 'doctor', 'consulta', 'clínica', 'consultorio', 'especialista', 'cita médica']
+    },
+    { 
+      name_pt: 'Dentista', name_en: 'Dentist', name_es: 'Dentista',
+      keywords_pt: ['dentista', 'odontologo', 'odontólogo', 'dente', 'ortodontia', 'limpeza dental', 'canal', 'obturacao', 'obturação', 'clareamento', 'aparelho', 'extração', 'extracao', 'implante'],
+      keywords_en: ['dentist', 'dental', 'teeth', 'tooth', 'orthodontist', 'cleaning', 'cavity', 'crown', 'braces', 'implant'],
+      keywords_es: ['dentista', 'odontólogo', 'diente', 'ortodoncia', 'limpieza dental', 'implante', 'brackets']
+    },
+    { 
+      name_pt: 'Exames', name_en: 'Lab Tests', name_es: 'Exámenes',
+      keywords_pt: ['exame', 'laboratorio', 'laboratório', 'fleury', 'delboni', 'lavoisier', 'hermes pardini', 'a+', 'hemograma', 'sangue', 'urina', 'raio x', 'ressonancia', 'ressonância', 'tomografia', 'ultrassom', 'endoscopia', 'colonoscopia', 'biopsia', 'biópsia'],
+      keywords_en: ['lab', 'laboratory', 'test', 'blood test', 'xray', 'mri', 'ct scan', 'ultrasound', 'biopsy', 'exam'],
+      keywords_es: ['examen', 'laboratorio', 'análisis', 'sangre', 'orina', 'rayos x', 'resonancia', 'tomografía', 'ultrasonido']
+    },
+    { 
+      name_pt: 'Plano de Saúde', name_en: 'Health Insurance', name_es: 'Seguro de Salud',
+      keywords_pt: ['plano de saude', 'plano de saúde', 'convenio', 'convênio', 'unimed', 'amil', 'bradesco saude', 'bradesco saúde', 'sulamerica', 'sulamerica saude', 'notredame', 'hapvida', 'prevent senior', 'mensalidade plano', 'coparticipacao', 'coparticipação'],
+      keywords_en: ['health insurance', 'insurance', 'premium', 'copay', 'deductible', 'coverage', 'plan'],
+      keywords_es: ['seguro de salud', 'seguro médico', 'prima', 'copago', 'cobertura', 'plan de salud']
+    },
+    { 
+      name_pt: 'Academia/Esporte', name_en: 'Gym/Sports', name_es: 'Gimnasio/Deporte',
+      keywords_pt: ['academia', 'gym', 'smart fit', 'smartfit', 'bio ritmo', 'bodytech', 'crossfit', 'personal', 'personal trainer', 'pilates', 'yoga', 'natacao', 'natação', 'musculacao', 'musculação', 'treino', 'esporte', 'futebol', 'tênis', 'tenis', 'corrida'],
+      keywords_en: ['gym', 'fitness', 'workout', 'crossfit', 'yoga', 'pilates', 'personal trainer', 'sports', 'swimming', 'running', 'tennis', 'soccer'],
+      keywords_es: ['gimnasio', 'gym', 'crossfit', 'yoga', 'pilates', 'entrenador', 'deporte', 'natación', 'fútbol', 'tenis']
+    }
+  ],
+  // Educação / Education / Educación
+  'educacao': [
+    { 
+      name_pt: 'Escola/Faculdade', name_en: 'School/College', name_es: 'Escuela/Universidad',
+      keywords_pt: ['escola', 'colegio', 'colégio', 'faculdade', 'universidade', 'mensalidade', 'matricula', 'matrícula', 'material escolar', 'uniforme', 'apostila', 'fies', 'prouni', 'vestibular', 'enem'],
+      keywords_en: ['school', 'college', 'university', 'tuition', 'enrollment', 'semester', 'campus', 'course', 'degree'],
+      keywords_es: ['escuela', 'colegio', 'universidad', 'matrícula', 'mensualidad', 'semestre', 'carrera']
+    },
+    { 
+      name_pt: 'Cursos', name_en: 'Courses', name_es: 'Cursos',
+      keywords_pt: ['curso', 'aula', 'ingles', 'inglês', 'espanhol', 'idioma', 'lingua', 'língua', 'cna', 'wizard', 'fisk', 'ccaa', 'cultura inglesa', 'open english', 'udemy', 'coursera', 'alura', 'rocketseat', 'excel', 'online'],
+      keywords_en: ['course', 'class', 'lesson', 'language', 'english', 'spanish', 'online course', 'udemy', 'coursera', 'skillshare', 'masterclass', 'certification'],
+      keywords_es: ['curso', 'clase', 'idioma', 'inglés', 'español', 'online', 'certificación', 'capacitación']
+    },
+    { 
+      name_pt: 'Livros/Material', name_en: 'Books/Supplies', name_es: 'Libros/Material',
+      keywords_pt: ['livro', 'livros', 'livraria', 'saraiva', 'cultura', 'amazon', 'estante virtual', 'kindle', 'ebook', 'apostila', 'caderno', 'caneta', 'material', 'papelaria', 'kalunga'],
+      keywords_en: ['book', 'books', 'textbook', 'ebook', 'kindle', 'amazon', 'notebook', 'supplies', 'stationery', 'barnes noble'],
+      keywords_es: ['libro', 'libros', 'librería', 'ebook', 'kindle', 'cuaderno', 'material', 'papelería']
+    }
+  ],
+  // Lazer / Entertainment / Entretenimiento
+  'lazer': [
+    { 
+      name_pt: 'Cinema/Teatro', name_en: 'Movies/Theater', name_es: 'Cine/Teatro',
+      keywords_pt: ['cinema', 'cinemark', 'kinoplex', 'uci', 'imax', 'filme', 'teatro', 'espetaculo', 'espetáculo', 'peca', 'peça', 'musical', 'ingresso', 'pipoca', 'sessao', 'sessão'],
+      keywords_en: ['movie', 'cinema', 'theater', 'theatre', 'show', 'play', 'musical', 'ticket', 'amc', 'regal', 'imax'],
+      keywords_es: ['cine', 'película', 'teatro', 'show', 'obra', 'musical', 'entrada', 'función']
+    },
+    { 
+      name_pt: 'Viagem', name_en: 'Travel', name_es: 'Viaje',
+      keywords_pt: ['viagem', 'hotel', 'pousada', 'hostel', 'airbnb', 'booking', 'decolar', 'passagem', 'aerea', 'aérea', 'voo', 'aeroporto', 'mala', 'turismo', 'ferias', 'férias', 'resort', 'cruzeiro'],
+      keywords_en: ['travel', 'trip', 'hotel', 'airbnb', 'booking', 'flight', 'airport', 'vacation', 'holiday', 'resort', 'cruise'],
+      keywords_es: ['viaje', 'hotel', 'airbnb', 'vuelo', 'aeropuerto', 'vacaciones', 'turismo', 'resort', 'crucero']
+    },
+    { 
+      name_pt: 'Streaming/Jogos', name_en: 'Streaming/Games', name_es: 'Streaming/Juegos',
+      keywords_pt: ['netflix', 'spotify', 'amazon prime', 'disney', 'hbo', 'star+', 'deezer', 'youtube', 'twitch', 'xbox', 'playstation', 'ps5', 'ps4', 'nintendo', 'switch', 'steam', 'game', 'jogo', 'videogame'],
+      keywords_en: ['netflix', 'spotify', 'amazon prime', 'disney', 'hbo', 'hulu', 'youtube', 'twitch', 'xbox', 'playstation', 'nintendo', 'steam', 'game', 'gaming'],
+      keywords_es: ['netflix', 'spotify', 'amazon prime', 'disney', 'hbo', 'youtube', 'twitch', 'xbox', 'playstation', 'nintendo', 'juego', 'videojuego']
+    },
+    { 
+      name_pt: 'Parque/Diversão', name_en: 'Parks/Fun', name_es: 'Parques/Diversión',
+      keywords_pt: ['parque', 'zoologico', 'zoológico', 'aquario', 'aquário', 'museu', 'exposicao', 'exposição', 'show', 'concerto', 'festival', 'boliche', 'karaoke', 'escape room', 'paintball', 'kart', 'kartódromo'],
+      keywords_en: ['park', 'zoo', 'aquarium', 'museum', 'exhibition', 'concert', 'festival', 'bowling', 'karaoke', 'escape room', 'arcade'],
+      keywords_es: ['parque', 'zoológico', 'acuario', 'museo', 'exposición', 'concierto', 'festival', 'boliche', 'karaoke']
+    }
+  ],
+  // Compras / Shopping
+  'compras': [
+    { 
+      name_pt: 'Roupas', name_en: 'Clothing', name_es: 'Ropa',
+      keywords_pt: ['roupa', 'roupas', 'camisa', 'calca', 'calça', 'vestido', 'saia', 'blusa', 'jaqueta', 'casaco', 'sapato', 'tenis', 'tênis', 'bota', 'chinelo', 'havaianas', 'renner', 'riachuelo', 'c&a', 'marisa', 'zara', 'hm', 'forever 21', 'shein', 'moda'],
+      keywords_en: ['clothes', 'clothing', 'shirt', 'pants', 'dress', 'skirt', 'jacket', 'coat', 'shoes', 'sneakers', 'boots', 'fashion', 'zara', 'h&m', 'gap', 'uniqlo', 'nike', 'adidas'],
+      keywords_es: ['ropa', 'camisa', 'pantalón', 'vestido', 'falda', 'chaqueta', 'zapatos', 'tenis', 'moda', 'zara', 'h&m', 'shein']
+    },
+    { 
+      name_pt: 'Eletrônicos', name_en: 'Electronics', name_es: 'Electrónicos',
+      keywords_pt: ['eletronico', 'eletrônico', 'celular', 'smartphone', 'iphone', 'samsung', 'xiaomi', 'notebook', 'laptop', 'computador', 'pc', 'tablet', 'ipad', 'tv', 'televisao', 'televisão', 'fone', 'headphone', 'airpods', 'camera', 'câmera', 'console', 'kabum', 'pichau', 'terabyte', 'magazine luiza', 'magalu', 'casas bahia', 'americanas', 'amazon'],
+      keywords_en: ['electronics', 'phone', 'smartphone', 'iphone', 'samsung', 'laptop', 'computer', 'tablet', 'ipad', 'tv', 'headphones', 'airpods', 'camera', 'amazon', 'best buy', 'apple'],
+      keywords_es: ['electrónicos', 'celular', 'smartphone', 'iphone', 'samsung', 'laptop', 'computadora', 'tablet', 'tv', 'audífonos', 'cámara', 'amazon']
+    },
+    { 
+      name_pt: 'Casa/Decoração', name_en: 'Home/Decor', name_es: 'Casa/Decoración',
+      keywords_pt: ['casa', 'decoracao', 'decoração', 'movel', 'móvel', 'moveis', 'móveis', 'sofa', 'sofá', 'cama', 'mesa', 'cadeira', 'armario', 'armário', 'estante', 'tapete', 'cortina', 'luminaria', 'luminária', 'quadro', 'tok stok', 'tokstok', 'etna', 'leroy merlin', 'telha norte', 'ikea', 'camicado', 'le biscuit'],
+      keywords_en: ['home', 'decor', 'furniture', 'sofa', 'bed', 'table', 'chair', 'closet', 'rug', 'curtain', 'lamp', 'ikea', 'wayfair', 'pottery barn', 'crate barrel', 'west elm'],
+      keywords_es: ['casa', 'decoración', 'mueble', 'muebles', 'sofá', 'cama', 'mesa', 'silla', 'armario', 'alfombra', 'cortina', 'lámpara', 'ikea']
+    },
+    { 
+      name_pt: 'Beleza/Cosméticos', name_en: 'Beauty/Cosmetics', name_es: 'Belleza/Cosméticos',
+      keywords_pt: ['beleza', 'cosmetico', 'cosmético', 'maquiagem', 'make', 'perfume', 'shampoo', 'condicionador', 'creme', 'hidratante', 'protetor solar', 'esmalte', 'salao', 'salão', 'cabeleireiro', 'manicure', 'depilacao', 'depilação', 'natura', 'boticario', 'boticário', 'avon', 'sephora', 'mac', 'lancome', 'oboticario'],
+      keywords_en: ['beauty', 'cosmetics', 'makeup', 'perfume', 'shampoo', 'cream', 'lotion', 'sunscreen', 'salon', 'hair', 'nails', 'sephora', 'ulta', 'mac', 'lancome'],
+      keywords_es: ['belleza', 'cosméticos', 'maquillaje', 'perfume', 'champú', 'crema', 'protector solar', 'salón', 'peluquería', 'manicure', 'sephora']
+    }
+  ],
+  // Financeiro / Financial
+  'financeiro': [
+    { 
+      name_pt: 'Impostos', name_en: 'Taxes', name_es: 'Impuestos',
+      keywords_pt: ['imposto', 'ir', 'irpf', 'iptu', 'ipva', 'icms', 'iss', 'taxa', 'tributo', 'darj', 'gru', 'multa', 'receita federal', 'inss', 'fgts', 'contribuicao', 'contribuição'],
+      keywords_en: ['tax', 'taxes', 'irs', 'income tax', 'property tax', 'sales tax', 'fee', 'fine', 'penalty'],
+      keywords_es: ['impuesto', 'impuestos', 'iva', 'isr', 'predial', 'tenencia', 'multa', 'sat', 'contribución']
+    },
+    { 
+      name_pt: 'Seguro', name_en: 'Insurance', name_es: 'Seguro',
+      keywords_pt: ['seguro', 'seguradora', 'porto seguro', 'bradesco seguros', 'sulamerica', 'azul seguros', 'tokio marine', 'liberty', 'apolice', 'apólice', 'sinistro', 'franquia', 'cobertura', 'seguro auto', 'seguro residencial', 'seguro vida'],
+      keywords_en: ['insurance', 'policy', 'premium', 'coverage', 'claim', 'deductible', 'life insurance', 'car insurance', 'home insurance'],
+      keywords_es: ['seguro', 'aseguradora', 'póliza', 'prima', 'cobertura', 'siniestro', 'deducible']
+    },
+    { 
+      name_pt: 'Investimento', name_en: 'Investment', name_es: 'Inversión',
+      keywords_pt: ['investimento', 'aplicacao', 'aplicação', 'acao', 'ação', 'acoes', 'ações', 'fundo', 'cdb', 'lci', 'lca', 'tesouro direto', 'poupanca', 'poupança', 'renda fixa', 'renda variavel', 'renda variável', 'xp', 'btg', 'nuinvest', 'rico', 'clear', 'corretora', 'b3', 'bolsa'],
+      keywords_en: ['investment', 'stocks', 'bonds', 'fund', 'etf', 'savings', 'portfolio', 'broker', 'trading', '401k', 'ira', 'roth'],
+      keywords_es: ['inversión', 'acciones', 'bonos', 'fondo', 'ahorro', 'portafolio', 'broker', 'bolsa', 'trading']
+    },
+    { 
+      name_pt: 'Empréstimo', name_en: 'Loan', name_es: 'Préstamo',
+      keywords_pt: ['emprestimo', 'empréstimo', 'financiamento', 'parcela', 'prestacao', 'prestação', 'divida', 'dívida', 'credito', 'crédito', 'consignado', 'pessoal', 'juros', 'amortizacao', 'amortização', 'carnê'],
+      keywords_en: ['loan', 'financing', 'installment', 'debt', 'credit', 'interest', 'mortgage', 'payment'],
+      keywords_es: ['préstamo', 'financiamiento', 'cuota', 'deuda', 'crédito', 'interés', 'hipoteca', 'pago']
+    },
+    { 
+      name_pt: 'Tarifas Bancárias', name_en: 'Bank Fees', name_es: 'Tarifas Bancarias',
+      keywords_pt: ['tarifa', 'taxa', 'anuidade', 'manutencao de conta', 'manutenção de conta', 'ted', 'doc', 'saque', 'extrato', 'iof', 'spread', 'banco', 'bancario', 'bancário'],
+      keywords_en: ['fee', 'bank fee', 'maintenance', 'atm', 'withdrawal', 'transfer', 'overdraft', 'service charge'],
+      keywords_es: ['tarifa', 'comisión', 'anualidad', 'mantenimiento', 'retiro', 'transferencia', 'banco']
+    }
+  ]
+};
+
+// Normalize category name to key for SUBCATEGORY_KEYWORDS lookup
+function getCategoryKey(categoryName: string): string | null {
+  const normalized = normalizeText(categoryName);
+  const mapping: Record<string, string> = {
+    'alimentacao': 'alimentacao',
+    'food': 'alimentacao',
+    'alimentacion': 'alimentacao',
+    'transporte': 'transporte',
+    'transportation': 'transporte',
+    'moradia': 'moradia',
+    'housing': 'moradia',
+    'vivienda': 'moradia',
+    'saude': 'saude',
+    'health': 'saude',
+    'salud': 'saude',
+    'educacao': 'educacao',
+    'education': 'educacao',
+    'educacion': 'educacao',
+    'lazer': 'lazer',
+    'entertainment': 'lazer',
+    'entretenimiento': 'lazer',
+    'compras': 'compras',
+    'shopping': 'compras',
+    'financeiro': 'financeiro',
+    'financial': 'financeiro',
+    'financiero': 'financeiro'
+  };
+  return mapping[normalized] || null;
+}
+
+// EDGE Enrichment: Detect subcategory from message
+interface SubcategoryEnrichmentResult {
+  subcategoria: string | null;
+  subcategoria_id: string | null;
+  confianca_subcategoria: 'alta' | 'media' | 'baixa';
+  subcategory_name_localized: string | null;
+}
+
+async function enrichSubcategory(
+  supabase: any,
+  message: string,
+  categoryId: string | null,
+  categoryName: string,
+  userId: string,
+  language: 'pt' | 'en' | 'es'
+): Promise<SubcategoryEnrichmentResult> {
+  const noMatch: SubcategoryEnrichmentResult = {
+    subcategoria: null,
+    subcategoria_id: null,
+    confianca_subcategoria: 'baixa',
+    subcategory_name_localized: null
+  };
+
+  if (!categoryId || !categoryName) {
+    console.log('[EDGE] No category provided, skipping subcategory enrichment');
+    return noMatch;
+  }
+
+  const categoryKey = getCategoryKey(categoryName);
+  if (!categoryKey) {
+    console.log('[EDGE] Category not mapped for subcategory enrichment:', categoryName);
+    return noMatch;
+  }
+
+  const subcategoryDefinitions = SUBCATEGORY_KEYWORDS[categoryKey];
+  if (!subcategoryDefinitions || subcategoryDefinitions.length === 0) {
+    console.log('[EDGE] No subcategory definitions for category:', categoryKey);
+    return noMatch;
+  }
+
+  const msgNormalized = normalizeText(message);
+  console.log('[EDGE] Enriching subcategory for message:', msgNormalized.substring(0, 100));
+
+  // Try to match keywords
+  for (const subcat of subcategoryDefinitions) {
+    const keywordsLang = subcat[`keywords_${language}` as keyof typeof subcat] as string[] || subcat.keywords_pt;
+    
+    for (const keyword of keywordsLang) {
+      const keywordNorm = normalizeText(keyword);
+      if (msgNormalized.includes(keywordNorm)) {
+        console.log('[EDGE] Keyword match found:', keyword, '-> Subcategory:', subcat.name_pt);
+        
+        // Try to find the subcategory in user's subcategories
+        const subcatNameLang = subcat[`name_${language}` as keyof typeof subcat] as string || subcat.name_pt;
+        
+        // First try exact match on name
+        const { data: exactMatch } = await supabase
+          .from('subcategories')
+          .select('id, name, name_en, name_es')
+          .eq('user_id', userId)
+          .eq('category_id', categoryId)
+          .or(`name.ilike.${subcat.name_pt},name_en.ilike.${subcat.name_en},name_es.ilike.${subcat.name_es}`)
+          .is('deleted_at', null)
+          .limit(1)
+          .maybeSingle();
+
+        if (exactMatch) {
+          const localizedName = language === 'en' 
+            ? (exactMatch.name_en || exactMatch.name)
+            : language === 'es' 
+              ? (exactMatch.name_es || exactMatch.name)
+              : exactMatch.name;
+
+          return {
+            subcategoria: exactMatch.name,
+            subcategoria_id: exactMatch.id,
+            confianca_subcategoria: 'alta',
+            subcategory_name_localized: localizedName
+          };
+        }
+
+        // If no exact match, try partial match
+        const { data: partialMatch } = await supabase
+          .from('subcategories')
+          .select('id, name, name_en, name_es')
+          .eq('user_id', userId)
+          .eq('category_id', categoryId)
+          .or(`name.ilike.%${subcat.name_pt}%,name_en.ilike.%${subcat.name_en}%,name_es.ilike.%${subcat.name_es}%`)
+          .is('deleted_at', null)
+          .limit(1)
+          .maybeSingle();
+
+        if (partialMatch) {
+          const localizedName = language === 'en' 
+            ? (partialMatch.name_en || partialMatch.name)
+            : language === 'es' 
+              ? (partialMatch.name_es || partialMatch.name)
+              : partialMatch.name;
+
+          return {
+            subcategoria: partialMatch.name,
+            subcategoria_id: partialMatch.id,
+            confianca_subcategoria: 'media',
+            subcategory_name_localized: localizedName
+          };
+        }
+
+        // Found keyword match but no subcategory in database
+        console.log('[EDGE] Keyword matched but subcategory not found in database:', subcat.name_pt);
+        return {
+          subcategoria: subcat.name_pt,
+          subcategoria_id: null,
+          confianca_subcategoria: 'media',
+          subcategory_name_localized: subcatNameLang
+        };
+      }
+    }
+  }
+
+  console.log('[EDGE] No subcategory match found');
+  return noMatch;
+}
 
 // ============================================================
 // HELPER FUNCTIONS
@@ -699,7 +1134,38 @@ serve(async (req) => {
     console.log('[process-financial-input] Resource resolved:', { resource_id, resource_type });
 
     // ========================================
-    // PASSO 4: ATUALIZAR INPUT COM IDs RESOLVIDOS
+    // PASSO 4: EDGE - ENRIQUECIMENTO DE SUBCATEGORIA
+    // ========================================
+    console.log('[EDGE] Starting subcategory enrichment...');
+    const detectedLanguageForEdge = detectLanguage(input.raw_message || '');
+    
+    // Buscar nome da categoria para o EDGE
+    let categoryNameForEdge = '';
+    if (resolved_category_id) {
+      const { data: catData } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('id', resolved_category_id)
+        .maybeSingle();
+      if (catData) {
+        categoryNameForEdge = catData.name;
+      }
+    }
+    
+    // Executar enriquecimento EDGE
+    const subcategoryEnrichment = await enrichSubcategory(
+      supabase,
+      input.raw_message || input.description_hint || '',
+      resolved_category_id,
+      categoryNameForEdge,
+      input.user_id,
+      detectedLanguageForEdge
+    );
+    
+    console.log('[EDGE] Subcategory enrichment result:', subcategoryEnrichment);
+
+    // ========================================
+    // PASSO 4.1: ATUALIZAR INPUT COM IDs RESOLVIDOS + SUBCATEGORIA
     // ========================================
     const { error: updateError } = await supabase
       .from('incoming_financial_inputs')
@@ -707,6 +1173,9 @@ serve(async (req) => {
         resolved_category_id,
         resolved_card_id,
         resolved_account_id,
+        subcategory_hint: subcategoryEnrichment.subcategoria,
+        resolved_subcategory_id: subcategoryEnrichment.subcategoria_id,
+        subcategory_confidence: subcategoryEnrichment.confianca_subcategoria,
         status: 'confirmed'
       })
       .eq('id', input_id);
@@ -716,7 +1185,7 @@ serve(async (req) => {
       throw updateError;
     }
 
-    console.log('[process-financial-input] Input updated with resolved IDs');
+    console.log('[process-financial-input] Input updated with resolved IDs and subcategory');
 
     // ========================================
     // PASSO 4.5: DETECTAR MOEDAS E CONVERTER SE NECESSÁRIO
@@ -890,6 +1359,13 @@ serve(async (req) => {
       exchange_rate_used: exchangeRateUsed
     };
 
+    // EDGE: Adicionar subcategory_id se encontrada com confiança alta/média
+    if (subcategoryEnrichment.subcategoria_id && 
+        (subcategoryEnrichment.confianca_subcategoria === 'alta' || subcategoryEnrichment.confianca_subcategoria === 'media')) {
+      transactionData.subcategory_id = subcategoryEnrichment.subcategoria_id;
+      console.log('[EDGE] Subcategory added to transaction:', subcategoryEnrichment.subcategoria_id);
+    }
+
     // Adicionar card_id ou account_id conforme o tipo
     if (resource_type === 'card') {
       transactionData.card_id = resource_id;
@@ -1042,11 +1518,16 @@ serve(async (req) => {
     }
 
     // ========================================
-    // RESPOSTA FINAL (MULTI-IDIOMA)
+    // RESPOSTA FINAL (MULTI-IDIOMA) - COM SUBCATEGORIA
     // ========================================
     const msgs = RESPONSE_MESSAGES[detectedLanguage];
     const formattedOriginal = formatCurrencyDisplay(originalAmount, originalCurrency);
     const formattedConverted = formatCurrencyDisplay(finalAmount, targetCurrency);
+    
+    // Determinar nome da subcategoria a exibir (apenas se confiança alta ou média)
+    const subcategoryToDisplay = (subcategoryEnrichment.confianca_subcategoria === 'alta' || subcategoryEnrichment.confianca_subcategoria === 'media')
+      ? subcategoryEnrichment.subcategory_name_localized
+      : null;
     
     let responseMessage: string;
     if (input.transaction_type === 'income') {
@@ -1056,7 +1537,8 @@ serve(async (req) => {
         formattedConverted.split(' ')[1] || formattedConverted,
         targetCurrency,
         exchangeRateUsed,
-        categoryName
+        categoryName,
+        subcategoryToDisplay
       );
     } else {
       responseMessage = msgs.expenseRecorded(
@@ -1065,7 +1547,8 @@ serve(async (req) => {
         formattedConverted.split(' ')[1] || formattedConverted,
         targetCurrency,
         exchangeRateUsed,
-        categoryName
+        categoryName,
+        subcategoryToDisplay
       );
     }
 
@@ -1084,6 +1567,9 @@ serve(async (req) => {
           exchange_rate: exchangeRateUsed,
           category_id: resolved_category_id,
           category_name: categoryName,
+          subcategory_id: subcategoryEnrichment.subcategoria_id,
+          subcategory_name: subcategoryEnrichment.subcategoria,
+          subcategory_confidence: subcategoryEnrichment.confianca_subcategoria,
           resource_type,
           resource_id,
           transaction_type: input.transaction_type
