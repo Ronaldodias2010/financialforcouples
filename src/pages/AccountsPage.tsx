@@ -29,6 +29,7 @@ interface AccountRow {
   account_model: string | null;
   name?: string | null;
   is_cash_account?: boolean | null;
+  account_type?: string | null;
 }
 
 export const AccountsPage = ({ onBack, onNavigateToCards }: AccountsPageProps) => {
@@ -50,20 +51,21 @@ const partnerId = getPartnerUserId();
     const fetchAccounts = async () => {
       const { data, error } = await supabase
         .from("accounts")
-        .select("id, user_id, owner_user, currency, balance, overdraft_limit, account_model, name, is_active, is_cash_account")
+        .select("id, user_id, owner_user, currency, balance, overdraft_limit, account_model, name, is_active, is_cash_account, account_type")
         .eq('is_active', true);
       if (!error && data) {
         setAccountsData(
           data.map((a) => ({
             id: (a as any).id as string,
-user_id: (a as any).user_id as string,
-owner_user: (a as any).owner_user as ("user1" | "user2" | null),
-currency: ((a as any).currency as CurrencyCode) ?? "BRL",
-balance: Number((a as any).balance ?? 0),
-overdraft_limit: Number((a as any).overdraft_limit ?? 0),
-account_model: (a as any).account_model ?? 'personal',
-name: (a as any).name ?? null,
-is_cash_account: (a as any).is_cash_account ?? false,
+            user_id: (a as any).user_id as string,
+            owner_user: (a as any).owner_user as ("user1" | "user2" | null),
+            currency: ((a as any).currency as CurrencyCode) ?? "BRL",
+            balance: Number((a as any).balance ?? 0),
+            overdraft_limit: Number((a as any).overdraft_limit ?? 0),
+            account_model: (a as any).account_model ?? 'personal',
+            name: (a as any).name ?? null,
+            is_cash_account: (a as any).is_cash_account ?? false,
+            account_type: (a as any).account_type ?? null,
           }))
         );
       }
@@ -98,8 +100,12 @@ const computeSuasContasTotal = (accounts: AccountRow[]) => {
   return Math.round(total * 100) / 100;
 };
 
-const computeValorRealTotal = (accounts: AccountRow[]) => {
+const computeValorRealTotal = (accounts: AccountRow[], excludeEmergency: boolean = true) => {
   const total = accounts.reduce((sum, a) => {
+    // Skip emergency accounts from "Valor Real" - they should only count for emergencies
+    if (excludeEmergency && a.account_type === 'emergency') {
+      return sum;
+    }
     const bal = Number(a.balance ?? 0);
     const from = (a.currency ?? "BRL") as CurrencyCode;
     return sum + convertCurrency(bal, from, displayCurrency);
