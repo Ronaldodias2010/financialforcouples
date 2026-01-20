@@ -119,7 +119,9 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("all");
   const [categoryOptions, setCategoryOptions] = useState<{ key: string; name: string; ids: string[] }[]>([]);
+  const [subcategoryOptions, setSubcategoryOptions] = useState<{ id: string; name: string }[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { names } = usePartnerNames();
@@ -129,7 +131,7 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
-  }, [selectedMonth, selectedCategory, viewMode]);
+  }, [selectedMonth, selectedCategory, selectedSubcategory, viewMode]);
 
   // Auto-refresh when selectedMonth changes to current month
   useEffect(() => {
@@ -215,6 +217,55 @@ const fetchCategories = async () => {
     }
   };
 
+  // Fetch subcategories when category changes
+  const fetchSubcategories = async (categoryIds: string[]) => {
+    if (categoryIds.length === 0) {
+      setSubcategoryOptions([]);
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('subcategories')
+        .select('id, name, name_en, name_es')
+        .in('category_id', categoryIds)
+        .is('deleted_at', null)
+        .order('name');
+
+      if (error) throw error;
+      
+      // Localize names based on language
+      const localized = (data || []).map(sub => ({
+        id: sub.id,
+        name: language === 'en' ? (sub.name_en || sub.name) : 
+              language === 'es' ? (sub.name_es || sub.name) : sub.name
+      }));
+      
+      // Remove duplicates by name
+      const unique = Array.from(
+        new Map(localized.map(item => [item.name.toLowerCase(), item])).values()
+      );
+      
+      setSubcategoryOptions(unique);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+      setSubcategoryOptions([]);
+    }
+  };
+
+  // Update subcategories when category changes
+  useEffect(() => {
+    if (selectedCategory !== 'all') {
+      const opt = categoryOptions.find(o => o.key === selectedCategory);
+      if (opt?.ids) {
+        fetchSubcategories(opt.ids);
+      }
+    } else {
+      setSubcategoryOptions([]);
+      setSelectedSubcategory('all');
+    }
+  }, [selectedCategory, categoryOptions, language]);
+
   const fetchTransactions = async () => {
     // Clear current transactions to prevent stale data
     setTransactions([]);
@@ -256,11 +307,16 @@ const fetchCategories = async () => {
         .order('purchase_date', { ascending: false, nullsFirst: false })
         .order('transaction_date', { ascending: false });
 
-if (selectedCategory !== "all") {
+      if (selectedCategory !== "all") {
         const opt = categoryOptions.find(o => o.key === selectedCategory);
         if (opt && opt.ids.length) {
           query = query.in('category_id', opt.ids);
         }
+      }
+
+      // Apply subcategory filter
+      if (selectedSubcategory !== "all") {
+        query = query.eq('subcategory_id', selectedSubcategory);
       }
 
       const { data, error } = await query;
@@ -448,7 +504,10 @@ if (selectedCategory !== "all") {
 
               <div>
                 <Label>{t('monthlyExpenses.category')}</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select value={selectedCategory} onValueChange={(val) => {
+                  setSelectedCategory(val);
+                  setSelectedSubcategory('all'); // Reset subcategory when category changes
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder={t('monthlyExpenses.allCategories')} />
                   </SelectTrigger>
@@ -462,6 +521,26 @@ if (selectedCategory !== "all") {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Subcategory Filter - Only show when a category is selected */}
+              {selectedCategory !== 'all' && subcategoryOptions.length > 0 && (
+                <div>
+                  <Label>{t('monthlyExpenses.subcategory')}</Label>
+                  <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('monthlyExpenses.allCategories')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('monthlyExpenses.allCategories')}</SelectItem>
+                      {subcategoryOptions.map((sub) => (
+                        <SelectItem key={sub.id} value={sub.id}>
+                          {sub.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

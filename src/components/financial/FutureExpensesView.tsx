@@ -30,6 +30,7 @@ interface FutureExpense {
   due_date: string;
   type: 'installment' | 'recurring' | 'card_payment' | 'card_transaction' | 'manual_future';
   category: string;
+  subcategory?: string; // NEW: Subcategory name
   card_name?: string;
   installment_info?: string;
   owner_user?: string;
@@ -200,7 +201,8 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
         .select(`
           *,
           categories(name),
-          cards(name, owner_user, card_type)
+          cards(name, owner_user, card_type),
+          subcategories(name, name_en, name_es)
         `)
         .in("user_id", userIds)
         .eq("type", "expense")
@@ -333,6 +335,11 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
             due_date: cardTransaction.due_date,
             type: 'card_transaction',
             category: cardTransaction.categories?.name || t('common.noCategory'),
+            subcategory: cardTransaction.subcategories ? (
+              language === 'en' ? (cardTransaction.subcategories.name_en || cardTransaction.subcategories.name) :
+              language === 'es' ? (cardTransaction.subcategories.name_es || cardTransaction.subcategories.name) :
+              cardTransaction.subcategories.name
+            ) : undefined,
             card_name: cardTransaction.cards?.name,
             owner_user: ownerUser,
             installment_info: installmentInfo,
@@ -876,6 +883,12 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                                   {getTypeLabel(expense.type)}
                                 </Badge>
                               </div>
+                              <p className="text-xs sm:text-sm text-muted-foreground">
+                                {translateCategory(expense.category)}
+                                {expense.subcategory && (
+                                  <span className="text-primary"> • {expense.subcategory}</span>
+                                )}
+                              </p>
                               <p className="text-xs sm:text-sm text-muted-foreground">
                                 {expense.card_name && `${expense.card_name}`}{expense.card_name && expense.owner_user && ` • `}{expense.owner_user && `${getOwnerName(expense.owner_user)}`}
                               </p>
