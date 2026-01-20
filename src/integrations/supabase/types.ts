@@ -1635,8 +1635,11 @@ export type Database = {
           resolved_account_id: string | null
           resolved_card_id: string | null
           resolved_category_id: string | null
+          resolved_subcategory_id: string | null
           source: string
           status: string
+          subcategory_confidence: string | null
+          subcategory_hint: string | null
           transaction_date: string | null
           transaction_id: string | null
           transaction_type: string | null
@@ -1664,8 +1667,11 @@ export type Database = {
           resolved_account_id?: string | null
           resolved_card_id?: string | null
           resolved_category_id?: string | null
+          resolved_subcategory_id?: string | null
           source?: string
           status?: string
+          subcategory_confidence?: string | null
+          subcategory_hint?: string | null
           transaction_date?: string | null
           transaction_id?: string | null
           transaction_type?: string | null
@@ -1693,8 +1699,11 @@ export type Database = {
           resolved_account_id?: string | null
           resolved_card_id?: string | null
           resolved_category_id?: string | null
+          resolved_subcategory_id?: string | null
           source?: string
           status?: string
+          subcategory_confidence?: string | null
+          subcategory_hint?: string | null
           transaction_date?: string | null
           transaction_id?: string | null
           transaction_type?: string | null
@@ -1703,7 +1712,22 @@ export type Database = {
           user_id?: string
           whatsapp_message_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "incoming_financial_inputs_resolved_subcategory_id_fkey"
+            columns: ["resolved_subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "active_subcategories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_financial_inputs_resolved_subcategory_id_fkey"
+            columns: ["resolved_subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investment_goals: {
         Row: {
