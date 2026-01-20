@@ -99,14 +99,22 @@ const InstallmentProgress = ({ total, remaining, nextDueDate }: {
     </div>
   );
 };
+interface Subcategory {
+  id: string;
+  name: string;
+  name_en: string | null;
+  name_es: string | null;
+}
+
 interface RecurringExpense {
   id: string;
   name: string;
   amount: number;
   category_id?: string;
+  subcategory_id?: string;
   card_id?: string;
   frequency_days: number;
-  frequency_type?: 'days' | 'months'; // ⭐ NOVO
+  frequency_type?: 'days' | 'months';
   next_due_date: Date;
   is_active: boolean;
   owner_user?: string;
@@ -115,6 +123,8 @@ interface RecurringExpense {
   remaining_installments?: number;
   total_installments?: number;
   is_completed?: boolean;
+  category?: { id: string; name: string };
+  subcategory?: Subcategory;
 }
 
 interface Category {
@@ -139,6 +149,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   
   const [expenses, setExpenses] = useState<RecurringExpense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<RecurringExpense | null>(null);
@@ -147,28 +158,67 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [subcategoryId, setSubcategoryId] = useState("");
   const [cardId, setCardId] = useState("");
   const [frequencyDays, setFrequencyDays] = useState("30");
-  const [frequencyType, setFrequencyType] = useState<'days' | 'months'>('months'); // ⭐ NOVO
+  const [frequencyType, setFrequencyType] = useState<'days' | 'months'>('months');
   const [nextDueDate, setNextDueDate] = useState<Date>(new Date());
   const [contractDuration, setContractDuration] = useState("");
   
   const { toast } = useToast();
   const { names } = usePartnerNames();
   const { t, language } = useLanguage();
-const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : names.user1Name;
+
+  const getLocalizedSubcategoryName = (sub: Subcategory) => {
+    if (language === 'en' && sub.name_en) return sub.name_en;
+    if (language === 'es' && sub.name_es) return sub.name_es;
+    return sub.name;
+  };
+
+  const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : names.user1Name;
+
   useEffect(() => {
     fetchRecurringExpenses();
     fetchCategories();
     fetchCards();
   }, [viewMode]);
 
+  useEffect(() => {
+    if (categoryId) {
+      fetchSubcategories(categoryId);
+    } else {
+      setSubcategories([]);
+      setSubcategoryId("");
+    }
+  }, [categoryId]);
+
+  const fetchSubcategories = async (catId: string) => {
+    if (!catId) {
+      setSubcategories([]);
+      return;
+    }
+
+    const { data } = await supabase
+      .from('subcategories')
+      .select('id, name, name_en, name_es')
+      .eq('category_id', catId)
+      .is('deleted_at', null)
+      .order('name');
+
+    setSubcategories(data || []);
+  };
+
   const fetchRecurringExpenses = async () => {
     try {
       // Fetch both active and completed recurring expenses for better overview
       const { data, error } = await supabase
         .from('recurring_expenses')
-        .select('*, created_at')
+        .select(`
+          *, 
+          created_at,
+          category:categories(id, name),
+          subcategory:subcategories(id, name, name_en, name_es)
+        `)
         .order('next_due_date');
 
       if (error) throw error;
@@ -176,7 +226,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
       let allExpenses = (data || []).map(expense => ({
         ...expense,
         next_due_date: parseLocalDate(expense.next_due_date),
-        frequency_type: (expense.frequency_type || 'days') as 'days' | 'months' // ⭐ Cast correto do tipo
+        frequency_type: (expense.frequency_type || 'days') as 'days' | 'months'
       }));
 
       // Filter by viewMode
@@ -283,9 +333,10 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             name,
             amount: parseFloat(amount),
             category_id: categoryId || null,
+            subcategory_id: subcategoryId || null,
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
-            frequency_type: frequencyType, // ⭐ NOVO
+            frequency_type: frequencyType,
             next_due_date: formatDateForDB(nextDueDate),
             contract_duration_months: contractDuration ? parseInt(contractDuration) : null,
             total_installments: totalInstallments,
@@ -322,9 +373,10 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
             name,
             amount: parseFloat(amount),
             category_id: categoryId || null,
+            subcategory_id: subcategoryId || null,
             card_id: cardId || null,
             frequency_days: parseInt(frequencyDays),
-            frequency_type: frequencyType, // ⭐ NOVO
+            frequency_type: frequencyType,
             next_due_date: formatDateForDB(nextDueDate),
             owner_user: ownerUser,
             user_id: user.id,
@@ -354,7 +406,7 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
     }
   };
 
-  const handleEdit = (expense: RecurringExpense) => {
+  const handleEdit = async (expense: RecurringExpense) => {
     console.log('✏️ [DEBUG] Editing expense:', expense);
     setEditingExpense(expense);
     setName(expense.name);
@@ -362,17 +414,22 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
     setCategoryId(expense.category_id || "");
     setCardId(expense.card_id || "");
     setFrequencyDays(expense.frequency_days.toString());
-    // ⭐ NOVO: Carregar frequency_type ao editar
     const monthlyOptions = ['30', '90', '365'];
     setFrequencyType(
       expense.frequency_type || 
       (monthlyOptions.includes(expense.frequency_days.toString()) ? 'months' : 'days')
     );
-    // ⭐ FIX: Usar toSafeDate para garantir conversão correta
     const safeDate = toSafeDate(expense.next_due_date);
     console.log('📅 [DEBUG] Setting next due date:', safeDate);
     setNextDueDate(safeDate);
     setContractDuration(expense.contract_duration_months?.toString() || "");
+    
+    // Load subcategories if category exists
+    if (expense.category_id) {
+      await fetchSubcategories(expense.category_id);
+    }
+    setSubcategoryId(expense.subcategory_id || "");
+    
     setIsDialogOpen(true);
   };
 
@@ -428,9 +485,11 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
     setName("");
     setAmount("");
     setCategoryId("");
+    setSubcategoryId("");
+    setSubcategories([]);
     setCardId("");
     setFrequencyDays("30");
-    setFrequencyType('months'); // ⭐ NOVO
+    setFrequencyType('months');
     setNextDueDate(new Date());
     setContractDuration("");
     setEditingExpense(null);
@@ -504,6 +563,24 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                   </SelectContent>
                 </Select>
               </div>
+
+              {subcategories.length > 0 && (
+                <div>
+                  <Label>{t('recurring.subcategory') || 'Subcategoria'}</Label>
+                  <Select value={subcategoryId} onValueChange={setSubcategoryId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('recurring.subcategoryPlaceholder') || 'Selecione uma subcategoria (opcional)'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subcategories.map((sub) => (
+                        <SelectItem key={sub.id} value={sub.id}>
+                          {getLocalizedSubcategoryName(sub)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
                 <Label>{t('recurring.card')}</Label>
@@ -624,6 +701,12 @@ const getOwnerName = (owner?: string) => owner === 'user2' ? names.user2Name : n
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)} • {getOwnerName(expense.owner_user)}
+                    {expense.category && (
+                      <span className="ml-2">
+                        • {translateCategoryName(expense.category.name, language)}
+                        {expense.subcategory && ` > ${getLocalizedSubcategoryName(expense.subcategory)}`}
+                      </span>
+                    )}
                   </p>
                   {expense.is_completed ? (
                     <p className="text-xs text-green-600 font-medium">

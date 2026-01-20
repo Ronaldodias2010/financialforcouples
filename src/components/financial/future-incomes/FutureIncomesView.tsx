@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Calendar, DollarSign, Trash2, CheckCircle, Clock } from 'lucide-react';
-import { useManualFutureIncomes } from '@/hooks/useManualFutureIncomes';
+import { useManualFutureIncomes, ManualFutureIncome } from '@/hooks/useManualFutureIncomes';
 import { AddFutureIncomeModal } from './AddFutureIncomeModal';
 import { ReceiveFutureIncomeModal } from './ReceiveFutureIncomeModal';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,8 +24,18 @@ interface FutureIncomesViewProps {
   viewMode: 'individual' | 'couple';
 }
 
+const getLocalizedSubcategoryName = (
+  subcategory: { name: string; name_en: string | null; name_es: string | null } | undefined,
+  language: string
+) => {
+  if (!subcategory) return '';
+  if (language === 'en' && subcategory.name_en) return subcategory.name_en;
+  if (language === 'es' && subcategory.name_es) return subcategory.name_es;
+  return subcategory.name;
+};
+
 export const FutureIncomesView = ({ viewMode }: FutureIncomesViewProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     futureIncomes,
     loading,
@@ -161,6 +171,7 @@ export const FutureIncomesView = ({ viewMode }: FutureIncomesViewProps) => {
                                   color: income.category.color 
                                 }}>
                                   {income.category.name}
+                                  {income.subcategory && ` > ${getLocalizedSubcategoryName(income.subcategory, language)}`}
                                 </Badge>
                               )}
                               {income.account && (

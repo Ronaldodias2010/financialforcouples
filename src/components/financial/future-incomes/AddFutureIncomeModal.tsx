@@ -11,6 +11,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useInvalidateFinancialData } from '@/hooks/useInvalidateFinancialData';
 import { useToast } from '@/hooks/use-toast';
 
+interface Subcategory {
+  id: string;
+  name: string;
+  name_en: string | null;
+  name_es: string | null;
+}
+
 interface AddFutureIncomeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -18,12 +25,13 @@ interface AddFutureIncomeModalProps {
 }
 
 export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureIncomeModalProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const { invalidateAll } = useInvalidateFinancialData();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
@@ -31,10 +39,17 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
     amount: '',
     due_date: '',
     category_id: '',
+    subcategory_id: '',
     account_id: '',
     payment_method: 'cash',
     notes: '',
   });
+
+  const getLocalizedSubcategoryName = (sub: Subcategory) => {
+    if (language === 'en' && sub.name_en) return sub.name_en;
+    if (language === 'es' && sub.name_es) return sub.name_es;
+    return sub.name;
+  };
 
   useEffect(() => {
     if (open && user) {
@@ -42,6 +57,15 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
       fetchAccounts();
     }
   }, [open, user]);
+
+  useEffect(() => {
+    if (formData.category_id) {
+      fetchSubcategories(formData.category_id);
+    } else {
+      setSubcategories([]);
+      setFormData(prev => ({ ...prev, subcategory_id: '' }));
+    }
+  }, [formData.category_id]);
 
   const fetchCategories = async () => {
     if (!user) return;
@@ -54,6 +78,22 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
       .order('name');
 
     if (data) setCategories(data);
+  };
+
+  const fetchSubcategories = async (categoryId: string) => {
+    if (!categoryId) {
+      setSubcategories([]);
+      return;
+    }
+
+    const { data } = await supabase
+      .from('subcategories')
+      .select('id, name, name_en, name_es')
+      .eq('category_id', categoryId)
+      .is('deleted_at', null)
+      .order('name');
+
+    setSubcategories(data || []);
   };
 
   const fetchAccounts = async () => {
@@ -105,10 +145,12 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
         amount: '',
         due_date: '',
         category_id: '',
+        subcategory_id: '',
         account_id: '',
         payment_method: 'cash',
         notes: '',
       });
+      setSubcategories([]);
       onOpenChange(false);
     } catch (error) {
       console.error('Error adding future income:', error);
@@ -169,7 +211,7 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
             <Label htmlFor="category">{t('futureIncomes.category')}</Label>
             <Select
               value={formData.category_id}
-              onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+              onValueChange={(value) => setFormData({ ...formData, category_id: value, subcategory_id: '' })}
             >
               <SelectTrigger>
                 <SelectValue placeholder={t('futureIncomes.selectCategory')} />
@@ -183,6 +225,27 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
               </SelectContent>
             </Select>
           </div>
+
+          {subcategories.length > 0 && (
+            <div>
+              <Label htmlFor="subcategory">{t('monthlyIncome.subcategoryLabel') || 'Subcategoria'}</Label>
+              <Select
+                value={formData.subcategory_id}
+                onValueChange={(value) => setFormData({ ...formData, subcategory_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('monthlyIncome.subcategoryPlaceholder') || 'Selecione uma subcategoria (opcional)'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {subcategories.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                      {getLocalizedSubcategoryName(sub)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <Label htmlFor="account">{t('futureIncomes.account')}</Label>
