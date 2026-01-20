@@ -115,6 +115,20 @@ export const useUserCategoryTags = () => {
     }
   };
 
+  // Parse error messages from triggers
+  const parseTagErrorMessage = (error: any): { type: string; message: string } | null => {
+    const errorMessage = error?.message || '';
+    
+    if (errorMessage.includes('TAG_IS_CATEGORY:')) {
+      return { type: 'TAG_IS_CATEGORY', message: errorMessage.split('TAG_IS_CATEGORY:')[1]?.trim() || 'Este nome já existe como categoria' };
+    }
+    if (errorMessage.includes('already exists') || error?.code === '23505') {
+      return { type: 'DUPLICATE', message: 'Esta tag já foi adicionada a esta categoria' };
+    }
+    
+    return null;
+  };
+
   const addUserTag = async (categoryId: string, tagName: string, color: string = '#6366f1'): Promise<boolean> => {
     if (!user) return false;
 
@@ -138,14 +152,21 @@ export const useUserCategoryTags = () => {
       });
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding user tag:', error);
       
-      // Check if it's a duplicate error
-      if (error?.message?.includes('already exists') || error?.code === '23505') {
+      const parsedError = parseTagErrorMessage(error);
+      
+      if (parsedError?.type === 'TAG_IS_CATEGORY') {
+        toast({
+          title: "Nome inválido",
+          description: parsedError.message,
+          variant: "destructive",
+        });
+      } else if (parsedError?.type === 'DUPLICATE') {
         toast({
           title: "Tag já existe",
-          description: "Esta tag já foi adicionada a esta categoria.",
+          description: parsedError.message,
           variant: "destructive",
         });
       } else {
