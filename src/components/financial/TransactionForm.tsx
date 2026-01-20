@@ -23,6 +23,8 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCashBalance } from "@/hooks/useCashBalance";
 import { useInvalidateFinancialData } from "@/hooks/useInvalidateFinancialData";
+import { useSubcategories, type Subcategory } from "@/hooks/useSubcategories";
+
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
 }
@@ -114,7 +116,9 @@ export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [subcategory, setSubcategory] = useState("");
+  const [subcategory, setSubcategory] = useState(""); // Kept for backward compatibility
+  const [subcategoryId, setSubcategoryId] = useState<string>(""); // New: linked subcategory
+  const [availableSubcategories, setAvailableSubcategories] = useState<Subcategory[]>([]);
   const [transactionDate, setTransactionDate] = useState<Date>(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Ensure we're using midnight local time
@@ -167,6 +171,25 @@ const [currency, setCurrency] = useState<CurrencyCode>("BRL");
 const { couple, isPartOfCouple } = useCouple();
 const { names } = usePartnerNames();
 const { canSpendCash, getCashBalanceError } = useCashBalance();
+const { fetchSubcategoriesForCategory, getLocalizedName } = useSubcategories();
+
+// Load subcategories when category changes
+useEffect(() => {
+  const loadSubcategories = async () => {
+    if (categoryId) {
+      const subs = await fetchSubcategoriesForCategory(categoryId);
+      setAvailableSubcategories(subs);
+      // Reset subcategory selection when category changes
+      setSubcategoryId("");
+      setSubcategory("");
+    } else {
+      setAvailableSubcategories([]);
+      setSubcategoryId("");
+      setSubcategory("");
+    }
+  };
+  loadSubcategories();
+}, [categoryId, fetchSubcategoriesForCategory]);
 
 const getOwnerName = (ownerUser?: string) => {
   if (ownerUser === 'user2') return names.user2Name;
@@ -576,6 +599,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             description: transferDescOut,
             category_id: categoryId || null,
             subcategory: subcategory || null,
+            subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
             transaction_date: format(transactionDate, 'yyyy-MM-dd'),
             payment_method: 'account_transfer' as any,
             card_id: null,
@@ -593,6 +617,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             description: transferDescIn,
             category_id: categoryId || null,
             subcategory: subcategory || null,
+            subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
             transaction_date: format(transactionDate, 'yyyy-MM-dd'),
             payment_method: 'account_transfer' as any,
             card_id: null,
@@ -607,7 +632,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
 
         toast({ title: t('transactionForm.success'), description: t('transactionForm.transferSuccess') });
         // Reset
-        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(() => {
+        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setSubcategoryId(""); setTransactionDate(() => {
           const now = new Date();
           now.setHours(0, 0, 0, 0);
           return now;
@@ -643,6 +668,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           description: transferDesc,
           category_id: categoryId || null,
           subcategory: subcategory || null,
+          subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
           transaction_date: format(transactionDate, 'yyyy-MM-dd'),
           payment_method: 'account_investment' as any,
           card_id: null,
@@ -702,7 +728,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         });
         
         // Reset
-        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setTransactionDate(() => {
+        setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setSubcategoryId(""); setTransactionDate(() => {
           const now = new Date();
           now.setHours(0, 0, 0, 0);
           return now;
@@ -758,7 +784,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           });
           
           // Reset form
-          setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); 
+          setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setSubcategoryId("");
           setTransactionDate(() => {
             const now = new Date();
             now.setHours(0, 0, 0, 0);
@@ -834,6 +860,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               description: `${description} (${installmentNumber}/${totalInstallments})`,
               category_id: categoryId,
               subcategory: subcategory || null,
+              subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
               // Todas as parcelas usam a data de vencimento como transaction_date
               transaction_date: format(dueDate, 'yyyy-MM-dd'),
               due_date: format(dueDate, 'yyyy-MM-dd'),
@@ -865,6 +892,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           description,
           category_id: categoryId,
           subcategory: subcategory || null,
+          subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
           transaction_date: format(dueDate, 'yyyy-MM-dd'),
           purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
           payment_method: "credit_card",
@@ -981,6 +1009,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             setDescription("");
             setCategoryId("");
             setSubcategory("");
+            setSubcategoryId("");
             setTransactionDate(new Date());
             setPaymentMethod("cash");
             setCardId("");
@@ -1003,6 +1032,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                 description,
                 category_id: categoryId,
                 subcategory: subcategory || null,
+                subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
                 transaction_date: format(transactionDate, 'yyyy-MM-dd'),
                 purchase_date: format(transactionDate, 'yyyy-MM-dd'),
                 payment_method: "payment_transfer",
@@ -1033,6 +1063,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                 description,
                 category_id: categoryId,
                 subcategory: subcategory || null,
+                subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
                 transaction_date: format(transactionDate, 'yyyy-MM-dd'),
                 purchase_date: format(transactionDate, 'yyyy-MM-dd'),
                 payment_method: paymentMethod,
@@ -1179,6 +1210,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
       setDescription("");
       setCategoryId("");
       setSubcategory("");
+      setSubcategoryId("");
       setTransactionDate(() => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
@@ -2071,15 +2103,60 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             </div>
           )}
 
-          {/* Subcategory */}
+          {/* Subcategory - Show as dropdown when subcategories exist, otherwise as text input */}
           <div>
             <Label htmlFor="subcategory">{t('transactionForm.subcategory')}</Label>
-            <Input
-              id="subcategory"
-              placeholder="Ex: Mercado, Posto de gasolina..."
-              value={subcategory}
-              onChange={(e) => setSubcategory(e.target.value)}
-            />
+            {availableSubcategories.length > 0 ? (
+              <Select 
+                value={subcategoryId} 
+                onValueChange={(value) => {
+                  setSubcategoryId(value);
+                  // Also set the text subcategory for backward compatibility
+                  const selectedSub = availableSubcategories.find(s => s.id === value);
+                  setSubcategory(selectedSub ? getLocalizedName(selectedSub) : "");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={language === 'pt' ? 'Selecione uma subcategoria (opcional)' : 'Select a subcategory (optional)'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Option to clear selection */}
+                  <SelectItem value="none">
+                    {language === 'pt' ? '— Nenhuma —' : '— None —'}
+                  </SelectItem>
+                  {availableSubcategories.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                      <div className="flex items-center gap-2">
+                        {sub.color && (
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: sub.color }}
+                          />
+                        )}
+                        <span>{getLocalizedName(sub)}</span>
+                        {sub.is_system && (
+                          <span className="text-xs text-muted-foreground ml-1">(sistema)</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                id="subcategory"
+                placeholder={language === 'pt' ? 'Ex: Mercado, Posto de gasolina...' : 'E.g.: Grocery store, Gas station...'}
+                value={subcategory}
+                onChange={(e) => setSubcategory(e.target.value)}
+              />
+            )}
+            {categoryId && availableSubcategories.length === 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {language === 'pt' 
+                  ? 'Nenhuma subcategoria cadastrada para esta categoria. Você pode criar na área de Categorias.'
+                  : 'No subcategories registered for this category. You can create them in the Categories area.'}
+              </p>
+            )}
           </div>
 
 
