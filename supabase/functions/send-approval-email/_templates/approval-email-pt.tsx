@@ -34,7 +34,7 @@ export const ApprovalEmailPT = ({
       <Container style={container}>
         <div style={header}>
           <img
-            src="https://couplesfinancials.com/icons/icon-96x96.png"
+            src="https://couplesfinancials.com/lovable-uploads/couples-financials-logo-new.png"
             width="48"
             height="48"
             alt="Couples Financials"

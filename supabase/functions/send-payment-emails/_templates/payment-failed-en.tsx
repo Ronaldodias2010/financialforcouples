@@ -27,7 +27,7 @@ export const PaymentFailedEN = ({ userName, customerPortalUrl }: PaymentFailedEN
       <Container style={container}>
         <Section style={logoContainer}>
           <Img
-            src="https://app.couplesfinancials.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png"
+            src="https://couplesfinancials.com/lovable-uploads/couples-financials-logo-new.png"
             width="120"
             height="40"
             alt="Couples Financials"
