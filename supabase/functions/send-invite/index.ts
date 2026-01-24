@@ -31,7 +31,7 @@ const generateInviteEmailHtml = (
   loginUrl: string,
   language: 'pt' | 'en'
 ): string => {
-  const logoUrl = "https://elxttabdtddlavhseipz.lovableproject.com/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
+  const logoUrl = "https://couplesfinancials.com/lovable-uploads/couples-financials-logo-new.png";
   
   const texts = {
     pt: {
