@@ -1,7 +1,7 @@
 import { Heart, Mail, Phone, MapPin, MessageCircle, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
-import logo from "/lovable-uploads/1f5e0469-b056-4cf9-9583-919702fa8736.png";
+import { LOGO_PRIMARY } from "@/constants/branding";
 import { openWhatsApp } from "@/utils/whatsapp";
 import { downloadTutorialPDF } from "@/utils/tutorialUtils";
 
@@ -131,9 +131,9 @@ const Footer = () => {
           {/* Logos centralizados */}
           <div className="flex items-center justify-center gap-4 my-4 md:my-0">
             <img 
-              src={logo} 
+              src={LOGO_PRIMARY} 
               alt="Couples Financials Logo" 
-              className="w-12 h-12 rounded-lg"
+              className="w-12 h-12 rounded-lg object-contain"
             />
             <img 
               src="/lovable-uploads/f14c6e9f-fbe6-4deb-b2aa-30e7435c93dd.png" 

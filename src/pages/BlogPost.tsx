@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { pdfjs } from 'react-pdf';
 import { useTheme } from '@/hooks/useTheme';
+import { LOGO_PRIMARY } from '@/constants/branding';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -305,7 +306,7 @@ export default function BlogPost() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/couples-financials-logo-new.png" 
+              src={LOGO_PRIMARY} 
               alt="Couples Financials" 
               className="h-10 w-10 object-contain"
             />
