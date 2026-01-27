@@ -36,6 +36,7 @@ export function TwoFactorSetup({ open, onOpenChange, method, onComplete }: TwoFa
   // TOTP specific
   const [qrCode, setQrCode] = useState('');
   const [secret, setSecret] = useState('');
+  const [factorId, setFactorId] = useState('');
   const [copied, setCopied] = useState(false);
 
   // Reset state when dialog opens/closes
@@ -45,6 +46,7 @@ export function TwoFactorSetup({ open, onOpenChange, method, onComplete }: TwoFa
       setCode('');
       setQrCode('');
       setSecret('');
+      setFactorId('');
       setPhoneNumber('');
       setCopied(false);
     }
@@ -58,6 +60,8 @@ export function TwoFactorSetup({ open, onOpenChange, method, onComplete }: TwoFa
         if (result) {
           setQrCode(result.qrCode);
           setSecret(result.secret);
+          setFactorId(result.factorId);
+          console.log('[TwoFactorSetup] TOTP enrolled, factorId:', result.factorId);
           setStep('verify');
         } else {
           toast({
@@ -106,7 +110,8 @@ export function TwoFactorSetup({ open, onOpenChange, method, onComplete }: TwoFa
       let success = false;
       
       if (method === 'totp') {
-        success = await verifyTOTP(code);
+        console.log('[TwoFactorSetup] Verifying TOTP with factorId:', factorId);
+        success = await verifyTOTP(code, factorId || undefined);
       } else if (method === 'sms') {
         success = await verifySMS(code);
       } else if (method === 'email') {
