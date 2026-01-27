@@ -88,74 +88,12 @@ const generateEmailHtml = (
 
   const t = texts[language];
 
-  return `
-<!DOCTYPE html>
-<html lang="${language}">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${t.title}</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #1a1a2e; min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #1a1a2e; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #16213e; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
-          <!-- Header -->
-          <tr>
-            <td align="center" style="padding: 40px 40px 20px;">
-              <img src="${logoUrl}" alt="Couples Financials" width="80" height="80" style="border-radius: 8px; display: block;">
-              <h1 style="color: #e94560; font-size: 28px; font-weight: bold; margin: 20px 0 0;">Couples Financials</h1>
-            </td>
-          </tr>
-          
-          <!-- Main Content -->
-          <tr>
-            <td style="padding: 20px 40px;">
-              <h2 style="color: #ffffff; font-size: 24px; font-weight: 600; text-align: center; margin: 0 0 24px;">${t.title}</h2>
-              <p style="color: #e2e8f0; font-size: 16px; line-height: 24px; margin: 0 0 16px;">${t.greeting}</p>
-              <p style="color: #e2e8f0; font-size: 16px; line-height: 24px; margin: 0 0 24px;">${t.message}</p>
-              
-              <!-- Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="padding: 16px 0 32px;">
-                    <a href="${confirmUrl}" target="_blank" style="display: inline-block; background-color: #22c55e; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 32px; border-radius: 8px;">${t.button}</a>
-                  </td>
-                </tr>
-              </table>
-              
-              ${!isMagicLink ? `
-              <!-- Features -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: rgba(233, 69, 96, 0.1); border-radius: 8px; padding: 20px;">
-                <tr>
-                  <td style="padding: 16px;">
-                    ${t.features.map(feature => `<p style="color: #e2e8f0; font-size: 14px; line-height: 20px; margin: 8px 0;">${feature}</p>`).join('')}
-                  </td>
-                </tr>
-              </table>
-              ` : ''}
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="padding: 20px 40px 40px;">
-              <hr style="border: none; border-top: 1px solid #334155; margin: 0 0 20px;">
-              <p style="color: #94a3b8; font-size: 14px; line-height: 20px; text-align: center; margin: 0 0 16px;">${t.footer}</p>
-              <p style="color: #94a3b8; font-size: 14px; line-height: 20px; text-align: center; margin: 0;">© 2024 Couples Financials. All rights reserved.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `;
+  return `<!DOCTYPE html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${t.title}</title></head><body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#1a1a2e;min-height:100vh;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#1a1a2e;padding:40px 20px;"><tr><td align="center"><table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#16213e;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.3);"><tr><td align="center" style="padding:40px 40px 20px;"><img src="${logoUrl}" alt="Couples Financials" width="80" height="80" style="border-radius:8px;display:block;"><h1 style="color:#e94560;font-size:28px;font-weight:bold;margin:20px 0 0;">Couples Financials</h1></td></tr><tr><td style="padding:20px 40px;"><h2 style="color:#ffffff;font-size:24px;font-weight:600;text-align:center;margin:0 0 24px;">${t.title}</h2><p style="color:#e2e8f0;font-size:16px;line-height:24px;margin:0 0 16px;">${t.greeting}</p><p style="color:#e2e8f0;font-size:16px;line-height:24px;margin:0 0 24px;">${t.message}</p><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:16px 0 32px;"><a href="${confirmUrl}" target="_blank" style="display:inline-block;background-color:#22c55e;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;padding:16px 32px;border-radius:8px;">${t.button}</a></td></tr></table>${!isMagicLink ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:rgba(233,69,96,0.1);border-radius:8px;padding:20px;"><tr><td style="padding:16px;">${t.features.map(f => `<p style="color:#e2e8f0;font-size:14px;line-height:20px;margin:8px 0;">${f}</p>`).join('')}</td></tr></table>` : ''}</td></tr><tr><td style="padding:20px 40px 40px;"><hr style="border:none;border-top:1px solid #334155;margin:0 0 20px;"><p style="color:#94a3b8;font-size:14px;line-height:20px;text-align:center;margin:0 0 16px;">${t.footer}</p><p style="color:#94a3b8;font-size:14px;line-height:20px;text-align:center;margin:0;">© 2024 Couples Financials. All rights reserved.</p></td></tr></table></td></tr></table></body></html>`;
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  const startTime = Date.now();
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -171,68 +109,72 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const payload: WebhookPayload = JSON.parse(requestText);
-    console.log('Webhook payload received:', JSON.stringify({ user: payload.user.email }, null, 2));
+    const { user, email_data } = payload;
+    const { token_hash, redirect_to, email_action_type } = email_data;
 
-    // Process email in background to avoid timeout
-    (async () => {
-      try {
-        const { user, email_data } = payload;
-        const { token_hash, redirect_to, email_action_type } = email_data;
+    console.log(`[${Date.now() - startTime}ms] Webhook received for: ${user.email}`);
 
-        // Detect language from redirect_to URL
-        const detectLanguage = (redirectTo: string): 'pt' | 'en' | 'es' => {
-          try {
-            const url = new URL(redirectTo);
-            const langParam = url.searchParams.get('lang');
-            if (langParam === 'en' || langParam === 'es' || langParam === 'pt') {
-              return langParam;
-            }
-          } catch {}
-          return 'pt';
-        };
-
-        const language = detectLanguage(redirect_to);
-        const userName = user.user_metadata?.display_name ||
-                        user.user_metadata?.full_name || 
-                        user.user_metadata?.name || 
-                        user.email.split('@')[0];
-
-        // Build the real Supabase verification URL that will actually confirm the email
-        const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
-        
-        const action = (email_action_type || '').toLowerCase();
-        const isMagicLink = action.includes('magic') || action === 'email_link';
-
-        const emailHtml = generateEmailHtml(userName, confirmUrl, isMagicLink, language);
-
-        const subject = isMagicLink
-          ? (language === 'en'
-              ? '✅ Email verified — continue to secure payment'
-              : language === 'es'
-              ? '✅ Email verificado — continúa al pago seguro'
-              : '✅ Email verificado — continue para o pagamento com segurança')
-          : (language === 'en'
-              ? '🎉 Confirm your email address - Couples Financials'
-              : language === 'es'
-              ? '🎉 Confirma tu dirección de email - Couples Financials'
-              : '🎉 Confirme seu endereço de email - Couples Financials');
-
-        console.log(`Sending email to ${user.email} with subject: ${subject}`);
-        console.log(`Confirmation URL (type: ${email_action_type}): ${confirmUrl.substring(0, 100)}...`);
-        
-        const emailResponse = await resend.emails.send({
-          from: "Couples Financials <noreply@couplesfinancials.com>",
-          to: [user.email],
-          subject,
-          html: emailHtml,
-        });
-
-        console.log("Email sent successfully:", JSON.stringify(emailResponse));
-      } catch (bgErr) {
-        console.error('Error sending email in background:', bgErr);
+    // Detect language from redirect_to URL
+    let language: 'pt' | 'en' | 'es' = 'pt';
+    try {
+      const url = new URL(redirect_to);
+      const langParam = url.searchParams.get('lang');
+      if (langParam === 'en' || langParam === 'es' || langParam === 'pt') {
+        language = langParam;
       }
-    })();
+    } catch {}
 
+    const userName = user.user_metadata?.display_name ||
+                    user.user_metadata?.full_name || 
+                    user.user_metadata?.name || 
+                    user.email.split('@')[0];
+
+    // Build the real Supabase verification URL
+    const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
+    
+    const action = (email_action_type || '').toLowerCase();
+    const isMagicLink = action.includes('magic') || action === 'email_link';
+
+    const emailHtml = generateEmailHtml(userName, confirmUrl, isMagicLink, language);
+
+    const subject = isMagicLink
+      ? (language === 'en'
+          ? '✅ Email verified — continue to secure payment'
+          : language === 'es'
+          ? '✅ Email verificado — continúa al pago seguro'
+          : '✅ Email verificado — continue para o pagamento com segurança')
+      : (language === 'en'
+          ? '🎉 Confirm your email address - Couples Financials'
+          : language === 'es'
+          ? '🎉 Confirma tu dirección de email - Couples Financials'
+          : '🎉 Confirme seu endereço de email - Couples Financials');
+
+    console.log(`[${Date.now() - startTime}ms] Sending email to ${user.email}`);
+    
+    // Send email synchronously but with timeout protection
+    const emailPromise = resend.emails.send({
+      from: "Couples Financials <noreply@couplesfinancials.com>",
+      to: [user.email],
+      subject,
+      html: emailHtml,
+    });
+
+    // Wait max 3.5 seconds for email, then respond anyway
+    const timeoutPromise = new Promise((resolve) => {
+      setTimeout(() => resolve({ timeout: true }), 3500);
+    });
+
+    const result = await Promise.race([emailPromise, timeoutPromise]) as any;
+    
+    if (result?.timeout) {
+      console.log(`[${Date.now() - startTime}ms] Email queued (timeout protection)`);
+      // Email will still be sent in background, but we respond to avoid webhook timeout
+    } else {
+      console.log(`[${Date.now() - startTime}ms] Email sent successfully:`, result?.data?.id || 'unknown');
+    }
+
+    console.log(`[${Date.now() - startTime}ms] Responding to webhook`);
+    
     return new Response(JSON.stringify({ accepted: true }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },

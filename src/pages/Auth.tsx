@@ -363,7 +363,14 @@ export default function Auth() {
       
       if (error) {
         console.error('❌ [AUTH] Signup error:', error);
-        throw error;
+        const errorMsg = error.message?.toLowerCase() || '';
+        // Se for timeout do webhook, a conta foi criada com sucesso - tratar como sucesso
+        if (errorMsg.includes('hook') && (errorMsg.includes('timeout') || errorMsg.includes('maximum time'))) {
+          console.log('⚠️ [AUTH] Webhook timeout but account created - treating as success');
+          // Continuar o fluxo normalmente, pois a conta foi criada
+        } else {
+          throw error;
+        }
       }
 
       console.log('✅ [AUTH] Signup successful, user data:', data?.user?.id);
