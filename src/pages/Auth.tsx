@@ -205,12 +205,36 @@ export default function Auth() {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      const translatedError = translateAuthError(error.message || '', language);
-      toast({
-        variant: "destructive",
-        title: t('auth.loginErrorTitle'),
-        description: translatedError,
-      });
+      const errorMsg = error.message?.toLowerCase() || '';
+      const errorCode = error.code || '';
+      
+      // Verificar se é erro de email não confirmado ou credenciais inválidas
+      if (errorMsg.includes('email not confirmed') || errorMsg.includes('invalid login credentials') || errorCode === 'invalid_credentials') {
+        const errorTitle = language === 'en' 
+          ? 'Login Error' 
+          : language === 'es' 
+          ? 'Error de inicio de sesión' 
+          : 'Erro no login';
+        
+        const errorDesc = language === 'en'
+          ? 'Invalid credentials or email not confirmed. Check your inbox for the confirmation link, or try registering again if you haven\'t received the email.'
+          : language === 'es'
+          ? 'Credenciales inválidas o email no confirmado. Revisa tu bandeja de entrada para el enlace de confirmación, o intenta registrarte de nuevo si no recibiste el email.'
+          : 'Credenciais inválidas ou e-mail não confirmado. Verifique sua caixa de entrada para o link de confirmação, ou tente se cadastrar novamente se não recebeu o e-mail.';
+        
+        toast({
+          variant: "destructive",
+          title: errorTitle,
+          description: errorDesc,
+        });
+      } else {
+        const translatedError = translateAuthError(error.message || '', language);
+        toast({
+          variant: "destructive",
+          title: t('auth.loginErrorTitle'),
+          description: translatedError,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -361,53 +385,64 @@ export default function Auth() {
         }
       });
       
-      if (error) {
+      const errorMsg = error?.message?.toLowerCase() || '';
+      const isWebhookTimeout = errorMsg.includes('hook') && (errorMsg.includes('timeout') || errorMsg.includes('maximum time'));
+      
+      if (error && !isWebhookTimeout) {
         console.error('❌ [AUTH] Signup error:', error);
-        const errorMsg = error.message?.toLowerCase() || '';
-        // Se for timeout do webhook, a conta foi criada com sucesso - tratar como sucesso
-        if (errorMsg.includes('hook') && (errorMsg.includes('timeout') || errorMsg.includes('maximum time'))) {
-          console.log('⚠️ [AUTH] Webhook timeout but account created - treating as success');
-          // Continuar o fluxo normalmente, pois a conta foi criada
-        } else {
-          throw error;
-        }
+        throw error;
       }
 
-      console.log('✅ [AUTH] Signup successful, user data:', data?.user?.id);
+      if (isWebhookTimeout) {
+        console.log('⚠️ [AUTH] Webhook timeout - account may have been created, showing success message');
+      }
+
+      console.log('✅ [AUTH] Signup process completed, user data:', data?.user?.id);
 
       // Enviar email de confirmação usando nosso template personalizado
-      if (data.user && !data.session) {
+      const userEmail = data?.user?.email || email;
+      if (userEmail) {
         console.log('📧 [AUTH] Invoking send-confirmation edge function...');
         try {
           await supabase.functions.invoke('send-confirmation', {
             body: {
-              userEmail: email,
+              userEmail: userEmail,
               language: language
             }
           });
           console.log('✅ [AUTH] Send-confirmation invoked successfully');
         } catch (emailError) {
           console.error('⚠️ [AUTH] Error invoking send-confirmation (non-critical):', emailError);
-          // Não falhar o signup se o email falhar
         }
       }
       
-      if (data.user) {
-        trackSignUp('email');
-        // Mostrar toast com duração estendida de 20 segundos
-        toast({
-          title: `✅ ${t('auth.signupSuccessTitle')}`,
-          description: `📧 ${t('auth.signupSuccessDesc')}`,
-          duration: 20000, // 20 segundos
-        });
-        
-        // Limpar formulário
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setDisplayName('');
-        setPhoneNumber('');
-      }
+      trackSignUp('email');
+      
+      // Mostrar mensagem de sucesso clara
+      const successTitle = language === 'en' 
+        ? '✅ Account Created Successfully!' 
+        : language === 'es' 
+        ? '✅ ¡Cuenta Creada con Éxito!' 
+        : '✅ Conta Criada com Sucesso!';
+      
+      const successDesc = language === 'en'
+        ? '📧 Check your email inbox and click the confirmation link to activate your account. After confirming, you can log in.'
+        : language === 'es'
+        ? '📧 Revisa tu bandeja de entrada y haz clic en el enlace de confirmación para activar tu cuenta. Después de confirmar, podrás iniciar sesión.'
+        : '📧 Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta. Após confirmar, você poderá fazer login.';
+      
+      toast({
+        title: successTitle,
+        description: successDesc,
+        duration: 30000, // 30 segundos para dar tempo de ler
+      });
+      
+      // Limpar formulário
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setDisplayName('');
+      setPhoneNumber('');
     } catch (error: any) {
       const translatedError = translateAuthError(error.message || '', language);
       toast({
