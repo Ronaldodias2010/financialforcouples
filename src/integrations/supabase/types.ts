@@ -2739,11 +2739,13 @@ export type Database = {
           cpf_partner: string | null
           created_at: string
           display_name: string | null
+          email_verified: boolean | null
           id: string
           phone_number: string | null
           preferred_currency:
             | Database["public"]["Enums"]["currency_type"]
             | null
+          provisional_login: boolean | null
           second_user_email: string | null
           second_user_name: string | null
           subscribed: boolean | null
@@ -2759,11 +2761,13 @@ export type Database = {
           cpf_partner?: string | null
           created_at?: string
           display_name?: string | null
+          email_verified?: boolean | null
           id?: string
           phone_number?: string | null
           preferred_currency?:
             | Database["public"]["Enums"]["currency_type"]
             | null
+          provisional_login?: boolean | null
           second_user_email?: string | null
           second_user_name?: string | null
           subscribed?: boolean | null
@@ -2779,11 +2783,13 @@ export type Database = {
           cpf_partner?: string | null
           created_at?: string
           display_name?: string | null
+          email_verified?: boolean | null
           id?: string
           phone_number?: string | null
           preferred_currency?:
             | Database["public"]["Enums"]["currency_type"]
             | null
+          provisional_login?: boolean | null
           second_user_email?: string | null
           second_user_name?: string | null
           subscribed?: boolean | null
@@ -5177,6 +5183,7 @@ export type Database = {
         Returns: string
       }
       is_admin_user: { Args: never; Returns: boolean }
+      is_email_verified: { Args: { p_user_id: string }; Returns: boolean }
       mark_expiration_email_sent: {
         Args: {
           p_email: string
@@ -5309,6 +5316,7 @@ export type Database = {
         Args: { hash: string; password: string }
         Returns: boolean
       }
+      verify_user_email: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
       account_type: "checking" | "savings" | "investment" | "emergency"

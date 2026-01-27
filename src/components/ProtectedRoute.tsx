@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
 import { Loader2 } from 'lucide-react';
+import { UnverifiedEmailBanner } from '@/components/auth/UnverifiedEmailBanner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -37,5 +38,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <UnverifiedEmailBanner />
+      {children}
+    </>
+  );
 }

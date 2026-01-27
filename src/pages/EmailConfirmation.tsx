@@ -56,6 +56,18 @@ export default function EmailConfirmation() {
           if (sessionData.session) {
             console.log('Session set successfully, user:', sessionData.session.user.email);
             console.log('Email confirmed at:', sessionData.session.user.email_confirmed_at);
+            
+            // Mark email as verified in profiles table
+            try {
+              await supabase.rpc('verify_user_email', { 
+                p_user_id: sessionData.session.user.id 
+              });
+              console.log('Profile email_verified flag updated');
+            } catch (verifyError) {
+              console.error('Error updating email_verified flag:', verifyError);
+              // Continue anyway - the session is valid
+            }
+            
             setStatus('success');
             setShouldRedirect(true);
             
@@ -81,6 +93,17 @@ export default function EmailConfirmation() {
           console.log('Email confirmed at:', session.user.email_confirmed_at);
           
           if (session.user.email_confirmed_at) {
+            // Mark email as verified in profiles table
+            try {
+              await supabase.rpc('verify_user_email', { 
+                p_user_id: session.user.id 
+              });
+              console.log('Profile email_verified flag updated');
+            } catch (verifyError) {
+              console.error('Error updating email_verified flag:', verifyError);
+              // Continue anyway - the session is valid
+            }
+            
             setStatus('success');
             setShouldRedirect(true);
           } else {
