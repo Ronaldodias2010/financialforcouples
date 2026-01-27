@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import { trackSignUp, trackLogin } from '@/utils/analytics';
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 import { TwoFactorMethod } from '@/hooks/use2FA';
 import { use2FAStatus } from '@/hooks/use2FAStatus';
+import { ProvisionalAccessAlert } from '@/components/auth/ProvisionalAccessAlert';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +37,13 @@ export default function Auth() {
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [smsError, setSmsError] = useState(false);
   const [smsErrorMessage, setSmsErrorMessage] = useState<string | null>(null);
+  
+  // Provisional login state
+  const [showProvisionalAlert, setShowProvisionalAlert] = useState(false);
+  const [pendingSignupEmail, setPendingSignupEmail] = useState<string | null>(null);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const provisionalTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
   const { has2FAEnabled, isLoaded: is2FAStatusLoaded } = use2FAStatus();
@@ -420,6 +428,9 @@ export default function Auth() {
       
       trackSignUp('email');
       
+      // Store email for provisional login flow
+      setPendingSignupEmail(email);
+      
       // Mostrar mensagem de sucesso clara
       const successTitle = language === 'en' 
         ? '✅ Account Created Successfully!' 
@@ -428,19 +439,26 @@ export default function Auth() {
         : '✅ Conta Criada com Sucesso!';
       
       const successDesc = language === 'en'
-        ? '📧 Check your email inbox and click the confirmation link to activate your account. After confirming, you can log in.'
+        ? '📧 Check your email inbox and click the confirmation link to activate your account.'
         : language === 'es'
-        ? '📧 Revisa tu bandeja de entrada y haz clic en el enlace de confirmación para activar tu cuenta. Después de confirmar, podrás iniciar sesión.'
-        : '📧 Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta. Após confirmar, você poderá fazer login.';
+        ? '📧 Revisa tu bandeja de entrada y haz clic en el enlace de confirmación para activar tu cuenta.'
+        : '📧 Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta.';
       
       toast({
         title: successTitle,
         description: successDesc,
-        duration: 30000, // 30 segundos para dar tempo de ler
+        duration: 30000,
       });
       
-      // Limpar formulário
-      setEmail('');
+      // Start 30-second timer to show provisional access alert
+      if (provisionalTimerRef.current) {
+        clearTimeout(provisionalTimerRef.current);
+      }
+      provisionalTimerRef.current = setTimeout(() => {
+        setShowProvisionalAlert(true);
+      }, 30000);
+      
+      // Limpar formulário (exceto email para reenvio)
       setPassword('');
       setConfirmPassword('');
       setDisplayName('');
@@ -456,6 +474,151 @@ export default function Auth() {
       setIsLoading(false);
     }
   };
+  
+  // Handler for resending confirmation email
+  const handleResendConfirmationEmail = async (): Promise<boolean> => {
+    const emailToResend = pendingSignupEmail || email;
+    if (!emailToResend) return false;
+    
+    setIsResendingEmail(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-confirmation', {
+        body: { email: emailToResend }
+      });
+      
+      if (error) {
+        console.error('[Auth] Error resending confirmation:', error);
+        toast({
+          variant: 'destructive',
+          title: language === 'en' ? 'Error' : language === 'es' ? 'Error' : 'Erro',
+          description: language === 'en' 
+            ? 'Could not resend email. Please try again.' 
+            : language === 'es'
+            ? 'No se pudo reenviar el correo. Intente nuevamente.'
+            : 'Não foi possível reenviar o e-mail. Tente novamente.',
+        });
+        return false;
+      }
+      
+      toast({
+        title: language === 'en' ? 'Email sent!' : language === 'es' ? '¡Correo enviado!' : 'E-mail enviado!',
+        description: language === 'en' 
+          ? 'Check your inbox and spam folder.' 
+          : language === 'es'
+          ? 'Revisa tu bandeja de entrada y spam.'
+          : 'Verifique sua caixa de entrada e spam.',
+      });
+      return true;
+    } catch (err) {
+      console.error('[Auth] Exception resending email:', err);
+      return false;
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
+  
+  // Handler for provisional login
+  const handleProvisionalLogin = async () => {
+    const emailToLogin = pendingSignupEmail || email;
+    if (!emailToLogin || !password) {
+      toast({
+        variant: 'destructive',
+        title: language === 'en' ? 'Missing credentials' : language === 'es' ? 'Credenciales faltantes' : 'Credenciais faltando',
+        description: language === 'en' 
+          ? 'Please enter your password to continue.' 
+          : language === 'es'
+          ? 'Por favor ingrese su contraseña para continuar.'
+          : 'Por favor, insira sua senha para continuar.',
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      // Limpar estado de autenticação
+      try {
+        const { cleanupAuthState } = await import('@/utils/authCleanup');
+        cleanupAuthState();
+        try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
+      } catch {}
+      
+      // Tentar login com as credenciais
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailToLogin,
+        password,
+      });
+      
+      if (error) {
+        // Se for erro de email não confirmado, permitimos o login provisório
+        if (error.message?.toLowerCase().includes('email not confirmed')) {
+          console.log('[Auth] Email not confirmed - this is expected for provisional login');
+          // O usuário existe mas email não está confirmado
+          // Redirecionar para o app com estado provisório
+          toast({
+            title: language === 'en' ? 'Provisional access' : language === 'es' ? 'Acceso provisional' : 'Acesso provisório',
+            description: language === 'en' 
+              ? 'You have provisional access. Please confirm your email for full access.' 
+              : language === 'es'
+              ? 'Tienes acceso provisional. Confirma tu correo para acceso completo.'
+              : 'Você tem acesso provisório. Confirme seu e-mail para acesso completo.',
+          });
+          
+          // Para login provisório com email não confirmado, precisamos de uma solução diferente
+          // Por enquanto, apenas mostrar uma mensagem
+          toast({
+            variant: 'destructive',
+            title: language === 'en' ? 'Email confirmation required' : language === 'es' ? 'Se requiere confirmación de correo' : 'Confirmação de e-mail necessária',
+            description: language === 'en' 
+              ? 'Please check your email and click the confirmation link first, or try resending the email.' 
+              : language === 'es'
+              ? 'Por favor revisa tu correo y haz clic en el enlace de confirmación, o intenta reenviar el correo.'
+              : 'Por favor, verifique seu e-mail e clique no link de confirmação, ou tente reenviar o e-mail.',
+          });
+        } else {
+          throw error;
+        }
+      } else if (data.user) {
+        // Login bem-sucedido
+        trackLogin('email');
+        toast({
+          title: language === 'en' ? 'Logged in!' : language === 'es' ? '¡Sesión iniciada!' : 'Login realizado!',
+          description: language === 'en' 
+            ? 'Welcome to the platform.' 
+            : language === 'es'
+            ? 'Bienvenido a la plataforma.'
+            : 'Bem-vindo à plataforma.',
+        });
+        
+        // Clear timer and state
+        if (provisionalTimerRef.current) {
+          clearTimeout(provisionalTimerRef.current);
+        }
+        setShowProvisionalAlert(false);
+        setPendingSignupEmail(null);
+        
+        window.location.href = '/app';
+      }
+    } catch (error: any) {
+      console.error('[Auth] Provisional login error:', error);
+      const translatedError = translateAuthError(error.message || '', language);
+      toast({
+        variant: 'destructive',
+        title: language === 'en' ? 'Login error' : language === 'es' ? 'Error de inicio de sesión' : 'Erro no login',
+        description: translatedError,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (provisionalTimerRef.current) {
+        clearTimeout(provisionalTimerRef.current);
+      }
+    };
+  }, []);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -776,6 +939,18 @@ export default function Auth() {
                   </svg>
                   {t('auth.continueWithGoogle')}
                 </Button>
+                
+                {/* Provisional Access Alert - appears after 30 seconds */}
+                {showProvisionalAlert && pendingSignupEmail && (
+                  <div className="mt-4">
+                    <ProvisionalAccessAlert
+                      email={pendingSignupEmail}
+                      onResendEmail={handleResendConfirmationEmail}
+                      onProvisionalLogin={handleProvisionalLogin}
+                      isResending={isResendingEmail}
+                    />
+                  </div>
+                )}
               </form>
             </TabsContent>
           </Tabs>
