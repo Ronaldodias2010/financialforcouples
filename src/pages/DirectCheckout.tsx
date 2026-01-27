@@ -12,6 +12,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PasswordValidation, PasswordMatchValidation, validatePassword } from "@/components/ui/PasswordValidation";
 import { trackBeginCheckout, trackSignUp } from "@/utils/analytics";
+import { translateAuthError } from "@/utils/authErrors";
 
 const DirectCheckout = () => {
   const { t, language, inBrazil } = useLanguage();
@@ -287,7 +288,9 @@ const DirectCheckout = () => {
       const lower = message.toLowerCase();
 
       let errorMessage = t('directCheckout.unexpectedError');
-      if (lower.includes('user already registered')) {
+      if (lower.includes('weak_password') || lower.includes('password is known to be weak') || lower.includes('pwned')) {
+        errorMessage = translateAuthError(message, language as any);
+      } else if (lower.includes('user already registered')) {
         errorMessage = t('directCheckout.emailAlreadyExists');
       } else if (message) {
         errorMessage = message;
