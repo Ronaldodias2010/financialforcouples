@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useFirstAccess } from "@/hooks/useFirstAccess";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical, Shield } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,7 @@ import { CurrencyRatesDisplay } from "@/components/financial/CurrencyRatesDispla
 import TestimonialFormModal from "@/components/landing/TestimonialFormModal";
 import { FirstAccessWelcomeModal } from "@/components/onboarding/FirstAccessWelcomeModal";
 import { WhatsAppPhoneRequiredModal } from "@/components/onboarding/WhatsAppPhoneRequiredModal";
+import { TwoFactorToggle } from "@/components/auth/TwoFactorToggle";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
@@ -98,6 +99,9 @@ const AppDashboard = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              {/* Toggle 2FA ao lado do tutorial */}
+              <TwoFactorToggle variant="compact" showLabel={false} />
+
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -174,6 +178,13 @@ const AppDashboard = () => {
                   <DropdownMenuItem onClick={() => setTestimonialOpen(true)}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     {t('testimonials.submitButton')}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem onClick={() => navigate('/security-settings')}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    {t('2fa.security.title')}
                   </DropdownMenuItem>
 
                   {isAdmin && (
