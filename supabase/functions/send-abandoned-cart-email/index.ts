@@ -55,7 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send the email
     logStep("Sending email", { to: customerEmail });
     const emailResponse = await resend.emails.send({
-      from: "Couples Financials <no-reply@elxttabdtddlavhseipz.lovableproject.com>",
+      from: "Couples Financials <noreply@couplesfinancials.com>",
       to: [customerEmail],
       subject: "🚀 Não perca sua chance de ter o Premium - Couples Financials",
       html: emailHtml,
