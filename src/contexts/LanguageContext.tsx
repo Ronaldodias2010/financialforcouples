@@ -2531,6 +2531,16 @@ const translations = {
     '2fa.error.useBackupOrRetry': 'Você pode tentar reenviar ou usar um código de backup.',
     '2fa.verification.retrySms': 'Tentar Reenviar SMS',
     
+    // 2FA Toggle
+    '2fa.toggle.enable': 'Ativar 2FA',
+    '2fa.toggle.enabled': '2FA Ativo',
+    '2fa.toggle.disabled': '2FA Inativo - Clique para ativar',
+    '2fa.toggle.clickToEnable': 'Clique para ativar 2FA',
+    '2fa.toggle.clickToDisable': 'Clique para desativar',
+    '2fa.disabled.title': '2FA Desativado',
+    '2fa.disabled.description': 'A autenticação de dois fatores foi desativada. Você pode reativá-la a qualquer momento.',
+    '2fa.error.disableFailed': 'Falha ao desativar 2FA. Tente novamente.',
+    
     // Landing - Income Tax Section (Brazil only)
     'landing.incomeTax.badge': '🇧🇷 Exclusivo Brasil',
     'landing.incomeTax.title': 'Declaração de Imposto de Renda Simplificada',
@@ -5307,6 +5317,16 @@ const translations = {
     '2fa.error.useBackupOrRetry': 'You can retry or use a backup code.',
     '2fa.verification.retrySms': 'Retry SMS',
     
+    // 2FA Toggle
+    '2fa.toggle.enable': 'Enable 2FA',
+    '2fa.toggle.enabled': '2FA Active',
+    '2fa.toggle.disabled': '2FA Inactive - Click to enable',
+    '2fa.toggle.clickToEnable': 'Click to enable 2FA',
+    '2fa.toggle.clickToDisable': 'Click to disable',
+    '2fa.disabled.title': '2FA Disabled',
+    '2fa.disabled.description': 'Two-factor authentication has been disabled. You can re-enable it at any time.',
+    '2fa.error.disableFailed': 'Failed to disable 2FA. Please try again.',
+    
     // Landing - Income Tax Section (Brazil only)
     'landing.incomeTax.badge': '🇧🇷 Brazil Exclusive',
     'landing.incomeTax.title': 'Simplified Income Tax Declaration',
@@ -8048,6 +8068,16 @@ const translations = {
     '2fa.error.smsFailed': 'No se pudo enviar la verificación por SMS.',
     '2fa.error.useBackupOrRetry': 'Puedes reintentar o usar un código de respaldo.',
     '2fa.verification.retrySms': 'Reintentar SMS',
+    
+    // 2FA Toggle
+    '2fa.toggle.enable': 'Activar 2FA',
+    '2fa.toggle.enabled': '2FA Activo',
+    '2fa.toggle.disabled': '2FA Inactivo - Clic para activar',
+    '2fa.toggle.clickToEnable': 'Clic para activar 2FA',
+    '2fa.toggle.clickToDisable': 'Clic para desactivar',
+    '2fa.disabled.title': '2FA Desactivado',
+    '2fa.disabled.description': 'La autenticación de dos factores ha sido desactivada. Puedes reactivarla en cualquier momento.',
+    '2fa.error.disableFailed': 'Error al desactivar 2FA. Inténtalo de nuevo.',
     
     // Landing - Income Tax Section (Brazil only)
     'landing.incomeTax.badge': '🇧🇷 Exclusivo Brasil',
