@@ -394,25 +394,27 @@ export default function Auth() {
       }
 
       if (isWebhookTimeout) {
-        console.log('⚠️ [AUTH] Webhook timeout - account may have been created, showing success message');
-      }
-
-      console.log('✅ [AUTH] Signup process completed, user data:', data?.user?.id);
-
-      // Enviar email de confirmação usando nosso template personalizado
-      const userEmail = data?.user?.email || email;
-      if (userEmail) {
-        console.log('📧 [AUTH] Invoking send-confirmation edge function...');
-        try {
-          await supabase.functions.invoke('send-confirmation', {
-            body: {
-              userEmail: userEmail,
-              language: language
-            }
-          });
-          console.log('✅ [AUTH] Send-confirmation invoked successfully');
-        } catch (emailError) {
-          console.error('⚠️ [AUTH] Error invoking send-confirmation (non-critical):', emailError);
+        // Quando há timeout do webhook, NÃO chamar send-confirmation
+        // O webhook já envia o email automaticamente em segundo plano
+        console.log('⚠️ [AUTH] Webhook timeout - email de confirmação será enviado pelo webhook automaticamente');
+      } else if (data?.user?.id) {
+        // Só chamar send-confirmation se o signup foi bem sucedido E não houve timeout
+        console.log('✅ [AUTH] Signup completed, user ID:', data.user.id);
+        
+        const userEmail = data?.user?.email || email;
+        if (userEmail) {
+          console.log('📧 [AUTH] Invoking send-confirmation edge function...');
+          try {
+            await supabase.functions.invoke('send-confirmation', {
+              body: {
+                userEmail: userEmail,
+                language: language
+              }
+            });
+            console.log('✅ [AUTH] Send-confirmation invoked successfully');
+          } catch (emailError) {
+            console.error('⚠️ [AUTH] Error invoking send-confirmation (non-critical):', emailError);
+          }
         }
       }
       
