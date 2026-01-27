@@ -7,6 +7,22 @@ interface ErrorTranslation {
 }
 
 const errorTranslations: Record<string, ErrorTranslation> = {
+  // Supabase leaked password protection / weak_password (pwned)
+  'Password is known to be weak and easy to guess': {
+    pt: 'Senha muito comum e fácil de adivinhar. Escolha uma senha diferente (evite sequências e padrões comuns).',
+    en: 'Password is too common and easy to guess. Please choose a different password.',
+    es: 'La contraseña es demasiado común y fácil de adivinar. Elija una contraseña diferente.'
+  },
+  'weak_password': {
+    pt: 'Senha muito comum e fácil de adivinhar. Escolha uma senha diferente.',
+    en: 'Password is too common and easy to guess. Please choose a different password.',
+    es: 'La contraseña es demasiado común y fácil de adivinar. Elija una contraseña diferente.'
+  },
+  'pwned': {
+    pt: 'Essa senha aparece como comprometida (vazamentos). Escolha uma senha única e diferente.',
+    en: 'This password appears compromised (leaked). Please choose a unique password.',
+    es: 'Esta contraseña parece comprometida (filtrada). Elija una contraseña única.'
+  },
   'Email not confirmed': {
     pt: 'E-mail não confirmado. Verifique sua caixa de entrada.',
     en: 'Email not confirmed. Please check your inbox.',
