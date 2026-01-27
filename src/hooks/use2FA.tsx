@@ -22,8 +22,8 @@ export interface Use2FAReturn {
   isEnabled: boolean;
   method: TwoFactorMethod;
   fetchSettings: () => Promise<void>;
-  enableTOTP: () => Promise<{ qrCode: string; secret: string } | null>;
-  verifyTOTP: (code: string) => Promise<boolean>;
+  enableTOTP: () => Promise<{ qrCode: string; secret: string; factorId: string } | null>;
+  verifyTOTP: (code: string, factorId?: string) => Promise<boolean>;
   enableSMS: (phoneNumber: string) => Promise<boolean>;
   verifySMS: (code: string) => Promise<boolean>;
   enableEmail: () => Promise<boolean>;
@@ -76,7 +76,7 @@ export function use2FA(): Use2FAReturn {
     fetchSettings();
   }, [fetchSettings]);
 
-  const enableTOTP = async (): Promise<{ qrCode: string; secret: string } | null> => {
+  const enableTOTP = async (): Promise<{ qrCode: string; secret: string; factorId: string } | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
@@ -114,9 +114,12 @@ export function use2FA(): Use2FAReturn {
         return null;
       }
 
+      console.log('[2FA] TOTP enrolled successfully, factorId:', data.id);
+
       return {
         qrCode: data.totp.qr_code,
         secret: data.totp.secret,
+        factorId: data.id,
       };
     } catch (error) {
       console.error('Error in enableTOTP:', error);
@@ -124,33 +127,36 @@ export function use2FA(): Use2FAReturn {
     }
   };
 
-  const verifyTOTP = async (code: string): Promise<boolean> => {
+  const verifyTOTP = async (code: string, providedFactorId?: string): Promise<boolean> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      // First, get list of enrolled factors to find the correct factorId
-      const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
-      
-      if (factorsError) {
-        console.error('Error listing factors:', factorsError);
-        return false;
-      }
+      let factorId: string | null = providedFactorId || null;
 
-      // Find the unverified TOTP factor (just enrolled)
-      let factorId: string | null = null;
-      
-      // Check for unverified factors first (setup flow)
-      if (factorsData?.totp && factorsData.totp.length > 0) {
-        // Find unverified factor first, otherwise use the first verified one
-        const unverifiedFactor = factorsData.totp.find(f => f.status === 'unverified');
-        const verifiedFactor = factorsData.totp.find(f => f.status === 'verified');
+      // If no factorId provided, try to find one
+      if (!factorId) {
+        const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
         
-        factorId = unverifiedFactor?.id || verifiedFactor?.id || null;
+        if (factorsError) {
+          console.error('Error listing factors:', factorsError);
+          return false;
+        }
+
+        console.log('[2FA] Available factors:', JSON.stringify(factorsData, null, 2));
+
+        // Check for unverified factors first (setup flow)
+        if (factorsData?.totp && factorsData.totp.length > 0) {
+          // Find unverified factor first, otherwise use the first verified one
+          const unverifiedFactor = factorsData.totp.find(f => f.status === 'unverified');
+          const verifiedFactor = factorsData.totp.find(f => f.status === 'verified');
+          
+          factorId = unverifiedFactor?.id || verifiedFactor?.id || null;
+        }
       }
 
       if (!factorId) {
-        console.error('No TOTP factor found');
+        console.error('No TOTP factor found - ensure enableTOTP was called first');
         return false;
       }
 
