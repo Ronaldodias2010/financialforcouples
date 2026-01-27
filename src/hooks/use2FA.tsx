@@ -81,6 +81,23 @@ export function use2FA(): Use2FAReturn {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
+      // Check for existing TOTP factors and remove unverified ones to avoid conflicts
+      const { data: existingFactors } = await supabase.auth.mfa.listFactors();
+      
+      if (existingFactors?.totp && existingFactors.totp.length > 0) {
+        // Remove all unverified TOTP factors to allow re-enrollment
+        for (const factor of existingFactors.totp) {
+          if (factor.status === 'unverified') {
+            console.log('[2FA] Removing unverified TOTP factor:', factor.id);
+            try {
+              await supabase.auth.mfa.unenroll({ factorId: factor.id });
+            } catch (unenrollError) {
+              console.error('[2FA] Error unenrolling factor:', unenrollError);
+            }
+          }
+        }
+      }
+
       // Use Supabase MFA to enroll TOTP
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
