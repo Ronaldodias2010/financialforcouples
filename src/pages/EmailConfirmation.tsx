@@ -135,12 +135,14 @@ export default function EmailConfirmation() {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (shouldRedirect && countdown === 0) {
-      window.location.href = '/auth';
+      // Redirect to app since user is now verified
+      window.location.href = '/app';
     }
   }, [shouldRedirect, countdown]);
 
   const handleManualRedirect = () => {
-    window.location.href = '/auth';
+    // Redirect to app since user is verified
+    window.location.href = '/app';
   };
 
   const handleCloseTab = () => {
@@ -158,10 +160,10 @@ export default function EmailConfirmation() {
       loadingDesc: 'Aguarde enquanto confirmamos seu email.',
       successDesc: `Redirecionando em ${countdown} segundos...`,
       errorDesc: errorMessage || 'Houve um erro ao confirmar seu email.',
-      successMessage: 'Sua conta foi confirmada com sucesso! Você será redirecionado para a página de login.',
-      errorMessage: 'Confirmação realizada. Feche esta aba e retorne ao aplicativo para fazer login.',
-      goToLogin: 'Ir para Login',
-      goToLoginNow: 'Ir para Login Agora',
+      successMessage: 'Sua conta foi confirmada com sucesso! Você será redirecionado para o aplicativo.',
+      errorMessage: 'Erro na confirmação. Retorne ao aplicativo e tente reenviar o email de confirmação.',
+      goToApp: 'Ir para o App',
+      goToAppNow: 'Entrar no App Agora',
       closeTab: 'Fechar esta Aba',
       wait: 'Por favor, aguarde...'
     },
@@ -172,10 +174,10 @@ export default function EmailConfirmation() {
       loadingDesc: 'Please wait while we confirm your email.',
       successDesc: `Redirecting in ${countdown} seconds...`,
       errorDesc: errorMessage || 'There was an error confirming your email.',
-      successMessage: 'Your account has been confirmed successfully! You will be redirected to the login page.',
-      errorMessage: 'Confirmation complete. Close this tab and return to the app to log in.',
-      goToLogin: 'Go to Login',
-      goToLoginNow: 'Go to Login Now',
+      successMessage: 'Your account has been confirmed successfully! You will be redirected to the app.',
+      errorMessage: 'Confirmation error. Return to the app and try resending the confirmation email.',
+      goToApp: 'Go to App',
+      goToAppNow: 'Enter App Now',
       closeTab: 'Close this Tab',
       wait: 'Please wait...'
     },
@@ -186,10 +188,10 @@ export default function EmailConfirmation() {
       loadingDesc: 'Espere mientras confirmamos su email.',
       successDesc: `Redirigiendo en ${countdown} segundos...`,
       errorDesc: errorMessage || 'Hubo un error al confirmar su email.',
-      successMessage: '¡Su cuenta ha sido confirmada con éxito! Será redirigido a la página de inicio de sesión.',
-      errorMessage: 'Confirmación realizada. Cierre esta pestaña y vuelva a la aplicación para iniciar sesión.',
-      goToLogin: 'Ir al Login',
-      goToLoginNow: 'Ir al Login Ahora',
+      successMessage: '¡Su cuenta ha sido confirmada con éxito! Será redirigido a la aplicación.',
+      errorMessage: 'Error en la confirmación. Vuelva a la aplicación e intente reenviar el email.',
+      goToApp: 'Ir al App',
+      goToAppNow: 'Entrar al App Ahora',
       closeTab: 'Cerrar esta Pestaña',
       wait: 'Por favor espere...'
     }
@@ -237,7 +239,7 @@ export default function EmailConfirmation() {
                   onClick={handleManualRedirect}
                   className="w-full"
                 >
-                  {t.goToLoginNow}
+                  {t.goToAppNow}
                 </Button>
                 <Button 
                   onClick={handleCloseTab}
@@ -260,7 +262,7 @@ export default function EmailConfirmation() {
                   onClick={handleManualRedirect}
                   className="w-full"
                 >
-                  {t.goToLogin}
+                  {t.goToApp}
                 </Button>
                 <Button 
                   onClick={handleCloseTab}
