@@ -1,18 +1,18 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from 'https://esm.sh/resend@2.0.0';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
 );
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface ConfirmationEmailRequest {
@@ -123,16 +123,37 @@ const generateEmailHtml = (userName: string, confirmUrl: string, language: 'pt' 
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { userEmail, language = 'pt' }: ConfirmationEmailRequest = await req.json();
-    console.log(`Processing confirmation email for: ${userEmail}, language: ${language}`);
+    const { userEmail, language = "pt" }: ConfirmationEmailRequest = await req.json();
+
+    if (!userEmail) {
+      return new Response(JSON.stringify({ error: "Missing userEmail" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    console.log(
+      `[send-confirmation] Processing confirmation email for: ${userEmail}, language: ${language}`,
+    );
 
     // Get user by email
-    const { data: usersData } = await supabase.auth.admin.listUsers();
+    // NOTE: auth-js doesn't provide getUserByEmail; listUsers is the available path.
+    const { data: usersData, error: listUsersError } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+
+    if (listUsersError) {
+      console.error("[send-confirmation] Error listing users:", listUsersError);
+      throw new Error(`Failed to list users: ${listUsersError.message}`);
+    }
+
     const targetUser = usersData?.users?.find(u => u.email === userEmail);
     
     if (!targetUser) {
@@ -141,26 +162,34 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Get user's display name from the database
-    const { data: userProfile } = await supabase
+    const { data: userProfile, error: profileError } = await supabase
       .from('profiles')
       .select('display_name')
       .eq('user_id', targetUser.id)
-      .single();
+      .maybeSingle();
 
-    const userName = userProfile?.display_name || userEmail.split('@')[0];
-    const lang = language === 'en' ? 'en' : 'pt';
-    const siteUrl = 'https://couplesfinancials.com';
-    const redirectTo = `${siteUrl}/email-confirmation?lang=${lang}`;
+    if (profileError) {
+      // Not fatal for sending email
+      console.warn("[send-confirmation] Could not load profile display_name:", profileError);
+    }
 
-    // Generate a real confirmation link using Supabase Admin API
-    console.log(`Generating confirmation link for ${userEmail}...`);
-    
+    const userName = userProfile?.display_name || userEmail.split("@")[0];
+    const lang = language === "en" ? "en" : "pt";
+    const origin = req.headers.get("origin") || "https://couplesfinancials.com";
+    const redirectTo = `${origin}/email-confirmation?lang=${lang}`;
+
+    // IMPORTANT:
+    // - type: 'signup' fails for existing users with `email_exists` (422)
+    // - we use 'magiclink' to create a session via the link; the /email-confirmation page
+    //   will then mark the profile as verified via verify_user_email.
+    console.log(`[send-confirmation] Generating email action link for ${userEmail}...`);
+
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'signup',
+      type: "magiclink",
       email: userEmail,
       options: {
-        redirectTo: redirectTo
-      }
+        redirectTo,
+      },
     });
 
     if (linkError) {
@@ -175,24 +204,27 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Failed to generate confirmation URL');
     }
 
-    console.log(`Generated confirmation URL for ${userEmail}`);
+    console.log(`[send-confirmation] Generated action URL for ${userEmail}`);
 
     const emailHtml = generateEmailHtml(userName, confirmUrl, lang);
 
-    console.log(`Sending confirmation email to ${userEmail}`);
+    console.log(`[send-confirmation] Sending confirmation email to ${userEmail}`);
     
     const emailResponse = await resend.emails.send({
       from: "Couples Financials <noreply@couplesfinancials.com>",
       to: [userEmail],
-      subject: lang === 'en' 
+      subject: lang === "en"
         ? "🎉 Confirm your email - Couples Financials"
         : "🎉 Confirme seu email - Couples Financials",
       html: emailHtml,
     });
 
-    console.log("Confirmation email sent successfully:", JSON.stringify(emailResponse));
+    console.log(
+      "[send-confirmation] Confirmation email sent successfully:",
+      JSON.stringify(emailResponse),
+    );
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
       email_id: emailResponse.id,
       message: `Confirmation email sent to ${userEmail}`
@@ -201,7 +233,7 @@ const handler = async (req: Request): Promise<Response> => {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error in send-confirmation:", error);
+    console.error("[send-confirmation] Error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
