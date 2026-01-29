@@ -388,12 +388,12 @@ export const FinancialDashboard = () => {
                   fallback={
                     <Button 
                       variant="outline" 
-                      className="h-20 flex flex-col gap-2 w-full opacity-50 cursor-not-allowed"
+                      className="h-20 flex flex-col gap-2 w-full opacity-50 cursor-not-allowed relative"
                       disabled
                     >
                       <Plane className="h-6 w-6" />
                       <span>{t('nav.mileage')}</span>
-                      
+                      <Badge variant="secondary" className="absolute top-1 right-1 text-[10px] px-1">Premium</Badge>
                     </Button>
                   }
                 >

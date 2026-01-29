@@ -99,7 +99,7 @@ export function useEmailVerification() {
       console.log('[EmailVerification] Resending confirmation email to:', user.email);
       
       const { error } = await supabase.functions.invoke('send-confirmation', {
-        body: { email: user.email }
+        body: { userEmail: user.email }
       });
 
       if (error) {
