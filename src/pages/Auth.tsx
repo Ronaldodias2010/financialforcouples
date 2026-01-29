@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard, Eye, EyeOff, Mail, Shield } from 'lucide-react';
+import { Loader2, CreditCard, Eye, EyeOff, Mail, Shield, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PasswordValidation, PasswordMatchValidation, validatePassword } from '@/components/ui/PasswordValidation';
@@ -47,6 +48,7 @@ export default function Auth() {
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
   const { has2FAEnabled, isLoaded: is2FAStatusLoaded } = use2FAStatus();
+  const navigate = useNavigate();
 
   // Force light mode for auth page (even if user preference is dark)
   useLayoutEffect(() => {
@@ -377,9 +379,15 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-
       console.log('📧 [AUTH] Calling Supabase signUp...');
       const redirectUrl = `${window.location.origin}/email-confirmation`;
+      
+      // Limpar sessão anterior
+      try {
+        const { cleanupAuthState } = await import('@/utils/authCleanup');
+        cleanupAuthState();
+        try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
+      } catch {}
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -401,68 +409,96 @@ export default function Auth() {
         throw error;
       }
 
-      if (isWebhookTimeout) {
-        // Quando há timeout do webhook, NÃO chamar send-confirmation
-        // O webhook já envia o email automaticamente em segundo plano
-        console.log('⚠️ [AUTH] Webhook timeout - email de confirmação será enviado pelo webhook automaticamente');
-      } else if (data?.user?.id) {
-        // Só chamar send-confirmation se o signup foi bem sucedido E não houve timeout
-        console.log('✅ [AUTH] Signup completed, user ID:', data.user.id);
-        
-        const userEmail = data?.user?.email || email;
-        if (userEmail) {
-          console.log('📧 [AUTH] Invoking send-confirmation edge function...');
-          try {
-            await supabase.functions.invoke('send-confirmation', {
-              body: {
-                userEmail: userEmail,
-                language: language
-              }
-            });
-            console.log('✅ [AUTH] Send-confirmation invoked successfully');
-          } catch (emailError) {
-            console.error('⚠️ [AUTH] Error invoking send-confirmation (non-critical):', emailError);
+      // Conta criada com sucesso! Agora vamos fazer login automático
+      console.log('✅ [AUTH] Signup completed, attempting immediate login...');
+      
+      // Enviar email de confirmação em background (não bloqueia)
+      const userEmail = data?.user?.email || email;
+      if (userEmail) {
+        console.log('📧 [AUTH] Sending confirmation email in background...');
+        supabase.functions.invoke('send-confirmation', {
+          body: {
+            userEmail: userEmail,
+            language: language
           }
-        }
+        }).catch((emailError) => {
+          console.warn('⚠️ [AUTH] Background email send failed (non-critical):', emailError);
+        });
       }
       
       trackSignUp('email');
       
-      // Store email for provisional login flow
-      setPendingSignupEmail(email);
-      
-      // Mostrar mensagem de sucesso clara
-      const successTitle = language === 'en' 
-        ? '✅ Account Created Successfully!' 
-        : language === 'es' 
-        ? '✅ ¡Cuenta Creada con Éxito!' 
-        : '✅ Conta Criada com Sucesso!';
-      
-      const successDesc = language === 'en'
-        ? '📧 Check your email inbox and click the confirmation link to activate your account.'
-        : language === 'es'
-        ? '📧 Revisa tu bandeja de entrada y haz clic en el enlace de confirmación para activar tu cuenta.'
-        : '📧 Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta.';
-      
-      toast({
-        title: successTitle,
-        description: successDesc,
-        duration: 30000,
+      // Tentar fazer login imediato com as credenciais recém-criadas
+      console.log('🔑 [AUTH] Attempting immediate login...');
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
       
-      // Start 30-second timer to show provisional access alert
-      if (provisionalTimerRef.current) {
-        clearTimeout(provisionalTimerRef.current);
+      if (loginError) {
+        // Se falhou o login (ex: email não confirmado no Supabase), ainda permitimos acesso provisório
+        console.log('⚠️ [AUTH] Immediate login failed:', loginError.message);
+        
+        // Verificar se o erro é de email não confirmado
+        if (loginError.message?.toLowerCase().includes('email not confirmed')) {
+          // Mostrar mensagem de sucesso e oferecer acesso provisório
+          const successTitle = language === 'en' 
+            ? '✅ Account Created!' 
+            : language === 'es' 
+            ? '✅ ¡Cuenta Creada!' 
+            : '✅ Conta Criada!';
+          
+          const successDesc = language === 'en'
+            ? 'Your account was created. Click below to enter the platform. We will send a verification email.'
+            : language === 'es'
+            ? 'Tu cuenta fue creada. Haz clic abajo para entrar a la plataforma. Te enviaremos un correo de verificación.'
+            : 'Sua conta foi criada. Clique abaixo para entrar na plataforma. Enviaremos um e-mail de verificação.';
+          
+          toast({
+            title: successTitle,
+            description: successDesc,
+            duration: 10000,
+          });
+          
+          // Mostrar o alerta de acesso provisório imediatamente
+          setPendingSignupEmail(email);
+          setShowProvisionalAlert(true);
+          
+          // Limpar formulário (exceto email e password para o login provisório)
+          setDisplayName('');
+          setPhoneNumber('');
+          setConfirmPassword('');
+        } else {
+          throw loginError;
+        }
+      } else if (loginData.user) {
+        // Login imediato bem-sucedido!
+        console.log('✅ [AUTH] Immediate login successful!');
+        trackLogin('email');
+        
+        // Mostrar mensagem de boas-vindas
+        const welcomeTitle = language === 'en' 
+          ? '🎉 Welcome!' 
+          : language === 'es' 
+          ? '🎉 ¡Bienvenido!' 
+          : '🎉 Bem-vindo!';
+        
+        const welcomeDesc = language === 'en'
+          ? 'Your account is ready. We will send a verification email shortly.'
+          : language === 'es'
+          ? 'Tu cuenta está lista. Te enviaremos un correo de verificación en breve.'
+          : 'Sua conta está pronta. Enviaremos um e-mail de verificação em breve.';
+        
+        toast({
+          title: welcomeTitle,
+          description: welcomeDesc,
+          duration: 5000,
+        });
+        
+        // Redirecionar para o app imediatamente
+        window.location.href = '/app';
+        return;
       }
-      provisionalTimerRef.current = setTimeout(() => {
-        setShowProvisionalAlert(true);
-      }, 30000);
-      
-      // Limpar formulário (exceto email para reenvio)
-      setPassword('');
-      setConfirmPassword('');
-      setDisplayName('');
-      setPhoneNumber('');
     } catch (error: any) {
       const translatedError = translateAuthError(error.message || '', language);
       toast({
@@ -517,7 +553,7 @@ export default function Auth() {
     }
   };
   
-  // Handler for provisional login
+  // Handler for provisional login - allows entry without email confirmation
   const handleProvisionalLogin = async () => {
     const emailToLogin = pendingSignupEmail || email;
     if (!emailToLogin || !password) {
@@ -542,62 +578,72 @@ export default function Auth() {
         try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
       } catch {}
       
-      // Tentar login com as credenciais
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: emailToLogin,
-        password,
+      console.log('[Auth] Attempting provisional login for:', emailToLogin);
+      
+      // Usar edge function para login provisório
+      const { data, error } = await supabase.functions.invoke('provisional-login', {
+        body: { email: emailToLogin, password }
       });
       
-      if (error) {
-        // Se for erro de email não confirmado, permitimos o login provisório
-        if (error.message?.toLowerCase().includes('email not confirmed')) {
-          console.log('[Auth] Email not confirmed - this is expected for provisional login');
-          // O usuário existe mas email não está confirmado
-          // Redirecionar para o app com estado provisório
-          toast({
-            title: language === 'en' ? 'Provisional access' : language === 'es' ? 'Acceso provisional' : 'Acesso provisório',
-            description: language === 'en' 
-              ? 'You have provisional access. Please confirm your email for full access.' 
-              : language === 'es'
-              ? 'Tienes acceso provisional. Confirma tu correo para acceso completo.'
-              : 'Você tem acesso provisório. Confirme seu e-mail para acesso completo.',
-          });
-          
-          // Para login provisório com email não confirmado, precisamos de uma solução diferente
-          // Por enquanto, apenas mostrar uma mensagem
-          toast({
-            variant: 'destructive',
-            title: language === 'en' ? 'Email confirmation required' : language === 'es' ? 'Se requiere confirmación de correo' : 'Confirmação de e-mail necessária',
-            description: language === 'en' 
-              ? 'Please check your email and click the confirmation link first, or try resending the email.' 
-              : language === 'es'
-              ? 'Por favor revisa tu correo y haz clic en el enlace de confirmación, o intenta reenviar el correo.'
-              : 'Por favor, verifique seu e-mail e clique no link de confirmação, ou tente reenviar o e-mail.',
-          });
-        } else {
-          throw error;
-        }
-      } else if (data.user) {
-        // Login bem-sucedido
-        trackLogin('email');
+      if (error || !data?.success) {
+        console.error('[Auth] Provisional login failed:', error || data?.error);
         toast({
-          title: language === 'en' ? 'Logged in!' : language === 'es' ? '¡Sesión iniciada!' : 'Login realizado!',
+          variant: 'destructive',
+          title: language === 'en' ? 'Login failed' : language === 'es' ? 'Error de inicio de sesión' : 'Falha no login',
           description: language === 'en' 
+            ? 'Could not log in. Please check your credentials.' 
+            : language === 'es'
+            ? 'No se pudo iniciar sesión. Verifica tus credenciales.'
+            : 'Não foi possível fazer login. Verifique suas credenciais.',
+        });
+        return;
+      }
+      
+      // Configurar a sessão com os tokens retornados
+      if (data.access_token && data.refresh_token) {
+        const { error: setSessionError } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token
+        });
+        
+        if (setSessionError) {
+          console.error('[Auth] Error setting session:', setSessionError);
+          throw setSessionError;
+        }
+      }
+      
+      // Login bem-sucedido
+      trackLogin('email');
+      
+      const welcomeTitle = data.provisional
+        ? (language === 'en' ? '🎉 Welcome!' : language === 'es' ? '🎉 ¡Bienvenido!' : '🎉 Bem-vindo!')
+        : (language === 'en' ? 'Logged in!' : language === 'es' ? '¡Sesión iniciada!' : 'Login realizado!');
+      
+      const welcomeDesc = data.provisional
+        ? (language === 'en' 
+            ? 'You have provisional access. Please verify your email for full access.' 
+            : language === 'es'
+            ? 'Tienes acceso provisional. Verifica tu correo para acceso completo.'
+            : 'Você tem acesso provisório. Verifique seu e-mail para acesso completo.')
+        : (language === 'en' 
             ? 'Welcome to the platform.' 
             : language === 'es'
             ? 'Bienvenido a la plataforma.'
-            : 'Bem-vindo à plataforma.',
-        });
-        
-        // Clear timer and state
-        if (provisionalTimerRef.current) {
-          clearTimeout(provisionalTimerRef.current);
-        }
-        setShowProvisionalAlert(false);
-        setPendingSignupEmail(null);
-        
-        window.location.href = '/app';
+            : 'Bem-vindo à plataforma.');
+      
+      toast({
+        title: welcomeTitle,
+        description: welcomeDesc,
+      });
+      
+      // Clear timer and state
+      if (provisionalTimerRef.current) {
+        clearTimeout(provisionalTimerRef.current);
       }
+      setShowProvisionalAlert(false);
+      setPendingSignupEmail(null);
+      
+      window.location.href = '/app';
     } catch (error: any) {
       console.error('[Auth] Provisional login error:', error);
       const translatedError = translateAuthError(error.message || '', language);
@@ -664,7 +710,16 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <Card className="w-full max-w-md mx-auto bg-card/80 backdrop-blur-sm border-primary/20">
         <CardHeader className="text-center space-y-4 px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/')}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              {language === 'en' ? 'Back' : language === 'es' ? 'Volver' : 'Voltar'}
+            </Button>
             <div className="inline-flex gap-1 sm:gap-2">
               <Button variant={language === 'pt' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('pt')} className="text-xs sm:text-sm px-2 sm:px-3">PT</Button>
               <Button variant={language === 'en' ? 'default' : 'outline'} size="sm" onClick={() => setLanguage('en')} className="text-xs sm:text-sm px-2 sm:px-3">EN</Button>
