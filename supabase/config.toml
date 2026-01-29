@@ -128,3 +128,6 @@ verify_jwt = false
 
 [functions.translate-content]
 verify_jwt = true
+
+[functions.provisional-login]
+verify_jwt = false
