@@ -219,7 +219,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 4. Send email with temporary password
     const lang = language === 'en' ? 'en' : 'pt';
-    const loginUrl = `${req.headers.get('origin') || 'https://couplesfinancials.com'}/auth`;
+    
+    // IMPORTANT: Always use production domain for email links
+    // This prevents issues when emails are triggered from preview/staging environments
+    const baseUrl = "https://couplesfinancials.com";
+    const loginUrl = `${baseUrl}/auth`;
     const emailHtml = generatePasswordResetHtml(userEmail, tempPassword, loginUrl, lang);
 
     console.log(`Sending temporary password email to ${userEmail}`);
