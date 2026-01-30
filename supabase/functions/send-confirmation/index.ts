@@ -175,8 +175,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     const userName = userProfile?.display_name || userEmail.split("@")[0];
     const lang = language === "en" ? "en" : "pt";
-    const origin = req.headers.get("origin") || "https://couplesfinancials.com";
-    const redirectTo = `${origin}/email-confirmation?lang=${lang}`;
+    
+    // IMPORTANT: Always use production domain for email links
+    // This prevents issues when emails are triggered from preview/staging environments
+    const baseUrl = "https://couplesfinancials.com";
+    const redirectTo = `${baseUrl}/email-confirmation?lang=${lang}`;
 
     // IMPORTANT:
     // - type: 'signup' fails for existing users with `email_exists` (422)

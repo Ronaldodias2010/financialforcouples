@@ -62,8 +62,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email request:", { type, user_email, language });
 
-    // Create the login URL
-    const baseUrl = req.headers.get('origin') || 'https://couplesfinancials.com';
+    // IMPORTANT: Always use production domain for email links
+    // This prevents issues when emails are triggered from preview/staging environments
+    const baseUrl = "https://couplesfinancials.com";
     const loginUrl = `${baseUrl}/auth`;
 
     let emailHtml: string;
