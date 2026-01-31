@@ -216,13 +216,22 @@ export default function Auth() {
           console.log('2FA check skipped:', tfaError);
         }
         
-        // Check if we should offer biometric activation
+        // Check if we should offer biometric activation on ANY supported device (web or PWA)
+        // WebAuthn credentials are device-specific, so we offer activation on each new device
         if (isBiometricSupported) {
-          const hasBio = await checkHasCredentials(email);
-          if (!hasBio) {
-            // User doesn't have biometrics set up - offer to enable
+          // Check if this device has biometric credentials for this user
+          const hasBioOnThisDevice = await checkHasCredentials(email);
+          
+          // Check if user has dismissed the biometric prompt on this device recently
+          const dismissedKey = `biometric-dismissed-${email}`;
+          const dismissedAt = localStorage.getItem(dismissedKey);
+          const dismissedRecently = dismissedAt && (Date.now() - parseInt(dismissedAt)) < 7 * 24 * 60 * 60 * 1000; // 7 days
+          
+          if (!hasBioOnThisDevice && !dismissedRecently) {
+            // User doesn't have biometrics set up on this device - offer to enable
             setPendingBiometricActivation(true);
             setShowBiometricModal(true);
+            setCurrentUserEmail(email);
             return; // Don't redirect yet, let user decide
           }
         }
@@ -1063,12 +1072,16 @@ export default function Auth() {
         userEmail={currentUserEmail || undefined}
       />
       
-      {/* Biometric Activation Modal - shown after successful login */}
+      {/* Biometric Activation Modal - shown after successful login on any device (web or PWA) */}
       <BiometricActivationModal
         open={showBiometricModal}
         onClose={() => {
           setShowBiometricModal(false);
           setPendingBiometricActivation(false);
+          // Save dismissal to avoid showing for 7 days
+          if (currentUserEmail) {
+            localStorage.setItem(`biometric-dismissed-${currentUserEmail}`, Date.now().toString());
+          }
           // Redirect to app even if user declined
           toast({
             title: t('auth.loginSuccessTitle'),
@@ -1079,6 +1092,10 @@ export default function Auth() {
         onSuccess={() => {
           setShowBiometricModal(false);
           setPendingBiometricActivation(false);
+          // Clear any dismissal since user activated
+          if (currentUserEmail) {
+            localStorage.removeItem(`biometric-dismissed-${currentUserEmail}`);
+          }
           toast({
             title: t('auth.loginSuccessTitle'),
             description: t('auth.loginSuccessDesc'),
