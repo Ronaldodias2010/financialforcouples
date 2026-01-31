@@ -1,5 +1,11 @@
 project_id = "elxttabdtddlavhseipz"
 
+[functions.firecrawl-promotions-scraper]
+verify_jwt = false
+
+[functions.match-user-promotions]
+verify_jwt = false
+
 [functions.whatsapp-message-router]
 verify_jwt = false
 
