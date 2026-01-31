@@ -71,34 +71,41 @@ export const CurrencyRatesDisplay = ({ compact = false }: CurrencyRatesDisplayPr
   // Compact version for header
   if (compact) {
     return (
-      <div className="flex items-center gap-3 text-sm">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 sm:gap-3 text-sm">
+        {/* Icon sempre visível, label só em telas maiores */}
+        <div className="flex items-center gap-1">
           <TrendingUp className="h-3.5 w-3.5 text-primary" />
-          <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
+          <span className="text-xs font-medium text-muted-foreground hidden md:inline">
             {language === 'pt' ? 'Cotações' : language === 'es' ? 'Cotizaciones' : 'Rates'}:
           </span>
         </div>
+        
+        {/* Cotações - esconder labels em mobile, mostrar só valores */}
         {currencyData.map((currency, index) => {
           const IconComponent = currency.icon;
           return (
-            <div key={index} className="flex items-center gap-1">
-              <IconComponent className={`h-3.5 w-3.5 ${currency.color}`} />
-              <span className="text-xs text-muted-foreground">{currency.label}</span>
-              <span className="font-medium text-foreground text-xs">{currency.value}</span>
+            <div key={index} className="flex items-center gap-0.5 sm:gap-1">
+              <IconComponent className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${currency.color}`} />
+              <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">{currency.label}</span>
+              <span className="font-medium text-foreground text-[10px] sm:text-xs">{currency.value}</span>
             </div>
           );
         })}
+        
+        {/* Botão refresh - menor em mobile */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => refreshRates()}
           disabled={loading}
-          className="h-6 w-6 p-0"
+          className="h-5 w-5 sm:h-6 sm:w-6 p-0"
         >
-          <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${loading ? 'animate-spin' : ''}`} />
         </Button>
+        
+        {/* Timestamp - só em desktop */}
         {lastUpdated && (
-          <span className="text-[10px] text-muted-foreground hidden lg:inline">
+          <span className="text-[10px] text-muted-foreground hidden xl:inline">
             {formatTime(lastUpdated)}
             {rateDate && ` (${rateDate})`}
           </span>
