@@ -32,6 +32,22 @@ serve(async (req) => {
       );
     }
 
+    // Get the origin from request headers to determine RP ID
+    const origin = req.headers.get("Origin") || req.headers.get("Referer") || "";
+    let rpId = "couplesfinancials.com"; // Default for production
+    
+    // Check if running on preview/development environment
+    if (origin.includes("lovableproject.com")) {
+      const match = origin.match(/([a-z0-9-]+\.lovableproject\.com)/i);
+      rpId = match ? match[1] : "lovableproject.com";
+    } else if (origin.includes("lovable.app")) {
+      const match = origin.match(/([a-z0-9-]+\.lovable\.app)/i);
+      rpId = match ? match[1] : "lovable.app";
+    } else if (origin.includes("localhost")) {
+      rpId = "localhost";
+    }
+    
+    console.log(`[WebAuthn] Using RP ID: ${rpId} (from origin: ${origin})`);
     console.log(`[WebAuthn] Generating login options for email: ${email}`);
 
     const adminClient = createClient(
@@ -113,7 +129,7 @@ serve(async (req) => {
 
     const authenticationOptions = {
       challenge: challenge,
-      rpId: "couplesfinancials.com",
+      rpId: rpId,
       allowCredentials: allowCredentials,
       userVerification: "required",
       timeout: 60000,
