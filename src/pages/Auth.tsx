@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard, Eye, EyeOff, Mail, Shield, ArrowLeft } from 'lucide-react';
+import { Loader2, CreditCard, Eye, EyeOff, Mail, Shield, ArrowLeft, Fingerprint } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -17,6 +17,9 @@ import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 import { TwoFactorMethod } from '@/hooks/use2FA';
 import { use2FAStatus } from '@/hooks/use2FAStatus';
 import { ProvisionalAccessAlert } from '@/components/auth/ProvisionalAccessAlert';
+import { BiometricActivationModal } from '@/components/auth/BiometricActivationModal';
+import { BiometricLoginButton } from '@/components/auth/BiometricLoginButton';
+import { useWebAuthn } from '@/hooks/useWebAuthn';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +45,11 @@ export default function Auth() {
   // Provisional login state
   const [showProvisionalAlert, setShowProvisionalAlert] = useState(false);
   const [pendingSignupEmail, setPendingSignupEmail] = useState<string | null>(null);
+  
+  // Biometric state
+  const [showBiometricModal, setShowBiometricModal] = useState(false);
+  const [pendingBiometricActivation, setPendingBiometricActivation] = useState(false);
+  const { isSupported: isBiometricSupported, hasCredentials: hasBiometricCredentials, checkHasCredentials } = useWebAuthn();
   const [isResendingEmail, setIsResendingEmail] = useState(false);
   const provisionalTimerRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -205,6 +213,17 @@ export default function Auth() {
           }
         } catch (tfaError) {
           console.log('2FA check skipped:', tfaError);
+        }
+        
+        // Check if we should offer biometric activation
+        if (isBiometricSupported) {
+          const hasBio = await checkHasCredentials(email);
+          if (!hasBio) {
+            // User doesn't have biometrics set up - offer to enable
+            setPendingBiometricActivation(true);
+            setShowBiometricModal(true);
+            return; // Don't redirect yet, let user decide
+          }
         }
           
         toast({
@@ -789,6 +808,21 @@ export default function Auth() {
                 </form>
               ) : (
                 <form onSubmit={handleSignIn} className="space-y-4">
+                   {/* Biometric Login Button - shown first if email has biometrics */}
+                   {email && isBiometricSupported && (
+                     <BiometricLoginButton
+                       email={email}
+                       onSuccess={() => {
+                         toast({
+                           title: t('auth.loginSuccessTitle'),
+                           description: t('auth.loginSuccessDesc'),
+                         });
+                         window.location.href = '/app';
+                       }}
+                       onFallbackToPassword={() => {}}
+                     />
+                   )}
+                   
                    <div className="space-y-2">
                      <Label htmlFor="signin-email">{t('auth.email')}</Label>
                      <Input
@@ -1023,6 +1057,30 @@ export default function Auth() {
         onRetrySMS={handleRetrySMS}
         userId={currentUserId || undefined}
         userEmail={currentUserEmail || undefined}
+      />
+      
+      {/* Biometric Activation Modal - shown after successful login */}
+      <BiometricActivationModal
+        open={showBiometricModal}
+        onClose={() => {
+          setShowBiometricModal(false);
+          setPendingBiometricActivation(false);
+          // Redirect to app even if user declined
+          toast({
+            title: t('auth.loginSuccessTitle'),
+            description: t('auth.loginSuccessDesc'),
+          });
+          window.location.href = '/app';
+        }}
+        onSuccess={() => {
+          setShowBiometricModal(false);
+          setPendingBiometricActivation(false);
+          toast({
+            title: t('auth.loginSuccessTitle'),
+            description: t('auth.loginSuccessDesc'),
+          });
+          window.location.href = '/app';
+        }}
       />
     </div>
   );
