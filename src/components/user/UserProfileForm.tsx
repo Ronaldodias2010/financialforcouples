@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User, CreditCard, Lock, DollarSign, Eye, EyeOff, Pencil } from "lucide-react";
 import { ChangeWhatsAppNumberModal } from "./ChangeWhatsAppNumberModal";
+import { BiometricSettingsCard } from "@/components/auth/BiometricSettingsCard";
 
 interface UserProfileFormProps {
   onBack?: () => void;
@@ -669,6 +670,10 @@ export const UserProfileForm = ({ onBack, activeTab }: UserProfileFormProps) => 
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
+          {/* Biometric Settings Card */}
+          <BiometricSettingsCard />
+
+          {/* Password Change Card */}
           <Card className="p-6">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
