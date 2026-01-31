@@ -19,6 +19,7 @@ import { use2FAStatus } from '@/hooks/use2FAStatus';
 import { ProvisionalAccessAlert } from '@/components/auth/ProvisionalAccessAlert';
 import { BiometricActivationModal } from '@/components/auth/BiometricActivationModal';
 import { BiometricLoginButton } from '@/components/auth/BiometricLoginButton';
+import { PWABiometricGuide } from '@/components/auth/PWABiometricGuide';
 import { useWebAuthn } from '@/hooks/useWebAuthn';
 
 export default function Auth() {
@@ -808,6 +809,9 @@ export default function Auth() {
                 </form>
               ) : (
                 <form onSubmit={handleSignIn} className="space-y-4">
+                   {/* PWA Biometric Guide - shown for PWA users without biometrics */}
+                   <PWABiometricGuide userEmail={email} />
+                   
                    {/* Biometric Login Button - shown first if email has biometrics */}
                    {email && isBiometricSupported && (
                      <BiometricLoginButton
