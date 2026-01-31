@@ -1,0 +1,335 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { 
+  Play, 
+  RefreshCw, 
+  Clock, 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle,
+  Plane,
+  Database,
+  Users
+} from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+interface ScrapingJob {
+  id: string;
+  started_at: string;
+  completed_at: string | null;
+  status: string;
+  pages_scraped: number;
+  promotions_found: number;
+  errors: unknown;
+}
+
+interface PromotionStats {
+  total_promotions: number;
+  active_promotions: number;
+  total_suggestions: number;
+  users_with_suggestions: number;
+}
+
+export function ScraperControlSection() {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRunningScaper, setIsRunningScaper] = useState(false);
+  const [isRunningMatch, setIsRunningMatch] = useState(false);
+  const [recentJobs, setRecentJobs] = useState<ScrapingJob[]>([]);
+  const [stats, setStats] = useState<PromotionStats | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+
+      // Fetch recent scraping jobs
+      const { data: jobs, error: jobsError } = await supabase
+        .from('scraping_jobs')
+        .select('*')
+        .order('started_at', { ascending: false })
+        .limit(5);
+
+      if (jobsError) throw jobsError;
+      setRecentJobs(jobs || []);
+
+      // Fetch promotion stats
+      const { count: totalPromos } = await supabase
+        .from('scraped_promotions')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: activePromos } = await supabase
+        .from('scraped_promotions')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
+
+      const { count: totalSuggestions } = await supabase
+        .from('user_travel_suggestions')
+        .select('*', { count: 'exact', head: true });
+
+      // Count distinct users with suggestions
+      const { data: usersData } = await supabase
+        .from('user_travel_suggestions')
+        .select('user_id')
+        .limit(1000);
+
+      const uniqueUsers = new Set(usersData?.map(u => u.user_id) || []).size;
+
+      setStats({
+        total_promotions: totalPromos || 0,
+        active_promotions: activePromos || 0,
+        total_suggestions: totalSuggestions || 0,
+        users_with_suggestions: uniqueUsers
+      });
+    } catch (error) {
+      console.error('Error fetching scraper data:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível carregar os dados do scraper',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const runScraper = async () => {
+    try {
+      setIsRunningScaper(true);
+      toast({
+        title: 'Iniciando Scraper',
+        description: 'O scraper foi iniciado. Isso pode levar alguns minutos...',
+      });
+
+      const { data, error } = await supabase.functions.invoke('firecrawl-promotions-scraper', {
+        body: { manual: true }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Scraper Concluído',
+        description: `Páginas: ${data.pages_scraped}, Promoções: ${data.promotions_found}`,
+      });
+
+      // Refresh data
+      await fetchData();
+    } catch (error) {
+      console.error('Error running scraper:', error);
+      toast({
+        title: 'Erro no Scraper',
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRunningScaper(false);
+    }
+  };
+
+  const runMatch = async () => {
+    try {
+      setIsRunningMatch(true);
+      toast({
+        title: 'Iniciando Match',
+        description: 'Cruzando promoções com usuários...',
+      });
+
+      const { data, error } = await supabase.functions.invoke('match-user-promotions', {
+        body: { manual: true }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Match Concluído',
+        description: `Usuários: ${data.users_processed}, Sugestões: ${data.suggestions_created}`,
+      });
+
+      // Refresh data
+      await fetchData();
+    } catch (error) {
+      console.error('Error running match:', error);
+      toast({
+        title: 'Erro no Match',
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRunningMatch(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge variant="default" className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Concluído</Badge>;
+      case 'running':
+        return <Badge variant="secondary"><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Executando</Badge>;
+      case 'failed':
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Falhou</Badge>;
+      default:
+        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />Pendente</Badge>;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plane className="h-5 w-5" />
+            Controle do Scraper de Promoções
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Plane className="h-5 w-5 text-primary" />
+          Controle do Scraper de Promoções
+        </CardTitle>
+        <CardDescription>
+          Gerencie a coleta automática de promoções de milhas. Execução agendada: 14h diariamente.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Stats Grid */}
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <Database className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-2xl font-bold">{stats.total_promotions}</p>
+              <p className="text-sm text-muted-foreground">Total Promoções</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-500" />
+              <p className="text-2xl font-bold">{stats.active_promotions}</p>
+              <p className="text-sm text-muted-foreground">Ativas</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <Plane className="w-6 h-6 mx-auto mb-2 text-primary" />
+              <p className="text-2xl font-bold">{stats.total_suggestions}</p>
+              <p className="text-sm text-muted-foreground">Sugestões Geradas</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <Users className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+              <p className="text-2xl font-bold">{stats.users_with_suggestions}</p>
+              <p className="text-sm text-muted-foreground">Usuários Impactados</p>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3">
+          <Button 
+            onClick={runScraper} 
+            disabled={isRunningScaper || isRunningMatch}
+            className="flex-1 md:flex-none"
+          >
+            {isRunningScaper ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Executando Scraper...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 mr-2" />
+                Executar Scraper Agora
+              </>
+            )}
+          </Button>
+          
+          <Button 
+            variant="secondary"
+            onClick={runMatch} 
+            disabled={isRunningScaper || isRunningMatch}
+            className="flex-1 md:flex-none"
+          >
+            {isRunningMatch ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Executando Match...
+              </>
+            ) : (
+              <>
+                <Users className="w-4 h-4 mr-2" />
+                Executar Match de Usuários
+              </>
+            )}
+          </Button>
+
+          <Button 
+            variant="outline" 
+            onClick={fetchData}
+            className="flex-1 md:flex-none"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Atualizar Dados
+          </Button>
+        </div>
+
+        {/* Recent Jobs */}
+        <div>
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Execuções Recentes
+          </h4>
+          
+          {recentJobs.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+              <p>Nenhuma execução registrada ainda</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recentJobs.map(job => (
+                <div 
+                  key={job.id} 
+                  className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    {getStatusBadge(job.status)}
+                    <div>
+                      <p className="text-sm font-medium">
+                        {format(new Date(job.started_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(job.started_at), { 
+                          addSuffix: true, 
+                          locale: ptBR 
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right text-sm">
+                    <p>{job.pages_scraped} páginas</p>
+                    <p className="text-muted-foreground">{job.promotions_found} promoções</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

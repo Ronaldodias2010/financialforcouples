@@ -25,6 +25,7 @@ import { UserListModal } from '@/components/admin/UserListModal';
 import { InactiveUsersSection } from '@/components/admin/InactiveUsersSection';
 import { SchemaAuditSection } from '@/components/admin/SchemaAuditSection';
 import TestimonialsManager from '@/components/admin/TestimonialsManager';
+import { ScraperControlSection } from '@/components/admin/ScraperControlSection';
 
 interface SubscriptionMetrics {
   activeUsers: number;
@@ -969,12 +970,13 @@ const AdminDashboardContent = () => {
 
       {/* Main Admin Tabs */}
       <Tabs defaultValue="overview" className="w-full" onValueChange={(value) => setActiveMainTab(value)}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">📊 {t('admin.tabs.overview')}</TabsTrigger>
           <TabsTrigger value="users">👥 {t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="content">📚 {t('admin.tabs.content')}</TabsTrigger>
           <TabsTrigger value="testimonials">💬 {t('admin.tabs.testimonials')}</TabsTrigger>
           <TabsTrigger value="ai-control">🤖 {t('admin.tabs.aiControl')}</TabsTrigger>
+          <TabsTrigger value="scraper">✈️ Scraper</TabsTrigger>
           <TabsTrigger value="schema-audit">🔍 Schema</TabsTrigger>
         </TabsList>
 
@@ -1336,6 +1338,10 @@ const AdminDashboardContent = () => {
 
         <TabsContent value="ai-control">
           <AIControlSection />
+        </TabsContent>
+
+        <TabsContent value="scraper">
+          <ScraperControlSection />
         </TabsContent>
 
         <TabsContent value="schema-audit">
