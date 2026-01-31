@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Shield, Key, RefreshCw, Mail, AlertTriangle } from 'lucide-react';
+import { Loader2, Shield, Key, RefreshCw, Mail, AlertTriangle, Smartphone, MessageSquare } from 'lucide-react';
 import { use2FA, TwoFactorMethod } from '@/hooks/use2FA';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/use-toast';
@@ -250,6 +250,66 @@ export function TwoFactorVerification({
     }
   };
 
+  // Get method-specific info with icon and clear instructions
+  const getMethodInfo = () => {
+    if (emailFallbackActive) {
+      return {
+        icon: Mail,
+        title: language === 'en' ? 'Email Verification' : language === 'es' ? 'Verificación por Correo' : 'Verificação por Email',
+        instruction: language === 'en' 
+          ? 'Check your email inbox for the 6-digit code.'
+          : language === 'es'
+          ? 'Revise su bandeja de correo para el código de 6 dígitos.'
+          : 'Verifique sua caixa de email para o código de 6 dígitos.',
+        color: 'bg-purple-50 border-purple-200 text-purple-800',
+        iconColor: 'text-purple-600'
+      };
+    }
+
+    switch (currentMethod) {
+      case 'totp':
+        return {
+          icon: Smartphone,
+          title: language === 'en' ? 'Authenticator App' : language === 'es' ? 'App Autenticador' : 'App Autenticador',
+          instruction: language === 'en' 
+            ? 'Open your authenticator app (Google Authenticator, Authy, etc.) and enter the 6-digit code shown.'
+            : language === 'es'
+            ? 'Abra su app autenticador (Google Authenticator, Authy, etc.) e ingrese el código de 6 dígitos.'
+            : 'Abra seu app autenticador (Google Authenticator, Authy, etc.) e digite o código de 6 dígitos exibido.',
+          color: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+          iconColor: 'text-emerald-600'
+        };
+      case 'sms':
+        return {
+          icon: MessageSquare,
+          title: language === 'en' ? 'SMS Verification' : language === 'es' ? 'Verificación por SMS' : 'Verificação por SMS',
+          instruction: language === 'en' 
+            ? 'A code was sent to your phone via SMS. Enter it below.'
+            : language === 'es'
+            ? 'Se envió un código a su teléfono por SMS. Ingréselo abajo.'
+            : 'Um código foi enviado para seu celular via SMS. Digite abaixo.',
+          color: 'bg-blue-50 border-blue-200 text-blue-800',
+          iconColor: 'text-blue-600'
+        };
+      case 'email':
+        return {
+          icon: Mail,
+          title: language === 'en' ? 'Email Verification' : language === 'es' ? 'Verificación por Correo' : 'Verificação por Email',
+          instruction: language === 'en' 
+            ? 'Check your email inbox for the 6-digit code.'
+            : language === 'es'
+            ? 'Revise su bandeja de correo para el código de 6 dígitos.'
+            : 'Verifique sua caixa de email para o código de 6 dígitos.',
+          color: 'bg-purple-50 border-purple-200 text-purple-800',
+          iconColor: 'text-purple-600'
+        };
+      default:
+        return null;
+    }
+  };
+
+  const methodInfo = getMethodInfo();
+
   return (
     <Dialog open={open} onOpenChange={(value) => {
       if (!value) onCancel();
@@ -273,22 +333,21 @@ export function TwoFactorVerification({
           </TabsList>
 
           <TabsContent value="code" className="space-y-4 py-4">
-            {/* Show email fallback success message */}
-            {emailFallbackActive && (
-              <Alert className="border-green-500 bg-green-50">
-                <Mail className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-700">
-                  {language === 'en' 
-                    ? 'Email verification active. Check your inbox for the code.'
-                    : language === 'es'
-                    ? 'Verificación por correo activa. Revise su bandeja de entrada.'
-                    : 'Verificação por email ativa. Verifique sua caixa de entrada.'}
-                </AlertDescription>
-              </Alert>
+            {/* Clear method indicator - always show which method is active */}
+            {methodInfo && !smsError && (
+              <div className={`rounded-lg border p-4 ${methodInfo.color}`}>
+                <div className="flex items-start gap-3">
+                  <methodInfo.icon className={`h-6 w-6 mt-0.5 ${methodInfo.iconColor}`} />
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm mb-1">{methodInfo.title}</p>
+                    <p className="text-sm opacity-90">{methodInfo.instruction}</p>
+                  </div>
+                </div>
+              </div>
             )}
             
             {/* Show SMS error with fallback options */}
-            {smsError && method === 'sms' && !emailFallbackActive ? (
+            {smsError && method === 'sms' && !emailFallbackActive && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="space-y-3">
@@ -305,13 +364,6 @@ export function TwoFactorVerification({
                       ? 'Puede reintentar SMS, usar correo como respaldo, o usar un código de respaldo.'
                       : 'Você pode tentar novamente por SMS, usar email como backup, ou usar um código de backup.'}
                   </p>
-                </AlertDescription>
-              </Alert>
-            ) : !emailFallbackActive && (
-              <Alert>
-                <Shield className="h-4 w-4" />
-                <AlertDescription>
-                  {getMethodDescription()}
                 </AlertDescription>
               </Alert>
             )}
