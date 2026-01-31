@@ -3200,6 +3200,90 @@ export type Database = {
         }
         Relationships: []
       }
+      scraped_promotions: {
+        Row: {
+          created_at: string
+          data_coleta: string
+          descricao: string | null
+          destino: string
+          expires_at: string | null
+          external_hash: string | null
+          fonte: string
+          id: string
+          is_active: boolean
+          link: string
+          milhas_min: number
+          origem: string | null
+          programa: string
+          titulo: string | null
+        }
+        Insert: {
+          created_at?: string
+          data_coleta?: string
+          descricao?: string | null
+          destino: string
+          expires_at?: string | null
+          external_hash?: string | null
+          fonte: string
+          id?: string
+          is_active?: boolean
+          link: string
+          milhas_min: number
+          origem?: string | null
+          programa: string
+          titulo?: string | null
+        }
+        Update: {
+          created_at?: string
+          data_coleta?: string
+          descricao?: string | null
+          destino?: string
+          expires_at?: string | null
+          external_hash?: string | null
+          fonte?: string
+          id?: string
+          is_active?: boolean
+          link?: string
+          milhas_min?: number
+          origem?: string | null
+          programa?: string
+          titulo?: string | null
+        }
+        Relationships: []
+      }
+      scraping_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          errors: Json | null
+          id: string
+          pages_scraped: number | null
+          promotions_found: number | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          errors?: Json | null
+          id?: string
+          pages_scraped?: number | null
+          promotions_found?: number | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          errors?: Json | null
+          id?: string
+          pages_scraped?: number | null
+          promotions_found?: number | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           action_type: string
@@ -4290,6 +4374,50 @@ export type Database = {
             columns: ["promotion_id"]
             isOneToOne: false
             referencedRelation: "airline_promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_travel_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          is_favorite: boolean
+          is_viewed: boolean
+          mensagem: string
+          programa_usuario: string
+          promotion_id: string
+          saldo_usuario: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          is_viewed?: boolean
+          mensagem: string
+          programa_usuario: string
+          promotion_id: string
+          saldo_usuario: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          is_viewed?: boolean
+          mensagem?: string
+          programa_usuario?: string
+          promotion_id?: string
+          saldo_usuario?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_travel_suggestions_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "scraped_promotions"
             referencedColumns: ["id"]
           },
         ]
