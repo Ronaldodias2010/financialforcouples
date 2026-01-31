@@ -131,3 +131,15 @@ verify_jwt = true
 
 [functions.provisional-login]
 verify_jwt = false
+
+[functions.webauthn-register-options]
+verify_jwt = false
+
+[functions.webauthn-register-verify]
+verify_jwt = false
+
+[functions.webauthn-login-options]
+verify_jwt = false
+
+[functions.webauthn-login-verify]
+verify_jwt = false
