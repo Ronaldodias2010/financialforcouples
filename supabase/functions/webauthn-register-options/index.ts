@@ -30,6 +30,24 @@ serve(async (req) => {
       );
     }
 
+    // Get the origin from request headers to determine RP ID
+    const origin = req.headers.get("Origin") || req.headers.get("Referer") || "";
+    let rpId = "couplesfinancials.com"; // Default for production
+    
+    // Check if running on preview/development environment
+    if (origin.includes("lovableproject.com")) {
+      // Extract the subdomain for lovableproject.com
+      const match = origin.match(/([a-z0-9-]+\.lovableproject\.com)/i);
+      rpId = match ? match[1] : "lovableproject.com";
+    } else if (origin.includes("lovable.app")) {
+      const match = origin.match(/([a-z0-9-]+\.lovable\.app)/i);
+      rpId = match ? match[1] : "lovable.app";
+    } else if (origin.includes("localhost")) {
+      rpId = "localhost";
+    }
+    
+    console.log(`[WebAuthn] Using RP ID: ${rpId} (from origin: ${origin})`);
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -66,7 +84,7 @@ serve(async (req) => {
       .delete()
       .eq("user_id", userId);
 
-    // Store new challenge
+    // Store new challenge with RP ID for verification
     const { error: insertError } = await adminClient
       .from("webauthn_challenges")
       .insert({
@@ -98,7 +116,7 @@ serve(async (req) => {
       challenge: challenge,
       rp: {
         name: "CouplesFinancials",
-        id: "couplesfinancials.com",
+        id: rpId,
       },
       user: {
         id: btoa(userId).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, ""),

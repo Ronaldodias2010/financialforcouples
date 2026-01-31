@@ -100,13 +100,17 @@ export function useWebAuthn() {
       }
 
       const options = optionsData.options;
+      
+      // Use the RP ID from server (which already handles environment detection)
+      const rpId = options.rp.id;
+      console.log('[WebAuthn] Using RP ID from server:', rpId);
 
       // Prepare public key credential creation options
       const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
         challenge: base64UrlToArrayBuffer(options.challenge),
         rp: {
           name: options.rp.name,
-          id: window.location.hostname === 'localhost' ? 'localhost' : options.rp.id,
+          id: rpId,
         },
         user: {
           id: base64UrlToArrayBuffer(options.user.id),
@@ -212,11 +216,15 @@ export function useWebAuthn() {
 
       const options = optionsData.options;
       const userId = optionsData.userId;
+      
+      // Use the RP ID from server
+      const rpId = options.rpId;
+      console.log('[WebAuthn] Using RP ID from server for auth:', rpId);
 
       // Prepare public key credential request options
       const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
         challenge: base64UrlToArrayBuffer(options.challenge),
-        rpId: window.location.hostname === 'localhost' ? 'localhost' : options.rpId,
+        rpId: rpId,
         allowCredentials: options.allowCredentials.map((cred: any) => ({
           id: base64UrlToArrayBuffer(cred.id),
           type: cred.type,
