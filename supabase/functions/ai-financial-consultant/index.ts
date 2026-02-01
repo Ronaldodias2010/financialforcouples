@@ -1408,6 +1408,198 @@ function generateIndividualContext(
     context += '\n';
   }
 
+  // ====== ANÁLISE DE GASTOS POR CATEGORIA (RESUMO PARA RECOMENDAÇÕES DE ECONOMIA) ======
+  const transactions = data.transactions || [];
+  const expenseTransactions = transactions.filter((t: any) => 
+    t.type === 'expense' && 
+    t.payment_method !== 'account_transfer' && 
+    t.payment_method !== 'account_investment'
+  );
+  
+  if (expenseTransactions.length > 0) {
+    // Group expenses by category_id and calculate totals
+    const categoryExpenses: Map<string, { 
+      name: string; 
+      total: number; 
+      count: number;
+      transactions: { description: string; amount: number; date: string }[];
+    }> = new Map();
+    
+    // Create a lookup for categories
+    const categoryLookup: Map<string, string> = new Map();
+    (data.categories || []).forEach((cat: any) => {
+      categoryLookup.set(cat.id, cat.name);
+    });
+    
+    expenseTransactions.forEach((t: any) => {
+      const categoryId = t.category_id || 'uncategorized';
+      const categoryName = categoryLookup.get(categoryId) || 
+        (language === 'pt' ? 'Sem categoria' : language === 'en' ? 'Uncategorized' : 'Sin categoría');
+      
+      if (!categoryExpenses.has(categoryId)) {
+        categoryExpenses.set(categoryId, {
+          name: categoryName,
+          total: 0,
+          count: 0,
+          transactions: []
+        });
+      }
+      
+      const cat = categoryExpenses.get(categoryId)!;
+      cat.total += Number(t.amount);
+      cat.count += 1;
+      cat.transactions.push({
+        description: t.description,
+        amount: Number(t.amount),
+        date: t.transaction_date
+      });
+    });
+    
+    // Sort categories by total spending (descending)
+    const sortedCategories = Array.from(categoryExpenses.values())
+      .sort((a, b) => b.total - a.total);
+    
+    // Calculate total expenses for percentage calculation
+    const totalExpenses = sortedCategories.reduce((sum, cat) => sum + cat.total, 0);
+    
+    context += language === 'pt' 
+      ? `\n====== ANÁLISE DE GASTOS POR CATEGORIA ======\n`
+      : language === 'en' 
+      ? `\n====== EXPENSE ANALYSIS BY CATEGORY ======\n`
+      : `\n====== ANÁLISIS DE GASTOS POR CATEGORÍA ======\n`;
+    
+    context += language === 'pt' 
+      ? `Total de gastos no período: ${formatCurrency(totalExpenses)}\n\n`
+      : language === 'en' 
+      ? `Total expenses in period: ${formatCurrency(totalExpenses)}\n\n`
+      : `Total de gastos en el período: ${formatCurrency(totalExpenses)}\n\n`;
+    
+    context += language === 'pt' 
+      ? `RANKING DE CATEGORIAS (da maior para menor):\n`
+      : language === 'en' 
+      ? `CATEGORY RANKING (from highest to lowest):\n`
+      : `RANKING DE CATEGORÍAS (de mayor a menor):\n`;
+    
+    sortedCategories.forEach((cat, index) => {
+      const percentage = totalExpenses > 0 ? ((cat.total / totalExpenses) * 100).toFixed(1) : '0.0';
+      const avgPerTransaction = cat.count > 0 ? cat.total / cat.count : 0;
+      
+      context += language === 'pt' 
+        ? `${index + 1}. ${cat.name}: ${formatCurrency(cat.total)} (${percentage}% do total) - ${cat.count} transações, média ${formatCurrency(avgPerTransaction)}/transação\n`
+        : language === 'en' 
+        ? `${index + 1}. ${cat.name}: ${formatCurrency(cat.total)} (${percentage}% of total) - ${cat.count} transactions, avg ${formatCurrency(avgPerTransaction)}/transaction\n`
+        : `${index + 1}. ${cat.name}: ${formatCurrency(cat.total)} (${percentage}% del total) - ${cat.count} transacciones, promedio ${formatCurrency(avgPerTransaction)}/transacción\n`;
+    });
+    
+    // Show top 3 categories with their biggest transactions for specific recommendations
+    context += language === 'pt' 
+      ? `\nDETALHAMENTO DAS TOP 3 CATEGORIAS:\n`
+      : language === 'en' 
+      ? `\nTOP 3 CATEGORIES BREAKDOWN:\n`
+      : `\nDESGLOSE DE LAS TOP 3 CATEGORÍAS:\n`;
+    
+    sortedCategories.slice(0, 3).forEach((cat) => {
+      context += language === 'pt' 
+        ? `\n📊 ${cat.name} (${formatCurrency(cat.total)}):\n`
+        : language === 'en' 
+        ? `\n📊 ${cat.name} (${formatCurrency(cat.total)}):\n`
+        : `\n📊 ${cat.name} (${formatCurrency(cat.total)}):\n`;
+      
+      // Show top 5 transactions in this category
+      const topTransactions = cat.transactions
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 5);
+      
+      topTransactions.forEach(t => {
+        const formattedDate = new Date(t.date).toLocaleDateString('pt-BR');
+        context += `   - ${t.description}: ${formatCurrency(t.amount)} (${formattedDate})\n`;
+      });
+      
+      if (cat.transactions.length > 5) {
+        const remaining = cat.transactions.length - 5;
+        context += language === 'pt' 
+          ? `   ... e mais ${remaining} transações menores\n`
+          : language === 'en' 
+          ? `   ... and ${remaining} more smaller transactions\n`
+          : `   ... y ${remaining} transacciones más pequeñas\n`;
+      }
+    });
+    
+    context += '\n';
+  }
+
+  // ====== ANÁLISE DE RECEITAS POR CATEGORIA ======
+  const incomeTransactions = transactions.filter((t: any) => 
+    t.type === 'income' && 
+    t.payment_method !== 'account_transfer' && 
+    t.payment_method !== 'account_investment'
+  );
+  
+  if (incomeTransactions.length > 0) {
+    const categoryIncomes: Map<string, { name: string; total: number; count: number }> = new Map();
+    
+    const categoryLookup: Map<string, string> = new Map();
+    (data.categories || []).forEach((cat: any) => {
+      categoryLookup.set(cat.id, cat.name);
+    });
+    
+    incomeTransactions.forEach((t: any) => {
+      const categoryId = t.category_id || 'uncategorized';
+      const categoryName = categoryLookup.get(categoryId) || 
+        (language === 'pt' ? 'Sem categoria' : language === 'en' ? 'Uncategorized' : 'Sin categoría');
+      
+      if (!categoryIncomes.has(categoryId)) {
+        categoryIncomes.set(categoryId, { name: categoryName, total: 0, count: 0 });
+      }
+      
+      const cat = categoryIncomes.get(categoryId)!;
+      cat.total += Number(t.amount);
+      cat.count += 1;
+    });
+    
+    const sortedIncomes = Array.from(categoryIncomes.values()).sort((a, b) => b.total - a.total);
+    const totalIncome = sortedIncomes.reduce((sum, cat) => sum + cat.total, 0);
+    
+    context += language === 'pt' 
+      ? `\n====== ANÁLISE DE RECEITAS POR CATEGORIA ======\n`
+      : language === 'en' 
+      ? `\n====== INCOME ANALYSIS BY CATEGORY ======\n`
+      : `\n====== ANÁLISIS DE INGRESOS POR CATEGORÍA ======\n`;
+    
+    context += language === 'pt' 
+      ? `Total de receitas no período: ${formatCurrency(totalIncome)}\n\n`
+      : language === 'en' 
+      ? `Total income in period: ${formatCurrency(totalIncome)}\n\n`
+      : `Total de ingresos en el período: ${formatCurrency(totalIncome)}\n\n`;
+    
+    sortedIncomes.forEach((cat, index) => {
+      const percentage = totalIncome > 0 ? ((cat.total / totalIncome) * 100).toFixed(1) : '0.0';
+      context += language === 'pt' 
+        ? `${index + 1}. ${cat.name}: ${formatCurrency(cat.total)} (${percentage}%) - ${cat.count} transações\n`
+        : language === 'en' 
+        ? `${index + 1}. ${cat.name}: ${formatCurrency(cat.total)} (${percentage}%) - ${cat.count} transactions\n`
+        : `${index + 1}. ${cat.name}: ${formatCurrency(cat.total)} (${percentage}%) - ${cat.count} transacciones\n`;
+    });
+    context += '\n';
+  }
+
+  // ====== SALDO ATUAL (RECEITAS - DESPESAS DO PERÍODO) ======
+  const totalExpensesCalc = expenseTransactions.reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+  const totalIncomeCalc = incomeTransactions.reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+  const periodBalance = totalIncomeCalc - totalExpensesCalc;
+  
+  context += language === 'pt' 
+    ? `\n====== BALANÇO DO PERÍODO ======\n`
+    : language === 'en' 
+    ? `\n====== PERIOD BALANCE ======\n`
+    : `\n====== BALANCE DEL PERÍODO ======\n`;
+  
+  context += language === 'pt' 
+    ? `Total de Receitas: ${formatCurrency(totalIncomeCalc)}\nTotal de Despesas: ${formatCurrency(totalExpensesCalc)}\nSaldo do Período: ${formatCurrency(periodBalance)} ${periodBalance >= 0 ? '✅ (positivo)' : '❌ (negativo)'}\n`
+    : language === 'en' 
+    ? `Total Income: ${formatCurrency(totalIncomeCalc)}\nTotal Expenses: ${formatCurrency(totalExpensesCalc)}\nPeriod Balance: ${formatCurrency(periodBalance)} ${periodBalance >= 0 ? '✅ (positive)' : '❌ (negative)'}\n`
+    : `Total de Ingresos: ${formatCurrency(totalIncomeCalc)}\nTotal de Gastos: ${formatCurrency(totalExpensesCalc)}\nBalance del Período: ${formatCurrency(periodBalance)} ${periodBalance >= 0 ? '✅ (positivo)' : '❌ (negativo)'}\n`;
+
   return context;
 }
 
