@@ -15,8 +15,8 @@ export const SyncPromotionsButton = ({ onSyncComplete }: SyncPromotionsButtonPro
     try {
       setSyncing(true);
       
-      const { data, error } = await supabase.functions.invoke('sync-airline-promotions', {
-        body: {}
+      const { data, error } = await supabase.functions.invoke('firecrawl-promotions-scraper', {
+        body: { demo: true }
       });
 
       if (error) {
@@ -24,18 +24,11 @@ export const SyncPromotionsButton = ({ onSyncComplete }: SyncPromotionsButtonPro
       }
 
       const result = data;
-      const totalProcessed = result?.processed || 0;
-      const moblixStats = result?.moblix_stats;
-
-      let message = `Sincronização concluída! ${totalProcessed} promoções processadas.`;
-      
-      if (moblixStats && moblixStats.total_fetched > 0) {
-        message += ` Moblix: ${moblixStats.inserted} novas + ${moblixStats.updated} atualizadas.`;
-      }
+      const totalFound = result?.promotions_found || 0;
 
       toast({
         title: "Sucesso",
-        description: message,
+        description: `Sincronização concluída! ${totalFound} promoções encontradas.`,
       });
 
       onSyncComplete?.();
