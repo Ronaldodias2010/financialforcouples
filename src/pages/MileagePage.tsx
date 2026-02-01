@@ -4,6 +4,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useLanguage } from '@/hooks/useLanguage';
 import { MileageSystem } from '@/components/financial/MileageSystem';
 import { PromotionsSection } from '@/components/financial/PromotionsSection';
+import { ScrapedPromotionsList } from '@/components/financial/ScrapedPromotionsList';
 import { TravelSuggestionsSection } from '@/components/financial/TravelSuggestionsSection';
 import { SmartAlertsSection } from '@/components/financial/SmartAlertsSection';
 import { NotificationCenter } from '@/components/financial/NotificationCenter';
@@ -85,6 +86,9 @@ export const MileagePage = ({ onBack }: MileagePageProps) => {
       {/* Premium Features */}
       {hasAccess('aiMileage') ? (
         <div className="space-y-6">
+          {/* Scraped Promotions - from Firecrawl */}
+          <ScrapedPromotionsList userTotalMiles={userTotalMiles} />
+
           {/* Travel Suggestions from Scraper */}
           <TravelSuggestionsSection userTotalMiles={userTotalMiles} />
           
