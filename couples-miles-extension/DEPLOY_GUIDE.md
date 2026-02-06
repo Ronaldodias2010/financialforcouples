@@ -1,5 +1,35 @@
 # 📦 Guia de Deploy - Couples Miles Extension
 
+## 📥 Como Baixar a Pasta da Extensão
+
+### Opção 1: Via GitHub (Recomendado)
+1. No Lovable, clique em **"..." (menu)** → **"Export to GitHub"**
+2. Clone o repositório: `git clone [SEU-REPO-URL]`
+3. A pasta estará em: `couples-miles-extension/`
+
+### Opção 2: Download Manual
+Copie todos os arquivos listados abaixo:
+```
+couples-miles-extension/
+├── manifest.json
+├── background.js
+├── content.js
+├── selectors.js
+├── popup.html
+├── popup.js
+├── styles.css
+├── icons/
+│   ├── icon16.png
+│   ├── icon48.png
+│   └── icon128.png
+└── assets/
+    ├── screenshot-popup.png
+    ├── screenshot-dashboard.png
+    └── promo-small.png
+```
+
+---
+
 ## ✅ Passo 1: Ícones PNG (COMPLETO)
 Os ícones já foram gerados em `/icons/`:
 - `icon16.png` - Toolbar
