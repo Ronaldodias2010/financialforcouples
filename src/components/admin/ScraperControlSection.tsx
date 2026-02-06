@@ -107,18 +107,26 @@ export function ScraperControlSection() {
       setIsRunningScaper(true);
       toast({
         title: 'Iniciando Scraper',
-        description: 'O scraper foi iniciado. Isso pode levar alguns minutos...',
+        description: 'Conectando ao scraper Python local via ngrok...',
       });
 
-      const { data, error } = await supabase.functions.invoke('firecrawl-promotions-scraper', {
-        body: { manual: true }
+      // Call the import-pdp-deals function to fetch from ngrok scraper
+      const ngrokUrl = 'https://unbefriended-unprecisive-selah.ngrok-free.dev/deals';
+      
+      const { data, error } = await supabase.functions.invoke('import-pdp-deals', {
+        body: { ngrok_url: ngrokUrl }
       });
 
       if (error) throw error;
 
+      const inserted = data?.inserted || 0;
+      const skipped = data?.skipped || 0;
+      
       toast({
         title: 'Scraper Concluído',
-        description: `Páginas: ${data.pages_scraped}, Promoções: ${data.promotions_found}`,
+        description: inserted > 0 
+          ? `${inserted} novas promoções importadas${skipped > 0 ? `, ${skipped} já existiam` : ''}`
+          : 'Nenhuma promoção nova encontrada (todas já existem)',
       });
 
       // Refresh data
@@ -127,7 +135,7 @@ export function ScraperControlSection() {
       console.error('Error running scraper:', error);
       toast({
         title: 'Erro no Scraper',
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        description: 'Não foi possível conectar ao scraper local. Verifique se o Python está rodando e o ngrok está ativo.',
         variant: 'destructive'
       });
     } finally {
