@@ -1,0 +1,6 @@
+Este diretório deve conter os ícones da extensão:
+- icon16.png (16x16)
+- icon48.png (48x48)
+- icon128.png (128x128)
+
+Use o logo do Couples Financials ou crie ícones personalizados.

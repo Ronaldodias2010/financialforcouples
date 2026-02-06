@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Couples Miles</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <img src="icons/icon48.png" alt="Couples Miles" class="logo-icon">
+        <div class="logo-text">
+          <span class="logo-title">Couples Miles</span>
+          <span class="logo-subtitle">Sincronização Segura</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Consent Modal -->
+    <div id="consent-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>🔒 Termos de Privacidade</h2>
+        <div class="consent-text">
+          <p><strong>Esta extensão coleta apenas:</strong></p>
+          <ul>
+            <li>✅ Saldo de milhas visível na tela</li>
+            <li>✅ Nome do programa</li>
+            <li>✅ Data/hora da sincronização</li>
+          </ul>
+          <p><strong>Esta extensão NÃO:</strong></p>
+          <ul>
+            <li>❌ Armazena senhas</li>
+            <li>❌ Intercepta credenciais</li>
+            <li>❌ Acessa cookies de login</li>
+            <li>❌ Faz login automático</li>
+          </ul>
+          <p class="consent-note">
+            A extração só ocorre após seu clique manual e login no site oficial.
+          </p>
+        </div>
+        <button id="accept-consent" class="btn btn-primary">
+          Aceito os Termos
+        </button>
+      </div>
+    </div>
+
+    <!-- Login Section -->
+    <div id="login-section" class="section hidden">
+      <div class="info-card warning">
+        <span class="icon">🔑</span>
+        <div>
+          <strong>Login necessário</strong>
+          <p>Faça login no Couples para sincronizar suas milhas.</p>
+        </div>
+      </div>
+      <div class="login-form">
+        <input type="email" id="email-input" placeholder="Email" class="input">
+        <input type="password" id="password-input" placeholder="Senha" class="input">
+        <button id="login-btn" class="btn btn-primary">
+          Entrar
+        </button>
+        <p class="login-help">
+          <a href="https://app.couplesfinancials.com" target="_blank">
+            Criar conta no Couples
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Main Section -->
+    <div id="main-section" class="section hidden">
+      <!-- Status do Site Atual -->
+      <div id="site-status" class="status-card">
+        <div class="status-header">
+          <span id="program-icon" class="program-icon">✈️</span>
+          <div class="status-info">
+            <span id="program-name" class="program-name">-</span>
+            <span id="site-domain" class="site-domain">-</span>
+          </div>
+          <span id="status-badge" class="badge">-</span>
+        </div>
+      </div>
+
+      <!-- Ação Principal -->
+      <div id="action-section" class="action-section">
+        <button id="sync-btn" class="btn btn-sync" disabled>
+          <span class="sync-icon">🔄</span>
+          <span class="sync-text">Sincronizar Milhas</span>
+        </button>
+        <p id="action-message" class="action-message"></p>
+      </div>
+
+      <!-- Resultado -->
+      <div id="result-section" class="result-section hidden">
+        <div class="result-card success">
+          <span class="result-icon">✅</span>
+          <div class="result-info">
+            <span class="result-title">Sincronizado!</span>
+            <span id="result-balance" class="result-balance">0 milhas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico Rápido -->
+      <div id="history-section" class="history-section">
+        <h3>Programas Suportados</h3>
+        <div class="programs-list">
+          <div class="program-item">
+            <span class="program-logo latam">LP</span>
+            <span>LATAM Pass</span>
+          </div>
+          <div class="program-item">
+            <span class="program-logo azul">AZ</span>
+            <span>Azul Fidelidade</span>
+          </div>
+          <div class="program-item">
+            <span class="program-logo smiles">SM</span>
+            <span>Smiles</span>
+          </div>
+          <div class="program-item">
+            <span class="program-logo livelo">LV</span>
+            <span>Livelo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <button id="logout-btn" class="btn btn-link">
+          Sair
+        </button>
+        <span class="version">v1.0.0</span>
+      </footer>
+    </div>
+
+    <!-- Not Supported Section -->
+    <div id="not-supported-section" class="section hidden">
+      <div class="info-card">
+        <span class="icon">ℹ️</span>
+        <div>
+          <strong>Site não suportado</strong>
+          <p>Acesse um dos sites de milhagem suportados para sincronizar.</p>
+        </div>
+      </div>
+      <div class="programs-list compact">
+        <a href="https://www.latam.com" target="_blank" class="program-link">
+          <span class="program-logo latam">LP</span>
+          LATAM Pass
+        </a>
+        <a href="https://www.tudoazul.com.br" target="_blank" class="program-link">
+          <span class="program-logo azul">AZ</span>
+          Azul Fidelidade
+        </a>
+        <a href="https://www.smiles.com.br" target="_blank" class="program-link">
+          <span class="program-logo smiles">SM</span>
+          Smiles
+        </a>
+        <a href="https://www.livelo.com.br" target="_blank" class="program-link">
+          <span class="program-logo livelo">LV</span>
+          Livelo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
