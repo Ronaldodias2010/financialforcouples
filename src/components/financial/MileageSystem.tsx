@@ -18,7 +18,7 @@ import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConv
 import { useMileageAnalysis } from "@/hooks/useMileageAnalysis";
 import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User, Globe, MapPin, ArrowRight, Info } from "lucide-react";
-import { PromotionsSection } from './PromotionsSection';
+import { ScrapedPromotionsList } from './ScrapedPromotionsList';
 import { MileageRuleWizard, type RuleFormData } from './MileageRuleWizard';
 import { MileageGoalAnalysis } from './MileageGoalAnalysis';
 import { MileageSmartSummary } from './MileageSmartSummary';
@@ -90,6 +90,8 @@ export const MileageSystem = () => {
   const [mileageHistory, setMileageHistory] = useState<MileageHistory[]>([]);
   const [totalMiles, setTotalMiles] = useState(0);
   const [promotions, setPromotions] = useState<any[]>([]);
+
+  const mileageAnalysis = useMileageAnalysis(mileageGoals, promotions, totalMiles, mileageHistory);
   
   // View mode state
   const [viewMode, setViewMode] = useState<'both' | 'user1' | 'user2'>('both');
@@ -897,22 +899,17 @@ export const MileageSystem = () => {
 
         <TabsContent value="goals" className="space-y-4">
           {/* Smart Summary - Intelligent Mileage Analysis */}
-          {(() => {
-            const mileageAnalysis = useMileageAnalysis(mileageGoals, promotions, totalMiles, mileageHistory);
-            return (
-              <>
-                <MileageSmartSummary analysis={mileageAnalysis} />
-                
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">{t('mileage.goals')}</h3>
-                  <Button onClick={() => setShowGoalForm(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('mileage.newGoal')}
-                  </Button>
-                </div>
-              </>
-            );
-          })()}
+          <>
+            <MileageSmartSummary analysis={mileageAnalysis} />
+            
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">{t('mileage.goals')}</h3>
+              <Button onClick={() => setShowGoalForm(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('mileage.newGoal')}
+              </Button>
+            </div>
+          </>
 
           {showGoalForm && (
             <Card>
@@ -1312,17 +1309,8 @@ export const MileageSystem = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Promoções de Companhias Aéreas */}
-      {(() => {
-        const mileageAnalysis = useMileageAnalysis(mileageGoals, promotions, totalMiles, mileageHistory);
-        return (
-          <PromotionsSection 
-            userTotalMiles={totalMiles} 
-            mileageGoals={mileageGoals}
-            promotionMatches={mileageAnalysis.promotionMatches}
-          />
-        );
-      })()}
+      {/* Promoções (Scraper Python) */}
+      <ScrapedPromotionsList userTotalMiles={totalMiles} />
     </div>
   );
 };
