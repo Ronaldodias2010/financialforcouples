@@ -32,6 +32,8 @@ interface ScrapingJob {
 interface PromotionStats {
   total_promotions: number;
   active_promotions: number;
+  expired_promotions: number;
+  recent_promotions: number;
   total_suggestions: number;
   users_with_suggestions: number;
 }
@@ -68,6 +70,20 @@ export function ScraperControlSection() {
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true);
 
+      const { count: expiredPromos } = await supabase
+        .from('scraped_promotions')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', false);
+
+      // Get promotions from last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const { count: recentPromos } = await supabase
+        .from('scraped_promotions')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+        .gte('data_coleta', sevenDaysAgo.toISOString());
+
       const { count: totalSuggestions } = await supabase
         .from('user_travel_suggestions')
         .select('*', { count: 'exact', head: true });
@@ -83,6 +99,8 @@ export function ScraperControlSection() {
       setStats({
         total_promotions: totalPromos || 0,
         active_promotions: activePromos || 0,
+        expired_promotions: expiredPromos || 0,
+        recent_promotions: recentPromos || 0,
         total_suggestions: totalSuggestions || 0,
         users_with_suggestions: uniqueUsers
       });
@@ -179,7 +197,7 @@ export function ScraperControlSection() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="default" className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Concluído</Badge>;
+        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Concluído</Badge>;
       case 'running':
         return <Badge variant="secondary"><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Executando</Badge>;
       case 'failed':
@@ -222,24 +240,34 @@ export function ScraperControlSection() {
       <CardContent className="space-y-6">
         {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="bg-muted/50 rounded-lg p-4 text-center">
               <Database className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
               <p className="text-2xl font-bold">{stats.total_promotions}</p>
               <p className="text-sm text-muted-foreground">Total Promoções</p>
             </div>
-            <div className="bg-muted/50 rounded-lg p-4 text-center">
-              <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-500" />
-              <p className="text-2xl font-bold">{stats.active_promotions}</p>
+            <div className="bg-muted/50 rounded-lg p-4 text-center border border-primary/20">
+              <CheckCircle className="w-6 h-6 mx-auto mb-2 text-primary" />
+              <p className="text-2xl font-bold text-primary">{stats.active_promotions}</p>
               <p className="text-sm text-muted-foreground">Ativas</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <XCircle className="w-6 h-6 mx-auto mb-2 text-destructive" />
+              <p className="text-2xl font-bold text-destructive">{stats.expired_promotions}</p>
+              <p className="text-sm text-muted-foreground">Vencidas</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <Clock className="w-6 h-6 mx-auto mb-2 text-accent-foreground" />
+              <p className="text-2xl font-bold">{stats.recent_promotions}</p>
+              <p className="text-sm text-muted-foreground">Últimos 7 dias</p>
             </div>
             <div className="bg-muted/50 rounded-lg p-4 text-center">
               <Plane className="w-6 h-6 mx-auto mb-2 text-primary" />
               <p className="text-2xl font-bold">{stats.total_suggestions}</p>
-              <p className="text-sm text-muted-foreground">Sugestões Geradas</p>
+              <p className="text-sm text-muted-foreground">Sugestões</p>
             </div>
             <div className="bg-muted/50 rounded-lg p-4 text-center">
-              <Users className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+              <Users className="w-6 h-6 mx-auto mb-2 text-secondary-foreground" />
               <p className="text-2xl font-bold">{stats.users_with_suggestions}</p>
               <p className="text-sm text-muted-foreground">Usuários Impactados</p>
             </div>
