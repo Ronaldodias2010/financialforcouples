@@ -95,6 +95,17 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0 }: ScrapedPromotionsL
     return colors[programa] || colors['Diversos'];
   };
 
+  const getSourceBadge = (fonte: string) => {
+    if (fonte === 'passageirodeprimeira') {
+      return (
+        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 dark:text-emerald-400 text-[10px] px-1.5">
+          PdP
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   const canRedeem = (milhas: number) => userTotalMiles >= milhas;
 
   const formatMiles = (miles: number) => {
@@ -206,10 +217,13 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0 }: ScrapedPromotionsL
               </div>
 
               <CardContent className="pt-4 pb-4">
-                {/* Title */}
-                <h3 className="font-semibold text-sm line-clamp-2 pr-16 mb-3">
-                  {promo.titulo || `${promo.programa} - ${promo.destino}`}
-                </h3>
+                {/* Title with source badge */}
+                <div className="flex items-start gap-2 mb-3">
+                  <h3 className="font-semibold text-sm line-clamp-2 pr-16 flex-1">
+                    {promo.titulo || `${promo.programa} - ${promo.destino}`}
+                  </h3>
+                  {getSourceBadge(promo.fonte)}
+                </div>
 
                 {/* Route */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">

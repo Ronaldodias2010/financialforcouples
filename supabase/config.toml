@@ -149,3 +149,6 @@ verify_jwt = false
 
 [functions.webauthn-login-verify]
 verify_jwt = false
+
+[functions.import-pdp-deals]
+verify_jwt = false
