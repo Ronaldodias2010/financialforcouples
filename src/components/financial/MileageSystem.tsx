@@ -753,22 +753,6 @@ export const MileageSystem = () => {
         </TabsList>
 
         <TabsContent value="rules" className="space-y-4">
-          {/* Aviso de reconstrução */}
-          <Card className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                    Área de Regras de Milhagem está em reconstrução
-                  </p>
-                  <p className="text-sm text-amber-700 dark:text-amber-300">
-                    Os processos estão paralisados temporariamente, mas logo estarão liberados 100%.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">{t('mileage.rules')}</h3>
