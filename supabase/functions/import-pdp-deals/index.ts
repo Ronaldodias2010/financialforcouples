@@ -122,6 +122,61 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Handle clean action
+    if (body.action === 'clean') {
+      console.log('Cleaning invalid promotions...');
+      
+      // First get IDs of invalid records
+      const { data: invalidRecords, error: selectError } = await supabase
+        .from('scraped_promotions')
+        .select('id')
+        .or('destino.ilike.%voo%,destino.ilike.%amanhã%,destino.ilike.%hoje%,destino.ilike.%ontem%');
+      
+      let deletedCount = 0;
+      
+      if (!selectError && invalidRecords && invalidRecords.length > 0) {
+        const ids = invalidRecords.map(r => r.id);
+        const { error: deleteError } = await supabase
+          .from('scraped_promotions')
+          .delete()
+          .in('id', ids);
+        
+        if (deleteError) {
+          console.error('Error deleting:', deleteError);
+        } else {
+          deletedCount = ids.length;
+        }
+      }
+
+      // Deactivate old promotions (older than 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const { error: updateError } = await supabase
+        .from('scraped_promotions')
+        .update({ is_active: false })
+        .lt('data_coleta', sevenDaysAgo.toISOString().split('T')[0])
+        .eq('is_active', true);
+
+      if (updateError) {
+        console.error('Error deactivating old:', updateError);
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Limpeza concluída. ${deletedCount} registros inválidos removidos.`,
+          deleted: deletedCount
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     // Support both modes:
     // 1. PULL mode: provide ngrok_url to fetch from
     // 2. PUSH mode: provide deals array directly
@@ -180,10 +235,7 @@ Deno.serve(async (req) => {
       );
     }
     
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Supabase client already initialized above
     
     // Parse all deals
     const parsedDeals = deals

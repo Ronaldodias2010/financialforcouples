@@ -14,10 +14,12 @@ import {
   AlertCircle,
   Plane,
   Database,
-  Users
+  Users,
+  Trash2
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { PromotionCard } from './PromotionCard';
 
 interface ScrapingJob {
   id: string;
@@ -38,13 +40,27 @@ interface PromotionStats {
   users_with_suggestions: number;
 }
 
+interface Promotion {
+  id: string;
+  programa: string;
+  origem: string | null;
+  destino: string;
+  milhas_min: number;
+  titulo: string | null;
+  link: string | null;
+  data_coleta: string;
+  is_active: boolean;
+}
+
 export function ScraperControlSection() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isRunningScaper, setIsRunningScaper] = useState(false);
   const [isRunningMatch, setIsRunningMatch] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
   const [recentJobs, setRecentJobs] = useState<ScrapingJob[]>([]);
   const [stats, setStats] = useState<PromotionStats | null>(null);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
 
   const fetchData = async () => {
     try {
@@ -59,6 +75,17 @@ export function ScraperControlSection() {
 
       if (jobsError) throw jobsError;
       setRecentJobs(jobs || []);
+
+      // Fetch active promotions for cards
+      const { data: promoData, error: promoError } = await supabase
+        .from('scraped_promotions')
+        .select('id, programa, origem, destino, milhas_min, titulo, link, data_coleta, is_active')
+        .eq('is_active', true)
+        .order('data_coleta', { ascending: false })
+        .limit(12);
+
+      if (promoError) throw promoError;
+      setPromotions(promoData || []);
 
       // Fetch promotion stats
       const { count: totalPromos } = await supabase
@@ -113,6 +140,39 @@ export function ScraperControlSection() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const cleanInvalidData = async () => {
+    try {
+      setIsCleaning(true);
+      toast({
+        title: 'Limpando dados',
+        description: 'Removendo registros inválidos...',
+      });
+
+      // Delete invalid promotions via edge function
+      const { data, error } = await supabase.functions.invoke('import-pdp-deals', {
+        body: { action: 'clean' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Limpeza Concluída',
+        description: data?.message || 'Dados inválidos removidos com sucesso',
+      });
+
+      await fetchData();
+    } catch (error) {
+      console.error('Error cleaning data:', error);
+      toast({
+        title: 'Erro na Limpeza',
+        description: 'Não foi possível limpar os dados',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsCleaning(false);
     }
   };
 
@@ -321,6 +381,46 @@ export function ScraperControlSection() {
             <RefreshCw className="w-4 h-4 mr-2" />
             Atualizar Dados
           </Button>
+
+          <Button 
+            variant="outline" 
+            onClick={cleanInvalidData}
+            disabled={isCleaning}
+            className="flex-1 md:flex-none text-destructive hover:text-destructive"
+          >
+            {isCleaning ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Limpando...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Limpar Inválidos
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Promotions Cards */}
+        <div>
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <Plane className="w-4 h-4" />
+            Promoções Ativas ({promotions.length})
+          </h4>
+          
+          {promotions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+              <p>Nenhuma promoção ativa encontrada</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {promotions.map(promo => (
+                <PromotionCard key={promo.id} promotion={promo} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent Jobs */}
