@@ -19,7 +19,7 @@ import { useMileageAnalysis } from "@/hooks/useMileageAnalysis";
 import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User, Globe, MapPin, ArrowRight, Info } from "lucide-react";
 import { ScrapedPromotionsList } from './ScrapedPromotionsList';
-import { ConnectedProgramsCard } from './ConnectedProgramsCard';
+// ConnectedProgramsCard removed - sync via extension integrated into MileageProgramsSection
 import { MileageRuleWizard, type RuleFormData } from './MileageRuleWizard';
 import { MileageGoalAnalysis } from './MileageGoalAnalysis';
 import { MileageSmartSummary } from './MileageSmartSummary';
@@ -742,8 +742,22 @@ export const MileageSystem = () => {
       {/* Connected Mileage Programs Section */}
       <MileageProgramsSection onMilesUpdate={loadTotalMiles} />
 
-      {/* Extension Sync - Programas Conectados */}
-      <ConnectedProgramsCard />
+      {/* "How it works" section for browser extension sync */}
+      <Card className="bg-accent/50 border-primary/20">
+        <CardContent className="pt-4 pb-4">
+          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            Como sincronizar via extensão?
+          </h4>
+          <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+            <li>Instale a extensão Couples Miles no seu navegador</li>
+            <li>Faça login na sua conta Couples pela extensão</li>
+            <li>Acesse o site da companhia aérea e faça login normalmente</li>
+            <li>Clique em "Sincronizar Milhas" na extensão</li>
+            <li>Pronto! Seu saldo será atualizado automaticamente aqui</li>
+          </ol>
+        </CardContent>
+      </Card>
 
       {/* Main Content - Regras, Metas e Histórico */}
       <Tabs defaultValue="rules" className="space-y-4">
