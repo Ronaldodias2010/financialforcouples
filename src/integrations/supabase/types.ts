@@ -1410,6 +1410,54 @@ export type Database = {
         }
         Relationships: []
       }
+      extension_sync_logs: {
+        Row: {
+          balance: number
+          created_at: string
+          error_message: string | null
+          extension_version: string | null
+          id: string
+          ip_address: string | null
+          program_code: string
+          program_name: string
+          raw_text: string | null
+          source_url: string | null
+          sync_status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          balance: number
+          created_at?: string
+          error_message?: string | null
+          extension_version?: string | null
+          id?: string
+          ip_address?: string | null
+          program_code: string
+          program_name: string
+          raw_text?: string | null
+          source_url?: string | null
+          sync_status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          error_message?: string | null
+          extension_version?: string | null
+          id?: string
+          ip_address?: string | null
+          program_code?: string
+          program_name?: string
+          raw_text?: string | null
+          source_url?: string | null
+          sync_status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       import_audit_log: {
         Row: {
           action_details: Json | null
@@ -2475,10 +2523,12 @@ export type Database = {
           id: string
           last_error: string | null
           last_sync_at: string | null
+          last_synced_at: string | null
           program_code: string
           program_name: string
           refresh_token: string | null
           status: string
+          sync_source: string | null
           token_expires_at: string | null
           updated_at: string | null
           user_id: string
@@ -2492,10 +2542,12 @@ export type Database = {
           id?: string
           last_error?: string | null
           last_sync_at?: string | null
+          last_synced_at?: string | null
           program_code: string
           program_name: string
           refresh_token?: string | null
           status?: string
+          sync_source?: string | null
           token_expires_at?: string | null
           updated_at?: string | null
           user_id: string
@@ -2509,10 +2561,12 @@ export type Database = {
           id?: string
           last_error?: string | null
           last_sync_at?: string | null
+          last_synced_at?: string | null
           program_code?: string
           program_name?: string
           refresh_token?: string | null
           status?: string
+          sync_source?: string | null
           token_expires_at?: string | null
           updated_at?: string | null
           user_id?: string

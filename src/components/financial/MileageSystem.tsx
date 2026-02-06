@@ -19,6 +19,7 @@ import { useMileageAnalysis } from "@/hooks/useMileageAnalysis";
 import { supabase } from "@/integrations/supabase/client";
 import { Plane, CreditCard, Target, TrendingUp, Calendar, Plus, Edit, Trash2, User, Globe, MapPin, ArrowRight, Info } from "lucide-react";
 import { ScrapedPromotionsList } from './ScrapedPromotionsList';
+import { ConnectedProgramsCard } from './ConnectedProgramsCard';
 import { MileageRuleWizard, type RuleFormData } from './MileageRuleWizard';
 import { MileageGoalAnalysis } from './MileageGoalAnalysis';
 import { MileageSmartSummary } from './MileageSmartSummary';
@@ -740,6 +741,9 @@ export const MileageSystem = () => {
 
       {/* Connected Mileage Programs Section */}
       <MileageProgramsSection onMilesUpdate={loadTotalMiles} />
+
+      {/* Extension Sync - Programas Conectados */}
+      <ConnectedProgramsCard />
 
       {/* Main Content - Regras, Metas e Histórico */}
       <Tabs defaultValue="rules" className="space-y-4">
