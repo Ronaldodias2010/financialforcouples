@@ -40,15 +40,30 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0 }: ScrapedPromotionsL
 
   const loadPromotions = async () => {
     try {
+      // Calculate 30 days ago for expiration filter
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
       const { data, error } = await supabase
         .from('scraped_promotions')
         .select('*')
         .eq('is_active', true)
+        .gte('created_at', thirtyDaysAgo.toISOString())
         .order('milhas_min', { ascending: true })
         .limit(20);
 
       if (error) throw error;
       setPromotions(data || []);
+      
+      // Auto-cleanup: Delete promotions older than 30 days
+      const { error: cleanupError } = await supabase
+        .from('scraped_promotions')
+        .delete()
+        .lt('created_at', thirtyDaysAgo.toISOString());
+      
+      if (cleanupError) {
+        console.warn('Cleanup warning:', cleanupError);
+      }
     } catch (error) {
       console.error('Error loading scraped promotions:', error);
     } finally {

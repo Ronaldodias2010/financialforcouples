@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useLanguage } from '@/hooks/useLanguage';
 import { MileageSystem } from '@/components/financial/MileageSystem';
-import { PromotionsSection } from '@/components/financial/PromotionsSection';
+// PromotionsSection removed - using ScrapedPromotionsList instead
 import { ScrapedPromotionsList } from '@/components/financial/ScrapedPromotionsList';
 import { TravelSuggestionsSection } from '@/components/financial/TravelSuggestionsSection';
 import { SmartAlertsSection } from '@/components/financial/SmartAlertsSection';
@@ -92,11 +92,8 @@ export const MileagePage = ({ onBack }: MileagePageProps) => {
           {/* Travel Suggestions from Scraper */}
           <TravelSuggestionsSection userTotalMiles={userTotalMiles} />
           
-          {/* Main promotions and alerts */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <PromotionsSection userTotalMiles={userTotalMiles} />
-            <SmartAlertsSection userTotalMiles={userTotalMiles} />
-          </div>
+          {/* Smart alerts only - promotions handled by ScrapedPromotionsList */}
+          <SmartAlertsSection userTotalMiles={userTotalMiles} />
           
           {/* Notification Center */}
           <NotificationCenter />
