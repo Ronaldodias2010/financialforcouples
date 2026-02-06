@@ -152,3 +152,6 @@ verify_jwt = false
 
 [functions.import-pdp-deals]
 verify_jwt = false
+
+[functions.extension-sync-miles]
+verify_jwt = false
