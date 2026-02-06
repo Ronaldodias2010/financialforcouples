@@ -119,18 +119,59 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
   
-  if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-  
   try {
-    const body = await req.json();
-    const deals: IncomingDeal[] = body.deals || [];
+    const body = await req.json().catch(() => ({}));
     
-    console.log(`Received ${deals.length} deals from Passageiro de Primeira`);
+    // Support both modes:
+    // 1. PULL mode: provide ngrok_url to fetch from
+    // 2. PUSH mode: provide deals array directly
+    
+    let deals: IncomingDeal[] = [];
+    
+    if (body.ngrok_url) {
+      // PULL mode: fetch from ngrok URL
+      console.log(`Fetching deals from: ${body.ngrok_url}`);
+      
+      try {
+        const response = await fetch(body.ngrok_url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': 'true',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch from ngrok: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Raw response from ngrok:', JSON.stringify(data).substring(0, 500));
+        
+        // The API might return deals directly as array or nested in a property
+        if (Array.isArray(data)) {
+          deals = data;
+        } else if (data.deals && Array.isArray(data.deals)) {
+          deals = data.deals;
+        } else if (data.data && Array.isArray(data.data)) {
+          deals = data.data;
+        } else {
+          console.log('Unexpected data format:', typeof data);
+          deals = [];
+        }
+      } catch (fetchError) {
+        console.error('Fetch error:', fetchError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to fetch from ngrok', details: fetchError.message }),
+          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else if (body.deals && Array.isArray(body.deals)) {
+      // PUSH mode: deals provided directly
+      deals = body.deals;
+    }
+    
+    console.log(`Processing ${deals.length} deals from Passageiro de Primeira`);
     
     if (!deals.length) {
       return new Response(
@@ -157,7 +198,8 @@ Deno.serve(async (req) => {
           success: true, 
           message: 'No deals with valid miles found', 
           inserted: 0, 
-          skipped: deals.length 
+          skipped: deals.length,
+          raw_deals_received: deals.length,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
