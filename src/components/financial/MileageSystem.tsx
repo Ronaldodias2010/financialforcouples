@@ -306,10 +306,12 @@ export const MileageSystem = () => {
     const userIds = getUserIdsToQuery();
     console.log('MileageSystem: loadTotalMiles with userIds:', userIds, 'viewMode:', viewMode);
 
-    // 1) Saldo real (prioridade) via extensão / programas conectados
+    // REGRA SIMPLIFICADA: Somar APENAS os programas de milhagem conectados
+    // Milhas em cartões de crédito ficam separadas (podem ser transferidas com bônus 2x, 3x, etc.)
+    // Não misturamos existing_miles nem mileage_history aqui
     const { data: programsData, error: programsError } = await supabase
       .from("mileage_programs")
-      .select("balance_miles, user_id")
+      .select("balance_miles, user_id, program_name")
       .in("user_id", userIds.filter(Boolean))
       .eq("status", "connected");
 
@@ -318,58 +320,11 @@ export const MileageSystem = () => {
       return;
     }
 
-    const syncedProgramMiles =
-      programsData?.reduce((sum, prog) => sum + Number(prog.balance_miles || 0), 0) || 0;
+    // Total = APENAS saldo dos programas conectados (LATAM, Azul, Smiles, Livelo, etc.)
+    const total = programsData?.reduce((sum, prog) => sum + Number(prog.balance_miles || 0), 0) || 0;
 
-    const usersWithConnectedPrograms = new Set(programsData?.map((p) => p.user_id) || []);
-
-    // 2) Para quem NÃO tem programas conectados, usamos (milhas existentes + histórico)
-    const usersWithoutPrograms = userIds.filter(
-      (id): id is string => Boolean(id) && !usersWithConnectedPrograms.has(id)
-    );
-
-    let existingMiles = 0;
-    if (usersWithoutPrograms.length > 0) {
-      const { data: rulesData, error: rulesError } = await supabase
-        .from("card_mileage_rules")
-        .select("existing_miles")
-        .in("user_id", usersWithoutPrograms)
-        .eq("is_active", true);
-
-      if (rulesError) {
-        console.error("Error loading rules:", rulesError);
-        return;
-      }
-
-      existingMiles =
-        rulesData?.reduce((sum, rule) => sum + Number(rule.existing_miles || 0), 0) || 0;
-    }
-
-    let historyMiles = 0;
-    if (usersWithoutPrograms.length > 0) {
-      const { data: historyData, error: historyError } = await supabase
-        .from("mileage_history")
-        .select("miles_earned, user_id")
-        .in("user_id", usersWithoutPrograms);
-
-      if (historyError) {
-        console.error("Error loading history miles:", historyError);
-        return;
-      }
-
-      historyMiles =
-        historyData?.reduce((sum, h) => sum + Number(h.miles_earned || 0), 0) || 0;
-    }
-
-    // Total = (saldo real via programas conectados) + (fallback: existentes + histórico só para quem não tem programa)
-    const total = syncedProgramMiles + existingMiles + historyMiles;
-
-    console.log('MileageSystem: Total miles calculation:', {
-      syncedProgramMiles,
-      existingMiles,
-      historyMiles,
-      usersWithConnectedPrograms: Array.from(usersWithConnectedPrograms),
-      usersWithoutPrograms,
+    console.log('MileageSystem: Total miles (APENAS programas conectados):', {
+      programs: programsData,
       total,
       userIds
     });
