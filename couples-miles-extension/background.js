@@ -62,8 +62,20 @@ async function clearAuthToken() {
 
 // Verifica consentimento LGPD
 async function hasConsent() {
-  const result = await chrome.storage.local.get('lgpdConsent');
-  return result.lgpdConsent === true;
+  try {
+    if (!chrome?.storage?.local) {
+      console.error(
+        '[Couples Miles] chrome.storage.local indisponível. Verifique a permissão "storage" no manifest.json.'
+      );
+      return false;
+    }
+
+    const result = await chrome.storage.local.get('lgpdConsent');
+    return result?.lgpdConsent === true;
+  } catch (error) {
+    console.error('[Couples Miles] Erro ao verificar consentimento LGPD:', error);
+    return false;
+  }
 }
 
 // Salva consentimento LGPD
