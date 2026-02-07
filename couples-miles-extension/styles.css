@@ -511,3 +511,140 @@ body {
   font-size: 11px;
   color: var(--text-muted);
 }
+
+/* ===== HYBRID FLOW STYLES ===== */
+
+/* Confirmation Section */
+.confirmation-section {
+  margin-bottom: 16px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.confirmation-card {
+  background: linear-gradient(135deg, #fef3c7, #fef9c3);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.confirmation-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.confirmation-icon {
+  font-size: 24px;
+}
+
+.confirmation-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--primary-dark);
+}
+
+.confirmation-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.detected-balance {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+.detected-unit {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.confirmation-question {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.confirmation-buttons .btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-secondary);
+}
+
+/* Retry Section */
+.retry-section {
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.retry-section .info-card {
+  margin-bottom: 12px;
+}
+
+/* Not Found Section */
+.not-found-section {
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.not-found-section .info-card {
+  margin-bottom: 12px;
+}
+
+.info-card.error {
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+}
+
+/* Loading state for confirmation */
+.confirmation-card.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.confirmation-card.loading .confirmation-buttons .btn {
+  cursor: not-allowed;
+}

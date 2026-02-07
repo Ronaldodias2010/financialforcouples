@@ -100,6 +100,57 @@
         <p id="action-message" class="action-message"></p>
       </div>
 
+      <!-- Seção de Confirmação (Fluxo Híbrido) -->
+      <div id="confirmation-section" class="confirmation-section hidden">
+        <div class="confirmation-card">
+          <div class="confirmation-header">
+            <span class="confirmation-icon">🎯</span>
+            <span class="confirmation-title">Saldo Detectado</span>
+          </div>
+          <div class="confirmation-value">
+            <span id="detected-balance" class="detected-balance">0</span>
+            <span class="detected-unit">milhas</span>
+          </div>
+          <p class="confirmation-question">Este valor está correto?</p>
+          <div class="confirmation-buttons">
+            <button id="confirm-yes-btn" class="btn btn-success">
+              ✅ Sim, enviar
+            </button>
+            <button id="confirm-no-btn" class="btn btn-secondary">
+              ❌ Não
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção de Retry (quando confirmação falha) -->
+      <div id="retry-section" class="retry-section hidden">
+        <div class="info-card warning">
+          <span class="icon">⚠️</span>
+          <div>
+            <strong>Vamos tentar novamente</strong>
+            <p>Abra a página onde seu saldo esteja visível e clique novamente em sincronizar.</p>
+          </div>
+        </div>
+        <button id="retry-sync-btn" class="btn btn-primary">
+          🔄 Tentar Novamente
+        </button>
+      </div>
+
+      <!-- Seção Not Found (saldo não encontrado) -->
+      <div id="not-found-section" class="not-found-section hidden">
+        <div class="info-card error">
+          <span class="icon">🔍</span>
+          <div>
+            <strong>Saldo não encontrado</strong>
+            <p>Não encontramos saldo de milhas nesta página.</p>
+          </div>
+        </div>
+        <button id="go-to-miles-btn" class="btn btn-primary">
+          🔗 Ir para página de milhas
+        </button>
+      </div>
+
       <!-- Resultado -->
       <div id="result-section" class="result-section hidden">
         <div class="result-card success">
