@@ -1,30 +1,57 @@
 /**
- * Couples Miles Extension - Popup Script v2.5
+ * Couples Miles Extension - Popup Script v2.7
  * 
- * FLUXO HÍBRIDO DE SINCRONIZAÇÃO
- * - Estados: idle, auto_detected, awaiting_confirmation, manual_mode, synced
- * - Confirmação visual do saldo detectado
+ * FLUXO HÍBRIDO CORRIGIDO
+ * - REGRA: Nunca navegar automaticamente
+ * - REGRA: Sempre tentar extrair na página atual primeiro
+ * - REGRA: Só mostrar opção de navegação manual se não encontrar saldo
+ * - Estados: idle, awaiting_confirmation, manual_mode, synced
  * - Proteção contra execução dupla
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 [Couples Miles] Extensão inicializada v2.5 - Fluxo Híbrido');
+  console.log('🚀 [Couples Miles] Extensão inicializada v2.7 - Fluxo Híbrido Corrigido');
 
   // ================= CONSTANTS =================
   var SUPABASE_URL = 'https://elxttabdtddlavhseipz.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVseHR0YWJkdGRkbGF2aHNlaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNTQ0OTMsImV4cCI6MjA2OTczMDQ5M30.r2-vpMnG9eyp7-pa1U_Mdj6qGW0VjQXbdppP50usC7E';
 
+  // URLs das páginas de milhas para cada programa
   var SUPPORTED_DOMAINS = {
-    'latam.com': { name: 'LATAM Pass', code: 'latam_pass', programKey: 'latam', icon: '✈️', milesUrl: 'https://www.latam.com/pt_br/latam-pass/minha-conta/' },
-    'tudoazul.com.br': { name: 'Azul Fidelidade', code: 'azul', programKey: 'azul', icon: '💙', milesUrl: 'https://www.tudoazul.com.br/minha-conta/' },
-    'smiles.com.br': { name: 'Smiles', code: 'smiles', programKey: 'smiles', icon: '😊', milesUrl: 'https://www.smiles.com.br/minha-conta' },
-    'livelo.com.br': { name: 'Livelo', code: 'livelo', programKey: 'livelo', icon: '💜', milesUrl: 'https://www.livelo.com.br/minha-conta' }
+    'latam.com': { 
+      name: 'LATAM Pass', 
+      code: 'latam_pass', 
+      programKey: 'latam', 
+      icon: '✈️', 
+      milesUrl: 'https://www.latam.com/pt_br/latam-pass/minha-conta/' 
+    },
+    'tudoazul.com.br': { 
+      name: 'Azul Fidelidade', 
+      code: 'azul', 
+      programKey: 'azul', 
+      icon: '💙', 
+      milesUrl: 'https://www.tudoazul.com.br/minha-conta/' 
+    },
+    'smiles.com.br': { 
+      name: 'Smiles', 
+      code: 'smiles', 
+      programKey: 'smiles', 
+      icon: '😊', 
+      milesUrl: 'https://www.smiles.com.br/minha-conta' 
+    },
+    'livelo.com.br': { 
+      name: 'Livelo', 
+      code: 'livelo', 
+      programKey: 'livelo', 
+      icon: '💜', 
+      milesUrl: 'https://www.livelo.com.br/minha-conta' 
+    }
   };
 
   // ================= SYNC STATES =================
   var SYNC_STATE = {
     IDLE: 'idle',
-    AUTO_DETECTED: 'auto_detected',
+    EXTRACTING: 'extracting',
     AWAITING_CONFIRMATION: 'awaiting_confirmation',
     MANUAL_MODE: 'manual_mode',
     SYNCED: 'synced'
@@ -64,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     statusFeedback: document.getElementById('status-feedback'),
     statusIcon: document.getElementById('status-icon'),
     statusText: document.getElementById('status-text'),
-    // Novos elementos do fluxo híbrido
+    // Elementos do fluxo híbrido
     actionSection: document.getElementById('action-section'),
     confirmationSection: document.getElementById('confirmation-section'),
     detectedBalance: document.getElementById('detected-balance'),
@@ -468,53 +495,59 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ================= SYNC CLICK HANDLER =================
-  // REGRA: Executar extração na página atual SEM NAVEGAR
-  // Só mostrar opção de navegação se NÃO encontrar saldo
+  // REGRA CRÍTICA: NUNCA navegar automaticamente
+  // REGRA: Sempre tentar extração na página atual primeiro
+  // REGRA: Só mostrar opção de navegação se usuário clicar no botão
 
   if (elements.syncBtn) {
     elements.syncBtn.addEventListener('click', async function() {
-      // Proteção contra execução dupla
+      console.log('🔄 [Sync] Botão clicado');
+      
+      // ============ PROTEÇÃO CONTRA EXECUÇÃO DUPLA ============
       if (state.isLoading) {
-        console.log('⏳ [Sync] Já está em andamento...');
+        console.log('⏳ [Sync] Já está em andamento, ignorando clique');
         return;
       }
       
-      // Se já tem dados detectados aguardando confirmação, não reinicia
+      // ============ PROTEÇÃO: NÃO REINICIAR SE JÁ TEM DADOS ============
       if (state.syncState === SYNC_STATE.AWAITING_CONFIRMATION && state.detectedData) {
-        console.log('⚠️ [Sync] Já há saldo aguardando confirmação. Confirme ou rejeite.');
+        console.log('⚠️ [Sync] Já há saldo aguardando confirmação. Use os botões Sim/Não.');
         return;
       }
       
-      console.log('🔄 [Sync] Iniciando extração na página atual (SEM NAVEGAÇÃO)...');
+      // ============ INICIAR EXTRAÇÃO ============
+      console.log('🔄 [Sync] Iniciando extração na página ATUAL (SEM NAVEGAÇÃO)...');
       
       state.isLoading = true;
-      elements.syncBtn.disabled = true;
+      state.syncState = SYNC_STATE.EXTRACTING;
       
-      var syncText = elements.syncBtn.querySelector('.sync-text');
-      if (syncText) syncText.textContent = 'Localizando...';
+      // Desabilitar botão e mostrar loading
+      if (elements.syncBtn) {
+        elements.syncBtn.disabled = true;
+        var syncText = elements.syncBtn.querySelector('.sync-text');
+        if (syncText) syncText.textContent = 'Localizando...';
+      }
       
       // Esconder seções anteriores
-      if (elements.resultSection) elements.resultSection.classList.add('hidden');
-      if (elements.notFoundSection) elements.notFoundSection.classList.add('hidden');
-      if (elements.retrySection) elements.retrySection.classList.add('hidden');
-      if (elements.confirmationSection) elements.confirmationSection.classList.add('hidden');
-      if (elements.actionMessage) elements.actionMessage.textContent = '';
-
+      hideFlowSections();
+      
       try {
         updateStatus('extracting', 'Procurando saldo na página atual...');
         setBadge('loading');
         
-        // PASSO 1: Executar extração na aba ativa (SEM NAVEGAR)
+        // ============ PASSO 1: EXTRAIR NA PÁGINA ATUAL ============
+        // IMPORTANTE: Não chamar chrome.tabs.update aqui!
         var extraction = await performExtraction();
         var result = extraction.result;
         var programInfo = extraction.programInfo;
         var tab = extraction.tab;
 
-        console.log('📊 [Sync] Resultado:', JSON.stringify(result, null, 2));
+        console.log('📊 [Sync] Resultado da extração:', JSON.stringify(result, null, 2));
 
-        // Se saldo encontrado com sucesso - PARAR AQUI e mostrar preview
+        // ============ SALDO ENCONTRADO - PARAR E MOSTRAR PREVIEW ============
         if (result && result.success && result.balance) {
-          console.log('✅ [Sync] SALDO ENCONTRADO:', result.balance, '- Mostrando preview');
+          console.log('✅ [Sync] SALDO ENCONTRADO:', result.balance);
+          console.log('✅ [Sync] Mostrando preview - NÃO navegando');
           
           // Armazenar dados para confirmação
           state.detectedData = {
@@ -528,36 +561,44 @@ document.addEventListener('DOMContentLoaded', function() {
             url: tab.url
           };
 
-          // Mostrar tela de confirmação IMEDIATAMENTE
+          // Esconder status e mostrar confirmação
           if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
+          
+          // Atualizar UI para confirmação
           setSyncState(SYNC_STATE.AWAITING_CONFIRMATION);
           clearBadge();
           
-          // IMPORTANTE: Retornar aqui - NÃO continuar para navegação
-          return;
+          // ============ IMPORTANTE: RETORNAR AQUI - NÃO CONTINUAR ============
+          console.log('✅ [Sync] Preview exibido. Aguardando confirmação do usuário.');
+          state.isLoading = false;
+          resetSyncButton();
+          return; // <-- PARAR AQUI
         }
 
-        // PASSO 2: Saldo NÃO encontrado - mostrar opções manuais
+        // ============ SALDO NÃO ENCONTRADO ============
         console.log('❌ [Sync] Saldo não encontrado na página atual');
         
-        // Verificar motivo da falha para mensagem apropriada
+        // Determinar mensagem apropriada
         if (!result.isLoggedIn) {
           updateStatus('not_logged', 'Faça login no site antes de sincronizar.');
-          setBadge('error');
         } else if (!result.isBalancePage) {
           updateStatus('wrong_page', 'Esta não parece ser a página de saldo.');
         } else {
           updateStatus('not_found', 'Não encontramos saldo nesta página.');
         }
         
-        // Mostrar seção de "não encontrado" com botão para navegar
+        // Limpar dados e mostrar opção de navegação manual
         state.detectedData = null;
-        if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
+        
+        // Esconder action e mostrar not found
         if (elements.actionSection) elements.actionSection.classList.add('hidden');
         if (elements.notFoundSection) elements.notFoundSection.classList.remove('hidden');
-        setBadge('error');
         
-        // NÃO navegar automaticamente - esperar clique do usuário
+        setBadge('error');
+        state.syncState = SYNC_STATE.MANUAL_MODE;
+        
+        // ============ IMPORTANTE: NÃO NAVEGAR AUTOMATICAMENTE ============
+        // Apenas mostrar o botão "Ir para página de milhas"
 
       } catch (error) {
         console.error('❌ [Sync] Erro:', error);
@@ -566,13 +607,27 @@ document.addEventListener('DOMContentLoaded', function() {
         setSyncState(SYNC_STATE.IDLE);
       } finally {
         state.isLoading = false;
-        if (elements.syncBtn) {
-          elements.syncBtn.disabled = false;
-          var syncTextEl = elements.syncBtn.querySelector('.sync-text');
-          if (syncTextEl) syncTextEl.textContent = 'Sincronizar Milhas';
-        }
+        resetSyncButton();
       }
     });
+  }
+
+  // ================= HELPER: ESCONDER SEÇÕES DO FLUXO =================
+  function hideFlowSections() {
+    if (elements.resultSection) elements.resultSection.classList.add('hidden');
+    if (elements.notFoundSection) elements.notFoundSection.classList.add('hidden');
+    if (elements.retrySection) elements.retrySection.classList.add('hidden');
+    if (elements.confirmationSection) elements.confirmationSection.classList.add('hidden');
+    if (elements.actionMessage) elements.actionMessage.textContent = '';
+  }
+
+  // ================= HELPER: RESETAR BOTÃO SYNC =================
+  function resetSyncButton() {
+    if (elements.syncBtn) {
+      elements.syncBtn.disabled = false;
+      var syncTextEl = elements.syncBtn.querySelector('.sync-text');
+      if (syncTextEl) syncTextEl.textContent = 'Sincronizar Milhas';
+    }
   }
 
   // ================= CONFIRM YES HANDLER =================

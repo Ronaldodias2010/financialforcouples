@@ -1578,6 +1578,7 @@ const translations = {
     'mileage.programs.syncSource.extension': 'Via Extensão',
     'mileage.programs.syncSource.manual': 'Manual',
     'mileage.programs.syncSource.extensionSuccess': 'Sincronizado automaticamente via extensão do navegador',
+    'mileage.programs.syncViaExtension': 'Sincronizar via Extensão',
     
     // Admin
     'admin.title': 'Painel Administrativo',
@@ -4335,6 +4336,7 @@ const translations = {
     'mileage.programs.syncSource.extension': 'Via Extension',
     'mileage.programs.syncSource.manual': 'Manual',
     'mileage.programs.syncSource.extensionSuccess': 'Automatically synced via browser extension',
+    'mileage.programs.syncViaExtension': 'Sync via Extension',
     
     // Admin
     'admin.title': 'Administrative Panel',
@@ -7176,6 +7178,10 @@ const translations = {
     'mileage.programs.noHistory': 'Ningún movimiento sincronizado',
     'mileage.programs.disclaimer': 'Datos obtenidos con autorización del usuario. Valores estimados basados en promedios de mercado.',
     'mileage.programs.estimatedValue': 'Valor estimado',
+    'mileage.programs.syncSource.extension': 'Vía Extensión',
+    'mileage.programs.syncSource.manual': 'Manual',
+    'mileage.programs.syncSource.extensionSuccess': 'Sincronizado automáticamente vía extensión del navegador',
+    'mileage.programs.syncViaExtension': 'Sincronizar vía Extensión',
 
     // Admin
     'admin.title': 'Panel Administrativo',
