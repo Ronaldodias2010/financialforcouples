@@ -1,136 +1,191 @@
 
-# Plano: Integrar API "Passageiro de Primeira" ao Sistema de Milhagens
+# Plano: Corrigir Extensão Couples Miles para Capturar Milhas LATAM
 
-## Problema Identificado
-A API Python está rodando localmente (`http://127.0.0.1:8000`), mas as Edge Functions do Lovable rodam em servidores remotos da Supabase e **nao conseguem acessar localhost**.
+## Diagnóstico do Problema
 
-## Solucao Proposta: Endpoint de Importacao
+### Problema 1: Domínios não reconhecidos
+A extensão só reconhece `latam.com`, mas as páginas de milhas LATAM usam dois domínios diferentes:
+- `latamairlines.com` (mais comum - ex: `https://www.latamairlines.com/br/pt/minha-conta`)
+- `latampass.com` (ex: `https://latampass.com/myaccount`)
 
-Vou criar um sistema onde a API Python **envia os dados** para o Lovable, ao inves do Lovable tentar buscar dados de localhost.
+### Problema 2: Popup em branco
+Quando a extensão não reconhece o domínio, ela deveria mostrar "Site não suportado", mas está aparecendo em branco. Isso indica que há um erro de JavaScript impedindo a renderização.
+
+### Problema 3: Redirecionamento ao clicar
+Quando o usuário clica em "Ir para página de milhas", ele é redirecionado para uma URL antiga (`latam.com/pt_br/latam-pass/minha-conta/`) que não contém as milhas.
+
+## Solução Proposta
+
+### Etapa 1: Atualizar `manifest.json`
+Adicionar os novos domínios na lista de permissões de host:
+
+```json
+"host_permissions": [
+  "https://*.latam.com/*",
+  "https://*.latamairlines.com/*",
+  "https://*.latampass.com/*",
+  "https://*.tudoazul.com/*",
+  "https://*.smiles.com.br/*",
+  "https://*.livelo.com.br/*"
+]
+```
+
+### Etapa 2: Atualizar `popup.js` (SUPPORTED_DOMAINS)
+Adicionar os novos domínios na lógica de detecção e atualizar a URL de milhas:
+
+```javascript
+var SUPPORTED_DOMAINS = {
+  'latam.com': { 
+    name: 'LATAM Pass', 
+    code: 'latam_pass', 
+    programKey: 'latam', 
+    icon: '✈️', 
+    milesUrl: 'https://www.latamairlines.com/br/pt/minha-conta' 
+  },
+  'latamairlines.com': { 
+    name: 'LATAM Pass', 
+    code: 'latam_pass', 
+    programKey: 'latam', 
+    icon: '✈️', 
+    milesUrl: 'https://www.latamairlines.com/br/pt/minha-conta' 
+  },
+  'latampass.com': { 
+    name: 'LATAM Pass', 
+    code: 'latam_pass', 
+    programKey: 'latam', 
+    icon: '✈️', 
+    milesUrl: 'https://latampass.com/myaccount' 
+  },
+  // ... outros programas
+};
+```
+
+### Etapa 3: Atualizar `selectors.js`
+Adicionar os novos domínios na configuração de seletores:
+
+```javascript
+const MILEAGE_SELECTORS = {
+  latam: {
+    domains: ['latam.com', 'latamairlines.com', 'latampass.com'],
+    // ... restante da configuração
+  }
+};
+```
+
+### Etapa 4: Corrigir `detectProgram()` em `popup.js`
+Atualizar para reconhecer os novos domínios:
+
+```javascript
+function detectProgram(url) {
+  if (!url) return null;
+  var lowerUrl = url.toLowerCase();
+  
+  if (lowerUrl.includes('latam.com') || 
+      lowerUrl.includes('latamairlines.com') || 
+      lowerUrl.includes('latampass.com')) {
+    return 'latam';
+  }
+  // ... outros programas
+}
+```
+
+### Etapa 5: Adicionar tratamento de erro no popup
+Envolver o código de inicialização em try-catch para evitar popup em branco:
+
+```javascript
+async function init() {
+  try {
+    console.log('🔧 [Init] Iniciando...');
+    // ... código existente
+  } catch (error) {
+    console.error('❌ [Init] Erro crítico:', error);
+    // Mostrar seção de erro ao invés de popup em branco
+    showNotSupportedSection();
+  }
+}
+```
+
+### Etapa 6: Melhorar fluxo de extração com fallback visual
+Quando não encontrar saldo, mostrar mensagem mais clara com instruções:
+
+```html
+<div id="not-found-section" class="not-found-section hidden">
+  <div class="info-card warning">
+    <span class="icon">🔍</span>
+    <div>
+      <strong>Saldo não encontrado nesta página</strong>
+      <p>Navegue até onde seu saldo de milhas esteja visível e clique em "Tentar Novamente".</p>
+    </div>
+  </div>
+  <button id="retry-here-btn" class="btn btn-primary">
+    🔄 Tentar Novamente (nesta página)
+  </button>
+  <button id="go-to-miles-btn" class="btn btn-secondary">
+    🔗 Ir para página de milhas
+  </button>
+</div>
+```
+
+## Arquivos a Modificar
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `manifest.json` | Adicionar `latamairlines.com` e `latampass.com` nas host_permissions |
+| `popup.js` | Atualizar SUPPORTED_DOMAINS, detectProgram(), adicionar tratamento de erro |
+| `selectors.js` | Atualizar configuração LATAM para múltiplos domínios |
+| `popup.html` | Melhorar seção not-found com botão "Tentar Novamente" |
+| `content.js` | Atualizar detectCurrentProgram() para múltiplos domínios |
+
+## Fluxo Após Correção
 
 ```text
-+---------------------+     POST /import-deals      +----------------------+
-| API Python          | -------------------------> | Edge Function        |
-| (localhost:8000)    |   (JSON com deals)         | import-pdp-deals     |
-+---------------------+                            +----------------------+
-                                                            |
-                                                            v
-                                                   +----------------------+
-                                                   | scraped_promotions   |
-                                                   | (Supabase DB)        |
-                                                   +----------------------+
-                                                            |
-                                                            v
-                                                   +----------------------+
-                                                   | UI Mileage Page      |
-                                                   | (Cards de promocoes) |
-                                                   +----------------------+
+┌─────────────────────────────────────────────────────────────────┐
+│                    Usuário abre extensão                        │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Detecta domínio (latamairlines.com, latampass.com, latam.com)  │
+│  → Mostra "LATAM Pass detectado" + botão "Sincronizar"          │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│           Usuário clica em "Sincronizar Milhas"                 │
+│           (NÃO navega - extrai na página atual)                 │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+            ┌───────────────┴───────────────┐
+            │                               │
+            ▼                               ▼
+   ┌────────────────┐             ┌────────────────────┐
+   │ Saldo Encontrado│             │ Saldo NÃO Encontrado│
+   │ → Preview:      │             │ → Mensagem:         │
+   │ "183.401 milhas"│             │ "Navegue até a      │
+   │ "Está correto?" │             │ página de milhas"   │
+   │                 │             │                     │
+   │ [Sim] [Não]     │             │ [Tentar Novamente]  │
+   │                 │             │ [Ir para página]    │
+   └───────┬────────┘             └─────────┬──────────┘
+           │                                 │
+           ▼                                 │
+   ┌────────────────┐                        │
+   │ Envia para API │                        │
+   │ → Atualiza card│                        │
+   │ no dashboard   │◀───────────────────────┘
+   └────────────────┘     (após navegar e tentar novamente)
 ```
 
----
+## Seção Técnica
 
-## Arquitetura da Integracao
+### Detalhes da Implementação
 
-### Opcao A: Push da API Python (Recomendado)
-A API Python envia dados diretamente para uma Edge Function publica.
+1. **Manifest V3 Host Permissions**: O Chrome exige que todos os domínios onde a extensão vai executar scripts estejam declarados em `host_permissions`. Sem isso, `chrome.scripting.executeScript()` falha silenciosamente.
 
-### Opcao B: Deploy Publico
-Deploy da API em servidor publico (Heroku, Railway, Render) ou usar ngrok para expor localhost.
+2. **Detecção de Domínio**: A função `getProgramInfo()` usa `hostname.includes(domain)` para matching parcial. Com múltiplas entradas para LATAM, qualquer variação será reconhecida.
 
-**Vou implementar a Opcao A** pois e mais simples e nao requer infra adicional.
+3. **Universal Extractor Engine**: O motor de extração já está preparado para LATAM com scoring específico (+120 para "milhas acumuladas"). Não precisa de alteração.
 
----
+4. **Rate Limit**: O backend já impõe limite de 6 horas por programa. Não será afetado.
 
-## Etapas de Implementacao
-
-### 1. Criar Edge Function `import-pdp-deals`
-Nova funcao para receber deals do Passageiro de Primeira:
-
-**Arquivo**: `supabase/functions/import-pdp-deals/index.ts`
-
-```text
-- Endpoint: POST com array de deals
-- Valida estrutura dos dados
-- Parsea milhas do campo cost_raw (ex: "4.510 Milhas")
-- Insere na tabela scraped_promotions
-- Retorna contagem de sucesso/erros
-```
-
-### 2. Mapeamento de Campos
-
-| API Python | scraped_promotions | Transformacao |
-|------------|-------------------|---------------|
-| origin | origem | Direto |
-| destination | destino | Direto |
-| cost_raw | milhas_min | Regex para extrair numero |
-| source_url | link | Direto |
-| full_text | titulo | Direto ou truncar |
-| - | programa | Detectar (LATAM, Azul, Smiles) |
-| - | fonte | "passageirodeprimeira" |
-| - | data_coleta | Data atual |
-
-### 3. Atualizar UI
-- Adicionar badge "Passageiro de Primeira" com cor especifica
-- Manter compatibilidade com promocoes existentes
-
-### 4. Script de Integracao Python
-Fornecer codigo para sua API Python chamar a Edge Function:
-
-```text
-POST https://[supabase-url]/functions/v1/import-pdp-deals
-Content-Type: application/json
-Authorization: Bearer [anon-key]
-
-Body: { "deals": [...] }
-```
-
----
-
-## Detalhes Tecnicos
-
-### Parsing do campo `cost_raw`
-Exemplos a tratar:
-- `"R$ 163,54 com taxas inclusas ou 4.510 Milhas + taxas"` → 4510 milhas
-- `"R$ 663"` → sem milhas (valor em reais apenas)
-- `"51 mil pontos Azul + taxas"` → 51000 pontos
-
-### Deteccao de Programa
-Logica no parser:
-- Se contem "Smiles" → programa: "Smiles"
-- Se contem "LATAM" ou "Pass" → programa: "LATAM Pass"  
-- Se contem "Azul" ou "TudoAzul" → programa: "TudoAzul"
-- Padrao → programa: "Diversos"
-
-### Deduplicacao
-Usar `external_hash` baseado em origem+destino+milhas+data para evitar duplicatas.
-
----
-
-## Arquivos a Criar/Modificar
-
-| Arquivo | Acao |
-|---------|------|
-| `supabase/functions/import-pdp-deals/index.ts` | Criar |
-| `src/lib/api/passageiroPrimeira.ts` | Criar (helper opcional) |
-| `src/components/financial/ScrapedPromotionsList.tsx` | Atualizar cores |
-| Script Python de integracao | Documentar |
-
----
-
-## Como Testar
-
-1. Apos deploy da Edge Function, rodar no terminal Python:
-```python
-import requests
-deals = [{"origin": "Sao Paulo", "destination": "Miami", "cost_raw": "35.000 milhas", "source_url": "..."}]
-response = requests.post("https://[url]/functions/v1/import-pdp-deals", json={"deals": deals})
-```
-
-2. Verificar na UI se os cards aparecem
-
----
-
-## Resultado Final
-- Dados do Passageiro de Primeira aparecerao nos cards de promocoes
-- Sistema identifica automaticamente se usuario pode resgatar com suas milhas
-- Atualizacao pode ser automatizada no script Python para rodar diariamente
+5. **Atualização da Extensão**: Após as mudanças, será necessário recarregar a extensão no Chrome (`chrome://extensions/` → ícone de atualização) para que as novas permissões entrem em vigor.
