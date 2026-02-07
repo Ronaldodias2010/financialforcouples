@@ -31,31 +31,16 @@ export const MileagePage = ({ onBack }: MileagePageProps) => {
       if (!user?.id) return;
 
       try {
-        // Get synced miles from connected mileage programs
+        // REGRA SIMPLIFICADA: Somar APENAS os programas de milhagem conectados
+        // Milhas em cartões ficam separadas (podem ser transferidas com bônus 2x, 3x)
         const { data: programsData } = await supabase
           .from('mileage_programs')
-          .select('balance_miles, user_id')
+          .select('balance_miles')
           .eq('user_id', user.id)
           .eq('status', 'connected');
 
-        const syncedProgramMiles = programsData?.reduce((sum, prog) => sum + (prog.balance_miles || 0), 0) || 0;
-        
-        // Check if user has any connected programs
-        const hasConnectedPrograms = (programsData?.length || 0) > 0;
-        
-        let existingMiles = 0;
-        if (!hasConnectedPrograms) {
-          // Only use existing_miles from card rules if user has NO connected programs
-          const { data: rulesData } = await supabase
-            .from('card_mileage_rules')
-            .select('existing_miles')
-            .eq('user_id', user.id)
-            .eq('is_active', true);
-
-          existingMiles = rulesData?.reduce((sum, item) => sum + (item.existing_miles || 0), 0) || 0;
-        }
-
-        setUserTotalMiles(syncedProgramMiles + existingMiles);
+        const total = programsData?.reduce((sum, prog) => sum + (prog.balance_miles || 0), 0) || 0;
+        setUserTotalMiles(total);
       } catch (error) {
         console.error('Error calculating total miles:', error);
       }
