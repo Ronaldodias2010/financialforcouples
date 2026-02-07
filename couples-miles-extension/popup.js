@@ -468,6 +468,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ================= SYNC CLICK HANDLER =================
+  // REGRA: Executar extração na página atual SEM NAVEGAR
+  // Só mostrar opção de navegação se NÃO encontrar saldo
 
   if (elements.syncBtn) {
     elements.syncBtn.addEventListener('click', async function() {
@@ -477,88 +479,89 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      console.log('🔄 [Sync] Iniciando sincronização híbrida...');
+      // Se já tem dados detectados aguardando confirmação, não reinicia
+      if (state.syncState === SYNC_STATE.AWAITING_CONFIRMATION && state.detectedData) {
+        console.log('⚠️ [Sync] Já há saldo aguardando confirmação. Confirme ou rejeite.');
+        return;
+      }
+      
+      console.log('🔄 [Sync] Iniciando extração na página atual (SEM NAVEGAÇÃO)...');
       
       state.isLoading = true;
       elements.syncBtn.disabled = true;
       
       var syncText = elements.syncBtn.querySelector('.sync-text');
-      if (syncText) syncText.textContent = 'Sincronizando...';
+      if (syncText) syncText.textContent = 'Localizando...';
       
-      // Reset UI
+      // Esconder seções anteriores
       if (elements.resultSection) elements.resultSection.classList.add('hidden');
+      if (elements.notFoundSection) elements.notFoundSection.classList.add('hidden');
+      if (elements.retrySection) elements.retrySection.classList.add('hidden');
+      if (elements.confirmationSection) elements.confirmationSection.classList.add('hidden');
       if (elements.actionMessage) elements.actionMessage.textContent = '';
-      if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
 
       try {
-        updateStatus('checking_page');
+        updateStatus('extracting', 'Procurando saldo na página atual...');
         setBadge('loading');
         
+        // PASSO 1: Executar extração na aba ativa (SEM NAVEGAR)
         var extraction = await performExtraction();
         var result = extraction.result;
         var programInfo = extraction.programInfo;
         var tab = extraction.tab;
 
-        console.log('📊 [Sync] Resultado da extração:', result);
-        console.log('👤 [Sync] Usuário logado:', result.isLoggedIn);
-        console.log('📄 [Sync] É página de saldo:', result.isBalancePage);
+        console.log('📊 [Sync] Resultado:', JSON.stringify(result, null, 2));
 
-        // Verificar se usuário está logado
+        // Se saldo encontrado com sucesso - PARAR AQUI e mostrar preview
+        if (result && result.success && result.balance) {
+          console.log('✅ [Sync] SALDO ENCONTRADO:', result.balance, '- Mostrando preview');
+          
+          // Armazenar dados para confirmação
+          state.detectedData = {
+            program: programInfo.code,
+            programName: programInfo.name,
+            balance: result.balance,
+            rawText: result.rawText,
+            confidence: result.confidence,
+            score: result.score,
+            captured_at: new Date().toISOString(),
+            url: tab.url
+          };
+
+          // Mostrar tela de confirmação IMEDIATAMENTE
+          if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
+          setSyncState(SYNC_STATE.AWAITING_CONFIRMATION);
+          clearBadge();
+          
+          // IMPORTANTE: Retornar aqui - NÃO continuar para navegação
+          return;
+        }
+
+        // PASSO 2: Saldo NÃO encontrado - mostrar opções manuais
+        console.log('❌ [Sync] Saldo não encontrado na página atual');
+        
+        // Verificar motivo da falha para mensagem apropriada
         if (!result.isLoggedIn) {
           updateStatus('not_logged', 'Faça login no site antes de sincronizar.');
           setBadge('error');
-          setSyncState(SYNC_STATE.IDLE);
-          return;
+        } else if (!result.isBalancePage) {
+          updateStatus('wrong_page', 'Esta não parece ser a página de saldo.');
+        } else {
+          updateStatus('not_found', 'Não encontramos saldo nesta página.');
         }
-
-        // Verificar se está na página certa
-        if (!result.isBalancePage) {
-          updateStatus('wrong_page', 'Navegue até a página onde seu saldo esteja visível.');
-          setBadge('error');
-          
-          // Mostrar seção de "não encontrado"
-          state.detectedData = null;
-          setSyncState(SYNC_STATE.IDLE);
-          if (elements.notFoundSection) elements.notFoundSection.classList.remove('hidden');
-          if (elements.actionSection) elements.actionSection.classList.add('hidden');
-          return;
-        }
-
-        // Se não encontrou saldo com confiança
-        if (!result.success) {
-          console.log('❌ [Sync] Saldo não encontrado ou baixa confiança');
-          
-          // Mostrar seção de "não encontrado"
-          state.detectedData = null;
-          if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
-          setSyncState(SYNC_STATE.IDLE);
-          if (elements.notFoundSection) elements.notFoundSection.classList.remove('hidden');
-          if (elements.actionSection) elements.actionSection.classList.add('hidden');
-          setBadge('error');
-          return;
-        }
-
-        // ✅ SALDO ENCONTRADO - Mostrar confirmação
-        console.log('✅ [Sync] Saldo detectado:', result.balance);
         
-        state.detectedData = {
-          program: programInfo.code,
-          programName: programInfo.name,
-          balance: result.balance,
-          rawText: result.rawText,
-          confidence: result.confidence,
-          score: result.score,
-          captured_at: new Date().toISOString(),
-          url: tab.url
-        };
-
+        // Mostrar seção de "não encontrado" com botão para navegar
+        state.detectedData = null;
         if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
-        setSyncState(SYNC_STATE.AWAITING_CONFIRMATION);
-        clearBadge();
+        if (elements.actionSection) elements.actionSection.classList.add('hidden');
+        if (elements.notFoundSection) elements.notFoundSection.classList.remove('hidden');
+        setBadge('error');
+        
+        // NÃO navegar automaticamente - esperar clique do usuário
 
       } catch (error) {
-        console.error('❌ [Sync] Erro geral:', error);
-        updateStatus('api_error', error.message || 'Falha na comunicação. Tente novamente.');
+        console.error('❌ [Sync] Erro:', error);
+        updateStatus('api_error', error.message || 'Erro ao processar página.');
         setBadge('error');
         setSyncState(SYNC_STATE.IDLE);
       } finally {
