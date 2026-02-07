@@ -743,14 +743,23 @@ export const MileageSystem = () => {
       <MileageProgramsSection onMilesUpdate={loadTotalMiles} />
 
       {/* "How it works" section for browser extension sync */}
-      <Card className="bg-accent/50 border-primary/20">
+      <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
         <CardContent className="pt-4 pb-4">
-          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+          <h4 className="font-medium text-sm mb-2 flex items-center gap-2 text-green-800 dark:text-green-200">
             <Info className="w-4 h-4" />
             Como sincronizar via extensão?
           </h4>
-          <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-            <li>Instale a extensão Couples Miles no seu navegador</li>
+          <ol className="text-xs text-green-700 dark:text-green-300 space-y-1 list-decimal list-inside">
+            <li>
+              <a 
+                href="https://chrome.google.com/webstore/detail/couples-miles/your-extension-id" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="underline hover:text-green-900 dark:hover:text-green-100 font-medium"
+              >
+                Instale a extensão Couples Miles no Chrome →
+              </a>
+            </li>
             <li>Faça login na sua conta Couples pela extensão</li>
             <li>Acesse o site da companhia aérea e faça login normalmente</li>
             <li>Clique em "Sincronizar Milhas" na extensão</li>
