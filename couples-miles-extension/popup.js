@@ -146,151 +146,94 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  // ============= UNIVERSAL EXTRACTOR ENGINE =============
-  // Esta função é injetada diretamente na página via chrome.scripting.executeScript
+  // ============= UNIVERSAL EXTRACTOR ENGINE v2.3 =============
+  // Função injetada via chrome.scripting.executeScript
+  // Estrutura simplificada e estável
   function universalExtractorEngine(program) {
-    console.log('🔄 [Extractor] Iniciando extração para programa:', program);
+    console.log('🔄 [Extractor v2.3] Iniciando para programa:', program);
 
-    // Normaliza número no formato brasileiro (183.401 -> 183401)
+    // ===== HELPER: Normaliza número brasileiro =====
     function normalize(value) {
-      return parseInt(value.replace(/\./g, '').replace(/,/g, ''), 10);
+      return parseInt(value.replace(/\./g, '').replace(/,/g, ''), 10) || 0;
     }
 
-    // Valida se valor está em faixa aceitável
+    // ===== HELPER: Valida faixa aceitável =====
     function isValid(value) {
       return value > 100 && value < 10000000;
     }
 
-    // Calcula score de confiança do candidato com ajustes por programa
+    // ===== HELPER: Verifica página de saldo =====
+    function isBalancePage() {
+      const text = document.body.innerText || '';
+      return /milhas|pontos|saldo|miles|points|acumulad/i.test(text);
+    }
+
+    // ===== HELPER: Verifica login =====
+    function isLoggedIn(programKey) {
+      // Indicadores específicos por programa
+      const indicators = {
+        latam: ['#lb1-miles-amount', '[class*="logged"]', '[class*="UserMenu"]'],
+        azul: ['[class*="logged"]', '[class*="user-menu"]'],
+        smiles: ['[class*="logged"]', '[class*="user"]'],
+        livelo: ['[class*="logged"]', '[class*="user"]']
+      };
+      
+      const selectors = indicators[programKey] || [];
+      for (const sel of selectors) {
+        if (document.querySelector(sel)) return true;
+      }
+      
+      // Fallback genérico
+      if (document.querySelector('[class*="logged"]')) return true;
+      if (document.querySelector('[class*="user-menu"]')) return true;
+      
+      return false;
+    }
+
+    // ===== HELPER: Calcula score =====
     function calculateScore(el, value, programKey) {
-      let score = 0;
-      const context = el.closest('div')?.innerText || '';
-      const parentContext = el.parentElement?.innerText || '';
+      let score = 50; // Base
+      const context = (el.closest('div')?.innerText || '').toLowerCase();
 
-      // Contexto positivo básico (todos os programas)
-      if (/milhas|pontos|saldo|miles|points/i.test(context)) score += 40;
-      
-      // Tag relevante
-      if (/H1|H2|H3/.test(el.tagName)) score += 20;
-      if (el.tagName === 'STRONG' || el.tagName === 'B') score += 15;
-      if (el.tagName === 'SPAN') score += 10;
+      // Contexto positivo
+      if (/milhas|pontos|saldo|miles|points/i.test(context)) score += 30;
+      if (/acumulad|disponív|total|seu saldo|your/i.test(context)) score += 20;
 
-      // ========== AJUSTES POR PROGRAMA ==========
-      
+      // Tags relevantes
+      if (/^H[1-3]$/.test(el.tagName)) score += 15;
+      if (el.tagName === 'STRONG' || el.tagName === 'B') score += 10;
+
+      // Ajustes por programa
       if (programKey === 'latam') {
-        if (/milhas acumuladas|total acumulado|saldo atual|seu saldo|available miles/i.test(context)) {
-          score += 50;
-        }
-        if (el.closest('#lb1-miles-amount')) {
-          score += 100;
-        }
-        if (/meta|campanha|promoção|ganhe até|desafio|bonus/i.test(context)) {
-          score -= 40;
-        }
+        if (el.closest('#lb1-miles-amount')) score += 80;
+        if (/latam pass|milhas latam/i.test(context)) score += 30;
       }
-      
       if (programKey === 'azul') {
-        if (/tudoazul|pontos tudoazul|saldo de pontos|seus pontos/i.test(context)) {
-          score += 50;
-        }
-        if (el.closest('[class*="points"]') || el.closest('[class*="pontos"]')) {
-          score += 30;
-        }
+        if (/tudoazul|pontos azul/i.test(context)) score += 30;
       }
-      
       if (programKey === 'smiles') {
-        if (/milhas smiles|saldo smiles|suas milhas|milhas disponíveis/i.test(context)) {
-          score += 50;
-        }
-        if (el.closest('[class*="miles"]') || el.closest('[class*="smiles"]')) {
-          score += 30;
-        }
+        if (/smiles|milhas smiles/i.test(context)) score += 30;
       }
-      
       if (programKey === 'livelo') {
-        if (/pontos livelo|saldo livelo|seus pontos|pontos disponíveis/i.test(context)) {
-          score += 50;
-        }
-        if (el.closest('[class*="points"]') || el.closest('[class*="livelo"]')) {
-          score += 30;
-        }
+        if (/livelo|pontos livelo/i.test(context)) score += 30;
       }
 
-      // Penaliza contextos de conversão/taxas
-      if (/por\s+\d|cada\s+\d|per\s+\d|a partir de|from\s+\d/i.test(parentContext)) {
-        score -= 30;
+      // Penaliza contextos negativos
+      if (/campanha|promoção|ganhe|meta|bonus|transferir|resgatar/i.test(context)) {
+        score -= 40;
       }
 
       return score;
     }
 
-    // Verifica se é página de saldo
-    function isBalancePage() {
-      const text = document.body.innerText || '';
-      return /milhas|saldo|milhas acumuladas|total acumulado|pontos disponíveis|seu saldo|your miles|available miles|seus pontos/i.test(text);
-    }
-
-    // Verifica indicadores de login por programa
-    function isLoggedIn(programKey) {
-      const loginIndicators = {
-        latam: [
-          '#lb1-miles-amount',
-          '[data-testid="user-menu"]',
-          '.user-logged',
-          '[class*="UserMenu"]',
-          '[class*="logged"]'
-        ],
-        azul: [
-          '.user-logged-in',
-          '[data-testid="user-area"]',
-          '.user-menu-logged',
-          '[class*="LoggedUser"]'
-        ],
-        smiles: [
-          '.user-logged',
-          '[data-testid="logged-user"]',
-          '.smiles-user-menu',
-          '[class*="UserLogged"]'
-        ],
-        livelo: [
-          '.user-logged',
-          '[data-testid="user-logged"]',
-          '.livelo-user-area',
-          '[class*="LoggedUser"]'
-        ]
-      };
-      
-      const selectors = loginIndicators[programKey] || [];
-      
-      for (const selector of selectors) {
-        if (document.querySelector(selector)) {
-          return true;
-        }
-      }
-      
-      // Fallback genérico
-      const genericSelectors = [
-        '[class*="logged"]',
-        '[class*="user-menu"]',
-        '[class*="UserMenu"]'
-      ];
-      
-      for (const selector of genericSelectors) {
-        if (document.querySelector(selector)) {
-          return true;
-        }
-      }
-      
-      return false;
-    }
-
-    // Regex para números no formato brasileiro
+    // ===== EXTRAÇÃO PRINCIPAL =====
     const regex = /^\d{1,3}(\.\d{3})+$/;
-    const pageElements = document.querySelectorAll('h1, h2, h3, span, strong, b, div, p');
-
+    const elements = document.querySelectorAll('h1, h2, h3, span, strong, b, div, p');
     const candidates = [];
 
-    for (const el of pageElements) {
+    console.log('🔍 [Extractor] Analisando', elements.length, 'elementos...');
+
+    for (const el of elements) {
       const text = el.innerText?.trim();
       if (!text) continue;
 
@@ -299,18 +242,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isValid(value)) continue;
 
         const score = calculateScore(el, value, program);
-        candidates.push({ 
-          value, 
-          score, 
+        candidates.push({
+          value: value,
           rawText: text,
-          tag: el.tagName 
+          score: score,
+          tag: el.tagName
         });
       }
     }
 
     console.log('💰 [Extractor] Candidatos encontrados:', candidates.length);
 
-    // Se não encontrou candidatos
+    // Sem candidatos
     if (candidates.length === 0) {
       return {
         success: false,
@@ -321,19 +264,22 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    // Bonus para o maior valor
-    const maxValue = Math.max(...candidates.map(c => c.value));
+    // Bonus para maior valor
+    const maxVal = Math.max(...candidates.map(c => c.value));
     candidates.forEach(c => {
-      if (c.value === maxValue) c.score += 15;
+      if (c.value === maxVal) c.score += 15;
     });
 
     // Ordena por score
     candidates.sort((a, b) => b.score - a.score);
-
     const best = candidates[0];
-    console.log('🏆 [Extractor] Melhor candidato:', best);
 
-    // Só retorna se score for suficiente
+    console.log('🏆 [Extractor] Top 3 candidatos:');
+    candidates.slice(0, 3).forEach((c, i) => {
+      console.log(`   ${i + 1}. ${c.value} (score: ${c.score}, tag: ${c.tag})`);
+    });
+
+    // Valida score mínimo
     if (best.score >= 50) {
       return {
         success: true,
@@ -348,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
+    // Score insuficiente
     return {
       success: false,
       error: 'low_confidence',
