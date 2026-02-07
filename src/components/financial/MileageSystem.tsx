@@ -24,7 +24,6 @@ import { MileageRuleWizard, type RuleFormData } from './MileageRuleWizard';
 import { MileageGoalAnalysis } from './MileageGoalAnalysis';
 import { MileageSmartSummary } from './MileageSmartSummary';
 import { MileageProgramsSection } from './MileageProgramsSection';
-import { useMileagePrograms } from '@/hooks/useMileagePrograms';
 import { format } from "date-fns";
 import { parseLocalDate } from "@/utils/date";
 
@@ -83,7 +82,6 @@ export const MileageSystem = () => {
   const { couple, isPartOfCouple, getPartnerUserId } = useCouple();
   const { names } = usePartnerNames();
   const { convertCurrency, getCurrencySymbol } = useCurrencyConverter();
-  const { totalSyncedMiles, loadPrograms } = useMileagePrograms();
   
   const [cards, setCards] = useState<Card[]>([]);
   const [mileageRules, setMileageRules] = useState<MileageRule[]>([]);
@@ -307,9 +305,8 @@ export const MileageSystem = () => {
   const loadTotalMiles = async () => {
     const userIds = getUserIdsToQuery();
     console.log('MileageSystem: loadTotalMiles with userIds:', userIds, 'viewMode:', viewMode);
-    
-    // Get synced miles from mileage_programs (airline loyalty programs)
-    // These represent the ACTUAL current balance from connected programs
+
+    // 1) Saldo real (prioridade) via extensão / programas conectados
     const { data: programsData, error: programsError } = await supabase
       .from("mileage_programs")
       .select("balance_miles, user_id")
@@ -321,15 +318,16 @@ export const MileageSystem = () => {
       return;
     }
 
-    // Calculate synced miles from connected programs
-    const syncedProgramMiles = programsData?.reduce((sum, prog) => sum + Number(prog.balance_miles || 0), 0) || 0;
-    
-    // Get set of user IDs that have connected programs (to avoid double-counting)
-    const usersWithConnectedPrograms = new Set(programsData?.map(p => p.user_id) || []);
-    
-    // For users WITHOUT connected programs, use the legacy existing_miles from card rules
-    const usersWithoutPrograms = userIds.filter(id => id && !usersWithConnectedPrograms.has(id));
-    
+    const syncedProgramMiles =
+      programsData?.reduce((sum, prog) => sum + Number(prog.balance_miles || 0), 0) || 0;
+
+    const usersWithConnectedPrograms = new Set(programsData?.map((p) => p.user_id) || []);
+
+    // 2) Para quem NÃO tem programas conectados, usamos (milhas existentes + histórico)
+    const usersWithoutPrograms = userIds.filter(
+      (id): id is string => Boolean(id) && !usersWithConnectedPrograms.has(id)
+    );
+
     let existingMiles = 0;
     if (usersWithoutPrograms.length > 0) {
       const { data: rulesData, error: rulesError } = await supabase
@@ -342,23 +340,40 @@ export const MileageSystem = () => {
         console.error("Error loading rules:", rulesError);
         return;
       }
-      
-      existingMiles = rulesData?.reduce((sum, rule) => sum + Number(rule.existing_miles || 0), 0) || 0;
+
+      existingMiles =
+        rulesData?.reduce((sum, rule) => sum + Number(rule.existing_miles || 0), 0) || 0;
     }
-    
-    // Total = synced programs + existing miles for users without programs
-    // Note: mileage_history tracks transactions that earn miles, but the actual balance
-    // is already reflected in either mileage_programs or existing_miles, so we don't add it
-    const total = syncedProgramMiles + existingMiles;
+
+    let historyMiles = 0;
+    if (usersWithoutPrograms.length > 0) {
+      const { data: historyData, error: historyError } = await supabase
+        .from("mileage_history")
+        .select("miles_earned, user_id")
+        .in("user_id", usersWithoutPrograms);
+
+      if (historyError) {
+        console.error("Error loading history miles:", historyError);
+        return;
+      }
+
+      historyMiles =
+        historyData?.reduce((sum, h) => sum + Number(h.miles_earned || 0), 0) || 0;
+    }
+
+    // Total = (saldo real via programas conectados) + (fallback: existentes + histórico só para quem não tem programa)
+    const total = syncedProgramMiles + existingMiles + historyMiles;
+
     console.log('MileageSystem: Total miles calculation:', {
       syncedProgramMiles,
       existingMiles,
+      historyMiles,
       usersWithConnectedPrograms: Array.from(usersWithConnectedPrograms),
       usersWithoutPrograms,
       total,
       userIds
     });
-    
+
     setTotalMiles(total);
   };
 
@@ -722,7 +737,7 @@ export const MileageSystem = () => {
             />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Math.floor(totalMiles + totalSyncedMiles).toLocaleString()}</div>
+            <div className="text-2xl font-bold">{Math.floor(totalMiles).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">{t('mileage.milesAccumulated')}</p>
           </CardContent>
         </Card>
