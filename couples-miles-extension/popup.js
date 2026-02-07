@@ -1,26 +1,33 @@
 /**
- * Couples Miles Extension - Popup Script v2.4
+ * Couples Miles Extension - Popup Script v2.5
  * 
- * REESTRUTURAÇÃO COMPLETA E DEFINITIVA
- * - Todo código encapsulado em DOMContentLoaded
- * - Nenhum await fora de função async
- * - Nenhum return fora de função
- * - Todas as chaves {} balanceadas
- * - chrome.scripting apenas dentro do click handler async
+ * FLUXO HÍBRIDO DE SINCRONIZAÇÃO
+ * - Estados: idle, auto_detected, awaiting_confirmation, manual_mode, synced
+ * - Confirmação visual do saldo detectado
+ * - Proteção contra execução dupla
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 [Couples Miles] Extensão inicializada v2.4');
+  console.log('🚀 [Couples Miles] Extensão inicializada v2.5 - Fluxo Híbrido');
 
   // ================= CONSTANTS =================
   var SUPABASE_URL = 'https://elxttabdtddlavhseipz.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVseHR0YWJkdGRkbGF2aHNlaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNTQ0OTMsImV4cCI6MjA2OTczMDQ5M30.r2-vpMnG9eyp7-pa1U_Mdj6qGW0VjQXbdppP50usC7E';
 
   var SUPPORTED_DOMAINS = {
-    'latam.com': { name: 'LATAM Pass', code: 'latam_pass', programKey: 'latam', icon: '✈️' },
-    'tudoazul.com.br': { name: 'Azul Fidelidade', code: 'azul', programKey: 'azul', icon: '💙' },
-    'smiles.com.br': { name: 'Smiles', code: 'smiles', programKey: 'smiles', icon: '😊' },
-    'livelo.com.br': { name: 'Livelo', code: 'livelo', programKey: 'livelo', icon: '💜' }
+    'latam.com': { name: 'LATAM Pass', code: 'latam_pass', programKey: 'latam', icon: '✈️', milesUrl: 'https://www.latam.com/pt_br/latam-pass/minha-conta/' },
+    'tudoazul.com.br': { name: 'Azul Fidelidade', code: 'azul', programKey: 'azul', icon: '💙', milesUrl: 'https://www.tudoazul.com.br/minha-conta/' },
+    'smiles.com.br': { name: 'Smiles', code: 'smiles', programKey: 'smiles', icon: '😊', milesUrl: 'https://www.smiles.com.br/minha-conta' },
+    'livelo.com.br': { name: 'Livelo', code: 'livelo', programKey: 'livelo', icon: '💜', milesUrl: 'https://www.livelo.com.br/minha-conta' }
+  };
+
+  // ================= SYNC STATES =================
+  var SYNC_STATE = {
+    IDLE: 'idle',
+    AUTO_DETECTED: 'auto_detected',
+    AWAITING_CONFIRMATION: 'awaiting_confirmation',
+    MANUAL_MODE: 'manual_mode',
+    SYNCED: 'synced'
   };
 
   // ================= STATUS CONFIG =================
@@ -56,7 +63,17 @@ document.addEventListener('DOMContentLoaded', function() {
     resultBalance: document.getElementById('result-balance'),
     statusFeedback: document.getElementById('status-feedback'),
     statusIcon: document.getElementById('status-icon'),
-    statusText: document.getElementById('status-text')
+    statusText: document.getElementById('status-text'),
+    // Novos elementos do fluxo híbrido
+    actionSection: document.getElementById('action-section'),
+    confirmationSection: document.getElementById('confirmation-section'),
+    detectedBalance: document.getElementById('detected-balance'),
+    confirmYesBtn: document.getElementById('confirm-yes-btn'),
+    confirmNoBtn: document.getElementById('confirm-no-btn'),
+    retrySection: document.getElementById('retry-section'),
+    retrySyncBtn: document.getElementById('retry-sync-btn'),
+    notFoundSection: document.getElementById('not-found-section'),
+    goToMilesBtn: document.getElementById('go-to-miles-btn')
   };
 
   // Validar elementos DOM
@@ -79,7 +96,9 @@ document.addEventListener('DOMContentLoaded', function() {
     isAuthenticated: false,
     currentTab: null,
     currentProgram: null,
-    isLoading: false
+    isLoading: false,
+    syncState: SYNC_STATE.IDLE,
+    detectedData: null // Armazena dados detectados aguardando confirmação
   };
 
   // ================= HELPER FUNCTIONS =================
@@ -157,6 +176,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // ================= UI STATE MANAGEMENT =================
+
+  function setSyncState(newState) {
+    console.log('🔄 [SyncState] Transição:', state.syncState, '->', newState);
+    state.syncState = newState;
+    updateUIForState();
+  }
+
+  function updateUIForState() {
+    // Esconder todas as seções de fluxo
+    if (elements.actionSection) elements.actionSection.classList.add('hidden');
+    if (elements.confirmationSection) elements.confirmationSection.classList.add('hidden');
+    if (elements.retrySection) elements.retrySection.classList.add('hidden');
+    if (elements.notFoundSection) elements.notFoundSection.classList.add('hidden');
+    if (elements.resultSection) elements.resultSection.classList.add('hidden');
+
+    switch (state.syncState) {
+      case SYNC_STATE.IDLE:
+        if (elements.actionSection) elements.actionSection.classList.remove('hidden');
+        break;
+      
+      case SYNC_STATE.AUTO_DETECTED:
+      case SYNC_STATE.AWAITING_CONFIRMATION:
+        if (elements.confirmationSection) elements.confirmationSection.classList.remove('hidden');
+        if (state.detectedData && elements.detectedBalance) {
+          elements.detectedBalance.textContent = formatNumber(state.detectedData.balance);
+        }
+        break;
+      
+      case SYNC_STATE.MANUAL_MODE:
+        if (elements.retrySection) elements.retrySection.classList.remove('hidden');
+        break;
+      
+      case SYNC_STATE.SYNCED:
+        if (elements.resultSection) elements.resultSection.classList.remove('hidden');
+        if (elements.actionSection) elements.actionSection.classList.remove('hidden');
+        break;
+    }
+  }
+
   // ================= UPDATE STATUS =================
 
   function updateStatus(statusState, customMessage) {
@@ -206,6 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function showMainSection() {
     hideAllSections();
     if (elements.mainSection) elements.mainSection.classList.remove('hidden');
+    updateUIForState();
   }
 
   function showNotSupportedSection() {
@@ -351,16 +411,73 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
 
+  // ================= EXTRACTION FUNCTION =================
+
+  async function performExtraction() {
+    var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    var tab = tabs[0];
+    
+    if (!tab || !tab.id) {
+      throw new Error('Não foi possível acessar a aba atual');
+    }
+
+    var programKey = detectProgram(tab.url);
+    var programInfo = getProgramInfo(tab.url);
+
+    if (!programKey || !programInfo) {
+      throw new Error('Site não suportado');
+    }
+
+    state.currentProgram = programInfo;
+    state.currentTab = tab;
+
+    var injectionResult = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: universalExtractorEngine,
+      args: [programKey]
+    });
+    
+    var result = injectionResult[0] ? injectionResult[0].result : null;
+
+    if (!result) {
+      throw new Error('Erro ao processar página');
+    }
+
+    return {
+      result: result,
+      tab: tab,
+      programInfo: programInfo
+    };
+  }
+
+  // ================= SEND TO BACKEND =================
+
+  async function sendToBackend(data) {
+    console.log('📤 [Sync] Enviando dados:', data);
+
+    var syncResult = await sendMessage({
+      action: 'syncMiles',
+      data: data
+    });
+
+    if (!syncResult.success) {
+      throw new Error(syncResult.message || 'Erro ao enviar saldo para o servidor.');
+    }
+
+    return syncResult;
+  }
+
   // ================= SYNC CLICK HANDLER =================
 
   if (elements.syncBtn) {
     elements.syncBtn.addEventListener('click', async function() {
+      // Proteção contra execução dupla
       if (state.isLoading) {
         console.log('⏳ [Sync] Já está em andamento...');
         return;
       }
       
-      console.log('🔄 [Sync] Iniciando sincronização...');
+      console.log('🔄 [Sync] Iniciando sincronização híbrida...');
       
       state.isLoading = true;
       elements.syncBtn.disabled = true;
@@ -368,89 +485,63 @@ document.addEventListener('DOMContentLoaded', function() {
       var syncText = elements.syncBtn.querySelector('.sync-text');
       if (syncText) syncText.textContent = 'Sincronizando...';
       
+      // Reset UI
       if (elements.resultSection) elements.resultSection.classList.add('hidden');
       if (elements.actionMessage) elements.actionMessage.textContent = '';
+      if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
 
       try {
-        var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        var tab = tabs[0];
-        
-        if (!tab || !tab.id) {
-          console.error('❌ [Sync] Não foi possível acessar a aba atual');
-          updateStatus('api_error', 'Não foi possível acessar a aba atual.');
-          setBadge('error');
-          return;
-        }
-
-        console.log('📄 [Sync] Página detectada:', tab.url);
         updateStatus('checking_page');
         setBadge('loading');
         
-        var programKey = detectProgram(tab.url);
-        var programInfo = getProgramInfo(tab.url);
+        var extraction = await performExtraction();
+        var result = extraction.result;
+        var programInfo = extraction.programInfo;
+        var tab = extraction.tab;
 
-        if (!programKey || !programInfo) {
-          console.warn('⚠️ [Sync] Site não suportado:', tab.url);
-          updateStatus('wrong_page', 'Este site não é suportado.');
-          setBadge('error');
-          return;
-        }
-
-        console.log('✈️ [Sync] Programa detectado:', programKey, programInfo.name);
-        updateStatus('extracting');
-        
-        var result;
-        try {
-          var injectionResult = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: universalExtractorEngine,
-            args: [programKey]
-          });
-          
-          result = injectionResult[0] ? injectionResult[0].result : null;
-          console.log('📊 [Sync] Resultado da extração:', result);
-        } catch (scriptError) {
-          console.error('❌ [Sync] Erro ao executar script:', scriptError);
-          updateStatus('api_error', 'Não foi possível acessar esta página.');
-          setBadge('error');
-          return;
-        }
-
-        if (!result) {
-          console.error('❌ [Sync] Resultado vazio');
-          updateStatus('api_error', 'Erro ao processar página.');
-          setBadge('error');
-          return;
-        }
-
+        console.log('📊 [Sync] Resultado da extração:', result);
         console.log('👤 [Sync] Usuário logado:', result.isLoggedIn);
         console.log('📄 [Sync] É página de saldo:', result.isBalancePage);
 
+        // Verificar se usuário está logado
         if (!result.isLoggedIn) {
           updateStatus('not_logged', 'Faça login no site antes de sincronizar.');
           setBadge('error');
+          setSyncState(SYNC_STATE.IDLE);
           return;
         }
 
+        // Verificar se está na página certa
         if (!result.isBalancePage) {
           updateStatus('wrong_page', 'Navegue até a página onde seu saldo esteja visível.');
           setBadge('error');
+          
+          // Mostrar seção de "não encontrado"
+          state.detectedData = null;
+          setSyncState(SYNC_STATE.IDLE);
+          if (elements.notFoundSection) elements.notFoundSection.classList.remove('hidden');
+          if (elements.actionSection) elements.actionSection.classList.add('hidden');
           return;
         }
 
+        // Se não encontrou saldo com confiança
         if (!result.success) {
-          if (result.error === 'low_confidence') {
-            updateStatus('not_found', 'Saldo incerto (' + formatNumber(result.bestValue) + '). Navegue até página principal.');
-          } else {
-            updateStatus('not_found', 'Saldo não encontrado nesta página.');
-          }
+          console.log('❌ [Sync] Saldo não encontrado ou baixa confiança');
+          
+          // Mostrar seção de "não encontrado"
+          state.detectedData = null;
+          if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
+          setSyncState(SYNC_STATE.IDLE);
+          if (elements.notFoundSection) elements.notFoundSection.classList.remove('hidden');
+          if (elements.actionSection) elements.actionSection.classList.add('hidden');
           setBadge('error');
           return;
         }
 
-        updateStatus('sending');
+        // ✅ SALDO ENCONTRADO - Mostrar confirmação
+        console.log('✅ [Sync] Saldo detectado:', result.balance);
         
-        var syncData = {
+        state.detectedData = {
           program: programInfo.code,
           programName: programInfo.name,
           balance: result.balance,
@@ -461,34 +552,15 @@ document.addEventListener('DOMContentLoaded', function() {
           url: tab.url
         };
 
-        console.log('📤 [Sync] Enviando dados:', syncData);
-
-        var syncResult = await sendMessage({
-          action: 'syncMiles',
-          data: syncData
-        });
-
-        if (!syncResult.success) {
-          console.error('❌ [Sync] Erro do backend:', syncResult.message);
-          updateStatus('api_error', syncResult.message || 'Erro ao enviar saldo para o servidor.');
-          setBadge('error');
-          return;
-        }
-
-        var formattedBalance = formatNumber(result.balance);
-        console.log('✅ [Sync] Sucesso! Saldo:', formattedBalance);
-        updateStatus('success', 'Saldo sincronizado: ' + formattedBalance + ' milhas');
-        setBadge('success');
-        
-        if (elements.resultBalance) elements.resultBalance.textContent = formattedBalance + ' milhas';
-        if (elements.resultSection) elements.resultSection.classList.remove('hidden');
-
-        setTimeout(function() { clearBadge(); }, 5000);
+        if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
+        setSyncState(SYNC_STATE.AWAITING_CONFIRMATION);
+        clearBadge();
 
       } catch (error) {
         console.error('❌ [Sync] Erro geral:', error);
-        updateStatus('api_error', 'Falha na comunicação. Tente novamente.');
+        updateStatus('api_error', error.message || 'Falha na comunicação. Tente novamente.');
         setBadge('error');
+        setSyncState(SYNC_STATE.IDLE);
       } finally {
         state.isLoading = false;
         if (elements.syncBtn) {
@@ -496,6 +568,119 @@ document.addEventListener('DOMContentLoaded', function() {
           var syncTextEl = elements.syncBtn.querySelector('.sync-text');
           if (syncTextEl) syncTextEl.textContent = 'Sincronizar Milhas';
         }
+      }
+    });
+  }
+
+  // ================= CONFIRM YES HANDLER =================
+
+  if (elements.confirmYesBtn) {
+    elements.confirmYesBtn.addEventListener('click', async function() {
+      if (!state.detectedData) {
+        console.error('❌ [Confirm] Sem dados detectados');
+        return;
+      }
+
+      console.log('✅ [Confirm] Usuário confirmou o saldo');
+      
+      // Desabilitar botões
+      elements.confirmYesBtn.disabled = true;
+      elements.confirmNoBtn.disabled = true;
+      elements.confirmYesBtn.textContent = '⏳ Enviando...';
+      
+      var confirmationCard = document.querySelector('.confirmation-card');
+      if (confirmationCard) confirmationCard.classList.add('loading');
+
+      try {
+        setBadge('loading');
+        
+        await sendToBackend(state.detectedData);
+        
+        var formattedBalance = formatNumber(state.detectedData.balance);
+        console.log('✅ [Sync] Sucesso! Saldo:', formattedBalance);
+        
+        if (elements.resultBalance) {
+          elements.resultBalance.textContent = formattedBalance + ' milhas';
+        }
+        
+        setBadge('success');
+        setSyncState(SYNC_STATE.SYNCED);
+        
+        // Limpar dados detectados
+        state.detectedData = null;
+
+        setTimeout(function() { clearBadge(); }, 5000);
+
+      } catch (error) {
+        console.error('❌ [Confirm] Erro ao enviar:', error);
+        updateStatus('api_error', error.message);
+        setBadge('error');
+        setSyncState(SYNC_STATE.IDLE);
+      } finally {
+        // Restaurar botões
+        elements.confirmYesBtn.disabled = false;
+        elements.confirmNoBtn.disabled = false;
+        elements.confirmYesBtn.textContent = '✅ Sim, enviar';
+        
+        if (confirmationCard) confirmationCard.classList.remove('loading');
+      }
+    });
+  }
+
+  // ================= CONFIRM NO HANDLER =================
+
+  if (elements.confirmNoBtn) {
+    elements.confirmNoBtn.addEventListener('click', function() {
+      console.log('❌ [Confirm] Usuário rejeitou o saldo');
+      
+      // Limpar dados detectados
+      state.detectedData = null;
+      
+      // Mostrar seção de retry
+      setSyncState(SYNC_STATE.MANUAL_MODE);
+    });
+  }
+
+  // ================= RETRY SYNC HANDLER =================
+
+  if (elements.retrySyncBtn) {
+    elements.retrySyncBtn.addEventListener('click', function() {
+      console.log('🔄 [Retry] Tentando novamente');
+      
+      // Voltar para estado idle e esconder retry
+      setSyncState(SYNC_STATE.IDLE);
+      
+      // Simular clique no botão de sync
+      if (elements.syncBtn) {
+        elements.syncBtn.click();
+      }
+    });
+  }
+
+  // ================= GO TO MILES PAGE HANDLER =================
+
+  if (elements.goToMilesBtn) {
+    elements.goToMilesBtn.addEventListener('click', async function() {
+      console.log('🔗 [GoTo] Navegando para página de milhas');
+      
+      var programInfo = state.currentProgram;
+      if (!programInfo || !programInfo.milesUrl) {
+        console.error('❌ [GoTo] URL de milhas não encontrada');
+        return;
+      }
+
+      try {
+        // Navegar para a página de milhas na aba atual
+        await chrome.tabs.update(state.currentTab.id, { url: programInfo.milesUrl });
+        
+        // Esconder seção not found e voltar para idle
+        if (elements.notFoundSection) elements.notFoundSection.classList.add('hidden');
+        setSyncState(SYNC_STATE.IDLE);
+        
+        // Fechar popup para o usuário ver a página
+        window.close();
+      } catch (error) {
+        console.error('❌ [GoTo] Erro ao navegar:', error);
       }
     });
   }
@@ -642,6 +827,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elements.actionMessage) elements.actionMessage.textContent = rateLimit.message;
       }
 
+      // Inicializar estado
+      setSyncState(SYNC_STATE.IDLE);
       showMainSection();
 
     } catch (error) {
