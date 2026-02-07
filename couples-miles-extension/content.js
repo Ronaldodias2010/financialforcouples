@@ -51,56 +51,88 @@
     return false;
   }
 
-  // Extrai saldo de milhas
-  function extractBalance() {
+  // Extrai saldo de milhas (com suporte a carregamento dinâmico)
+  async function extractBalance() {
     const config = currentProgram.config;
     
-    for (const selector of config.selectors) {
-      const element = document.querySelector(selector);
-      if (element) {
-        const text = element.textContent || element.innerText;
-        const balance = window.normalizeBalance(text);
-        
-        if (balance > 0) {
-          console.log(`[Couples Miles] Saldo encontrado: ${balance}`);
-          return {
-            success: true,
-            balance: balance,
-            rawText: text.trim(),
-            selector: selector
-          };
+    try {
+      // Se o programa requer aguardar carregamento dinâmico
+      if (config.requiresWait) {
+        console.log('[Couples Miles] Aguardando carregamento dinâmico...');
+        try {
+          const result = await window.waitForAnySelector(config.selectors, 10000);
+          const text = result.element.textContent || result.element.innerText;
+          const balance = window.normalizeBalance(text);
+          
+          if (balance > 0) {
+            console.log(`[Couples Miles] Saldo encontrado via wait: ${balance}`);
+            return {
+              success: true,
+              balance: balance,
+              rawText: text.trim(),
+              selector: result.selector
+            };
+          }
+        } catch (waitError) {
+          console.log('[Couples Miles] Timeout aguardando elemento, tentando busca direta...');
         }
       }
-    }
-    
-    // Fallback: tenta encontrar qualquer elemento com número grande
-    const allElements = document.querySelectorAll('*');
-    for (const el of allElements) {
-      const text = el.textContent || '';
-      const match = text.match(/\b(\d{1,3}(?:[.,]\d{3})*)\s*(?:milhas?|pontos?|miles?|points?)\b/i);
-      if (match) {
-        const balance = window.normalizeBalance(match[1]);
-        if (balance >= 100) { // Mínimo razoável
-          console.log(`[Couples Miles] Saldo encontrado via fallback: ${balance}`);
-          return {
-            success: true,
-            balance: balance,
-            rawText: match[0],
-            selector: 'fallback'
-          };
+      
+      // Busca direta nos seletores
+      for (const selector of config.selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+          const text = element.textContent || element.innerText;
+          const balance = window.normalizeBalance(text);
+          
+          if (balance > 0) {
+            console.log(`[Couples Miles] Saldo encontrado: ${balance}`);
+            return {
+              success: true,
+              balance: balance,
+              rawText: text.trim(),
+              selector: selector
+            };
+          }
         }
       }
+      
+      // Fallback: tenta encontrar qualquer elemento com número grande + "milhas/pontos"
+      const allElements = document.querySelectorAll('*');
+      for (const el of allElements) {
+        const text = el.textContent || '';
+        const match = text.match(/\b(\d{1,3}(?:[.,]\d{3})*)\s*(?:milhas?|pontos?|miles?|points?)\b/i);
+        if (match) {
+          const balance = window.normalizeBalance(match[1]);
+          if (balance >= 100) { // Mínimo razoável
+            console.log(`[Couples Miles] Saldo encontrado via fallback: ${balance}`);
+            return {
+              success: true,
+              balance: balance,
+              rawText: match[0],
+              selector: 'fallback'
+            };
+          }
+        }
+      }
+      
+      return {
+        success: false,
+        error: 'balance_not_found',
+        message: 'Não foi possível encontrar o saldo de milhas na página'
+      };
+    } catch (error) {
+      console.error('[Couples Miles] Erro na extração:', error);
+      return {
+        success: false,
+        error: 'extraction_error',
+        message: error.message
+      };
     }
-    
-    return {
-      success: false,
-      error: 'balance_not_found',
-      message: 'Não foi possível encontrar o saldo de milhas na página'
-    };
   }
 
-  // Handler para extração de saldo
-  function handleBalanceExtraction(sendResponse) {
+  // Handler para extração de saldo (agora async)
+  async function handleBalanceExtraction(sendResponse) {
     try {
       // Verifica login primeiro
       const loggedIn = isUserLoggedIn();
@@ -114,10 +146,11 @@
         return;
       }
 
-      // Extrai saldo
-      const result = extractBalance();
+      // Extrai saldo (agora é async)
+      const result = await extractBalance();
       
       if (result.success) {
+        console.log(`[Couples Miles] Enviando saldo: ${result.balance} (raw: ${result.rawText})`);
         sendResponse({
           success: true,
           data: {

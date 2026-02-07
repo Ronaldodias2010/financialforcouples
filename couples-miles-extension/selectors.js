@@ -15,24 +15,27 @@ const MILEAGE_SELECTORS = {
     programName: 'LATAM Pass',
     programCode: 'latam_pass',
     selectors: [
-      // Múltiplos seletores para maior resiliência
+      // Seletor principal - estrutura atual do site LATAM
+      '#lb1-miles-amount strong',
+      '#lb1-miles-amount h3 strong',
+      '#lb1-miles-amount span strong',
+      // Fallbacks para outras estruturas possíveis
       '[data-testid="miles-balance"]',
       '.miles-balance-value',
       '.user-miles-balance',
-      '.latam-pass-miles',
-      '[class*="miles"] [class*="balance"]',
       '[class*="MilesBalance"]',
-      // Fallback: buscar elementos com texto de milhas
-      '.header-miles',
-      '#miles-container .value'
+      '.header-miles'
     ],
     loginIndicators: [
+      '#lb1-miles-amount',
       '[data-testid="user-menu"]',
       '.user-logged',
       '.user-name',
-      '[class*="UserMenu"]'
+      '[class*="UserMenu"]',
+      '[class*="logged"]'
     ],
-    balanceRegex: /[\d.,]+/
+    balanceRegex: /[\d.,]+/,
+    requiresWait: true // Indica que precisa aguardar carregamento dinâmico
   },
 
   // Azul Fidelidade (TudoAzul)
@@ -122,30 +125,91 @@ function detectCurrentProgram() {
 }
 
 // Função para normalizar número de milhas
+// Suporta formatos: "183.401" (BR), "183,401" (US), "183401"
 function normalizeBalance(text) {
   if (!text) return 0;
   
-  // Remove espaços e caracteres especiais, mantendo apenas números
-  let cleaned = text.replace(/\s/g, '');
+  // Remove espaços, quebras de linha e texto não-numérico
+  let cleaned = text.replace(/\s+/g, '').trim();
   
-  // Detecta formato brasileiro (1.234,56) vs americano (1,234.56)
-  const hasCommaAsDecimal = /\d+\.\d{3},\d{2}$/.test(cleaned);
-  const hasDotAsDecimal = /\d+,\d{3}\.\d{2}$/.test(cleaned);
+  // Extrai apenas a parte numérica (números, pontos e vírgulas)
+  const numericPart = cleaned.match(/[\d.,]+/);
+  if (!numericPart) return 0;
   
-  if (hasCommaAsDecimal) {
-    // Formato brasileiro: remove pontos, troca vírgula por ponto
-    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-  } else if (hasDotAsDecimal) {
-    // Formato americano: remove vírgulas
+  cleaned = numericPart[0];
+  
+  // Detecta formato brasileiro (1.234 ou 1.234,56) vs americano (1,234 ou 1,234.56)
+  // Formato BR: pontos como separador de milhar, vírgula como decimal
+  // Formato US: vírgulas como separador de milhar, ponto como decimal
+  
+  const hasCommaAsDecimal = /\d+\.\d{3},\d{1,2}$/.test(cleaned);
+  const hasDotAsDecimal = /\d+,\d{3}\.\d{1,2}$/.test(cleaned);
+  const isBrazilianThousands = /^\d{1,3}(\.\d{3})+$/.test(cleaned); // 183.401
+  const isAmericanThousands = /^\d{1,3}(,\d{3})+$/.test(cleaned); // 183,401
+  
+  if (hasCommaAsDecimal || isBrazilianThousands) {
+    // Formato brasileiro: remove pontos (separador de milhar)
+    cleaned = cleaned.replace(/\./g, '');
+    // Se tiver vírgula decimal, troca por ponto
+    cleaned = cleaned.replace(',', '.');
+  } else if (hasDotAsDecimal || isAmericanThousands) {
+    // Formato americano: remove vírgulas (separador de milhar)
     cleaned = cleaned.replace(/,/g, '');
   } else {
-    // Formato simples: remove pontos e vírgulas extras
+    // Formato simples ou ambíguo: remove todos os separadores
     cleaned = cleaned.replace(/[.,]/g, '');
   }
   
-  // Extrai apenas números
-  const match = cleaned.match(/(\d+)/);
+  // Extrai apenas números inteiros (milhas são sempre inteiras)
+  const match = cleaned.match(/^(\d+)/);
   return match ? parseInt(match[1], 10) : 0;
+}
+
+// Função para aguardar elemento no DOM (para sites com carregamento dinâmico/React)
+function waitForElement(selector, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    // Verifica se já existe
+    const existing = document.querySelector(selector);
+    if (existing) {
+      resolve(existing);
+      return;
+    }
+    
+    const interval = 100;
+    let elapsed = 0;
+    
+    const timer = setInterval(() => {
+      const el = document.querySelector(selector);
+      if (el) {
+        clearInterval(timer);
+        resolve(el);
+        return;
+      }
+      
+      elapsed += interval;
+      if (elapsed >= timeout) {
+        clearInterval(timer);
+        reject(new Error(`Elemento não encontrado: ${selector}`));
+      }
+    }, interval);
+  });
+}
+
+// Função para aguardar qualquer um dos seletores
+async function waitForAnySelector(selectors, timeout = 10000) {
+  const startTime = Date.now();
+  
+  while (Date.now() - startTime < timeout) {
+    for (const selector of selectors) {
+      const el = document.querySelector(selector);
+      if (el) {
+        return { element: el, selector };
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  throw new Error('Nenhum seletor encontrado após timeout');
 }
 
 // Exporta para uso no content.js
@@ -153,4 +217,6 @@ if (typeof window !== 'undefined') {
   window.MILEAGE_SELECTORS = MILEAGE_SELECTORS;
   window.detectCurrentProgram = detectCurrentProgram;
   window.normalizeBalance = normalizeBalance;
+  window.waitForElement = waitForElement;
+  window.waitForAnySelector = waitForAnySelector;
 }
