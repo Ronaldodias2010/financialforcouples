@@ -49,24 +49,29 @@ Deno.serve(async (req) => {
     );
   }
 
-  // Create clients
+  // Create admin client
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-  const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } }
-  });
 
   try {
-    // Validate user
+    // Validate user using getUser (the correct method for Supabase v2)
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
     
-    if (claimsError || !claimsData?.claims) {
-      console.error('[extension-sync-miles] Auth error:', claimsError);
+    // Create a client with the user's token for validation
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    
+    const { data: userData, error: userError } = await supabaseUser.auth.getUser();
+    
+    if (userError || !userData?.user) {
+      console.error('[extension-sync-miles] Auth error:', userError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    const claimsData = { claims: { sub: userData.user.id } };
 
     const userId = claimsData.claims.sub;
     const extensionVersion = req.headers.get('X-Extension-Version') || 'unknown';
@@ -238,19 +243,23 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('[extension-sync-miles] Error:', error);
 
-    // Try to log the failed attempt
+    // Try to log the failed attempt - use admin client directly with JWT decode
     try {
       const token = authHeader.replace('Bearer ', '');
-      const { data: claimsData } = await supabaseUser.auth.getClaims(token);
-      if (claimsData?.claims?.sub) {
-        await supabaseAdmin
-          .from('extension_sync_logs')
-          .insert({
-            user_id: claimsData.claims.sub,
-            program_code: 'unknown',
-            success: false,
-            error_message: error instanceof Error ? error.message : 'Unknown error'
-          });
+      // Decode JWT to get user ID (basic decode without validation for logging purposes)
+      const payloadBase64 = token.split('.')[1];
+      if (payloadBase64) {
+        const payload = JSON.parse(atob(payloadBase64));
+        if (payload.sub) {
+          await supabaseAdmin
+            .from('extension_sync_logs')
+            .insert({
+              user_id: payload.sub,
+              program_code: 'unknown',
+              success: false,
+              error_message: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
       }
     } catch {
       // Ignore logging errors
