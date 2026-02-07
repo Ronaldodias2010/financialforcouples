@@ -178,12 +178,15 @@
   // ============================================
 
   /**
-   * Ajustes específicos para LATAM
+   * Ajustes específicos para LATAM - Atualizado 2025
+   * Baseado na estrutura real do site: "Milhas acumuladas" → "183.401"
    */
   function applyLatamContextAdjustments(candidates) {
     candidates.forEach(candidate => {
       const el = candidate.element;
       const context = el.closest('div')?.innerText?.toLowerCase() || '';
+      const sectionContext = el.closest('section')?.innerText?.toLowerCase() || '';
+      const fullContext = context + ' ' + sectionContext;
       const id = el.id?.toLowerCase() || '';
       const className = el.className?.toLowerCase() || '';
       const parentId = el.parentElement?.id?.toLowerCase() || '';
@@ -194,30 +197,51 @@
         candidate.score += 100;
       }
 
+      // NOVO: Contexto "Milhas acumuladas" - match exato do screenshot (+120)
+      if (/milhas acumuladas/.test(fullContext)) {
+        candidate.score += 120;
+        console.log(`[LATAM] Bônus +120 para "${candidate.rawText}" - contexto "milhas acumuladas"`);
+      }
+
       // Contexto positivo forte (+50)
-      if (/milhas acumuladas|total acumulado|saldo atual|seu saldo|your miles|available miles/.test(context)) {
+      if (/total acumulado|saldo atual|seu saldo|your miles|available miles/.test(fullContext)) {
         candidate.score += 50;
       }
 
+      // NOVO: Perto de "LATAM Pass" ou categoria (+40)
+      if (/latam pass|categoria latam/.test(fullContext)) {
+        candidate.score += 40;
+      }
+
       // Contexto de header/perfil (+30)
-      if (/header|profile|user-info|account/.test(className) || 
+      if (/header|profile|user-info|account|minha.conta/.test(className) || 
           /header|profile|user-info|account/.test(parentId)) {
         candidate.score += 30;
       }
 
       // Contexto negativo forte (-60)
-      if (/meta|campanha|promoção|ganhe até|desafio|challenge|earn up to|goal|objetivo/.test(context)) {
+      if (/meta|campanha|promoção|ganhe até|desafio|challenge|earn up to|goal|objetivo/.test(fullContext)) {
         candidate.score -= 60;
       }
 
       // Contexto de transferência/resgate (-30)
-      if (/transferir|resgatar|usar milhas|redeem|transfer/.test(context)) {
+      if (/transferir|resgatar|usar milhas|redeem|transfer/.test(fullContext)) {
         candidate.score -= 30;
       }
 
       // Contexto de histórico/extrato (-20)
-      if (/histórico|extrato|statement|history|movimento/.test(context)) {
+      if (/histórico|extrato|statement|history|movimento/.test(fullContext)) {
         candidate.score -= 20;
+      }
+
+      // NOVO: Penaliza valores relacionados a wallet/dinheiro (-50)
+      if (/wallet|brl|r\$|reais|disponíveis para compras/.test(fullContext)) {
+        candidate.score -= 50;
+      }
+
+      // NOVO: Penaliza contexto de "vencendo" ou expiração (-40)
+      if (/vencer|vencendo|expira|validade/.test(fullContext)) {
+        candidate.score -= 40;
       }
     });
 

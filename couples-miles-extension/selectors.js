@@ -9,22 +9,33 @@
  */
 
 const MILEAGE_SELECTORS = {
-  // LATAM Pass
+  // LATAM Pass - Atualizado para layout 2024/2025
   latam: {
     domain: 'latam.com',
     programName: 'LATAM Pass',
     programCode: 'latam_pass',
     selectors: [
-      // Seletor principal - estrutura atual do site LATAM
+      // Seletor principal - estrutura atual do site LATAM (2025)
+      // O saldo aparece como "183.401" dentro da seção "Milhas acumuladas"
       '#lb1-miles-amount strong',
       '#lb1-miles-amount h3 strong',
       '#lb1-miles-amount span strong',
-      // Fallbacks para outras estruturas possíveis
+      '#lb1-miles-amount',
+      // Estrutura vista no screenshot - texto "183.401" próximo a "Milhas acumuladas"
+      '[class*="milhas"] strong',
+      '[class*="miles"] strong',
+      '[class*="balance"] strong',
+      // Fallbacks gerais para outras estruturas possíveis
       '[data-testid="miles-balance"]',
       '.miles-balance-value',
       '.user-miles-balance',
       '[class*="MilesBalance"]',
-      '.header-miles'
+      '[class*="AccumulatedMiles"]',
+      '.header-miles',
+      // Busca mais genérica em containers de perfil
+      '[class*="profile"] [class*="miles"]',
+      '[class*="account"] [class*="miles"]',
+      '[class*="summary"] strong'
     ],
     loginIndicators: [
       '#lb1-miles-amount',
@@ -32,7 +43,12 @@ const MILEAGE_SELECTORS = {
       '.user-logged',
       '.user-name',
       '[class*="UserMenu"]',
-      '[class*="logged"]'
+      '[class*="logged"]',
+      '[class*="profile"]',
+      // Indicadores de conta LATAM Pass
+      '[class*="Ronaldo"]', // Nome do usuário visível
+      '[class*="category"]',
+      '[class*="Categoria"]'
     ],
     balanceRegex: /[\d.,]+/,
     requiresWait: true // Indica que precisa aguardar carregamento dinâmico
