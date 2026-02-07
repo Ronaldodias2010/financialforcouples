@@ -64,28 +64,52 @@ const MILEAGE_SELECTORS = {
     requiresWait: true // Indica que precisa aguardar carregamento dinâmico
   },
 
-  // Azul Fidelidade (TudoAzul)
+  // Azul Fidelidade (TudoAzul) - Atualizado para layout 2025
+  // IMPORTANTE: Suporta múltiplos domínios (voeazul.com.br, tudoazul.voeazul.com.br)
   azul: {
-    domain: 'tudoazul.com.br',
+    domain: 'voeazul.com.br', // Domínio principal (compatibilidade)
+    domains: ['voeazul.com.br', 'tudoazul.voeazul.com.br'], // Todos os domínios
     programName: 'Azul Fidelidade',
     programCode: 'azul',
     selectors: [
+      // Seletores para o portal TudoAzul
+      '[class*="pontos"]',
+      '[class*="points"]',
+      '[class*="saldo"]',
+      '[class*="balance"]',
+      '[class*="tudoazul"]',
+      // Seletores para header/menu do usuário
+      '[class*="user"] [class*="pontos"]',
+      '[class*="header"] [class*="pontos"]',
+      '[class*="menu"] [class*="pontos"]',
+      '[class*="account"] [class*="pontos"]',
+      // Seletores genéricos
       '[data-testid="points-balance"]',
       '.points-balance',
       '.tudoazul-points',
       '.user-points-value',
-      '[class*="pontos"]',
       '[class*="Points"]',
       '.balance-value',
-      '#balance-points'
+      '#balance-points',
+      // Busca em containers de perfil
+      '[class*="profile"] [class*="pontos"]',
+      '[class*="minha-conta"] [class*="pontos"]'
     ],
     loginIndicators: [
+      '[class*="logged"]',
+      '[class*="user"]',
+      '[class*="account"]',
+      '[class*="minha-conta"]',
+      '[class*="profile"]',
       '.user-logged-in',
       '[data-testid="user-area"]',
       '.user-menu-logged',
-      '[class*="LoggedUser"]'
+      '[class*="LoggedUser"]',
+      // Presença do saldo indica login
+      '[class*="pontos"]'
     ],
-    balanceRegex: /[\d.,]+/
+    balanceRegex: /[\d.,]+/,
+    requiresWait: true // Site tem carregamento dinâmico
   },
 
   // Smiles
