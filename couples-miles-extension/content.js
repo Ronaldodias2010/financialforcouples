@@ -16,19 +16,26 @@
 (function() {
   'use strict';
 
+  // Flag para indicar que o content script está carregado
+  window.__couplesMilesLoaded = true;
+
   // Verifica se estamos em um domínio permitido
-  const currentProgram = window.detectCurrentProgram();
+  const currentProgram = window.detectCurrentProgram ? window.detectCurrentProgram() : null;
   
   if (!currentProgram) {
     console.log('[Couples Miles] Domínio não suportado');
     return;
   }
 
-  console.log(`[Couples Miles] Detectado: ${currentProgram.config.programName}`);
+  console.log(`[Couples Miles] Content script carregado para ${currentProgram.config.programName}`);
 
-  // Escuta mensagens do popup
+  // Escuta mensagens do popup/background
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'extractBalance') {
+    console.log('[Couples Miles] Mensagem recebida:', request.action);
+    
+    // IMPORTANTE: Para respostas assíncronas, retornar true imediatamente
+    
+    if (request.action === 'extractBalance' || request.action === 'extract_miles') {
       handleBalanceExtraction(sendResponse);
       return true; // Indica que resposta será assíncrona
     }
@@ -42,24 +49,29 @@
       handleBalancePageCheck(sendResponse);
       return true;
     }
+    
+    if (request.action === 'ping') {
+      sendResponse({ success: true, loaded: true });
+      return false;
+    }
+    
+    return false;
   });
 
   /**
-   * Check if current page is a balance page
-   * Validates presence of mileage-related content
+   * Verifica se a página atual contém informações de saldo
    */
   function isBalancePage() {
     const bodyText = document.body.innerText || '';
     
-    // Keywords that indicate a balance page
+    // Keywords que indicam página de saldo
     const balanceKeywords = /milhas|saldo|milhas acumuladas|total acumulado|pontos disponíveis|seu saldo/i;
     
-    // Check for keywords in body
     if (balanceKeywords.test(bodyText)) {
       return true;
     }
     
-    // Also check for specific elements
+    // Verifica elementos específicos
     const balanceElements = [
       '#lb1-miles-amount',
       '[class*="balance"]',
@@ -78,31 +90,11 @@
   }
 
   /**
-   * Handler for balance page check
+   * Verifica se usuário está logado
    */
-  function handleBalancePageCheck(sendResponse) {
-    try {
-      const isPage = isBalancePage();
-      const isLoggedIn = isUserLoggedIn();
-      
-      sendResponse({
-        success: true,
-        isBalancePage: isPage,
-        isLoggedIn: isLoggedIn,
-        program: currentProgram.config.programCode,
-        url: window.location.href
-      });
-    } catch (error) {
-      sendResponse({
-        success: false,
-        isBalancePage: false,
-        error: error.message
-      });
-    }
-  }
-
-  // Verifica se usuário está logado
   function isUserLoggedIn() {
+    if (!currentProgram || !currentProgram.config) return false;
+    
     const config = currentProgram.config;
     
     for (const selector of config.loginIndicators) {
@@ -116,10 +108,34 @@
   }
 
   /**
+   * Handler para verificação de página de saldo
+   */
+  function handleBalancePageCheck(sendResponse) {
+    try {
+      const isPage = isBalancePage();
+      const isLoggedIn = isUserLoggedIn();
+      
+      console.log(`[Couples Miles] isBalancePage: ${isPage}, isLoggedIn: ${isLoggedIn}`);
+      
+      sendResponse({
+        success: true,
+        isBalancePage: isPage,
+        isLoggedIn: isLoggedIn,
+        program: currentProgram.config.programCode,
+        url: window.location.href
+      });
+    } catch (error) {
+      console.error('[Couples Miles] Erro ao verificar página:', error);
+      sendResponse({
+        success: false,
+        isBalancePage: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
    * Extrai saldo usando Universal Extractor 2.0
-   * Fluxo:
-   * 1. Tenta seletores específicos primeiro
-   * 2. Fallback para extração universal com scoring
    */
   async function extractBalance() {
     const config = currentProgram.config;
@@ -130,7 +146,8 @@
 
       // Verifica se Universal Extractor está disponível
       if (window.UniversalExtractor) {
-        // Usa extração com fallback (seletores específicos + universal)
+        console.log('[Couples Miles] Usando Universal Extractor 2.0...');
+        
         const result = await window.UniversalExtractor.extractWithFallback(
           programCode,
           config.selectors
@@ -149,7 +166,6 @@
         }
       } else {
         console.log('[Couples Miles] Universal Extractor não disponível, usando método legado...');
-        // Fallback para método legado se Universal Extractor não estiver carregado
         return await extractBalanceLegacy();
       }
 
@@ -251,11 +267,16 @@
     }
   }
 
-  // Handler para extração de saldo (async)
+  /**
+   * Handler para extração de saldo (async)
+   */
   async function handleBalanceExtraction(sendResponse) {
     try {
+      console.log('[Couples Miles] Iniciando handleBalanceExtraction...');
+      
       // Verifica login primeiro
       const loggedIn = isUserLoggedIn();
+      console.log(`[Couples Miles] Usuário logado: ${loggedIn}`);
       
       if (!loggedIn) {
         sendResponse({
@@ -268,11 +289,13 @@
 
       // Extrai saldo (async)
       const result = await extractBalance();
+      console.log('[Couples Miles] Resultado da extração:', result);
       
       if (result.success) {
-        console.log(`[Couples Miles] Enviando saldo: ${result.balance} (raw: ${result.rawText})`);
+        console.log(`[Couples Miles] Enviando saldo: ${result.balance}`);
         sendResponse({
           success: true,
+          balance: result.balance,
           data: {
             program: currentProgram.config.programCode,
             programName: currentProgram.config.programName,
@@ -297,7 +320,9 @@
     }
   }
 
-  // Handler para verificação de status
+  /**
+   * Handler para verificação de status
+   */
   function handleStatusCheck(sendResponse) {
     try {
       const loggedIn = isUserLoggedIn();
@@ -321,6 +346,4 @@
     }
   }
 
-  // Notifica que content script está carregado
-  console.log(`[Couples Miles] Content script carregado para ${currentProgram.config.programName}`);
 })();

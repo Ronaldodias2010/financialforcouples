@@ -302,24 +302,47 @@ elements.syncBtn.addEventListener('click', async () => {
   elements.actionMessage.textContent = '';
 
   try {
-    // Step 1: Check if we're on the correct page
+    // Step 1: Verifica se temos a aba correta
+    if (!state.currentTab || !state.currentTab.id) {
+      updateStatus('api_error', 'Não foi possível acessar a aba atual.');
+      return;
+    }
+
+    // Step 2: Verifica se estamos na página correta
     updateStatus('checking_page');
     
-    const pageCheck = await chrome.tabs.sendMessage(state.currentTab.id, {
-      action: 'checkBalancePage'
-    });
+    let pageCheck;
+    try {
+      pageCheck = await sendMessageToTab(state.currentTab.id, { action: 'checkBalancePage' });
+    } catch (tabError) {
+      console.error('Erro ao enviar mensagem para aba:', tabError);
+      updateStatus('api_error', 'Extensão não carregada. Recarregue a página e tente novamente.');
+      return;
+    }
 
-    if (!pageCheck || !pageCheck.isBalancePage) {
+    if (!pageCheck || !pageCheck.success) {
+      updateStatus('api_error', 'Não foi possível verificar a página. Recarregue e tente novamente.');
+      return;
+    }
+
+    if (!pageCheck.isBalancePage) {
       updateStatus('wrong_page', 'Abra a página onde seu saldo esteja visível antes de sincronizar.');
       return;
     }
 
-    // Step 2: Extract balance
+    // Step 3: Extrai o saldo
     updateStatus('extracting');
     
-    const extractResult = await chrome.tabs.sendMessage(state.currentTab.id, {
-      action: 'extractBalance'
-    });
+    let extractResult;
+    try {
+      extractResult = await sendMessageToTab(state.currentTab.id, { action: 'extractBalance' });
+    } catch (extractError) {
+      console.error('Erro na extração:', extractError);
+      updateStatus('api_error', 'Erro ao extrair saldo. Tente novamente.');
+      return;
+    }
+
+    console.log('Resultado da extração:', extractResult);
 
     if (!extractResult || !extractResult.success) {
       const errorType = extractResult?.error;
@@ -331,7 +354,7 @@ elements.syncBtn.addEventListener('click', async () => {
       return;
     }
 
-    // Step 3: Send to backend
+    // Step 4: Envia para o backend
     updateStatus('sending');
     
     const syncResult = await sendMessage({
@@ -344,7 +367,7 @@ elements.syncBtn.addEventListener('click', async () => {
       return;
     }
 
-    // Step 4: Success!
+    // Step 5: Sucesso!
     const formattedBalance = extractResult.data.balance.toLocaleString('pt-BR');
     updateStatus('success', `Saldo sincronizado: ${formattedBalance} milhas`);
     
@@ -371,6 +394,20 @@ elements.logoutBtn.addEventListener('click', async () => {
 function sendMessage(message) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(message, (response) => {
+      resolve(response || {});
+    });
+  });
+}
+
+// Envia mensagem diretamente para a aba (content script)
+function sendMessageToTab(tabId, message) {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.sendMessage(tabId, message, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Erro ao enviar para tab:', chrome.runtime.lastError.message);
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
       resolve(response || {});
     });
   });
