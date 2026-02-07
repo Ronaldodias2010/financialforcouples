@@ -137,47 +137,74 @@ const MILEAGE_SELECTORS = {
   },
 
   // Livelo - Atualizado para layout 2025
-  // Saldo aparece no header como "1.762 pontos" ao lado do nome do usuário
+  // Saldo aparece no header como "1.762 pontos" ao lado da saudação "Olá, NOME"
   livelo: {
     domain: 'livelo.com.br',
     programName: 'Livelo',
     programCode: 'livelo',
     selectors: [
       // Seletor principal - header com pontos (estrutura atual 2025)
-      // O saldo aparece como "1.762 pontos" no menu do usuário
+      // O saldo aparece como "1.762 pontos" abaixo de "Olá, RONALDO" no dropdown/menu
+      // Estrutura: elemento contendo "X.XXX pontos" próximo ao nome do usuário
+      '[class*="UserMenu"] [class*="points"]',
+      '[class*="UserMenu"] [class*="pontos"]',
+      '[class*="user-menu"] [class*="points"]',
+      '[class*="user-menu"] [class*="pontos"]',
+      // Header dropdown com saldo
+      '[class*="dropdown"] [class*="pontos"]',
+      '[class*="Dropdown"] [class*="pontos"]',
       '[class*="header"] [class*="pontos"]',
-      '[class*="header"] [class*="points"]',
+      '[class*="Header"] [class*="pontos"]',
+      // Próximo ao "Olá, NOME"
+      '[class*="greeting"] + *',
+      '[class*="ola"] ~ [class*="pontos"]',
+      '[class*="welcome"] ~ [class*="points"]',
+      // Seletores por estrutura comum de portais
       '[class*="user"] [class*="pontos"]',
-      '[class*="menu"] [class*="pontos"]',
-      // Busca por texto "pontos" próximo ao nome do usuário
+      '[class*="User"] [class*="Points"]',
       '[class*="account"] [class*="pontos"]',
-      '[class*="minha-conta"] [class*="pontos"]',
-      // Seletores genéricos
+      '[class*="Account"] [class*="Points"]',
+      // Seletores genéricos para "pontos"
+      '[class*="pontos"]:not([class*="regras"]):not([class*="rules"])',
+      '[class*="Points"]:not([class*="Rules"])',
+      '[class*="balance"]',
+      '[class*="Balance"]',
+      '[class*="saldo"]',
+      '[class*="Saldo"]',
+      // Data attributes
       '[data-testid="points-balance"]',
+      '[data-testid="user-points"]',
+      '[data-points]',
+      // Fallbacks
       '.livelo-points',
       '.points-value',
-      '[class*="pontos"]',
-      '[class*="Points"]',
       '.user-balance',
       '#points-balance',
-      '.header-points',
-      // Busca em containers de perfil/conta
-      '[class*="profile"] [class*="pontos"]',
-      '[class*="saldo"]',
-      '[class*="balance"]'
+      '.header-points'
     ],
+    // Palavras-chave para busca textual no Universal Extractor
+    extractorKeywords: ['pontos', 'points', 'saldo', 'balance'],
+    // Contexto positivo (aumenta score)
+    positiveContext: ['livelo', 'olá', 'bem-vindo', 'welcome', 'meus pontos', 'my points'],
+    // Contexto negativo (diminui score) - evita pegar regras de acúmulo
+    negativeContext: ['ganhe', 'earn', 'acumule', 'por real', 'per dollar', 'regras', 'rules', 'como funciona'],
     loginIndicators: [
-      // Indicador de login - nome do usuário ou saudação "Olá, NOME"
+      // Indicador de login - saudação "Olá, NOME" indica usuário logado
+      '[class*="greeting"]',
+      '[class*="ola"]',
+      '[class*="welcome"]',
       '[class*="user"]',
+      '[class*="User"]',
       '[class*="logged"]',
+      '[class*="Logged"]',
       '[class*="account"]',
-      '[class*="minha-conta"]',
+      '[class*="Account"]',
       '.user-logged',
       '[data-testid="user-logged"]',
       '.livelo-user-area',
-      '[class*="LoggedUser"]',
       // Presença do saldo indica login
-      '[class*="pontos"]'
+      '[class*="pontos"]',
+      '[class*="Points"]'
     ],
     balanceRegex: /[\d.,]+/,
     requiresWait: true // Site pode ter carregamento dinâmico
