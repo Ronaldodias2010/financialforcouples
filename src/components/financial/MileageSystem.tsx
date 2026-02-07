@@ -306,6 +306,7 @@ export const MileageSystem = () => {
 
   const loadTotalMiles = async () => {
     const userIds = getUserIdsToQuery();
+    console.log('MileageSystem: loadTotalMiles with userIds:', userIds, 'viewMode:', viewMode);
     
     // Get miles from history
     const { data: historyData, error: historyError } = await supabase
@@ -330,10 +331,32 @@ export const MileageSystem = () => {
       return;
     }
 
+    // Get synced miles from mileage_programs (airline loyalty programs)
+    const { data: programsData, error: programsError } = await supabase
+      .from("mileage_programs")
+      .select("balance_miles")
+      .in("user_id", userIds.filter(Boolean))
+      .eq("status", "connected");
+
+    if (programsError) {
+      console.error("Error loading mileage programs:", programsError);
+      return;
+    }
+
     const historyMiles = historyData?.reduce((sum, record) => sum + Number(record.miles_earned), 0) || 0;
     const existingMiles = rulesData?.reduce((sum, rule) => sum + Number(rule.existing_miles || 0), 0) || 0;
+    const syncedProgramMiles = programsData?.reduce((sum, prog) => sum + Number(prog.balance_miles || 0), 0) || 0;
     
-    setTotalMiles(historyMiles + existingMiles);
+    const total = historyMiles + existingMiles + syncedProgramMiles;
+    console.log('MileageSystem: Total miles calculation:', {
+      historyMiles,
+      existingMiles,
+      syncedProgramMiles,
+      total,
+      userIds
+    });
+    
+    setTotalMiles(total);
   };
 
   const handleCreateRule = async (formData: RuleFormData) => {
