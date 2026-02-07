@@ -112,12 +112,23 @@ const MILEAGE_SELECTORS = {
     balanceRegex: /[\d.,]+/
   },
 
-  // Livelo
+  // Livelo - Atualizado para layout 2025
+  // Saldo aparece no header como "1.762 pontos" ao lado do nome do usuário
   livelo: {
     domain: 'livelo.com.br',
     programName: 'Livelo',
     programCode: 'livelo',
     selectors: [
+      // Seletor principal - header com pontos (estrutura atual 2025)
+      // O saldo aparece como "1.762 pontos" no menu do usuário
+      '[class*="header"] [class*="pontos"]',
+      '[class*="header"] [class*="points"]',
+      '[class*="user"] [class*="pontos"]',
+      '[class*="menu"] [class*="pontos"]',
+      // Busca por texto "pontos" próximo ao nome do usuário
+      '[class*="account"] [class*="pontos"]',
+      '[class*="minha-conta"] [class*="pontos"]',
+      // Seletores genéricos
       '[data-testid="points-balance"]',
       '.livelo-points',
       '.points-value',
@@ -125,15 +136,27 @@ const MILEAGE_SELECTORS = {
       '[class*="Points"]',
       '.user-balance',
       '#points-balance',
-      '.header-points'
+      '.header-points',
+      // Busca em containers de perfil/conta
+      '[class*="profile"] [class*="pontos"]',
+      '[class*="saldo"]',
+      '[class*="balance"]'
     ],
     loginIndicators: [
+      // Indicador de login - nome do usuário ou saudação "Olá, NOME"
+      '[class*="user"]',
+      '[class*="logged"]',
+      '[class*="account"]',
+      '[class*="minha-conta"]',
       '.user-logged',
       '[data-testid="user-logged"]',
       '.livelo-user-area',
-      '[class*="LoggedUser"]'
+      '[class*="LoggedUser"]',
+      // Presença do saldo indica login
+      '[class*="pontos"]'
     ],
-    balanceRegex: /[\d.,]+/
+    balanceRegex: /[\d.,]+/,
+    requiresWait: true // Site pode ter carregamento dinâmico
   }
 };
 
