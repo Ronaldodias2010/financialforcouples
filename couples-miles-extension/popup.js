@@ -1,5 +1,5 @@
 /**
- * Couples Miles Extension - Popup Script v2.3
+ * Couples Miles Extension - Popup Script v2.4
  * 
  * REESTRUTURAÇÃO COMPLETA E DEFINITIVA
  * - Todo código encapsulado em DOMContentLoaded
@@ -9,14 +9,14 @@
  * - chrome.scripting apenas dentro do click handler async
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 [Couples Miles] Extensão inicializada');
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 [Couples Miles] Extensão inicializada v2.4');
 
   // ================= CONSTANTS =================
-  const SUPABASE_URL = 'https://elxttabdtddlavhseipz.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVseHR0YWJkdGRkbGF2aHNlaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNTQ0OTMsImV4cCI6MjA2OTczMDQ5M30.r2-vpMnG9eyp7-pa1U_Mdj6qGW0VjQXbdppP50usC7E';
+  var SUPABASE_URL = 'https://elxttabdtddlavhseipz.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVseHR0YWJkdGRkbGF2aHNlaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNTQ0OTMsImV4cCI6MjA2OTczMDQ5M30.r2-vpMnG9eyp7-pa1U_Mdj6qGW0VjQXbdppP50usC7E';
 
-  const SUPPORTED_DOMAINS = {
+  var SUPPORTED_DOMAINS = {
     'latam.com': { name: 'LATAM Pass', code: 'latam_pass', programKey: 'latam', icon: '✈️' },
     'tudoazul.com.br': { name: 'Azul Fidelidade', code: 'azul', programKey: 'azul', icon: '💙' },
     'smiles.com.br': { name: 'Smiles', code: 'smiles', programKey: 'smiles', icon: '😊' },
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ================= STATUS CONFIG =================
-  const STATUS_CONFIG = {
+  var STATUS_CONFIG = {
     idle: { type: 'neutral', icon: '⏳', message: 'Pronto para sincronizar.', showSpinner: false },
     checking_page: { type: 'loading', icon: '🔍', message: 'Verificando página...', showSpinner: true },
     extracting: { type: 'loading', icon: '📊', message: 'Localizando saldo...', showSpinner: true },
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ================= ELEMENTS =================
-  const elements = {
+  var elements = {
     consentModal: document.getElementById('consent-modal'),
     acceptConsentBtn: document.getElementById('accept-consent'),
     loginSection: document.getElementById('login-section'),
@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Validar elementos DOM
-  const missingElements = [];
-  Object.entries(elements).forEach(([key, value]) => {
-    if (!value) {
+  var missingElements = [];
+  Object.keys(elements).forEach(function(key) {
+    if (!elements[key]) {
       missingElements.push(key);
     }
   });
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================= STATE =================
-  let state = {
+  var state = {
     hasConsent: false,
     isAuthenticated: false,
     currentTab: null,
@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function sendMessage(message) {
-    return new Promise((resolve) => {
-      chrome.runtime.sendMessage(message, (response) => {
+    return new Promise(function(resolve) {
+      chrome.runtime.sendMessage(message, function(response) {
         resolve(response || {});
       });
     });
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function detectProgram(url) {
     if (!url) return null;
-    const lowerUrl = url.toLowerCase();
+    var lowerUrl = url.toLowerCase();
     
     if (lowerUrl.includes('latam.com')) return 'latam';
     if (lowerUrl.includes('tudoazul.com')) return 'azul';
@@ -112,11 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!url) return null;
     
     try {
-      const hostname = new URL(url).hostname.toLowerCase();
+      var hostname = new URL(url).hostname.toLowerCase();
+      var domains = Object.keys(SUPPORTED_DOMAINS);
       
-      for (const [domain, program] of Object.entries(SUPPORTED_DOMAINS)) {
+      for (var i = 0; i < domains.length; i++) {
+        var domain = domains[i];
         if (hostname.includes(domain)) {
-          return program;
+          return SUPPORTED_DOMAINS[domain];
         }
       }
     } catch (err) {
@@ -127,13 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setBadge(badgeState) {
-    const colors = {
+    var colors = {
       success: '#1DB954',
       error: '#FF4C4C',
       loading: '#FFA500'
     };
 
-    const texts = {
+    var texts = {
       success: '✓',
       error: '!',
       loading: '...'
@@ -158,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ================= UPDATE STATUS =================
 
   function updateStatus(statusState, customMessage) {
-    const config = STATUS_CONFIG[statusState];
+    var config = STATUS_CONFIG[statusState];
     if (!config) {
       console.error('❌ [Status] Status inválido:', statusState);
       return;
@@ -212,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================= EXTRACTOR ENGINE =================
-  // Esta função será injetada via chrome.scripting.executeScript
 
   function universalExtractorEngine(program) {
     console.log('🔄 [Extractor] Iniciando para programa:', program);
@@ -226,21 +227,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isBalancePage() {
-      const text = document.body.innerText || '';
+      var text = document.body.innerText || '';
       return /milhas|pontos|saldo|miles|points|acumulad/i.test(text);
     }
 
     function isLoggedIn(programKey) {
-      const indicators = {
+      var indicators = {
         latam: ['#lb1-miles-amount', '[class*="logged"]', '[class*="UserMenu"]'],
         azul: ['[class*="logged"]', '[class*="user-menu"]'],
         smiles: ['[class*="logged"]', '[class*="user"]'],
         livelo: ['[class*="logged"]', '[class*="user"]']
       };
       
-      const selectors = indicators[programKey] || [];
-      for (const sel of selectors) {
-        if (document.querySelector(sel)) return true;
+      var selectors = indicators[programKey] || [];
+      for (var i = 0; i < selectors.length; i++) {
+        if (document.querySelector(selectors[i])) return true;
       }
       
       if (document.querySelector('[class*="logged"]')) return true;
@@ -250,8 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function calculateScore(el, value, programKey) {
-      let score = 50;
-      const context = (el.closest('div')?.innerText || '').toLowerCase();
+      var score = 50;
+      var context = (el.closest('div') ? el.closest('div').innerText : '').toLowerCase();
 
       if (/milhas|pontos|saldo|miles|points/i.test(context)) score += 30;
       if (/acumulad|disponív|total|seu saldo|your/i.test(context)) score += 20;
@@ -280,19 +281,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return score;
     }
 
-    const regex = /^\d{1,3}(\.\d{3})+$/;
-    const pageElements = document.querySelectorAll('h1, h2, h3, span, strong, b, div, p');
-    const candidates = [];
+    var regex = /^\d{1,3}(\.\d{3})+$/;
+    var pageElements = document.querySelectorAll('h1, h2, h3, span, strong, b, div, p');
+    var candidates = [];
 
-    for (const el of pageElements) {
-      const text = el.innerText?.trim();
+    for (var i = 0; i < pageElements.length; i++) {
+      var el = pageElements[i];
+      var text = el.innerText ? el.innerText.trim() : '';
       if (!text) continue;
 
       if (regex.test(text)) {
-        const value = normalize(text);
+        var value = normalize(text);
         if (!isValid(value)) continue;
 
-        const score = calculateScore(el, value, program);
+        var score = calculateScore(el, value, program);
         candidates.push({
           value: value,
           rawText: text,
@@ -312,13 +314,17 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    const maxVal = Math.max(...candidates.map(function(c) { return c.value; }));
-    candidates.forEach(function(c) {
-      if (c.value === maxVal) c.score += 15;
-    });
+    var maxVal = 0;
+    for (var j = 0; j < candidates.length; j++) {
+      if (candidates[j].value > maxVal) maxVal = candidates[j].value;
+    }
+    
+    for (var k = 0; k < candidates.length; k++) {
+      if (candidates[k].value === maxVal) candidates[k].score += 15;
+    }
 
     candidates.sort(function(a, b) { return b.score - a.score; });
-    const best = candidates[0];
+    var best = candidates[0];
 
     if (best.score >= 50) {
       return {
@@ -326,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
         balance: best.value,
         rawText: best.rawText,
         score: best.score,
-        confidence: best.score >= 100 ? 'high' : best.score >= 70 ? 'medium' : 'low',
+        confidence: best.score >= 100 ? 'high' : (best.score >= 70 ? 'medium' : 'low'),
         isBalancePage: isBalancePage(),
         isLoggedIn: isLoggedIn(program),
         candidatesCount: candidates.length,
@@ -359,15 +365,15 @@ document.addEventListener('DOMContentLoaded', () => {
       state.isLoading = true;
       elements.syncBtn.disabled = true;
       
-      const syncText = elements.syncBtn.querySelector('.sync-text');
+      var syncText = elements.syncBtn.querySelector('.sync-text');
       if (syncText) syncText.textContent = 'Sincronizando...';
       
       if (elements.resultSection) elements.resultSection.classList.add('hidden');
       if (elements.actionMessage) elements.actionMessage.textContent = '';
 
       try {
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        const tab = tabs[0];
+        var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        var tab = tabs[0];
         
         if (!tab || !tab.id) {
           console.error('❌ [Sync] Não foi possível acessar a aba atual');
@@ -380,8 +386,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatus('checking_page');
         setBadge('loading');
         
-        const programKey = detectProgram(tab.url);
-        const programInfo = getProgramInfo(tab.url);
+        var programKey = detectProgram(tab.url);
+        var programInfo = getProgramInfo(tab.url);
 
         if (!programKey || !programInfo) {
           console.warn('⚠️ [Sync] Site não suportado:', tab.url);
@@ -393,15 +399,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('✈️ [Sync] Programa detectado:', programKey, programInfo.name);
         updateStatus('extracting');
         
-        let result;
+        var result;
         try {
-          const injectionResult = await chrome.scripting.executeScript({
+          var injectionResult = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: universalExtractorEngine,
             args: [programKey]
           });
           
-          result = injectionResult[0]?.result;
+          result = injectionResult[0] ? injectionResult[0].result : null;
           console.log('📊 [Sync] Resultado da extração:', result);
         } catch (scriptError) {
           console.error('❌ [Sync] Erro ao executar script:', scriptError);
@@ -444,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateStatus('sending');
         
-        const syncData = {
+        var syncData = {
           program: programInfo.code,
           programName: programInfo.name,
           balance: result.balance,
@@ -457,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log('📤 [Sync] Enviando dados:', syncData);
 
-        const syncResult = await sendMessage({
+        var syncResult = await sendMessage({
           action: 'syncMiles',
           data: syncData
         });
@@ -469,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        const formattedBalance = formatNumber(result.balance);
+        var formattedBalance = formatNumber(result.balance);
         console.log('✅ [Sync] Sucesso! Saldo:', formattedBalance);
         updateStatus('success', 'Saldo sincronizado: ' + formattedBalance + ' milhas');
         setBadge('success');
@@ -487,8 +493,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isLoading = false;
         if (elements.syncBtn) {
           elements.syncBtn.disabled = false;
-          const syncText = elements.syncBtn.querySelector('.sync-text');
-          if (syncText) syncText.textContent = 'Sincronizar Milhas';
+          var syncTextEl = elements.syncBtn.querySelector('.sync-text');
+          if (syncTextEl) syncTextEl.textContent = 'Sincronizar Milhas';
         }
       }
     });
@@ -502,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await sendMessage({ action: 'setConsent', accepted: true });
       state.hasConsent = true;
       
-      const authResult = await sendMessage({ action: 'checkAuth' });
+      var authResult = await sendMessage({ action: 'checkAuth' });
       state.isAuthenticated = authResult.authenticated;
 
       if (!state.isAuthenticated) {
@@ -517,8 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (elements.loginBtn) {
     elements.loginBtn.addEventListener('click', async function() {
-      const email = elements.emailInput?.value.trim();
-      const password = elements.passwordInput?.value;
+      var email = elements.emailInput ? elements.emailInput.value.trim() : '';
+      var password = elements.passwordInput ? elements.passwordInput.value : '';
 
       if (!email || !password) {
         alert('Preencha email e senha');
@@ -530,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         console.log('🔐 [Login] Tentando login...');
-        const response = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+        var response = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -539,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({ email: email, password: password })
         });
 
-        const data = await response.json();
+        var data = await response.json();
 
         if (!response.ok || !data.access_token) {
           throw new Error(data.error_description || 'Credenciais inválidas');
@@ -576,8 +582,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function detectCurrentTab() {
     try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const tab = tabs[0];
+      var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      var tab = tabs[0];
       state.currentTab = tab;
 
       if (!tab || !tab.url) {
@@ -588,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       console.log('🔍 [Tab] URL atual:', tab.url);
 
-      let hostname;
+      var hostname;
       try {
         hostname = new URL(tab.url).hostname.toLowerCase();
       } catch (err) {
@@ -597,10 +603,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      let matchedProgram = null;
-      for (const [domain, program] of Object.entries(SUPPORTED_DOMAINS)) {
+      var matchedProgram = null;
+      var domains = Object.keys(SUPPORTED_DOMAINS);
+      for (var i = 0; i < domains.length; i++) {
+        var domain = domains[i];
         if (hostname.includes(domain)) {
-          matchedProgram = program;
+          matchedProgram = SUPPORTED_DOMAINS[domain];
           break;
         }
       }
@@ -624,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (elements.syncBtn) elements.syncBtn.disabled = false;
       if (elements.actionMessage) elements.actionMessage.textContent = 'Clique para sincronizar seu saldo';
       
-      const rateLimit = await sendMessage({
+      var rateLimit = await sendMessage({
         action: 'checkRateLimit',
         programCode: matchedProgram.code
       });
@@ -647,7 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function init() {
     console.log('🔧 [Init] Iniciando...');
 
-    const consentResult = await sendMessage({ action: 'checkConsent' });
+    var consentResult = await sendMessage({ action: 'checkConsent' });
     state.hasConsent = consentResult.hasConsent;
     console.log('📋 [Init] Consentimento:', state.hasConsent);
 
@@ -656,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const authResult = await sendMessage({ action: 'checkAuth' });
+    var authResult = await sendMessage({ action: 'checkAuth' });
     state.isAuthenticated = authResult.authenticated;
     console.log('🔐 [Init] Autenticado:', state.isAuthenticated);
 
