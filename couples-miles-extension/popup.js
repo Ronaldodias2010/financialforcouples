@@ -1,16 +1,51 @@
 /**
- * Couples Miles Extension - Popup Script v2.7
+ * Couples Miles Extension - Popup Script v2.8
  * 
- * FLUXO HÍBRIDO CORRIGIDO
+ * FLUXO HÍBRIDO CORRIGIDO + i18n
  * - REGRA: Nunca navegar automaticamente
  * - REGRA: Sempre tentar extrair na página atual primeiro
  * - REGRA: Só mostrar opção de navegação manual se não encontrar saldo
  * - Estados: idle, awaiting_confirmation, manual_mode, synced
  * - Proteção contra execução dupla
+ * - Suporte a inglês e português
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 [Couples Miles] Extensão inicializada v2.7 - Fluxo Híbrido Corrigido');
+  console.log('🚀 [Couples Miles] Extension initialized v2.8 - i18n Support');
+
+  // ================= i18n HELPER =================
+  function getMessage(key) {
+    try {
+      return chrome.i18n.getMessage(key) || key;
+    } catch (e) {
+      return key;
+    }
+  }
+
+  function applyI18n() {
+    // Apply translations to elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+      var key = el.getAttribute('data-i18n');
+      var message = getMessage(key);
+      if (message && message !== key) {
+        el.textContent = message;
+      }
+    });
+
+    // Apply translations to placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+      var key = el.getAttribute('data-i18n-placeholder');
+      var message = getMessage(key);
+      if (message && message !== key) {
+        el.placeholder = message;
+      }
+    });
+
+    console.log('🌐 [i18n] Translations applied');
+  }
+
+  // Apply i18n on load
+  applyI18n();
 
   // ================= CONSTANTS =================
   var SUPABASE_URL = 'https://elxttabdtddlavhseipz.supabase.co';
@@ -48,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
       icon: '💙', 
       milesUrl: 'https://www.voeazul.com.br/home/br/pt/home',
       requiresClick: true, // Indica que usuário precisa clicar para ver pontos
-      clickInstruction: 'Clique no seu nome para expandir o menu e ver seus pontos antes de sincronizar.'
+      clickInstructionKey: 'clickInstruction'
     },
     'tudoazul.voeazul.com.br': { 
       name: 'Azul Fidelidade', 
@@ -57,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
       icon: '💙', 
       milesUrl: 'https://www.voeazul.com.br/home/br/pt/home',
       requiresClick: true,
-      clickInstruction: 'Clique no seu nome para expandir o menu e ver seus pontos antes de sincronizar.'
+      clickInstructionKey: 'clickInstruction'
     },
     'smiles.com.br': { 
       name: 'Smiles', 
@@ -85,16 +120,17 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   // ================= STATUS CONFIG =================
+  // Now uses i18n keys for messages
   var STATUS_CONFIG = {
-    idle: { type: 'neutral', icon: '⏳', message: 'Pronto para sincronizar.', showSpinner: false },
-    checking_page: { type: 'loading', icon: '🔍', message: 'Verificando página...', showSpinner: true },
-    extracting: { type: 'loading', icon: '📊', message: 'Localizando saldo...', showSpinner: true },
-    sending: { type: 'loading', icon: '📤', message: 'Enviando saldo...', showSpinner: true },
-    success: { type: 'success', icon: '✅', message: 'Sincronizado com sucesso!', showSpinner: false },
-    not_found: { type: 'warning', icon: '❌', message: 'Saldo não encontrado.', showSpinner: false },
-    wrong_page: { type: 'warning', icon: '⚠️', message: 'Página incorreta.', showSpinner: false },
-    api_error: { type: 'error', icon: '🔴', message: 'Erro de conexão.', showSpinner: false },
-    not_logged: { type: 'warning', icon: '🔒', message: 'Faça login no site primeiro.', showSpinner: false }
+    idle: { type: 'neutral', icon: '⏳', messageKey: 'statusIdle', showSpinner: false },
+    checking_page: { type: 'loading', icon: '🔍', messageKey: 'statusCheckingPage', showSpinner: true },
+    extracting: { type: 'loading', icon: '📊', messageKey: 'statusExtracting', showSpinner: true },
+    sending: { type: 'loading', icon: '📤', messageKey: 'statusSending', showSpinner: true },
+    success: { type: 'success', icon: '✅', messageKey: 'statusSuccess', showSpinner: false },
+    not_found: { type: 'warning', icon: '❌', messageKey: 'statusNotFound', showSpinner: false },
+    wrong_page: { type: 'warning', icon: '⚠️', messageKey: 'statusWrongPage', showSpinner: false },
+    api_error: { type: 'error', icon: '🔴', messageKey: 'statusApiError', showSpinner: false },
+    not_logged: { type: 'warning', icon: '🔒', messageKey: 'statusNotLogged', showSpinner: false }
   };
 
   // ================= ELEMENTS =================
@@ -285,12 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateStatus(statusState, customMessage) {
     var config = STATUS_CONFIG[statusState];
     if (!config) {
-      console.error('❌ [Status] Status inválido:', statusState);
+      console.error('❌ [Status] Invalid status:', statusState);
       return;
     }
 
     if (!elements.statusFeedback || !elements.statusIcon || !elements.statusText) {
-      console.error('❌ [Status] Elementos de status não encontrados');
+      console.error('❌ [Status] Status elements not found');
       return;
     }
 
@@ -303,8 +339,10 @@ document.addEventListener('DOMContentLoaded', function() {
       elements.statusIcon.textContent = config.icon;
     }
 
-    elements.statusText.textContent = customMessage || config.message;
-    console.log('📊 [Status]', statusState, customMessage || config.message);
+    // Use i18n message or custom message
+    var message = customMessage || getMessage(config.messageKey) || config.messageKey;
+    elements.statusText.textContent = message;
+    console.log('📊 [Status]', statusState, message);
   }
 
   // ================= UI FUNCTIONS =================
@@ -578,8 +616,9 @@ document.addEventListener('DOMContentLoaded', function() {
         var currentProgramInfo = getProgramInfo(currentTab.url);
         
         if (currentProgramInfo && currentProgramInfo.requiresClick) {
-          console.log('⚠️ [Sync] Programa requer clique para ver pontos');
-          updateStatus('idle', currentProgramInfo.clickInstruction);
+          console.log('⚠️ [Sync] Program requires click to see points');
+          var clickMsg = getMessage(currentProgramInfo.clickInstructionKey);
+          updateStatus('idle', clickMsg);
         }
         
         // ============ PASSO 2: EXTRAIR NA PÁGINA ATUAL ============

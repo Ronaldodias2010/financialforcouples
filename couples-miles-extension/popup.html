@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
         <img src="icons/icon48.png" alt="Couples Miles" class="logo-icon">
         <div class="logo-text">
           <span class="logo-title">Couples Miles</span>
-          <span class="logo-subtitle">Sincronização Segura</span>
+          <span class="logo-subtitle" data-i18n="secureSync">Sincronização Segura</span>
         </div>
       </div>
     </header>
@@ -22,26 +22,26 @@
     <!-- Consent Modal -->
     <div id="consent-modal" class="modal hidden">
       <div class="modal-content">
-        <h2>🔒 Termos de Privacidade</h2>
+        <h2 data-i18n="privacyTitle">🔒 Termos de Privacidade</h2>
         <div class="consent-text">
-          <p><strong>Esta extensão coleta apenas:</strong></p>
+          <p><strong data-i18n="collectsOnly">Esta extensão coleta apenas:</strong></p>
           <ul>
-            <li>✅ Saldo de milhas visível na tela</li>
-            <li>✅ Nome do programa</li>
-            <li>✅ Data/hora da sincronização</li>
+            <li>✅ <span data-i18n="collectsMilesBalance">Saldo de milhas visível na tela</span></li>
+            <li>✅ <span data-i18n="collectsProgramName">Nome do programa</span></li>
+            <li>✅ <span data-i18n="collectsSyncDate">Data/hora da sincronização</span></li>
           </ul>
-          <p><strong>Esta extensão NÃO:</strong></p>
+          <p><strong data-i18n="doesNotTitle">Esta extensão NÃO:</strong></p>
           <ul>
-            <li>❌ Armazena senhas</li>
-            <li>❌ Intercepta credenciais</li>
-            <li>❌ Acessa cookies de login</li>
-            <li>❌ Faz login automático</li>
+            <li>❌ <span data-i18n="doesNotPasswords">Armazena senhas</span></li>
+            <li>❌ <span data-i18n="doesNotCredentials">Intercepta credenciais</span></li>
+            <li>❌ <span data-i18n="doesNotCookies">Acessa cookies de login</span></li>
+            <li>❌ <span data-i18n="doesNotAutoLogin">Faz login automático</span></li>
           </ul>
-          <p class="consent-note">
+          <p class="consent-note" data-i18n="consentNote">
             A extração só ocorre após seu clique manual e login no site oficial.
           </p>
         </div>
-        <button id="accept-consent" class="btn btn-primary">
+        <button id="accept-consent" class="btn btn-primary" data-i18n="acceptTerms">
           Aceito os Termos
         </button>
       </div>
@@ -52,18 +52,18 @@
       <div class="info-card warning">
         <span class="icon">🔑</span>
         <div>
-          <strong>Login necessário</strong>
-          <p>Faça login no Couples para sincronizar suas milhas.</p>
+          <strong data-i18n="loginRequired">Login necessário</strong>
+          <p data-i18n="loginDescription">Faça login no Couples para sincronizar suas milhas.</p>
         </div>
       </div>
       <div class="login-form">
-        <input type="email" id="email-input" placeholder="Email" class="input">
-        <input type="password" id="password-input" placeholder="Senha" class="input">
-        <button id="login-btn" class="btn btn-primary">
+        <input type="email" id="email-input" data-i18n-placeholder="email" placeholder="Email" class="input">
+        <input type="password" id="password-input" data-i18n-placeholder="password" placeholder="Senha" class="input">
+        <button id="login-btn" class="btn btn-primary" data-i18n="login">
           Entrar
         </button>
         <p class="login-help">
-          <a href="https://app.couplesfinancials.com" target="_blank">
+          <a href="https://app.couplesfinancials.com" target="_blank" data-i18n="createAccount">
             Criar conta no Couples
           </a>
         </p>
@@ -88,13 +88,13 @@
       <div id="action-section" class="action-section">
         <button id="sync-btn" class="btn btn-sync" disabled>
           <span class="sync-icon">🔄</span>
-          <span class="sync-text">Sincronizar Milhas</span>
+          <span class="sync-text" data-i18n="syncMiles">Sincronizar Milhas</span>
         </button>
         
         <!-- Status Feedback -->
         <div id="status-feedback" class="status-feedback hidden">
           <span id="status-icon" class="status-icon">⏳</span>
-          <span id="status-text" class="status-text">Pronto para sincronizar.</span>
+          <span id="status-text" class="status-text" data-i18n="statusIdle">Pronto para sincronizar.</span>
         </div>
         
         <p id="action-message" class="action-message"></p>
@@ -105,18 +105,18 @@
         <div class="confirmation-card">
           <div class="confirmation-header">
             <span class="confirmation-icon">🎯</span>
-            <span class="confirmation-title">Saldo Detectado</span>
+            <span class="confirmation-title" data-i18n="balanceDetected">Saldo Detectado</span>
           </div>
           <div class="confirmation-value">
             <span id="detected-balance" class="detected-balance">0</span>
-            <span class="detected-unit">milhas</span>
+            <span class="detected-unit" data-i18n="miles">milhas</span>
           </div>
-          <p class="confirmation-question">Este valor está correto?</p>
+          <p class="confirmation-question" data-i18n="isThisCorrect">Este valor está correto?</p>
           <div class="confirmation-buttons">
-            <button id="confirm-yes-btn" class="btn btn-success">
+            <button id="confirm-yes-btn" class="btn btn-success" data-i18n="yesSend">
               ✅ Sim, enviar
             </button>
-            <button id="confirm-no-btn" class="btn btn-secondary">
+            <button id="confirm-no-btn" class="btn btn-secondary" data-i18n="no">
               ❌ Não
             </button>
           </div>
@@ -128,11 +128,11 @@
         <div class="info-card warning">
           <span class="icon">⚠️</span>
           <div>
-            <strong>Vamos tentar novamente</strong>
-            <p>Abra a página onde seu saldo esteja visível e clique novamente em sincronizar.</p>
+            <strong data-i18n="tryAgain">Vamos tentar novamente</strong>
+            <p data-i18n="tryAgainDescription">Abra a página onde seu saldo esteja visível e clique novamente em sincronizar.</p>
           </div>
         </div>
-        <button id="retry-sync-btn" class="btn btn-primary">
+        <button id="retry-sync-btn" class="btn btn-primary" data-i18n="tryAgainButton">
           🔄 Tentar Novamente
         </button>
       </div>
@@ -142,14 +142,14 @@
         <div class="info-card warning">
           <span class="icon">🔍</span>
           <div>
-            <strong>Saldo não encontrado nesta página</strong>
-            <p>Navegue até onde seu saldo de milhas esteja visível e clique em "Tentar Novamente".</p>
+            <strong data-i18n="balanceNotFound">Saldo não encontrado nesta página</strong>
+            <p data-i18n="balanceNotFoundDescription">Navegue até onde seu saldo de milhas esteja visível e clique em "Tentar Novamente".</p>
           </div>
         </div>
-        <button id="retry-here-btn" class="btn btn-primary">
+        <button id="retry-here-btn" class="btn btn-primary" data-i18n="tryAgainHere">
           🔄 Tentar Novamente (nesta página)
         </button>
-        <button id="go-to-miles-btn" class="btn btn-secondary">
+        <button id="go-to-miles-btn" class="btn btn-secondary" data-i18n="goToMilesPage">
           🔗 Ir para página de milhas
         </button>
       </div>
@@ -159,7 +159,7 @@
         <div class="result-card success">
           <span class="result-icon">✅</span>
           <div class="result-info">
-            <span class="result-title">Sincronizado!</span>
+            <span class="result-title" data-i18n="synced">Sincronizado!</span>
             <span id="result-balance" class="result-balance">0 milhas</span>
           </div>
         </div>
@@ -167,7 +167,7 @@
 
       <!-- Histórico Rápido -->
       <div id="history-section" class="history-section">
-        <h3>Programas Suportados</h3>
+        <h3 data-i18n="supportedPrograms">Programas Suportados</h3>
         <div class="programs-list">
           <div class="program-item">
             <span class="program-logo latam">LP</span>
@@ -190,10 +190,10 @@
 
       <!-- Footer -->
       <footer class="footer">
-        <button id="logout-btn" class="btn btn-link">
+        <button id="logout-btn" class="btn btn-link" data-i18n="logout">
           Sair
         </button>
-        <span class="version">v1.0.0</span>
+        <span class="version">v2.1.0</span>
       </footer>
     </div>
 
@@ -202,12 +202,12 @@
       <div class="info-card">
         <span class="icon">ℹ️</span>
         <div>
-          <strong>Site não suportado</strong>
-          <p>Acesse um dos sites de milhagem suportados para sincronizar.</p>
+          <strong data-i18n="unsupportedSite">Site não suportado</strong>
+          <p data-i18n="unsupportedSiteDescription">Acesse um dos sites de milhagem suportados para sincronizar.</p>
         </div>
       </div>
       <div class="programs-list compact">
-        <a href="https://www.latam.com" target="_blank" class="program-link">
+        <a href="https://www.latamairlines.com/br/pt/minha-conta" target="_blank" class="program-link">
           <span class="program-logo latam">LP</span>
           LATAM Pass
         </a>
@@ -215,11 +215,11 @@
           <span class="program-logo azul">AZ</span>
           Azul Fidelidade
         </a>
-        <a href="https://www.smiles.com.br" target="_blank" class="program-link">
+        <a href="https://www.smiles.com.br/minha-conta" target="_blank" class="program-link">
           <span class="program-logo smiles">SM</span>
           Smiles
         </a>
-        <a href="https://www.livelo.com.br" target="_blank" class="program-link">
+        <a href="https://www.livelo.com.br/minha-conta" target="_blank" class="program-link">
           <span class="program-logo livelo">LV</span>
           Livelo
         </a>
