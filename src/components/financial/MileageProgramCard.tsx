@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, AlertCircle, CheckCircle2, Loader2, MoreVertical, Trash2, Edit } from 'lucide-react';
+import { RefreshCw, AlertCircle, CheckCircle2, Loader2, MoreVertical, Trash2, Edit, Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import { getProgramByCode, formatMilesValue } from '@/data/mileagePrograms';
 import { useLanguage } from '@/hooks/useLanguage';
 import { format } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MileageProgramCardProps {
   program: MileageProgram;
@@ -177,7 +178,24 @@ export function MileageProgramCard({
           <div className="text-xs text-muted-foreground flex items-center gap-1">
             {getStatusIcon()}
             {program.last_sync_at ? (
-              <span>{formatLastSync()}</span>
+              <div className="flex items-center gap-1.5">
+                <span>{formatLastSync()}</span>
+                {program.sync_source === 'browser_extension' && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-green-500/10 text-green-600 rounded text-[10px] font-medium">
+                          <Chrome className="h-3 w-3" />
+                          <span className="hidden sm:inline">{t('mileage.programs.syncSource.extension')}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('mileage.programs.syncSource.extensionSuccess')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             ) : (
               <span>{t('mileage.programs.neverSynced')}</span>
             )}

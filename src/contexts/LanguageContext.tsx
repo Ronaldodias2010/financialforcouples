@@ -1575,6 +1575,9 @@ const translations = {
     'mileage.programs.noHistory': 'Nenhuma movimentação sincronizada',
     'mileage.programs.disclaimer': 'Dados obtidos com autorização do usuário. Valores estimados baseados em médias de mercado.',
     'mileage.programs.estimatedValue': 'Valor estimado',
+    'mileage.programs.syncSource.extension': 'Via Extensão',
+    'mileage.programs.syncSource.manual': 'Manual',
+    'mileage.programs.syncSource.extensionSuccess': 'Sincronizado automaticamente via extensão do navegador',
     
     // Admin
     'admin.title': 'Painel Administrativo',
@@ -4329,6 +4332,9 @@ const translations = {
     'mileage.programs.noHistory': 'No synced transactions',
     'mileage.programs.disclaimer': 'Data obtained with user authorization. Estimated values based on market averages.',
     'mileage.programs.estimatedValue': 'Estimated value',
+    'mileage.programs.syncSource.extension': 'Via Extension',
+    'mileage.programs.syncSource.manual': 'Manual',
+    'mileage.programs.syncSource.extensionSuccess': 'Automatically synced via browser extension',
     
     // Admin
     'admin.title': 'Administrative Panel',
