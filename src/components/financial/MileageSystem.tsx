@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -878,16 +878,18 @@ export const MileageSystem = () => {
                             <p className="text-xs text-muted-foreground">
                               Milhas existentes: {Math.floor(group.totalExistingMiles).toLocaleString()}
                             </p>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-3 w-3 text-muted-foreground hover:text-primary cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs p-3">
-                                <p className="text-xs">
-                                  {t('mileage.cardPointsInfoTooltip')}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="h-3 w-3 text-muted-foreground hover:text-primary cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs p-3">
+                                  <p className="text-xs">
+                                    {t('mileage.cardPointsInfoTooltip')}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
                         )}
                       </div>
