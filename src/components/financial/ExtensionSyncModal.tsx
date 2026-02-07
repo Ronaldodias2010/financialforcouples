@@ -35,7 +35,7 @@ interface ExtensionSyncModalProps {
 
 type SyncStep = 'install' | 'navigate' | 'sync' | 'complete';
 
-const CHROME_EXTENSION_URL = 'https://chrome.google.com/webstore/detail/couples-miles/your-extension-id';
+const CHROME_EXTENSION_URL = 'https://chromewebstore.google.com/detail/couples-miles/geljknggffoclfolggaifadbmonkibma';
 
 // URLs das páginas de milhas por programa
 const PROGRAM_MILES_URLS: Record<string, string> = {
