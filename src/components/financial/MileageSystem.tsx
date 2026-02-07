@@ -751,14 +751,12 @@ export const MileageSystem = () => {
           </h4>
           <ol className="text-xs text-green-700 dark:text-green-300 space-y-1 list-decimal list-inside">
             <li>
-              <a 
-                href="https://chrome.google.com/webstore/detail/couples-miles/your-extension-id" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="underline hover:text-green-900 dark:hover:text-green-100 font-medium"
+              <button 
+                onClick={() => window.open('https://chrome.google.com/webstore/detail/couples-miles/your-extension-id', '_blank')}
+                className="underline hover:text-green-900 dark:hover:text-green-100 font-medium text-left"
               >
                 Instale a extensão Couples Miles no Chrome →
-              </a>
+              </button>
             </li>
             <li>Faça login na sua conta Couples pela extensão</li>
             <li>Acesse o site da companhia aérea e faça login normalmente</li>
