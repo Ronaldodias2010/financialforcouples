@@ -15,6 +15,7 @@ export interface MileageProgram {
   last_sync_at: string | null;
   last_error: string | null;
   external_member_id: string | null;
+  sync_source?: 'manual' | 'browser_extension' | null;
   created_at: string;
   updated_at: string;
 }
