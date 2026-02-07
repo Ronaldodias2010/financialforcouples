@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Plane, MapPin, RefreshCw, Gift, TrendingDown } from 'lucide-react';
+import { ExternalLink, Plane, MapPin, RefreshCw, Gift, TrendingDown, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
+import { FeaturedPromotionCard } from './FeaturedPromotionCard';
+import { findMatchingPromotions, type PromotionMatch } from '@/utils/promotionMatcher';
 
 interface ScrapedPromotion {
   id: string;
@@ -24,19 +27,64 @@ interface ScrapedPromotion {
   created_at: string;
 }
 
-interface ScrapedPromotionsListProps {
-  userTotalMiles?: number;
+interface MileageGoal {
+  id: string;
+  name: string;
+  description: string | null;
+  target_miles: number;
+  current_miles: number;
+  is_completed: boolean;
 }
 
-export const ScrapedPromotionsList = ({ userTotalMiles = 0 }: ScrapedPromotionsListProps) => {
+interface ScrapedPromotionsListProps {
+  userTotalMiles?: number;
+  mileageGoals?: MileageGoal[];
+}
+
+export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }: ScrapedPromotionsListProps) => {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const [promotions, setPromotions] = useState<ScrapedPromotion[]>([]);
+  const [goals, setGoals] = useState<MileageGoal[]>(mileageGoals);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [matchedPromotions, setMatchedPromotions] = useState<PromotionMatch[]>([]);
+
+  // Load goals if not provided via props
+  useEffect(() => {
+    if (mileageGoals.length === 0 && user?.id) {
+      loadUserGoals();
+    } else {
+      setGoals(mileageGoals);
+    }
+  }, [mileageGoals, user?.id]);
+
+  // Match promotions with goals when both are loaded
+  useEffect(() => {
+    if (promotions.length > 0 && goals.length > 0) {
+      const activeGoals = goals.filter(g => !g.is_completed);
+      const matches = findMatchingPromotions(promotions, activeGoals);
+      setMatchedPromotions(matches);
+    }
+  }, [promotions, goals]);
 
   useEffect(() => {
     loadPromotions();
   }, []);
+
+  const loadUserGoals = async () => {
+    if (!user?.id) return;
+    
+    const { data, error } = await supabase
+      .from('mileage_goals')
+      .select('id, name, description, target_miles, current_miles, is_completed')
+      .eq('user_id', user.id)
+      .eq('is_completed', false);
+
+    if (!error && data) {
+      setGoals(data);
+    }
+  };
 
   const loadPromotions = async () => {
     try {
@@ -192,33 +240,65 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0 }: ScrapedPromotionsL
     );
   }
 
+  // Get unique matched promotion IDs to exclude from regular grid
+  const matchedPromoIds = new Set(matchedPromotions.map(m => m.promotion.id));
+  const regularPromotions = promotions.filter(p => !matchedPromoIds.has(p.id));
+
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5 text-primary" />
-              Promoções de Milhas
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              {promotions.length} promoções disponíveis
-            </p>
+    <div className="space-y-6">
+      {/* Featured Promotions - Matching Goals */}
+      {matchedPromotions.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold text-lg">
+              {t('promotions.matchingGoals') || 'Promoções que combinam com suas metas'}
+            </h3>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={runScraper}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
+          <div className="space-y-4">
+            {matchedPromotions.slice(0, 3).map((match) => (
+              <FeaturedPromotionCard
+                key={`featured-${match.promotion.id}-${match.goal.id}`}
+                promotion={match.promotion}
+                matchedGoal={{
+                  name: match.goal.name,
+                  current_miles: match.goal.current_miles,
+                  target_miles: match.goal.target_miles,
+                }}
+                userTotalMiles={userTotalMiles}
+              />
+            ))}
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {promotions.map((promo) => (
+      )}
+
+      {/* Regular Promotions Grid */}
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Gift className="h-5 w-5 text-primary" />
+                {matchedPromotions.length > 0 ? 'Outras Promoções' : 'Promoções de Milhas'}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {regularPromotions.length} promoções disponíveis
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={runScraper}
+              disabled={refreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {regularPromotions.map((promo) => (
             <Card 
               key={promo.id} 
               className={`relative overflow-hidden transition-all hover:shadow-lg ${
@@ -308,5 +388,6 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0 }: ScrapedPromotionsL
         </div>
       </CardContent>
     </Card>
+  </div>
   );
 };
