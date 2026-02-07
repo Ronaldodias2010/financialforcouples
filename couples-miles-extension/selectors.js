@@ -10,8 +10,10 @@
 
 const MILEAGE_SELECTORS = {
   // LATAM Pass - Atualizado para layout 2024/2025
+  // IMPORTANTE: Suporta múltiplos domínios (latam.com, latamairlines.com, latampass.com)
   latam: {
-    domain: 'latam.com',
+    domain: 'latam.com', // Domínio principal (compatibilidade)
+    domains: ['latam.com', 'latamairlines.com', 'latampass.com'], // Todos os domínios
     programName: 'LATAM Pass',
     programCode: 'latam_pass',
     selectors: [
@@ -21,12 +23,15 @@ const MILEAGE_SELECTORS = {
       '#lb1-miles-amount h3 strong',
       '#lb1-miles-amount span strong',
       '#lb1-miles-amount',
-      // Estrutura vista no screenshot - texto "183.401" próximo a "Milhas acumuladas"
+      // Estrutura latamairlines.com e latampass.com
       '[class*="milhas"] strong',
       '[class*="miles"] strong',
       '[class*="balance"] strong',
+      '[class*="accumulated"] strong',
+      '[class*="acumuladas"] strong',
       // Fallbacks gerais para outras estruturas possíveis
       '[data-testid="miles-balance"]',
+      '[data-testid="accumulated-miles"]',
       '.miles-balance-value',
       '.user-miles-balance',
       '[class*="MilesBalance"]',
@@ -35,7 +40,10 @@ const MILEAGE_SELECTORS = {
       // Busca mais genérica em containers de perfil
       '[class*="profile"] [class*="miles"]',
       '[class*="account"] [class*="miles"]',
-      '[class*="summary"] strong'
+      '[class*="summary"] strong',
+      // Seletores específicos para latamairlines.com
+      '[class*="minha-conta"] strong',
+      '[class*="my-account"] strong'
     ],
     loginIndicators: [
       '#lb1-miles-amount',
@@ -46,9 +54,11 @@ const MILEAGE_SELECTORS = {
       '[class*="logged"]',
       '[class*="profile"]',
       // Indicadores de conta LATAM Pass
-      '[class*="Ronaldo"]', // Nome do usuário visível
       '[class*="category"]',
-      '[class*="Categoria"]'
+      '[class*="Categoria"]',
+      // Indicadores para latamairlines.com
+      '[class*="account"]',
+      '[class*="minha-conta"]'
     ],
     balanceRegex: /[\d.,]+/,
     requiresWait: true // Indica que precisa aguardar carregamento dinâmico
@@ -128,10 +138,20 @@ const MILEAGE_SELECTORS = {
 };
 
 // Função para detectar programa atual baseado no domínio
+// Suporta múltiplos domínios por programa (ex: LATAM tem 3 domínios)
 function detectCurrentProgram() {
   const hostname = window.location.hostname.toLowerCase();
   
   for (const [key, config] of Object.entries(MILEAGE_SELECTORS)) {
+    // Verificar array de domínios (novo formato)
+    if (config.domains && Array.isArray(config.domains)) {
+      for (const domain of config.domains) {
+        if (hostname.includes(domain)) {
+          return { key, config };
+        }
+      }
+    }
+    // Fallback para domínio único (formato antigo)
     if (hostname.includes(config.domain)) {
       return { key, config };
     }

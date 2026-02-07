@@ -18,13 +18,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // URLs das páginas de milhas para cada programa
   var SUPPORTED_DOMAINS = {
+    // LATAM - Múltiplos domínios (latam.com, latamairlines.com, latampass.com)
     'latam.com': { 
       name: 'LATAM Pass', 
       code: 'latam_pass', 
       programKey: 'latam', 
       icon: '✈️', 
-      milesUrl: 'https://www.latam.com/pt_br/latam-pass/minha-conta/' 
+      milesUrl: 'https://www.latamairlines.com/br/pt/minha-conta' 
     },
+    'latamairlines.com': { 
+      name: 'LATAM Pass', 
+      code: 'latam_pass', 
+      programKey: 'latam', 
+      icon: '✈️', 
+      milesUrl: 'https://www.latamairlines.com/br/pt/minha-conta' 
+    },
+    'latampass.com': { 
+      name: 'LATAM Pass', 
+      code: 'latam_pass', 
+      programKey: 'latam', 
+      icon: '✈️', 
+      milesUrl: 'https://latampass.com/myaccount' 
+    },
+    // Outros programas
     'tudoazul.com.br': { 
       name: 'Azul Fidelidade', 
       code: 'azul', 
@@ -100,7 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
     retrySection: document.getElementById('retry-section'),
     retrySyncBtn: document.getElementById('retry-sync-btn'),
     notFoundSection: document.getElementById('not-found-section'),
-    goToMilesBtn: document.getElementById('go-to-miles-btn')
+    goToMilesBtn: document.getElementById('go-to-miles-btn'),
+    retryHereBtn: document.getElementById('retry-here-btn')
   };
 
   // Validar elementos DOM
@@ -146,7 +163,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!url) return null;
     var lowerUrl = url.toLowerCase();
     
-    if (lowerUrl.includes('latam.com')) return 'latam';
+    // LATAM - Múltiplos domínios
+    if (lowerUrl.includes('latam.com') || 
+        lowerUrl.includes('latamairlines.com') || 
+        lowerUrl.includes('latampass.com')) {
+      return 'latam';
+    }
     if (lowerUrl.includes('tudoazul.com')) return 'azul';
     if (lowerUrl.includes('smiles.com')) return 'smiles';
     if (lowerUrl.includes('livelo.com')) return 'livelo';
@@ -715,6 +737,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // ================= RETRY HERE HANDLER (Nova página atual) =================
+
+  if (elements.retryHereBtn) {
+    elements.retryHereBtn.addEventListener('click', function() {
+      console.log('🔄 [RetryHere] Tentando novamente na página atual');
+      
+      // Esconder seção not found
+      if (elements.notFoundSection) elements.notFoundSection.classList.add('hidden');
+      if (elements.statusFeedback) elements.statusFeedback.classList.add('hidden');
+      
+      // Voltar para estado idle
+      setSyncState(SYNC_STATE.IDLE);
+      
+      // Simular clique no botão de sync
+      if (elements.syncBtn) {
+        elements.syncBtn.click();
+      }
+    });
+  }
+
   // ================= GO TO MILES PAGE HANDLER =================
 
   if (elements.goToMilesBtn) {
@@ -898,27 +940,33 @@ document.addEventListener('DOMContentLoaded', function() {
   // ================= INITIALIZATION =================
 
   async function init() {
-    console.log('🔧 [Init] Iniciando...');
+    console.log('🔧 [Init] Iniciando v2.8 - Multi-domínio LATAM...');
 
-    var consentResult = await sendMessage({ action: 'checkConsent' });
-    state.hasConsent = consentResult.hasConsent;
-    console.log('📋 [Init] Consentimento:', state.hasConsent);
+    try {
+      var consentResult = await sendMessage({ action: 'checkConsent' });
+      state.hasConsent = consentResult.hasConsent;
+      console.log('📋 [Init] Consentimento:', state.hasConsent);
 
-    if (!state.hasConsent) {
-      showConsentModal();
-      return;
+      if (!state.hasConsent) {
+        showConsentModal();
+        return;
+      }
+
+      var authResult = await sendMessage({ action: 'checkAuth' });
+      state.isAuthenticated = authResult.authenticated;
+      console.log('🔐 [Init] Autenticado:', state.isAuthenticated);
+
+      if (!state.isAuthenticated) {
+        showLoginSection();
+        return;
+      }
+
+      await detectCurrentTab();
+    } catch (error) {
+      console.error('❌ [Init] Erro crítico:', error);
+      // Mostrar seção de não suportado como fallback para evitar popup em branco
+      showNotSupportedSection();
     }
-
-    var authResult = await sendMessage({ action: 'checkAuth' });
-    state.isAuthenticated = authResult.authenticated;
-    console.log('🔐 [Init] Autenticado:', state.isAuthenticated);
-
-    if (!state.isAuthenticated) {
-      showLoginSection();
-      return;
-    }
-
-    await detectCurrentTab();
   }
 
   // ================= START =================

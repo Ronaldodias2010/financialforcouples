@@ -139,14 +139,17 @@
 
       <!-- Seção Not Found (saldo não encontrado) -->
       <div id="not-found-section" class="not-found-section hidden">
-        <div class="info-card error">
+        <div class="info-card warning">
           <span class="icon">🔍</span>
           <div>
-            <strong>Saldo não encontrado</strong>
-            <p>Não encontramos saldo de milhas nesta página.</p>
+            <strong>Saldo não encontrado nesta página</strong>
+            <p>Navegue até onde seu saldo de milhas esteja visível e clique em "Tentar Novamente".</p>
           </div>
         </div>
-        <button id="go-to-miles-btn" class="btn btn-primary">
+        <button id="retry-here-btn" class="btn btn-primary">
+          🔄 Tentar Novamente (nesta página)
+        </button>
+        <button id="go-to-miles-btn" class="btn btn-secondary">
           🔗 Ir para página de milhas
         </button>
       </div>
