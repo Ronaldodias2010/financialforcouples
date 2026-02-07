@@ -31,23 +31,31 @@ export const MileagePage = ({ onBack }: MileagePageProps) => {
       if (!user?.id) return;
 
       try {
-        // Get miles from mileage history
-        const { data: historyMiles } = await supabase
-          .from('mileage_history')
-          .select('miles_earned')
-          .eq('user_id', user.id);
-
-        // Get existing miles from card rules
-        const { data: existingMiles } = await supabase
-          .from('card_mileage_rules')
-          .select('existing_miles')
+        // Get synced miles from connected mileage programs
+        const { data: programsData } = await supabase
+          .from('mileage_programs')
+          .select('balance_miles, user_id')
           .eq('user_id', user.id)
-          .eq('is_active', true);
+          .eq('status', 'connected');
 
-        const totalFromHistory = historyMiles?.reduce((sum, item) => sum + (item.miles_earned || 0), 0) || 0;
-        const totalFromExisting = existingMiles?.reduce((sum, item) => sum + (item.existing_miles || 0), 0) || 0;
+        const syncedProgramMiles = programsData?.reduce((sum, prog) => sum + (prog.balance_miles || 0), 0) || 0;
+        
+        // Check if user has any connected programs
+        const hasConnectedPrograms = (programsData?.length || 0) > 0;
+        
+        let existingMiles = 0;
+        if (!hasConnectedPrograms) {
+          // Only use existing_miles from card rules if user has NO connected programs
+          const { data: rulesData } = await supabase
+            .from('card_mileage_rules')
+            .select('existing_miles')
+            .eq('user_id', user.id)
+            .eq('is_active', true);
 
-        setUserTotalMiles(totalFromHistory + totalFromExisting);
+          existingMiles = rulesData?.reduce((sum, item) => sum + (item.existing_miles || 0), 0) || 0;
+        }
+
+        setUserTotalMiles(syncedProgramMiles + existingMiles);
       } catch (error) {
         console.error('Error calculating total miles:', error);
       }
