@@ -3,25 +3,17 @@
   "name": "Couples Miles - Sincronização Segura",
   "version": "2.0.0",
   "description": "Sincronize seus saldos de milhas de forma segura com o Couples Financials. Sem armazenamento de senhas.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": [
+    "https://*.latam.com/*",
+    "https://*.tudoazul.com/*",
+    "https://*.smiles.com.br/*",
+    "https://*.livelo.com.br/*"
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  },
-  "permissions": [
-    "activeTab",
-    "storage",
-    "scripting"
-  ],
-  "host_permissions": [
-    "https://*.latam.com/*",
-    "https://*.tudoazul.com.br/*",
-    "https://*.smiles.com.br/*",
-    "https://*.livelo.com.br/*"
-  ],
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
   },
   "action": {
     "default_popup": "popup.html",
@@ -31,6 +23,10 @@
       "128": "icons/icon128.png"
     },
     "default_title": "Couples Miles"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
   },
   "web_accessible_resources": [
     {
