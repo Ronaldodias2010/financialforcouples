@@ -1,8 +1,8 @@
 /**
- * Couples Miles Extension - Popup Script v2.0
+ * Couples Miles Extension - Popup Script v2.1
  * 
  * Usa chrome.scripting.executeScript para execução sob demanda.
- * Não depende de content scripts fixos.
+ * Inclui sistema de badge visual e suporte multi-programa.
  */
 
 // ============= DOM ELEMENTS =============
@@ -41,10 +41,10 @@ const STATUS_CONFIG = {
 };
 
 const SUPPORTED_DOMAINS = {
-  'latam.com': { name: 'LATAM Pass', code: 'latam_pass', icon: '✈️' },
-  'tudoazul.com.br': { name: 'Azul Fidelidade', code: 'azul', icon: '💙' },
-  'smiles.com.br': { name: 'Smiles', code: 'smiles', icon: '😊' },
-  'livelo.com.br': { name: 'Livelo', code: 'livelo', icon: '💜' }
+  'latam.com': { name: 'LATAM Pass', code: 'latam_pass', programKey: 'latam', icon: '✈️' },
+  'tudoazul.com.br': { name: 'Azul Fidelidade', code: 'azul', programKey: 'azul', icon: '💙' },
+  'smiles.com.br': { name: 'Smiles', code: 'smiles', programKey: 'smiles', icon: '😊' },
+  'livelo.com.br': { name: 'Livelo', code: 'livelo', programKey: 'livelo', icon: '💜' }
 };
 
 const SUPABASE_URL = 'https://elxttabdtddlavhseipz.supabase.co';
@@ -59,9 +59,57 @@ let state = {
   isLoading: false
 };
 
+// ============= BADGE SYSTEM =============
+function setBadge(badgeState) {
+  const colors = {
+    success: '#1DB954',  // verde
+    error: '#FF4C4C',    // vermelho
+    loading: '#FFA500'   // amarelo
+  };
+
+  const texts = {
+    success: '✓',
+    error: '!',
+    loading: '...'
+  };
+
+  chrome.action.setBadgeText({ text: texts[badgeState] || '' });
+  chrome.action.setBadgeBackgroundColor({ color: colors[badgeState] || '#000000' });
+}
+
+function clearBadge() {
+  chrome.action.setBadgeText({ text: '' });
+}
+
+// ============= PROGRAM DETECTION =============
+function detectProgram(url) {
+  if (!url) return null;
+  const lowerUrl = url.toLowerCase();
+  
+  if (lowerUrl.includes('latam.com')) return 'latam';
+  if (lowerUrl.includes('tudoazul.com')) return 'azul';
+  if (lowerUrl.includes('smiles.com')) return 'smiles';
+  if (lowerUrl.includes('livelo.com')) return 'livelo';
+  
+  return null;
+}
+
+function getProgramInfo(url) {
+  if (!url) return null;
+  const hostname = new URL(url).hostname.toLowerCase();
+  
+  for (const [domain, program] of Object.entries(SUPPORTED_DOMAINS)) {
+    if (hostname.includes(domain)) {
+      return program;
+    }
+  }
+  return null;
+}
+
 // ============= UNIVERSAL EXTRACTOR ENGINE =============
 // Esta função é injetada diretamente na página via chrome.scripting.executeScript
-function universalExtractorEngine() {
+// Recebe o programa como argumento para ajustes contextuais
+function universalExtractorEngine(program) {
   // Normaliza número no formato brasileiro (183.401 -> 183401)
   function normalize(value) {
     return parseInt(value.replace(/\./g, '').replace(/,/g, ''), 10);
@@ -72,13 +120,13 @@ function universalExtractorEngine() {
     return value > 100 && value < 10000000;
   }
 
-  // Calcula score de confiança do candidato
-  function calculateScore(el, value) {
+  // Calcula score de confiança do candidato com ajustes por programa
+  function calculateScore(el, value, programKey) {
     let score = 0;
     const context = el.closest('div')?.innerText || '';
     const parentContext = el.parentElement?.innerText || '';
 
-    // Contexto positivo básico
+    // Contexto positivo básico (todos os programas)
     if (/milhas|pontos|saldo|miles|points/i.test(context)) score += 40;
     
     // Tag relevante
@@ -86,23 +134,55 @@ function universalExtractorEngine() {
     if (el.tagName === 'STRONG' || el.tagName === 'B') score += 15;
     if (el.tagName === 'SPAN') score += 10;
 
-    // Contexto positivo forte (LATAM específico)
-    if (/milhas acumuladas|total acumulado|saldo atual|seu saldo|available miles/i.test(context)) {
-      score += 50;
+    // ========== AJUSTES POR PROGRAMA ==========
+    
+    if (programKey === 'latam') {
+      // LATAM Pass - ajustes específicos
+      if (/milhas acumuladas|total acumulado|saldo atual|seu saldo|available miles/i.test(context)) {
+        score += 50;
+      }
+      // Proximidade com elemento lb1-miles-amount
+      if (el.closest('#lb1-miles-amount')) {
+        score += 100;
+      }
+      // Contexto negativo
+      if (/meta|campanha|promoção|ganhe até|desafio|bonus/i.test(context)) {
+        score -= 40;
+      }
+    }
+    
+    if (programKey === 'azul') {
+      // Azul Fidelidade (TudoAzul)
+      if (/tudoazul|pontos tudoazul|saldo de pontos|seus pontos/i.test(context)) {
+        score += 50;
+      }
+      if (el.closest('[class*="points"]') || el.closest('[class*="pontos"]')) {
+        score += 30;
+      }
+    }
+    
+    if (programKey === 'smiles') {
+      // Smiles
+      if (/milhas smiles|saldo smiles|suas milhas|milhas disponíveis/i.test(context)) {
+        score += 50;
+      }
+      if (el.closest('[class*="miles"]') || el.closest('[class*="smiles"]')) {
+        score += 30;
+      }
+    }
+    
+    if (programKey === 'livelo') {
+      // Livelo
+      if (/pontos livelo|saldo livelo|seus pontos|pontos disponíveis/i.test(context)) {
+        score += 50;
+      }
+      if (el.closest('[class*="points"]') || el.closest('[class*="livelo"]')) {
+        score += 30;
+      }
     }
 
-    // Proximidade com elemento lb1-miles-amount (LATAM)
-    if (el.closest('#lb1-miles-amount')) {
-      score += 100;
-    }
-
-    // Contexto negativo (promoções, metas)
-    if (/meta|campanha|promoção|ganhe até|desafio|bonus|promo|earn up to/i.test(context)) {
-      score -= 40;
-    }
-
-    // Penaliza se o contexto menciona "por" ou "cada" (taxas de conversão)
-    if (/por\s+\d|cada\s+\d|per\s+\d/i.test(parentContext)) {
+    // Penaliza contextos de conversão/taxas (todos os programas)
+    if (/por\s+\d|cada\s+\d|per\s+\d|a partir de|from\s+\d/i.test(parentContext)) {
       score -= 30;
     }
 
@@ -112,27 +192,60 @@ function universalExtractorEngine() {
   // Verifica se é página de saldo
   function isBalancePage() {
     const text = document.body.innerText || '';
-    return /milhas|saldo|milhas acumuladas|total acumulado|pontos disponíveis|seu saldo|your miles|available miles/i.test(text);
+    return /milhas|saldo|milhas acumuladas|total acumulado|pontos disponíveis|seu saldo|your miles|available miles|seus pontos/i.test(text);
   }
 
-  // Verifica indicadores de login
-  function isLoggedIn() {
-    const loginIndicators = [
-      '#lb1-miles-amount',
-      '[data-testid="user-menu"]',
-      '.user-logged',
-      '.user-name',
-      '[class*="UserMenu"]',
-      '[class*="logged"]',
-      '[class*="LoggedUser"]',
-      '.user-logged-in'
-    ];
+  // Verifica indicadores de login por programa
+  function isLoggedIn(programKey) {
+    const loginIndicators = {
+      latam: [
+        '#lb1-miles-amount',
+        '[data-testid="user-menu"]',
+        '.user-logged',
+        '[class*="UserMenu"]',
+        '[class*="logged"]'
+      ],
+      azul: [
+        '.user-logged-in',
+        '[data-testid="user-area"]',
+        '.user-menu-logged',
+        '[class*="LoggedUser"]'
+      ],
+      smiles: [
+        '.user-logged',
+        '[data-testid="logged-user"]',
+        '.smiles-user-menu',
+        '[class*="UserLogged"]'
+      ],
+      livelo: [
+        '.user-logged',
+        '[data-testid="user-logged"]',
+        '.livelo-user-area',
+        '[class*="LoggedUser"]'
+      ]
+    };
     
-    for (const selector of loginIndicators) {
+    const selectors = loginIndicators[programKey] || [];
+    
+    for (const selector of selectors) {
       if (document.querySelector(selector)) {
         return true;
       }
     }
+    
+    // Fallback genérico
+    const genericSelectors = [
+      '[class*="logged"]',
+      '[class*="user-menu"]',
+      '[class*="UserMenu"]'
+    ];
+    
+    for (const selector of genericSelectors) {
+      if (document.querySelector(selector)) {
+        return true;
+      }
+    }
+    
     return false;
   }
 
@@ -151,7 +264,7 @@ function universalExtractorEngine() {
       const value = normalize(text);
       if (!isValid(value)) continue;
 
-      const score = calculateScore(el, value);
+      const score = calculateScore(el, value, program);
       candidates.push({ 
         value, 
         score, 
@@ -161,15 +274,53 @@ function universalExtractorEngine() {
     }
   }
 
-  // Se não encontrou candidatos, retorna resultado negativo
+  // Se não encontrou candidatos
   if (candidates.length === 0) {
     return {
       success: false,
       error: 'no_candidates',
       isBalancePage: isBalancePage(),
-      isLoggedIn: isLoggedIn()
+      isLoggedIn: isLoggedIn(program),
+      program: program
     };
   }
+
+  // Bonus para o maior valor
+  const maxValue = Math.max(...candidates.map(c => c.value));
+  candidates.forEach(c => {
+    if (c.value === maxValue) c.score += 15;
+  });
+
+  // Ordena por score
+  candidates.sort((a, b) => b.score - a.score);
+
+  const best = candidates[0];
+
+  // Só retorna se score for suficiente
+  if (best.score >= 50) {
+    return {
+      success: true,
+      balance: best.value,
+      rawText: best.rawText,
+      score: best.score,
+      confidence: best.score >= 100 ? 'high' : best.score >= 70 ? 'medium' : 'low',
+      isBalancePage: isBalancePage(),
+      isLoggedIn: isLoggedIn(program),
+      candidatesCount: candidates.length,
+      program: program
+    };
+  }
+
+  return {
+    success: false,
+    error: 'low_confidence',
+    bestScore: best.score,
+    bestValue: best.value,
+    isBalancePage: isBalancePage(),
+    isLoggedIn: isLoggedIn(program),
+    program: program
+  };
+}
 
   // Bonus para o maior valor
   const maxValue = Math.max(...candidates.map(c => c.value));
@@ -280,42 +431,39 @@ async function handleSync() {
     
     if (!tab || !tab.id) {
       updateStatus('api_error', 'Não foi possível acessar a aba atual.');
+      setBadge('error');
       return;
     }
 
-    // Step 2: Verifica se é um domínio suportado
+    // Step 2: Detecta o programa pelo URL
     updateStatus('checking_page');
+    setBadge('loading');
     
-    const url = new URL(tab.url);
-    const hostname = url.hostname.toLowerCase();
-    
-    let matchedProgram = null;
-    for (const [domain, program] of Object.entries(SUPPORTED_DOMAINS)) {
-      if (hostname.includes(domain)) {
-        matchedProgram = program;
-        break;
-      }
-    }
+    const programKey = detectProgram(tab.url);
+    const programInfo = getProgramInfo(tab.url);
 
-    if (!matchedProgram) {
+    if (!programKey || !programInfo) {
       updateStatus('wrong_page', 'Este site não é suportado.');
+      setBadge('error');
       return;
     }
 
-    // Step 3: Executa o extrator diretamente na página
+    // Step 3: Executa o extrator com o programa como argumento
     updateStatus('extracting');
     
     let result;
     try {
       const injectionResult = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: universalExtractorEngine
+        func: universalExtractorEngine,
+        args: [programKey]  // Passa o programa como argumento
       });
       
       result = injectionResult[0]?.result;
     } catch (scriptError) {
       console.error('Erro ao executar script:', scriptError);
       updateStatus('api_error', 'Não foi possível acessar esta página. Verifique as permissões.');
+      setBadge('error');
       return;
     }
 
@@ -324,25 +472,29 @@ async function handleSync() {
     // Step 4: Processa resultado
     if (!result) {
       updateStatus('api_error', 'Erro ao processar página.');
+      setBadge('error');
       return;
     }
 
     if (!result.isLoggedIn) {
       updateStatus('wrong_page', 'Faça login no site antes de sincronizar.');
+      setBadge('error');
       return;
     }
 
     if (!result.isBalancePage) {
       updateStatus('wrong_page', 'Navegue até a página onde seu saldo esteja visível.');
+      setBadge('error');
       return;
     }
 
     if (!result.success) {
       if (result.error === 'low_confidence') {
-        updateStatus('not_found', `Saldo incerto (${result.bestValue}). Navegue até página principal.`);
+        updateStatus('not_found', `Saldo incerto (${formatNumber(result.bestValue)}). Navegue até página principal.`);
       } else {
         updateStatus('not_found', 'Saldo não encontrado nesta página.');
       }
+      setBadge('error');
       return;
     }
 
@@ -350,8 +502,8 @@ async function handleSync() {
     updateStatus('sending');
     
     const syncData = {
-      program: matchedProgram.code,
-      programName: matchedProgram.name,
+      program: programInfo.code,
+      programName: programInfo.name,
       balance: result.balance,
       rawText: result.rawText,
       confidence: result.confidence,
@@ -367,24 +519,29 @@ async function handleSync() {
 
     if (!syncResult.success) {
       updateStatus('api_error', syncResult.message || 'Erro ao enviar saldo para o servidor.');
+      setBadge('error');
       return;
     }
 
     // Step 6: Sucesso!
     const formattedBalance = formatNumber(result.balance);
     updateStatus('success', `Saldo sincronizado: ${formattedBalance} milhas`);
+    setBadge('success');
     
     elements.resultBalance.textContent = `${formattedBalance} milhas`;
     elements.resultSection.classList.remove('hidden');
 
+    // Limpa badge após 5 segundos
+    setTimeout(() => clearBadge(), 5000);
+
   } catch (error) {
     console.error('Erro na sincronização:', error);
     updateStatus('api_error', 'Falha na comunicação. Tente novamente.');
+    setBadge('error');
   } finally {
-    state.isLoading = true;
+    state.isLoading = false;
     elements.syncBtn.disabled = false;
     elements.syncBtn.querySelector('.sync-text').textContent = 'Sincronizar Milhas';
-    state.isLoading = false;
   }
 }
 
