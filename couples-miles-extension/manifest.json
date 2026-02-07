@@ -6,6 +6,8 @@
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://*.latam.com/*",
+    "https://*.latamairlines.com/*",
+    "https://*.latampass.com/*",
     "https://*.tudoazul.com/*",
     "https://*.smiles.com.br/*",
     "https://*.livelo.com.br/*"
