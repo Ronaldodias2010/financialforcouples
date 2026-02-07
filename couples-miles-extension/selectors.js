@@ -137,20 +137,41 @@ const MILEAGE_SELECTORS = {
   },
 
   // Livelo - Atualizado para layout 2025
-  // Saldo aparece no header como "1.762 pontos" ao lado da saudação "Olá, NOME"
+  // Saldo aparece em duas páginas:
+  // 1. Header: "1.762 pontos" ao lado de "Olá, RONALDO"
+  // 2. Extrato (/extrato): "Total de pontos" com valor "1.762" em destaque
   livelo: {
     domain: 'livelo.com.br',
+    domains: ['livelo.com.br', 'www.livelo.com.br'], // Múltiplos domínios
     programName: 'Livelo',
     programCode: 'livelo',
     selectors: [
-      // Seletor principal - header com pontos (estrutura atual 2025)
+      // === PÁGINA DE EXTRATO (/extrato) ===
+      // O saldo aparece em destaque rosa/magenta abaixo de "Total de pontos"
+      '[class*="total"] [class*="value"]',
+      '[class*="total"] [class*="pontos"]',
+      '[class*="Total"] [class*="Value"]',
+      '[class*="balance-card"] [class*="value"]',
+      '[class*="BalanceCard"] [class*="Value"]',
+      '[class*="extrato"] [class*="total"]',
+      '[class*="statement"] [class*="total"]',
+      // Seletor por estrutura de cards de resumo
+      '[class*="summary"] [class*="value"]',
+      '[class*="Summary"] [class*="Value"]',
+      '[class*="resume"] [class*="value"]',
+      '[class*="card"] [class*="points-value"]',
+      // Número grande em destaque (geralmente o saldo principal)
+      '[class*="highlight"] [class*="number"]',
+      '[class*="Highlight"] [class*="Number"]',
+      '[class*="main-balance"]',
+      '[class*="MainBalance"]',
+      
+      // === HEADER (todas as páginas) ===
       // O saldo aparece como "1.762 pontos" abaixo de "Olá, RONALDO" no dropdown/menu
-      // Estrutura: elemento contendo "X.XXX pontos" próximo ao nome do usuário
       '[class*="UserMenu"] [class*="points"]',
       '[class*="UserMenu"] [class*="pontos"]',
       '[class*="user-menu"] [class*="points"]',
       '[class*="user-menu"] [class*="pontos"]',
-      // Header dropdown com saldo
       '[class*="dropdown"] [class*="pontos"]',
       '[class*="Dropdown"] [class*="pontos"]',
       '[class*="header"] [class*="pontos"]',
@@ -159,20 +180,21 @@ const MILEAGE_SELECTORS = {
       '[class*="greeting"] + *',
       '[class*="ola"] ~ [class*="pontos"]',
       '[class*="welcome"] ~ [class*="points"]',
-      // Seletores por estrutura comum de portais
+      
+      // === SELETORES GENÉRICOS ===
       '[class*="user"] [class*="pontos"]',
       '[class*="User"] [class*="Points"]',
       '[class*="account"] [class*="pontos"]',
       '[class*="Account"] [class*="Points"]',
-      // Seletores genéricos para "pontos"
-      '[class*="pontos"]:not([class*="regras"]):not([class*="rules"])',
-      '[class*="Points"]:not([class*="Rules"])',
+      '[class*="pontos"]:not([class*="regras"]):not([class*="rules"]):not([class*="expirar"]):not([class*="receber"])',
+      '[class*="Points"]:not([class*="Rules"]):not([class*="Expire"]):not([class*="Receive"])',
       '[class*="balance"]',
       '[class*="Balance"]',
       '[class*="saldo"]',
       '[class*="Saldo"]',
       // Data attributes
       '[data-testid="points-balance"]',
+      '[data-testid="total-points"]',
       '[data-testid="user-points"]',
       '[data-points]',
       // Fallbacks
@@ -183,11 +205,11 @@ const MILEAGE_SELECTORS = {
       '.header-points'
     ],
     // Palavras-chave para busca textual no Universal Extractor
-    extractorKeywords: ['pontos', 'points', 'saldo', 'balance'],
-    // Contexto positivo (aumenta score)
-    positiveContext: ['livelo', 'olá', 'bem-vindo', 'welcome', 'meus pontos', 'my points'],
-    // Contexto negativo (diminui score) - evita pegar regras de acúmulo
-    negativeContext: ['ganhe', 'earn', 'acumule', 'por real', 'per dollar', 'regras', 'rules', 'como funciona'],
+    extractorKeywords: ['pontos', 'points', 'saldo', 'balance', 'total de pontos', 'total points'],
+    // Contexto positivo (aumenta score) - termos próximos ao saldo válido
+    positiveContext: ['livelo', 'olá', 'bem-vindo', 'welcome', 'meus pontos', 'my points', 'total de pontos', 'atualizado'],
+    // Contexto negativo (diminui score) - evita pegar valores errados
+    negativeContext: ['ganhe', 'earn', 'acumule', 'por real', 'per dollar', 'regras', 'rules', 'como funciona', 'pontos a expirar', 'pontos a receber', 'transferir', 'trocar', 'comprar'],
     loginIndicators: [
       // Indicador de login - saudação "Olá, NOME" indica usuário logado
       '[class*="greeting"]',
@@ -204,10 +226,18 @@ const MILEAGE_SELECTORS = {
       '.livelo-user-area',
       // Presença do saldo indica login
       '[class*="pontos"]',
-      '[class*="Points"]'
+      '[class*="Points"]',
+      // Página de extrato só abre se logado
+      '[class*="extrato"]',
+      '[class*="statement"]'
     ],
     balanceRegex: /[\d.,]+/,
-    requiresWait: true // Site pode ter carregamento dinâmico
+    requiresWait: true, // Site tem carregamento dinâmico (React/SPA)
+    // URLs preferidas para extração (a extensão pode sugerir navegação)
+    preferredUrls: [
+      'https://www.livelo.com.br/extrato',
+      'https://www.livelo.com.br'
+    ]
   }
 };
 
