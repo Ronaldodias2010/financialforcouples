@@ -1,0 +1,198 @@
+{
+  "extensionName": {
+    "message": "Couples Miles - Sincronização Segura",
+    "description": "Nome da extensão"
+  },
+  "extensionDescription": {
+    "message": "Sincronize seus saldos de milhas de forma segura com o Couples Financials. Sem armazenamento de senhas.",
+    "description": "Descrição da extensão"
+  },
+  "privacyTitle": {
+    "message": "🔒 Termos de Privacidade",
+    "description": "Título do modal de privacidade"
+  },
+  "collectsOnly": {
+    "message": "Esta extensão coleta apenas:",
+    "description": "Cabeçalho do que coletamos"
+  },
+  "collectsMilesBalance": {
+    "message": "Saldo de milhas visível na tela",
+    "description": "Item coletado 1"
+  },
+  "collectsProgramName": {
+    "message": "Nome do programa",
+    "description": "Item coletado 2"
+  },
+  "collectsSyncDate": {
+    "message": "Data/hora da sincronização",
+    "description": "Item coletado 3"
+  },
+  "doesNotTitle": {
+    "message": "Esta extensão NÃO:",
+    "description": "Cabeçalho do que não fazemos"
+  },
+  "doesNotPasswords": {
+    "message": "Armazena senhas",
+    "description": "Não fazemos item 1"
+  },
+  "doesNotCredentials": {
+    "message": "Intercepta credenciais",
+    "description": "Não fazemos item 2"
+  },
+  "doesNotCookies": {
+    "message": "Acessa cookies de login",
+    "description": "Não fazemos item 3"
+  },
+  "doesNotAutoLogin": {
+    "message": "Faz login automático",
+    "description": "Não fazemos item 4"
+  },
+  "consentNote": {
+    "message": "A extração só ocorre após seu clique manual e login no site oficial.",
+    "description": "Nota de consentimento"
+  },
+  "acceptTerms": {
+    "message": "Aceito os Termos",
+    "description": "Botão aceitar"
+  },
+  "loginRequired": {
+    "message": "Login necessário",
+    "description": "Título login necessário"
+  },
+  "loginDescription": {
+    "message": "Faça login no Couples para sincronizar suas milhas.",
+    "description": "Descrição do login"
+  },
+  "email": {
+    "message": "Email",
+    "description": "Placeholder email"
+  },
+  "password": {
+    "message": "Senha",
+    "description": "Placeholder senha"
+  },
+  "login": {
+    "message": "Entrar",
+    "description": "Botão login"
+  },
+  "createAccount": {
+    "message": "Criar conta no Couples",
+    "description": "Link criar conta"
+  },
+  "syncMiles": {
+    "message": "Sincronizar Milhas",
+    "description": "Botão sincronizar"
+  },
+  "balanceDetected": {
+    "message": "Saldo Detectado",
+    "description": "Título confirmação"
+  },
+  "miles": {
+    "message": "milhas",
+    "description": "Unidade milhas"
+  },
+  "isThisCorrect": {
+    "message": "Este valor está correto?",
+    "description": "Pergunta de confirmação"
+  },
+  "yesSend": {
+    "message": "✅ Sim, enviar",
+    "description": "Botão confirmar sim"
+  },
+  "no": {
+    "message": "❌ Não",
+    "description": "Botão confirmar não"
+  },
+  "tryAgain": {
+    "message": "Vamos tentar novamente",
+    "description": "Título retry"
+  },
+  "tryAgainDescription": {
+    "message": "Abra a página onde seu saldo esteja visível e clique novamente em sincronizar.",
+    "description": "Descrição retry"
+  },
+  "tryAgainButton": {
+    "message": "🔄 Tentar Novamente",
+    "description": "Botão retry"
+  },
+  "balanceNotFound": {
+    "message": "Saldo não encontrado nesta página",
+    "description": "Título não encontrado"
+  },
+  "balanceNotFoundDescription": {
+    "message": "Navegue até onde seu saldo de milhas esteja visível e clique em \"Tentar Novamente\".",
+    "description": "Descrição não encontrado"
+  },
+  "tryAgainHere": {
+    "message": "🔄 Tentar Novamente (nesta página)",
+    "description": "Botão tentar aqui"
+  },
+  "goToMilesPage": {
+    "message": "🔗 Ir para página de milhas",
+    "description": "Botão ir para página"
+  },
+  "synced": {
+    "message": "Sincronizado!",
+    "description": "Título sucesso"
+  },
+  "supportedPrograms": {
+    "message": "Programas Suportados",
+    "description": "Título seção programas"
+  },
+  "logout": {
+    "message": "Sair",
+    "description": "Botão logout"
+  },
+  "unsupportedSite": {
+    "message": "Site não suportado",
+    "description": "Título não suportado"
+  },
+  "unsupportedSiteDescription": {
+    "message": "Acesse um dos sites de milhagem suportados para sincronizar.",
+    "description": "Descrição não suportado"
+  },
+  "secureSync": {
+    "message": "Sincronização Segura",
+    "description": "Subtítulo logo"
+  },
+  "statusIdle": {
+    "message": "Pronto para sincronizar.",
+    "description": "Status idle"
+  },
+  "statusCheckingPage": {
+    "message": "Verificando página...",
+    "description": "Status verificando"
+  },
+  "statusExtracting": {
+    "message": "Localizando saldo...",
+    "description": "Status extraindo"
+  },
+  "statusSending": {
+    "message": "Enviando saldo...",
+    "description": "Status enviando"
+  },
+  "statusSuccess": {
+    "message": "Sincronizado com sucesso!",
+    "description": "Status sucesso"
+  },
+  "statusNotFound": {
+    "message": "Saldo não encontrado.",
+    "description": "Status não encontrado"
+  },
+  "statusWrongPage": {
+    "message": "Página incorreta.",
+    "description": "Status página errada"
+  },
+  "statusApiError": {
+    "message": "Erro de conexão.",
+    "description": "Status erro API"
+  },
+  "statusNotLogged": {
+    "message": "Faça login no site primeiro.",
+    "description": "Status não logado"
+  },
+  "clickInstruction": {
+    "message": "Clique no seu nome para expandir o menu e ver seus pontos antes de sincronizar.",
+    "description": "Instrução de clique para Azul"
+  }
+}

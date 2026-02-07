@@ -1,0 +1,198 @@
+{
+  "extensionName": {
+    "message": "Couples Miles - Secure Sync",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Securely sync your miles balances with Couples Financials. No password storage.",
+    "description": "Extension description"
+  },
+  "privacyTitle": {
+    "message": "🔒 Privacy Terms",
+    "description": "Privacy modal title"
+  },
+  "collectsOnly": {
+    "message": "This extension collects only:",
+    "description": "What we collect header"
+  },
+  "collectsMilesBalance": {
+    "message": "Miles balance visible on screen",
+    "description": "Collect item 1"
+  },
+  "collectsProgramName": {
+    "message": "Program name",
+    "description": "Collect item 2"
+  },
+  "collectsSyncDate": {
+    "message": "Sync date/time",
+    "description": "Collect item 3"
+  },
+  "doesNotTitle": {
+    "message": "This extension does NOT:",
+    "description": "What we don't do header"
+  },
+  "doesNotPasswords": {
+    "message": "Store passwords",
+    "description": "Don't do item 1"
+  },
+  "doesNotCredentials": {
+    "message": "Intercept credentials",
+    "description": "Don't do item 2"
+  },
+  "doesNotCookies": {
+    "message": "Access login cookies",
+    "description": "Don't do item 3"
+  },
+  "doesNotAutoLogin": {
+    "message": "Auto-login",
+    "description": "Don't do item 4"
+  },
+  "consentNote": {
+    "message": "Extraction only occurs after your manual click and login on the official website.",
+    "description": "Consent note"
+  },
+  "acceptTerms": {
+    "message": "I Accept the Terms",
+    "description": "Accept button"
+  },
+  "loginRequired": {
+    "message": "Login required",
+    "description": "Login required title"
+  },
+  "loginDescription": {
+    "message": "Log in to Couples to sync your miles.",
+    "description": "Login description"
+  },
+  "email": {
+    "message": "Email",
+    "description": "Email placeholder"
+  },
+  "password": {
+    "message": "Password",
+    "description": "Password placeholder"
+  },
+  "login": {
+    "message": "Log In",
+    "description": "Login button"
+  },
+  "createAccount": {
+    "message": "Create Couples account",
+    "description": "Create account link"
+  },
+  "syncMiles": {
+    "message": "Sync Miles",
+    "description": "Sync button"
+  },
+  "balanceDetected": {
+    "message": "Balance Detected",
+    "description": "Confirmation title"
+  },
+  "miles": {
+    "message": "miles",
+    "description": "Miles unit"
+  },
+  "isThisCorrect": {
+    "message": "Is this value correct?",
+    "description": "Confirmation question"
+  },
+  "yesSend": {
+    "message": "✅ Yes, send",
+    "description": "Confirm yes button"
+  },
+  "no": {
+    "message": "❌ No",
+    "description": "Confirm no button"
+  },
+  "tryAgain": {
+    "message": "Let's try again",
+    "description": "Retry title"
+  },
+  "tryAgainDescription": {
+    "message": "Navigate to the page where your balance is visible and click sync again.",
+    "description": "Retry description"
+  },
+  "tryAgainButton": {
+    "message": "🔄 Try Again",
+    "description": "Retry button"
+  },
+  "balanceNotFound": {
+    "message": "Balance not found on this page",
+    "description": "Not found title"
+  },
+  "balanceNotFoundDescription": {
+    "message": "Navigate to where your miles balance is visible and click \"Try Again\".",
+    "description": "Not found description"
+  },
+  "tryAgainHere": {
+    "message": "🔄 Try Again (this page)",
+    "description": "Try again here button"
+  },
+  "goToMilesPage": {
+    "message": "🔗 Go to miles page",
+    "description": "Go to miles page button"
+  },
+  "synced": {
+    "message": "Synced!",
+    "description": "Success title"
+  },
+  "supportedPrograms": {
+    "message": "Supported Programs",
+    "description": "Programs section title"
+  },
+  "logout": {
+    "message": "Logout",
+    "description": "Logout button"
+  },
+  "unsupportedSite": {
+    "message": "Unsupported site",
+    "description": "Not supported title"
+  },
+  "unsupportedSiteDescription": {
+    "message": "Access one of the supported mileage sites to sync.",
+    "description": "Not supported description"
+  },
+  "secureSync": {
+    "message": "Secure Sync",
+    "description": "Logo subtitle"
+  },
+  "statusIdle": {
+    "message": "Ready to sync.",
+    "description": "Status idle"
+  },
+  "statusCheckingPage": {
+    "message": "Checking page...",
+    "description": "Status checking"
+  },
+  "statusExtracting": {
+    "message": "Locating balance...",
+    "description": "Status extracting"
+  },
+  "statusSending": {
+    "message": "Sending balance...",
+    "description": "Status sending"
+  },
+  "statusSuccess": {
+    "message": "Synced successfully!",
+    "description": "Status success"
+  },
+  "statusNotFound": {
+    "message": "Balance not found.",
+    "description": "Status not found"
+  },
+  "statusWrongPage": {
+    "message": "Wrong page.",
+    "description": "Status wrong page"
+  },
+  "statusApiError": {
+    "message": "Connection error.",
+    "description": "Status API error"
+  },
+  "statusNotLogged": {
+    "message": "Please log in to the site first.",
+    "description": "Status not logged"
+  },
+  "clickInstruction": {
+    "message": "Click on your name to expand the menu and see your points before syncing.",
+    "description": "Click instruction for Azul"
+  }
+}
