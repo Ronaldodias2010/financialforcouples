@@ -21,8 +21,43 @@ const elements = {
   statusBadge: document.getElementById('status-badge'),
   actionMessage: document.getElementById('action-message'),
   resultSection: document.getElementById('result-section'),
-  resultBalance: document.getElementById('result-balance')
+  resultBalance: document.getElementById('result-balance'),
+  statusFeedback: document.getElementById('status-feedback'),
+  statusIcon: document.getElementById('status-icon'),
+  statusText: document.getElementById('status-text')
 };
+
+// Status states configuration
+const STATUS_CONFIG = {
+  idle: { icon: '⏳', message: 'Pronto para sincronizar.', type: 'idle' },
+  checking_page: { icon: '🔍', message: 'Verificando página...', type: 'checking_page', showSpinner: true },
+  extracting: { icon: '📊', message: 'Localizando saldo...', type: 'extracting', showSpinner: true },
+  sending: { icon: '📤', message: 'Enviando saldo...', type: 'sending', showSpinner: true },
+  success: { icon: '✅', type: 'success' },
+  not_found: { icon: '❌', type: 'not_found' },
+  wrong_page: { icon: '⚠️', type: 'wrong_page' },
+  api_error: { icon: '🔴', type: 'api_error' }
+};
+
+/**
+ * Update status feedback UI
+ */
+function updateStatus(state, customMessage = '') {
+  const config = STATUS_CONFIG[state];
+  if (!config) return;
+
+  elements.statusFeedback.classList.remove('hidden');
+  elements.statusFeedback.className = `status-feedback ${config.type}`;
+  
+  // Show spinner for loading states
+  if (config.showSpinner) {
+    elements.statusIcon.innerHTML = '<span class="spinner"></span>';
+  } else {
+    elements.statusIcon.textContent = config.icon;
+  }
+  
+  elements.statusText.textContent = customMessage || config.message;
+}
 
 // Estado da aplicação
 let state = {
@@ -267,35 +302,58 @@ elements.syncBtn.addEventListener('click', async () => {
   elements.actionMessage.textContent = '';
 
   try {
-    // Extrai saldo via content script
+    // Step 1: Check if we're on the correct page
+    updateStatus('checking_page');
+    
+    const pageCheck = await chrome.tabs.sendMessage(state.currentTab.id, {
+      action: 'checkBalancePage'
+    });
+
+    if (!pageCheck || !pageCheck.isBalancePage) {
+      updateStatus('wrong_page', 'Abra a página onde seu saldo esteja visível antes de sincronizar.');
+      return;
+    }
+
+    // Step 2: Extract balance
+    updateStatus('extracting');
+    
     const extractResult = await chrome.tabs.sendMessage(state.currentTab.id, {
       action: 'extractBalance'
     });
 
     if (!extractResult || !extractResult.success) {
-      throw new Error(extractResult?.message || 'Não foi possível extrair o saldo');
+      const errorType = extractResult?.error;
+      if (errorType === 'not_logged_in') {
+        updateStatus('wrong_page', 'Faça login no site antes de sincronizar.');
+      } else {
+        updateStatus('not_found', extractResult?.message || 'Saldo não encontrado nesta página.');
+      }
+      return;
     }
 
-    // Envia para API via background
+    // Step 3: Send to backend
+    updateStatus('sending');
+    
     const syncResult = await sendMessage({
       action: 'syncMiles',
       data: extractResult.data
     });
 
     if (!syncResult.success) {
-      throw new Error(syncResult.message || 'Erro ao sincronizar');
+      updateStatus('api_error', syncResult.message || 'Erro ao enviar saldo para o servidor.');
+      return;
     }
 
-    // Sucesso!
-    elements.resultBalance.textContent = `${extractResult.data.balance.toLocaleString('pt-BR')} milhas`;
+    // Step 4: Success!
+    const formattedBalance = extractResult.data.balance.toLocaleString('pt-BR');
+    updateStatus('success', `Saldo sincronizado: ${formattedBalance} milhas`);
+    
+    elements.resultBalance.textContent = `${formattedBalance} milhas`;
     elements.resultSection.classList.remove('hidden');
-    elements.actionMessage.textContent = 'Sincronizado com sucesso!';
-    elements.actionMessage.className = 'action-message success';
 
   } catch (error) {
     console.error('Erro na sincronização:', error);
-    elements.actionMessage.textContent = error.message;
-    elements.actionMessage.className = 'action-message error';
+    updateStatus('api_error', 'Falha na comunicação. Tente novamente.');
   } finally {
     state.isLoading = false;
     elements.syncBtn.disabled = false;

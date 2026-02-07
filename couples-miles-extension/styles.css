@@ -308,6 +308,78 @@ body {
   font-size: 18px;
 }
 
+/* Status Feedback System */
+.status-feedback {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--bg-secondary);
+  transition: all 0.3s ease;
+}
+
+.status-feedback.hidden {
+  display: none;
+}
+
+.status-feedback .status-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.status-feedback .status-text {
+  flex: 1;
+}
+
+/* Status States */
+.status-feedback.idle {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+}
+
+.status-feedback.checking_page,
+.status-feedback.extracting,
+.status-feedback.sending {
+  background: #fef3c7;
+  color: #b45309;
+  animation: pulse 1.5s infinite;
+}
+
+.status-feedback.success {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-feedback.not_found,
+.status-feedback.wrong_page,
+.status-feedback.api_error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Spinner for loading states */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .action-message {
   margin-top: 10px;
   font-size: 12px;

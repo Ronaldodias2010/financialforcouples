@@ -37,7 +37,69 @@
       handleStatusCheck(sendResponse);
       return true;
     }
+    
+    if (request.action === 'checkBalancePage') {
+      handleBalancePageCheck(sendResponse);
+      return true;
+    }
   });
+
+  /**
+   * Check if current page is a balance page
+   * Validates presence of mileage-related content
+   */
+  function isBalancePage() {
+    const bodyText = document.body.innerText || '';
+    
+    // Keywords that indicate a balance page
+    const balanceKeywords = /milhas|saldo|milhas acumuladas|total acumulado|pontos disponíveis|seu saldo/i;
+    
+    // Check for keywords in body
+    if (balanceKeywords.test(bodyText)) {
+      return true;
+    }
+    
+    // Also check for specific elements
+    const balanceElements = [
+      '#lb1-miles-amount',
+      '[class*="balance"]',
+      '[class*="miles"]',
+      '[class*="pontos"]',
+      '[class*="saldo"]'
+    ];
+    
+    for (const selector of balanceElements) {
+      if (document.querySelector(selector)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Handler for balance page check
+   */
+  function handleBalancePageCheck(sendResponse) {
+    try {
+      const isPage = isBalancePage();
+      const isLoggedIn = isUserLoggedIn();
+      
+      sendResponse({
+        success: true,
+        isBalancePage: isPage,
+        isLoggedIn: isLoggedIn,
+        program: currentProgram.config.programCode,
+        url: window.location.href
+      });
+    } catch (error) {
+      sendResponse({
+        success: false,
+        isBalancePage: false,
+        error: error.message
+      });
+    }
+  }
 
   // Verifica se usuário está logado
   function isUserLoggedIn() {
