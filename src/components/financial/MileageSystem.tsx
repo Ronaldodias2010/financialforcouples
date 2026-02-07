@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -873,9 +874,21 @@ export const MileageSystem = () => {
                         </div>
                         
                         {group.totalExistingMiles > 0 && (
-                          <p className="text-xs text-muted-foreground">
-                            Milhas existentes: {Math.floor(group.totalExistingMiles).toLocaleString()}
-                          </p>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs text-muted-foreground">
+                              Milhas existentes: {Math.floor(group.totalExistingMiles).toLocaleString()}
+                            </p>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-3 w-3 text-muted-foreground hover:text-primary cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs p-3">
+                                <p className="text-xs">
+                                  {t('mileage.cardPointsInfoTooltip')}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
                         )}
                       </div>
                       <div className="flex flex-col gap-2">
