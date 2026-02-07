@@ -40,13 +40,24 @@ document.addEventListener('DOMContentLoaded', function() {
       icon: '✈️', 
       milesUrl: 'https://latampass.com/myaccount' 
     },
-    // Outros programas
-    'tudoazul.com.br': { 
+    // Azul - Múltiplos domínios (voeazul.com.br, tudoazul.voeazul.com.br)
+    'voeazul.com.br': { 
       name: 'Azul Fidelidade', 
       code: 'azul', 
       programKey: 'azul', 
       icon: '💙', 
-      milesUrl: 'https://www.tudoazul.com.br/minha-conta/' 
+      milesUrl: 'https://www.voeazul.com.br/home/br/pt/home',
+      requiresClick: true, // Indica que usuário precisa clicar para ver pontos
+      clickInstruction: 'Clique no seu nome para expandir o menu e ver seus pontos antes de sincronizar.'
+    },
+    'tudoazul.voeazul.com.br': { 
+      name: 'Azul Fidelidade', 
+      code: 'azul', 
+      programKey: 'azul', 
+      icon: '💙', 
+      milesUrl: 'https://www.voeazul.com.br/home/br/pt/home',
+      requiresClick: true,
+      clickInstruction: 'Clique no seu nome para expandir o menu e ver seus pontos antes de sincronizar.'
     },
     'smiles.com.br': { 
       name: 'Smiles', 
@@ -169,7 +180,11 @@ document.addEventListener('DOMContentLoaded', function() {
         lowerUrl.includes('latampass.com')) {
       return 'latam';
     }
-    if (lowerUrl.includes('tudoazul.com')) return 'azul';
+    // Azul - Múltiplos domínios
+    if (lowerUrl.includes('voeazul.com') || 
+        lowerUrl.includes('tudoazul.voeazul.com')) {
+      return 'azul';
+    }
     if (lowerUrl.includes('smiles.com')) return 'smiles';
     if (lowerUrl.includes('livelo.com')) return 'livelo';
     
@@ -557,7 +572,17 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStatus('extracting', 'Procurando saldo na página atual...');
         setBadge('loading');
         
-        // ============ PASSO 1: EXTRAIR NA PÁGINA ATUAL ============
+        // ============ PASSO 1: VERIFICAR SE PROGRAMA REQUER CLIQUE ============
+        var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        var currentTab = tabs[0];
+        var currentProgramInfo = getProgramInfo(currentTab.url);
+        
+        if (currentProgramInfo && currentProgramInfo.requiresClick) {
+          console.log('⚠️ [Sync] Programa requer clique para ver pontos');
+          updateStatus('idle', currentProgramInfo.clickInstruction);
+        }
+        
+        // ============ PASSO 2: EXTRAIR NA PÁGINA ATUAL ============
         // IMPORTANTE: Não chamar chrome.tabs.update aqui!
         var extraction = await performExtraction();
         var result = extraction.result;
