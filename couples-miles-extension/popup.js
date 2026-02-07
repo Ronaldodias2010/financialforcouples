@@ -322,40 +322,6 @@ function universalExtractorEngine(program) {
   };
 }
 
-  // Bonus para o maior valor
-  const maxValue = Math.max(...candidates.map(c => c.value));
-  candidates.forEach(c => {
-    if (c.value === maxValue) c.score += 15;
-  });
-
-  // Ordena por score
-  candidates.sort((a, b) => b.score - a.score);
-
-  const best = candidates[0];
-
-  // Só retorna se score for suficiente
-  if (best.score >= 50) {
-    return {
-      success: true,
-      balance: best.value,
-      rawText: best.rawText,
-      score: best.score,
-      confidence: best.score >= 100 ? 'high' : best.score >= 70 ? 'medium' : 'low',
-      isBalancePage: isBalancePage(),
-      isLoggedIn: isLoggedIn(),
-      candidatesCount: candidates.length
-    };
-  }
-
-  return {
-    success: false,
-    error: 'low_confidence',
-    bestScore: best.score,
-    bestValue: best.value,
-    isBalancePage: isBalancePage(),
-    isLoggedIn: isLoggedIn()
-  };
-}
 
 // ============= HELPER FUNCTIONS =============
 
