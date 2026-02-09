@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
