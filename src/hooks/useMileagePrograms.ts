@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getProgramByCode, MILEAGE_PROGRAMS } from '@/data/mileagePrograms';
 import { toast } from 'sonner';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface MileageProgram {
   id: string;
