@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { usePartnerNames } from '@/hooks/usePartnerNames';
