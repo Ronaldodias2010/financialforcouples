@@ -41,6 +41,7 @@ const CleanupNetflix = lazy(() => import("./pages/CleanupNetflix"));
 const TestPartnerEmails = lazy(() => import("./pages/TestPartnerEmails").then(m => ({ default: m.TestPartnerEmails })));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
+const Support = lazy(() => import("./pages/Support"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -83,6 +84,8 @@ const AppRoutes = () => {
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/asociacion" element={<Partnership />} />
         <Route path="/install" element={<InstallApp />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/suporte" element={<Support />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:id" element={<BlogPost />} />
         
