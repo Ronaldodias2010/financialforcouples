@@ -82,6 +82,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
   const [cards, setCards] = useState<Card[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cashAccountId, setCashAccountId] = useState<string | null>(null);
+  const [ownerNames, setOwnerNames] = useState<{ user1: string; user2: string }>({ user1: '', user2: '' });
 
   // Calculate if expense is overdue
   const daysOverdue = useMemo(() => {
@@ -198,6 +199,25 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
       let userIds = [user.id];
       if (coupleData) {
         userIds = [coupleData.user1_id, coupleData.user2_id];
+        
+        // Fetch profile names for both users
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, second_user_name')
+          .in('user_id', userIds);
+
+        if (profilesData && profilesData.length > 0) {
+          // Find user1 and user2 profiles
+          const user1Profile = profilesData.find(p => p.user_id === coupleData.user1_id);
+          const user2Profile = profilesData.find(p => p.user_id === coupleData.user2_id);
+          
+          // Get display names - for user2, check if it's in second_user_name or separate profile
+          const user1Name = user1Profile?.display_name?.split(' ')[0] || 'Usuário 1';
+          const user2Name = user2Profile?.display_name?.split(' ')[0] || 
+                           user1Profile?.second_user_name || 'Usuário 2';
+          
+          setOwnerNames({ user1: user1Name, user2: user2Name });
+        }
       }
 
       // Fetch accounts (including partner's accounts) - excluding cash accounts
@@ -622,14 +642,22 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                     <SelectValue placeholder="Selecione um cartão" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
-                    {cards.map((card) => (
-                      <SelectItem key={card.id} value={card.id}>
-                        {card.name} ({card.card_type === 'credit' ? 'Crédito' : 'Débito'})
-                        {card.owner_user && (
-                          <span className="text-muted-foreground ml-1">• {card.owner_user}</span>
-                        )}
-                      </SelectItem>
-                    ))}
+                    {cards.map((card) => {
+                      const ownerDisplayName = card.owner_user === 'user1' 
+                        ? ownerNames.user1 
+                        : card.owner_user === 'user2' 
+                          ? ownerNames.user2 
+                          : null;
+                      
+                      return (
+                        <SelectItem key={card.id} value={card.id}>
+                          {card.name} ({card.card_type === 'credit' ? 'Crédito' : 'Débito'})
+                          {ownerDisplayName && (
+                            <span className="text-muted-foreground ml-1">• {ownerDisplayName}</span>
+                          )}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
