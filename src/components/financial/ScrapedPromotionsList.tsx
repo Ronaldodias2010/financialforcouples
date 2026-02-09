@@ -144,9 +144,17 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
       const inserted = data?.inserted || 0;
       const skipped = data?.skipped || 0;
       
+      // Clear dismissed promotions so they can reappear if still available
+      setDismissedPromotions(new Set());
+      try {
+        localStorage.removeItem('dismissedFeaturedPromotions');
+      } catch (e) {
+        console.warn('Could not clear dismissed promotions:', e);
+      }
+      
       toast({
         title: "Promoções atualizadas",
-        description: `${inserted} novas promoções importadas${skipped > 0 ? `, ${skipped} já existiam` : ''}`,
+        description: `${inserted} novas promoções importadas${skipped > 0 ? `, ${skipped} já existiam` : ''}. Promoções dispensadas foram resetadas.`,
       });
 
       // Reload promotions
