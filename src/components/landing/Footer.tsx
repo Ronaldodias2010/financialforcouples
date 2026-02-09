@@ -62,7 +62,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-semibold text-background">{t('footer.support')}</h3>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="#" className="hover:text-background transition-colors">{t('footer.help')}</a></li>
+              <li><Link to="/support" className="hover:text-background transition-colors">{language === 'pt' ? 'Central de Suporte' : language === 'es' ? 'Centro de Soporte' : 'Support Center'}</Link></li>
               <li><a href={`mailto:${contactInfo.email}`} className="hover:text-background transition-colors">{t('footer.contact')}</a></li>
               <li><a href="#faq" className="hover:text-background transition-colors" onClick={(e) => {e.preventDefault(); document.getElementById('faq')?.scrollIntoView({behavior: 'smooth'});}}>{t('footer.faq')}</a></li>
               <li>
@@ -73,11 +73,6 @@ const Footer = () => {
                   <Download className="w-3 h-3" />
                   {t('footer.tutorialComplete')}
                 </button>
-              </li>
-              <li>
-                <Link to="/support" className="hover:text-background transition-colors">
-                  {language === 'pt' ? 'Central de Suporte' : language === 'es' ? 'Centro de Soporte' : 'Support Center'}
-                </Link>
               </li>
             </ul>
           </div>
