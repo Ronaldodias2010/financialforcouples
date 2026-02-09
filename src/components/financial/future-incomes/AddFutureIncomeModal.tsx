@@ -33,6 +33,7 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
+  const [ownerNames, setOwnerNames] = useState<{ user1: string | null; user2: string | null }>({ user1: null, user2: null });
   const [accounts, setAccounts] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
@@ -56,6 +57,7 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
     if (open && user) {
       fetchCategories();
       fetchAccounts();
+      fetchOwnerNames();
     }
   }, [open, user]);
 
@@ -159,14 +161,56 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
   const fetchAccounts = async () => {
     if (!user) return;
 
+    // Get couple info to include partner's accounts
+    const { data: coupleData } = await supabase
+      .from('user_couples')
+      .select('user1_id, user2_id')
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    const userIds = coupleData ? [coupleData.user1_id, coupleData.user2_id] : [user.id];
+
     const { data } = await supabase
       .from('accounts')
-      .select('id, name, account_type')
-      .eq('user_id', user.id)
+      .select('id, name, account_type, owner_user')
+      .in('user_id', userIds)
       .eq('is_active', true)
       .order('name');
 
     if (data) setAccounts(data);
+  };
+
+  const fetchOwnerNames = async () => {
+    if (!user) return;
+
+    try {
+      const { data: coupleData } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (coupleData) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .in('id', [coupleData.user1_id, coupleData.user2_id]);
+
+        if (profiles) {
+          const user1Profile = profiles.find(p => p.id === coupleData.user1_id);
+          const user2Profile = profiles.find(p => p.id === coupleData.user2_id);
+          
+          setOwnerNames({
+            user1: user1Profile?.display_name?.split(' ')[0] || 'Usuário 1',
+            user2: user2Profile?.display_name?.split(' ')[0] || 'Usuário 2'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching owner names:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -323,11 +367,22 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
                 <SelectValue placeholder={t('futureIncomes.selectAccount')} />
               </SelectTrigger>
               <SelectContent>
-                {accounts.map((acc) => (
-                  <SelectItem key={acc.id} value={acc.id}>
-                    {acc.name}
-                  </SelectItem>
-                ))}
+                {accounts.map((acc) => {
+                  const ownerDisplayName = acc.owner_user === 'user1' 
+                    ? ownerNames.user1 
+                    : acc.owner_user === 'user2' 
+                      ? ownerNames.user2 
+                      : null;
+                  
+                  return (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name}
+                      {ownerDisplayName && (
+                        <span className="text-muted-foreground ml-1">• {ownerDisplayName}</span>
+                      )}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
