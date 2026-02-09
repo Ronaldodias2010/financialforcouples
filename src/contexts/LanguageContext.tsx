@@ -826,7 +826,7 @@ const translations = {
     'transactionForm.errorMessage': 'Erro ao adicionar transação',
     'transactionForm.success': 'Sucesso',
     'transactionForm.successMessage': 'Transação adicionada com sucesso!',
-    'transactionForm.cardPayment': 'Quitação Dívida Crédito',
+    'transactionForm.cardPayment': 'Pagamento da Fatura do Cartão de Crédito',
     'transactionForm.smartCardPayment': 'Pagamento Inteligente de Cartão',
     'transactionForm.sourceAccount': 'Conta de Origem',
     'transactionForm.selectAccountToPay': 'Selecione a conta que pagará',
