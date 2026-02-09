@@ -127,46 +127,16 @@ export const useTodayFutureExpenses = () => {
 
   useEffect(() => {
     fetchTodayExpenses();
-
-    // Real-time subscription for manual future expenses
-    const manualChannel = supabase
-      .channel('today-future-expenses-manual')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'manual_future_expenses',
-        },
-        (payload) => {
-          console.log('🔔 [TodayExpenses] Realtime update (manual):', payload.eventType);
-          fetchTodayExpenses();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for recurring expenses
-    const recurringChannel = supabase
-      .channel('today-future-expenses-recurring')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'recurring_expenses',
-        },
-        (payload) => {
-          console.log('🔔 [TodayExpenses] Realtime update (recurring):', payload.eventType);
-          fetchTodayExpenses();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(manualChannel);
-      supabase.removeChannel(recurringChannel);
-    };
   }, [user, isPartOfCouple, couple]);
+
+  // Use centralized realtime manager
+  useRealtimeTable('manual_future_expenses', () => {
+    fetchTodayExpenses();
+  }, !!user);
+
+  useRealtimeTable('recurring_expenses', () => {
+    fetchTodayExpenses();
+  }, !!user);
 
   return {
     todayExpenses,
