@@ -75,39 +75,7 @@ export const useCouple = () => {
     return couple.user1_id === user.id;
   };
 
-  const refreshCoupleData = async () => {
-    if (!user?.id) return;
-    
-    setLoading(true);
-    
-    try {
-      const { data: coupleData, error } = await supabase
-        .from("user_couples")
-        .select("*")
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .eq("status", "active")
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching couple data:', error);
-        return;
-      }
-
-      if (coupleData) {
-        setCouple(coupleData);
-        setIsPartOfCouple(true);
-        console.log('User is part of a couple:', coupleData);
-      } else {
-        setCouple(null);
-        setIsPartOfCouple(false);
-        console.log('User is not part of a couple');
-      }
-    } catch (error) {
-      console.error('Error in refreshCoupleData:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const refreshCoupleData = fetchCoupleData;
 
   return {
     couple,
