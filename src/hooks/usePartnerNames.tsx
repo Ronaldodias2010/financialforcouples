@@ -30,11 +30,17 @@ export const usePartnerNames = () => {
         return;
       }
 
+      // Wait for couple data to be loaded before proceeding
+      // couple is undefined while loading, null when confirmed no couple
+      if (couple === undefined) {
+        return;
+      }
+
       try {
         let user1Name = t('dashboard.user1');
         let user2Name = t('dashboard.user2');
 
-        if (isPartOfCouple && couple) {
+        if (couple) {
           const { data: profiles } = await supabase
             .from('profiles')
             .select('user_id, display_name')
@@ -46,34 +52,20 @@ export const usePartnerNames = () => {
           user1Name = user1Profile?.display_name?.trim() || t('dashboard.user1');
           user2Name = user2Profile?.display_name?.trim() || t('dashboard.user2');
 
-          if (user1Name === t('dashboard.user1')) {
-            try {
-              const { data: user1Auth } = await supabase.auth.admin.getUserById(couple.user1_id);
-              if (user1Auth.user) {
-                user1Name = user1Auth.user.user_metadata?.display_name ||
-                           user1Auth.user.user_metadata?.full_name ||
-                           user1Auth.user.user_metadata?.name ||
-                           user1Auth.user.email?.split('@')[0] ||
-                           t('dashboard.user1');
-              }
-            } catch (error) {
-              // Silently ignore - admin API may not be available
-            }
+          // Fallback: try to get name from current user's metadata
+          if (user1Name === t('dashboard.user1') && user.id === couple.user1_id) {
+            user1Name = user.user_metadata?.display_name ||
+                       user.user_metadata?.full_name ||
+                       user.user_metadata?.name ||
+                       user.email?.split('@')[0] ||
+                       t('dashboard.user1');
           }
-
-          if (user2Name === t('dashboard.user2')) {
-            try {
-              const { data: user2Auth } = await supabase.auth.admin.getUserById(couple.user2_id);
-              if (user2Auth.user) {
-                user2Name = user2Auth.user.user_metadata?.display_name ||
-                           user2Auth.user.user_metadata?.full_name ||
-                           user2Auth.user.user_metadata?.name ||
-                           user2Auth.user.email?.split('@')[0] ||
-                           t('dashboard.user2');
-              }
-            } catch (error) {
-              // Silently ignore
-            }
+          if (user2Name === t('dashboard.user2') && user.id === couple.user2_id) {
+            user2Name = user.user_metadata?.display_name ||
+                       user.user_metadata?.full_name ||
+                       user.user_metadata?.name ||
+                       user.email?.split('@')[0] ||
+                       t('dashboard.user2');
           }
         } else {
           const currentUserProfile = await supabase
@@ -91,10 +83,10 @@ export const usePartnerNames = () => {
         }
 
         setNames({
-          currentUserName: isPartOfCouple && couple ? 
+          currentUserName: couple ? 
             (user?.id === couple.user1_id ? user1Name : user2Name) : 
             user1Name,
-          partnerName: isPartOfCouple && couple ? 
+          partnerName: couple ? 
             (user?.id === couple.user1_id ? user2Name : user1Name) : 
             t('dashboard.user2'),
           user1Name,
@@ -105,7 +97,7 @@ export const usePartnerNames = () => {
       } finally {
         setLoading(false);
       }
-  }, [user?.id, isPartOfCouple, couple?.id, t]);
+  }, [user?.id, couple, t]);
 
   useEffect(() => {
     fetchNames();
