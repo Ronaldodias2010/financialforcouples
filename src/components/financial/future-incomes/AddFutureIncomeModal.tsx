@@ -202,9 +202,14 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
           const user1Profile = profiles.find(p => p.id === coupleData.user1_id);
           const user2Profile = profiles.find(p => p.id === coupleData.user2_id);
           
+          const getFirstName = (profile: { id: string; display_name: string | null } | undefined) => {
+            const name = profile?.display_name;
+            return name ? name.split(' ')[0] : null;
+          };
+          
           setOwnerNames({
-            user1: user1Profile?.display_name?.split(' ')[0] || 'Usuário 1',
-            user2: user2Profile?.display_name?.split(' ')[0] || 'Usuário 2'
+            user1: getFirstName(user1Profile),
+            user2: getFirstName(user2Profile)
           });
         }
       }
