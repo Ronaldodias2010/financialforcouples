@@ -193,16 +193,17 @@ export const AddFutureIncomeModal = ({ open, onOpenChange, onAdd }: AddFutureInc
         .maybeSingle();
 
       if (coupleData) {
+        // Use user_id instead of id to match profiles
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, display_name')
-          .in('id', [coupleData.user1_id, coupleData.user2_id]);
+          .select('user_id, display_name')
+          .in('user_id', [coupleData.user1_id, coupleData.user2_id]);
 
         if (profiles) {
-          const user1Profile = profiles.find(p => p.id === coupleData.user1_id);
-          const user2Profile = profiles.find(p => p.id === coupleData.user2_id);
+          const user1Profile = profiles.find(p => p.user_id === coupleData.user1_id);
+          const user2Profile = profiles.find(p => p.user_id === coupleData.user2_id);
           
-          const getFirstName = (profile: { id: string; display_name: string | null } | undefined) => {
+          const getFirstName = (profile: { user_id: string; display_name: string | null } | undefined) => {
             const name = profile?.display_name;
             return name ? name.split(' ')[0] : null;
           };
