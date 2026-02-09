@@ -18,72 +18,52 @@ export const useCouple = () => {
   const [loading, setLoading] = useState(true);
   const [isPartOfCouple, setIsPartOfCouple] = useState(false);
 
-  useEffect(() => {
-    const fetchCoupleData = async () => {
-      if (!user?.id) {
+  const fetchCoupleData = useCallback(async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data: coupleData, error } = await supabase
+        .from("user_couples")
+        .select("*")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching couple data:', error);
         setLoading(false);
         return;
       }
 
-      try {
-        const { data: coupleData, error } = await supabase
-          .from("user_couples")
-          .select("*")
-          .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-          .eq("status", "active")
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching couple data:', error);
-          setLoading(false);
-          return;
-        }
-
-        if (coupleData) {
-          console.log('useCouple: User is part of a couple:', coupleData);
-          setCouple(coupleData);
-          setIsPartOfCouple(true);
-        } else {
-          console.log('useCouple: User is NOT part of a couple');
-          setCouple(null);
-          setIsPartOfCouple(false);
-        }
-      } catch (error) {
-        console.error('Error in fetchCoupleData:', error);
-      } finally {
-        setLoading(false);
+      if (coupleData) {
+        setCouple(coupleData);
+        setIsPartOfCouple(true);
+      } else {
+        setCouple(null);
+        setIsPartOfCouple(false);
       }
-    };
-
-    fetchCoupleData();
-
-    // Real-time subscription for couple changes with proper filter
-    const channel = supabase
-      .channel('couple-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_couples'
-        },
-        (payload) => {
-          console.log('Couple relationship changed:', payload);
-          // Check if this change affects current user
-          const data = payload.new || payload.old;
-          if (data && 'user1_id' in data && 'user2_id' in data && 
-              (data.user1_id === user?.id || data.user2_id === user?.id)) {
-            console.log('Change affects current user, refreshing couple data...');
-            fetchCoupleData();
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    } catch (error) {
+      console.error('Error in fetchCoupleData:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id]);
+
+  useEffect(() => {
+    fetchCoupleData();
+  }, [fetchCoupleData]);
+
+  // Use centralized realtime manager
+  useRealtimeTable('user_couples', (payload) => {
+    const data = payload.new || payload.old;
+    if (data && 'user1_id' in data && 'user2_id' in data &&
+        (data.user1_id === user?.id || data.user2_id === user?.id)) {
+      fetchCoupleData();
+    }
+  }, !!user?.id);
 
   const getPartnerUserId = () => {
     if (!couple || !user?.id) return null;
