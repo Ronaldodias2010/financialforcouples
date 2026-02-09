@@ -142,28 +142,10 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
     }
   }, [selectedMonth]);
 
-  // Listen to changes in manual_future_expenses to refresh current expenses
-  useEffect(() => {
-    const channel = supabase
-      .channel('manual-future-expenses-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'manual_future_expenses'
-        },
-        () => {
-          console.log('📊 Manual future expense changed, refreshing transactions...');
-          fetchTransactions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [selectedMonth, selectedCategory, viewMode]);
+  // Use centralized realtime manager
+  useRealtimeTable('manual_future_expenses', () => {
+    fetchTransactions();
+  }, true);
 
 const fetchCategories = async () => {
     try {

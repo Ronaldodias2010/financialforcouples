@@ -89,63 +89,24 @@ export const FinancialDashboard = () => {
     }
   }, [user, viewMode]);
 
-  // Real-time synchronization for unified dashboard
-  useEffect(() => {
-    if (!user) return;
+  // Use centralized realtime manager instead of individual channel
+  useRealtimeTable('user_couples', (payload) => {
+    const data = payload.new || payload.old;
+    if (data && 'user1_id' in data && 'user2_id' in data &&
+        (data.user1_id === user?.id || data.user2_id === user?.id)) {
+      refreshCoupleData();
+      refreshData();
+    }
+  }, !!user);
 
-    // Listen for real-time changes that affect dashboard sync
-    const dashboardSyncChannel = supabase
-      .channel('dashboard-sync')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_couples'
-        },
-        (payload) => {
-          console.log('Dashboard sync - couple change detected:', payload);
-          const data = payload.new || payload.old;
-          if (data && 'user1_id' in data && 'user2_id' in data && 
-              (data.user1_id === user.id || data.user2_id === user.id)) {
-            refreshCoupleData();
-            refreshData();
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles'
-        },
-        (payload) => {
-          console.log('Dashboard sync - profile change detected:', payload);
-          // Refresh data when any profile is updated
-          refreshData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'transactions'
-        },
-        (payload) => {
-          console.log('Dashboard sync - transaction change detected:', payload);
-          // Immediately refresh data when transactions change
-          refreshData();
-          loadFinancialComparison();
-        }
-      )
-      .subscribe();
+  useRealtimeTable('profiles', () => {
+    refreshData();
+  }, !!user);
 
-    return () => {
-      supabase.removeChannel(dashboardSyncChannel);
-    };
-  }, [user, refreshCoupleData, refreshData]);
+  useRealtimeTable('transactions', () => {
+    refreshData();
+    loadFinancialComparison();
+  }, !!user);
 
   const loadFinancialComparison = async () => {
     const comparison = await getFinancialComparison();

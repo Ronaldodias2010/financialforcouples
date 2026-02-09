@@ -174,44 +174,14 @@ export const ExpensesPieChart: React.FC<ExpensesPieChartProps> = ({ viewMode }) 
     fetchExpensesByCategory();
   }, [selectedMonth, viewMode, user, coupleData, t]); // Added 't' as dependency
 
-  // Set up real-time updates for transactions and categories
-  useEffect(() => {
-    if (!user) return;
+  // Use centralized realtime manager
+  useRealtimeTable('transactions', () => {
+    fetchExpensesByCategory();
+  }, !!user);
 
-    const channel = supabase
-      .channel('expenses-pie-chart-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'transactions'
-        },
-        (payload) => {
-          console.log('Transaction change detected:', payload);
-          // Refetch data when transactions change
-          fetchExpensesByCategory();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'categories'
-        },
-        (payload) => {
-          console.log('Category change detected:', payload);
-          // Refetch data when categories change
-          fetchExpensesByCategory();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, selectedMonth, viewMode, coupleData]);
+  useRealtimeTable('categories', () => {
+    fetchExpensesByCategory();
+  }, !!user);
 
   const getChartData = (data: ExpenseByCategory[]) => {
     const total = data.reduce((sum, item) => sum + item.amount, 0);
