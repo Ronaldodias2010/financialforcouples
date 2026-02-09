@@ -84,6 +84,8 @@ const AppRoutes = () => {
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/asociacion" element={<Partnership />} />
         <Route path="/install" element={<InstallApp />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/suporte" element={<Support />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:id" element={<BlogPost />} />
         
