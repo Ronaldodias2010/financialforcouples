@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
 import { format } from 'date-fns';
 import { sumMonetaryArray, subtractMonetaryValues } from '@/utils/monetary';
