@@ -3574,7 +3574,7 @@ const translations = {
     'transactionForm.amount': 'Amount',
     'transactionForm.description': 'Description',
     'transactionForm.receiptMethod': 'Receipt Method',
-    'transactionForm.paymentMethod': 'Payment Method',
+    'transactionForm.paymentMethod': 'Purchase made with Credit Card',
     'transactionForm.selectPaymentMethod': 'Select method',
     'transactionForm.cash': 'Cash',
     'transactionForm.deposit': 'Deposit',
