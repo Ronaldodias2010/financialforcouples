@@ -39,6 +39,7 @@ interface Account {
   id: string;
   name: string;
   balance: number;
+  owner_user: string | null;
 }
 
 interface Card {
@@ -223,7 +224,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
       // Fetch accounts (including partner's accounts) - excluding cash accounts
       const { data: accountsData, error: accountsError } = await supabase
         .from('accounts')
-        .select('id, name, balance')
+        .select('id, name, balance, owner_user')
         .in('user_id', userIds)
         .eq('is_active', true)
         .or('is_cash_account.is.null,is_cash_account.eq.false');
@@ -623,11 +624,22 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                     <SelectValue placeholder="Selecione uma conta" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name} - {formatCurrency(account.balance)}
-                      </SelectItem>
-                    ))}
+                    {accounts.map((account) => {
+                      const ownerDisplayName = account.owner_user === 'user1' 
+                        ? ownerNames.user1 
+                        : account.owner_user === 'user2' 
+                          ? ownerNames.user2 
+                          : null;
+                      
+                      return (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name} - {formatCurrency(account.balance)}
+                          {ownerDisplayName && (
+                            <span className="text-muted-foreground ml-1">• {ownerDisplayName}</span>
+                          )}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
