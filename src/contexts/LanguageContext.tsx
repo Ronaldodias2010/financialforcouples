@@ -6482,7 +6482,7 @@ const translations = {
     'transactionForm.errorMessage': 'Error al agregar transacción',
     'transactionForm.success': 'Éxito',
     'transactionForm.successMessage': '¡Transacción agregada exitosamente!',
-    'transactionForm.cardPayment': 'Pago de Tarjeta de Crédito',
+    'transactionForm.cardPayment': 'Pago de la Factura de la Tarjeta de Crédito',
     'transactionForm.smartCardPayment': 'Pago Inteligente de Tarjeta',
     'transactionForm.sourceAccount': 'Cuenta de Origen',
     'transactionForm.selectAccountToPay': 'Selecciona la cuenta que pagará',
