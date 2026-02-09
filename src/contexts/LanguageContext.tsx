@@ -798,7 +798,7 @@ const translations = {
     'transactionForm.amount': 'Valor',
     'transactionForm.description': 'Descrição',
     'transactionForm.receiptMethod': 'Método de Recebimento',
-    'transactionForm.paymentMethod': 'Método de Pagamento',
+    'transactionForm.paymentMethod': 'Compra realizada com Cartão de Crédito',
     'transactionForm.selectPaymentMethod': 'Selecionar método',
     'transactionForm.cash': 'Dinheiro',
     'transactionForm.deposit': 'Depósito',
