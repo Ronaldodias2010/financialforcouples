@@ -59,22 +59,9 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
     }
   };
 
-  useEffect(() => {
-    if (!user?.id) return;
-    const channel = supabase
-      .channel("accounts-listener")
-      .on("postgres_changes", { event: "*", schema: "public", table: "accounts", filter: `user_id=eq.${user.id}` }, () => {
-        fetchAccounts();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${user.id}` }, () => {
-        fetchAccounts();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id]);
+  // Use centralized realtime manager
+  useRealtimeTable('accounts', () => fetchAccounts(), !!user?.id);
+  useRealtimeTable('transactions', () => fetchAccounts(), !!user?.id);
 
   const reactivateAccount = async (accountId: string) => {
     try {

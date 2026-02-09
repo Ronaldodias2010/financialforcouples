@@ -111,23 +111,10 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
     setSelectedSubcategory('all');
   }, [selectedCategory, categoryOptions]);
 
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('monthly-income-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'transactions' },
-        () => {
-          setTimeout(fetchTransactions, 100);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, selectedMonth, selectedCategory, selectedSubcategory, viewMode]);
+  // Use centralized realtime manager
+  useRealtimeTable('transactions', () => {
+    setTimeout(fetchTransactions, 100);
+  }, !!user);
 
   const fetchSubcategories = async (categoryIds: string[]) => {
     if (!categoryIds.length) {

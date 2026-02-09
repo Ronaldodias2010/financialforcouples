@@ -55,29 +55,13 @@ export const UserExpenseChart = () => {
   useEffect(() => {
     if (user) {
       fetchFinancialData();
-      
-      // Set up realtime listener for transactions
-        const channel = supabase
-          .channel('transaction-changes')
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'transactions'
-            },
-            () => {
-              console.log('Transaction change detected, refreshing chart...');
-              fetchFinancialData();
-            }
-          )
-          .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
   }, [user, period]);
+
+  // Use centralized realtime manager
+  useRealtimeTable('transactions', () => {
+    fetchFinancialData();
+  }, !!user);
 
   const fetchFinancialData = async () => {
     try {
