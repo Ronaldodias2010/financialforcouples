@@ -5,6 +5,7 @@ import { useCouple } from '@/hooks/useCouple';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Json } from '@/integrations/supabase/types';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export type DecisionStatus = 'draft' | 'voting' | 'agreed' | 'rejected' | 'paused' | 'completed';
 export type DecisionUrgency = 'low' | 'medium' | 'high' | 'urgent';
