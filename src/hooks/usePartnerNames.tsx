@@ -24,8 +24,7 @@ export const usePartnerNames = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchNames = async () => {
+  const fetchNames = useCallback(async () => {
       if (!user?.id) {
         setLoading(false);
         return;
@@ -35,22 +34,18 @@ export const usePartnerNames = () => {
         let user1Name = t('dashboard.user1');
         let user2Name = t('dashboard.user2');
 
-        // If part of couple, determine names based on couple structure
         if (isPartOfCouple && couple) {
-          // Get both users' names from profiles
           const { data: profiles } = await supabase
             .from('profiles')
             .select('user_id, display_name')
             .in('user_id', [couple.user1_id, couple.user2_id]);
 
-          // User1 is always the one who created the couple (user1_id)
           const user1Profile = profiles?.find(p => p.user_id === couple.user1_id);
           const user2Profile = profiles?.find(p => p.user_id === couple.user2_id);
 
           user1Name = user1Profile?.display_name?.trim() || t('dashboard.user1');
           user2Name = user2Profile?.display_name?.trim() || t('dashboard.user2');
 
-          // If display_name is not set, try to get from auth metadata
           if (user1Name === t('dashboard.user1')) {
             try {
               const { data: user1Auth } = await supabase.auth.admin.getUserById(couple.user1_id);
@@ -62,7 +57,7 @@ export const usePartnerNames = () => {
                            t('dashboard.user1');
               }
             } catch (error) {
-              console.log('Could not fetch user1 auth data:', error);
+              // Silently ignore - admin API may not be available
             }
           }
 
@@ -77,11 +72,10 @@ export const usePartnerNames = () => {
                            t('dashboard.user2');
               }
             } catch (error) {
-              console.log('Could not fetch user2 auth data:', error);
+              // Silently ignore
             }
           }
         } else {
-          // Single user - get current user name
           const currentUserProfile = await supabase
             .from('profiles')
             .select('display_name')
@@ -96,7 +90,6 @@ export const usePartnerNames = () => {
                      t('dashboard.user1');
         }
 
-        // Set names with proper logic for couples vs single users
         setNames({
           currentUserName: isPartOfCouple && couple ? 
             (user?.id === couple.user1_id ? user1Name : user2Name) : 
@@ -104,42 +97,24 @@ export const usePartnerNames = () => {
           partnerName: isPartOfCouple && couple ? 
             (user?.id === couple.user1_id ? user2Name : user1Name) : 
             t('dashboard.user2'),
-          user1Name: user1Name, // Always preserve user1 name (the first user who created the couple)
-          user2Name: user2Name  // Always preserve user2 name (the invited user)
+          user1Name,
+          user2Name
         });
       } catch (error) {
         console.error('Error fetching names:', error);
       } finally {
         setLoading(false);
       }
-    };
+  }, [user?.id, isPartOfCouple, couple?.id, t]);
 
+  useEffect(() => {
     fetchNames();
+  }, [fetchNames]);
 
-    // Listen for profile changes that might affect names
-    if (isPartOfCouple && couple) {
-      const channel = supabase
-        .channel('profile-names-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'profiles',
-            filter: `user_id=in.(${couple.user1_id},${couple.user2_id})`
-          },
-          () => {
-            console.log('Profile names changed, refreshing...');
-            fetchNames();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user?.id, isPartOfCouple, couple]);
+  // Use centralized realtime manager for profile changes
+  useRealtimeTable('profiles', () => {
+    fetchNames();
+  }, isPartOfCouple && !!couple);
 
   return { names, loading };
 };

@@ -150,30 +150,10 @@ export function useTravelSuggestions() {
     fetchSuggestions();
   }, [fetchSuggestions]);
 
-  // Real-time subscription
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel('travel-suggestions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_travel_suggestions',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          fetchSuggestions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, fetchSuggestions]);
+  // Use centralized realtime manager
+  useRealtimeTable('user_travel_suggestions', () => {
+    fetchSuggestions();
+  }, !!user?.id);
 
   return {
     suggestions,
