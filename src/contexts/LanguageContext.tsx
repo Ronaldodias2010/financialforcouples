@@ -3602,7 +3602,7 @@ const translations = {
     'transactionForm.errorMessage': 'Error adding transaction',
     'transactionForm.success': 'Success',
     'transactionForm.successMessage': 'Transaction added successfully!',
-    'transactionForm.cardPayment': 'Credit Card Payment',
+    'transactionForm.cardPayment': 'Credit Card Bill Payment',
     'transactionForm.smartCardPayment': 'Smart Card Payment',
     'transactionForm.sourceAccount': 'Source Account',
     'transactionForm.selectAccountToPay': 'Select the account that will pay',
