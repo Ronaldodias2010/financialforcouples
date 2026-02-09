@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useCouple } from './useCouple';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface TodayFutureIncome {
   id: string;
@@ -60,28 +61,12 @@ export const useTodayFutureIncomes = () => {
 
   useEffect(() => {
     fetchTodayIncomes();
-
-    // Real-time subscription
-    const channel = supabase
-      .channel('today-future-incomes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'manual_future_incomes',
-        },
-        (payload) => {
-          console.log('🔔 [TodayIncomes] Realtime update received:', payload.eventType);
-          fetchTodayIncomes();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [user, isPartOfCouple, couple]);
+
+  // Use centralized realtime manager
+  useRealtimeTable('manual_future_incomes', () => {
+    fetchTodayIncomes();
+  }, !!user);
 
   return {
     todayIncomes,

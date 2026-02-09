@@ -5,6 +5,7 @@ import { useCouple } from '@/hooks/useCouple';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Json } from '@/integrations/supabase/types';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export type DecisionStatus = 'draft' | 'voting' | 'agreed' | 'rejected' | 'paused' | 'completed';
 export type DecisionUrgency = 'low' | 'medium' | 'high' | 'urgent';
@@ -190,42 +191,14 @@ export const useDecisions = () => {
     }
   }, [isPartOfCouple, couple?.id, fetchDecisions, fetchAgreements]);
 
-  // Real-time subscription
-  useEffect(() => {
-    if (!couple?.id) return;
+  // Use centralized realtime manager
+  useRealtimeTable('couple_decisions', () => {
+    fetchDecisions();
+  }, !!couple?.id);
 
-    const channel = supabase
-      .channel('decisions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'couple_decisions',
-          filter: `couple_id=eq.${couple.id}`
-        },
-        () => {
-          fetchDecisions();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'couple_agreements',
-          filter: `couple_id=eq.${couple.id}`
-        },
-        () => {
-          fetchAgreements();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [couple?.id, fetchDecisions, fetchAgreements]);
+  useRealtimeTable('couple_agreements', () => {
+    fetchAgreements();
+  }, !!couple?.id);
 
   const createDecision = async (decisionData: Partial<Decision>): Promise<Decision | null> => {
     if (!couple?.id || !user?.id) {

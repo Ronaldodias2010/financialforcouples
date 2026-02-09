@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface FinancialNotification {
   id: string;
@@ -158,33 +159,14 @@ export const useFinancialNotifications = () => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  // Subscribe to real-time updates
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel('financial-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'user_financial_notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('New financial notification:', payload);
-          const newNotification = payload.new as FinancialNotification;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id]);
+  // Use centralized realtime manager for new notifications
+  useRealtimeTable('user_financial_notifications', (payload) => {
+    if (payload.eventType === 'INSERT') {
+      const newNotification = payload.new as FinancialNotification;
+      setNotifications(prev => [newNotification, ...prev]);
+      setUnreadCount(prev => prev + 1);
+    }
+  }, !!user?.id);
 
   return {
     notifications,

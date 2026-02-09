@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrencyConverter, type CurrencyCode } from '@/hooks/useCurrencyConverter';
 
@@ -50,30 +51,12 @@ export const useCashBalance = () => {
     fetchCashAccounts();
   }, [user?.id]);
 
-  // Set up real-time listener for cash account changes
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel('cash-accounts-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'accounts',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          fetchCashAccounts();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  // Use centralized realtime manager instead of individual channel
+  const handleRealtimeChange = useCallback(() => {
+    fetchCashAccounts();
   }, [user?.id]);
+
+  useRealtimeTable('accounts', handleRealtimeChange, !!user?.id);
 
   const getCashBalance = (currency: CurrencyCode): number => {
     const account = cashAccounts.find(acc => acc.currency === currency);

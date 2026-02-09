@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface ManualFutureIncome {
   id: string;
@@ -237,27 +238,12 @@ export const useManualFutureIncomes = (viewMode: 'individual' | 'couple') => {
 
   useEffect(() => {
     fetchFutureIncomes();
-
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('manual_future_incomes_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'manual_future_incomes',
-        },
-        () => {
-          fetchFutureIncomes();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [user, viewMode]);
+
+  // Use centralized realtime manager
+  useRealtimeTable('manual_future_incomes', () => {
+    fetchFutureIncomes();
+  }, !!user);
 
   return {
     futureIncomes,

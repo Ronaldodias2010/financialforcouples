@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -141,28 +142,10 @@ export const MonthlyExpensesView = ({ viewMode }: MonthlyExpensesViewProps) => {
     }
   }, [selectedMonth]);
 
-  // Listen to changes in manual_future_expenses to refresh current expenses
-  useEffect(() => {
-    const channel = supabase
-      .channel('manual-future-expenses-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'manual_future_expenses'
-        },
-        () => {
-          console.log('📊 Manual future expense changed, refreshing transactions...');
-          fetchTransactions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [selectedMonth, selectedCategory, viewMode]);
+  // Use centralized realtime manager
+  useRealtimeTable('manual_future_expenses', () => {
+    fetchTransactions();
+  }, true);
 
 const fetchCategories = async () => {
     try {

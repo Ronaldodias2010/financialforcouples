@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { usePartnerNames } from '@/hooks/usePartnerNames';
@@ -263,45 +264,18 @@ export const OverdueExpensesView = ({ viewMode }: OverdueExpensesViewProps) => {
     return overdueExpenses.filter(expense => expense.daysOverdue > 90);
   }, [overdueExpenses]);
 
-  // Supabase Realtime subscription for automatic updates
-  useEffect(() => {
-    if (!user) return;
+  // Use centralized realtime manager
+  useRealtimeTable('transactions', () => {
+    queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
+  }, !!user);
 
-    console.log('🔄 [OverdueExpensesView] Setting up realtime subscription...');
-    
-    const channel = supabase
-      .channel('overdue-expenses-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'transactions' },
-        () => {
-          console.log('📡 [OverdueExpensesView] Transactions changed, refetching...');
-          queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'recurring_expenses' },
-        () => {
-          console.log('📡 [OverdueExpensesView] Recurring expenses changed, refetching...');
-          queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'manual_future_expenses' },
-        () => {
-          console.log('📡 [OverdueExpensesView] Manual future expenses changed, refetching...');
-          queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
-        }
-      )
-      .subscribe();
+  useRealtimeTable('recurring_expenses', () => {
+    queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
+  }, !!user);
 
-    return () => {
-      console.log('🔄 [OverdueExpensesView] Cleaning up realtime subscription...');
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
+  useRealtimeTable('manual_future_expenses', () => {
+    queryClient.invalidateQueries({ queryKey: ['overdue-expenses'] });
+  }, !!user);
 
   const handlePayExpense = (expense: OverdueExpense) => {
     setSelectedExpense(expense);

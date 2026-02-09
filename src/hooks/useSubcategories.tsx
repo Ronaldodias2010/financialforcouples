@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCouple } from '@/hooks/useCouple';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface Subcategory {
   id: string;
@@ -317,29 +318,10 @@ export const useSubcategories = () => {
     }
   }, [user, fetchAllSubcategories]);
 
-  // Real-time subscription
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('subcategories-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'subcategories',
-        },
-        () => {
-          fetchAllSubcategories();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, fetchAllSubcategories]);
+  // Use centralized realtime manager
+  useRealtimeTable('subcategories', () => {
+    fetchAllSubcategories();
+  }, !!user);
 
   return {
     subcategories,

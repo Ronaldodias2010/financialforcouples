@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -110,23 +111,10 @@ export const MonthlyIncomeView = ({ viewMode }: MonthlyIncomeViewProps) => {
     setSelectedSubcategory('all');
   }, [selectedCategory, categoryOptions]);
 
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('monthly-income-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'transactions' },
-        () => {
-          setTimeout(fetchTransactions, 100);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, selectedMonth, selectedCategory, selectedSubcategory, viewMode]);
+  // Use centralized realtime manager
+  useRealtimeTable('transactions', () => {
+    setTimeout(fetchTransactions, 100);
+  }, !!user);
 
   const fetchSubcategories = async (categoryIds: string[]) => {
     if (!categoryIds.length) {

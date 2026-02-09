@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { useCurrencyConverter, type CurrencyCode } from './useCurrencyConverter';
 import { format } from 'date-fns';
 import { sumMonetaryArray, subtractMonetaryValues } from '@/utils/monetary';
@@ -219,94 +220,31 @@ const useFinancialRealtime = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  useEffect(() => {
+  // Use centralized realtime manager instead of 4 individual channels
+  useRealtimeTable('profiles', () => {
+    if (user?.id) {
+      queryClient.invalidateQueries({ queryKey: financialQueryKeys.userCurrency(user.id) });
+    }
+  }, !!user?.id);
+
+  useRealtimeTable('transactions', () => {
+    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+  }, !!user?.id);
+
+  useRealtimeTable('accounts', () => {
+    queryClient.invalidateQueries({ queryKey: ['accounts'] });
+  }, !!user?.id);
+
+  useRealtimeTable('user_couples', (payload) => {
     if (!user?.id) return;
-    
-    console.log('🔄 Setting up real-time subscriptions for React Query');
-    
-    // Profile changes - invalidate currency
-    const profileChannel = supabase
-      .channel('rq-profile-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          console.log('📡 Profile updated - invalidating currency');
-          queryClient.invalidateQueries({ queryKey: financialQueryKeys.userCurrency(user.id) });
-        }
-      )
-      .subscribe();
-
-    // Transaction changes - invalidate transactions
-    const transactionChannel = supabase
-      .channel('rq-transaction-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'transactions'
-        },
-        () => {
-          console.log('📡 Transaction changed - invalidating all financial data');
-          queryClient.invalidateQueries({ queryKey: ['transactions'] });
-        }
-      )
-      .subscribe();
-
-    // Account changes - invalidate accounts
-    const accountChannel = supabase
-      .channel('rq-account-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'accounts'
-        },
-        () => {
-          console.log('📡 Account changed - invalidating accounts');
-          queryClient.invalidateQueries({ queryKey: ['accounts'] });
-        }
-      )
-      .subscribe();
-
-    // Couple changes - invalidate couple data and refresh everything
-    const coupleChannel = supabase
-      .channel('rq-couple-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_couples'
-        },
-        (payload) => {
-          const data = payload.new || payload.old;
-          if (data && 'user1_id' in data && 'user2_id' in data &&
-              (data.user1_id === user.id || data.user2_id === user.id)) {
-            console.log('📡 Couple changed - invalidating all data');
-            queryClient.invalidateQueries({ queryKey: financialQueryKeys.coupleData(user.id) });
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('🔌 Cleaning up real-time subscriptions');
-      supabase.removeChannel(profileChannel);
-      supabase.removeChannel(transactionChannel);
-      supabase.removeChannel(accountChannel);
-      supabase.removeChannel(coupleChannel);
-    };
-  }, [user?.id, queryClient]);
+    const data = payload.new || payload.old;
+    if (data && 'user1_id' in data && 'user2_id' in data &&
+        (data.user1_id === user.id || data.user2_id === user.id)) {
+      queryClient.invalidateQueries({ queryKey: financialQueryKeys.coupleData(user.id) });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    }
+  }, !!user?.id);
 };
 
 // ============= MAIN HOOK WITH DERIVED DATA =============

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getProgramByCode, MILEAGE_PROGRAMS } from '@/data/mileagePrograms';
 import { toast } from 'sonner';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface MileageProgram {
   id: string;
@@ -119,31 +120,17 @@ export function useMileagePrograms() {
       }
     }, 15000);
 
-    // Set up Realtime subscription to detect changes from browser extension sync
-    const channel = supabase
-      .channel('mileage_programs_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'mileage_programs',
-          filter: user ? `user_id=eq.${user.id}` : undefined
-        },
-        (payload) => {
-          console.log('[useMileagePrograms] Realtime update received:', payload.eventType);
-          loadPrograms();
-        }
-      )
-      .subscribe();
-
     return () => {
       if (timeoutCheckRef.current) {
         clearInterval(timeoutCheckRef.current);
       }
-      supabase.removeChannel(channel);
     };
   }, [loadPrograms, user]);
+
+  // Use centralized realtime manager for mileage program changes (critical for browser extension sync)
+  useRealtimeTable('mileage_programs', () => {
+    loadPrograms();
+  }, !!user);
 
   const connectProgram = async (programCode: string, memberId?: string) => {
     if (!user) return null;
