@@ -51,6 +51,7 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
   const [matchedPromotions, setMatchedPromotions] = useState<PromotionMatch[]>([]);
   const [dismissedPromotions, setDismissedPromotions] = useState<Set<string>>(() => {
     // Load dismissed promotions from localStorage
+    // Format: "promotionId" or "goalId:destination" for destination-based dismissal
     try {
       const stored = localStorage.getItem('dismissedFeaturedPromotions');
       return stored ? new Set(JSON.parse(stored)) : new Set();
@@ -162,9 +163,21 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
     }
   };
 
-  const dismissPromotion = (promotionId: string) => {
+  const dismissPromotion = (promotionId: string, goalId?: string) => {
     const newDismissed = new Set(dismissedPromotions);
+    
+    // Find the promotion to get its destination
+    const promotion = promotions.find(p => p.id === promotionId);
+    
+    if (promotion && goalId) {
+      // Dismiss all promotions for this destination + goal combination
+      const destinationKey = `${goalId}:${promotion.destino.toLowerCase()}`;
+      newDismissed.add(destinationKey);
+    }
+    
+    // Also add the specific promotion ID as fallback
     newDismissed.add(promotionId);
+    
     setDismissedPromotions(newDismissed);
     
     // Persist to localStorage
@@ -176,8 +189,20 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
     
     toast({
       title: t('promotions.dismissed') || 'Promoção dispensada',
-      description: t('promotions.dismissedDescription') || 'Esta promoção não será mais exibida em destaque.',
+      description: t('promotions.dismissedDescription') || 'Promoções para este destino não serão mais exibidas para esta meta.',
     });
+  };
+  
+  // Helper to check if a matched promotion should be hidden
+  const isPromotionDismissed = (promotionId: string, goalId: string, destination: string) => {
+    // Check if specific promotion was dismissed
+    if (dismissedPromotions.has(promotionId)) return true;
+    
+    // Check if destination+goal combination was dismissed
+    const destinationKey = `${goalId}:${destination.toLowerCase()}`;
+    if (dismissedPromotions.has(destinationKey)) return true;
+    
+    return false;
   };
 
   const getProgramColor = (programa: string) => {
@@ -267,8 +292,10 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
     );
   }
 
-  // Get unique matched promotion IDs to exclude from regular grid (also filter dismissed ones)
-  const visibleMatchedPromotions = matchedPromotions.filter(m => !dismissedPromotions.has(m.promotion.id));
+  // Filter out dismissed promotions (by ID or by destination+goal combination)
+  const visibleMatchedPromotions = matchedPromotions.filter(
+    m => !isPromotionDismissed(m.promotion.id, m.goal.id, m.promotion.destino)
+  );
   const matchedPromoIds = new Set(matchedPromotions.map(m => m.promotion.id));
   const regularPromotions = promotions.filter(p => !matchedPromoIds.has(p.id));
 
@@ -285,17 +312,18 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
           </div>
           <div className="space-y-4">
             {visibleMatchedPromotions.slice(0, 3).map((match) => (
-              <FeaturedPromotionCard
-                key={`featured-${match.promotion.id}-${match.goal.id}`}
-                promotion={match.promotion}
-                matchedGoal={{
-                  name: match.goal.name,
-                  current_miles: match.goal.current_miles,
-                  target_miles: match.goal.target_miles,
-                }}
-                userTotalMiles={userTotalMiles}
-                onDismiss={dismissPromotion}
-              />
+                <FeaturedPromotionCard
+                  key={`featured-${match.promotion.id}-${match.goal.id}`}
+                  promotion={match.promotion}
+                  matchedGoal={{
+                    id: match.goal.id,
+                    name: match.goal.name,
+                    current_miles: match.goal.current_miles,
+                    target_miles: match.goal.target_miles,
+                  }}
+                  userTotalMiles={userTotalMiles}
+                  onDismiss={(promoId) => dismissPromotion(promoId, match.goal.id)}
+                />
             ))}
           </div>
         </div>

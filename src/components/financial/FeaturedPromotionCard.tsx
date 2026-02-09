@@ -22,6 +22,7 @@ interface FeaturedPromotionCardProps {
     fonte: string;
   };
   matchedGoal: {
+    id?: string;
     name: string;
     current_miles: number;
     target_miles: number;
