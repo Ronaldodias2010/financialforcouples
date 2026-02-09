@@ -48,6 +48,7 @@ interface Card {
   initial_balance: number;
   credit_limit: number | null;
   current_balance: number | null;
+  owner_user: string | null;
 }
 
 interface Category {
@@ -229,7 +230,7 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
       // Fetch cards (including partner's cards)
       const { data: cardsData, error: cardsError } = await supabase
         .from('cards')
-        .select('id, name, card_type, initial_balance, credit_limit, current_balance')
+        .select('id, name, card_type, initial_balance, credit_limit, current_balance, owner_user')
         .in('user_id', userIds)
         .is('deleted_at', null);
 
@@ -624,6 +625,9 @@ export const PayFutureExpenseModal: React.FC<PayFutureExpenseModalProps> = ({
                     {cards.map((card) => (
                       <SelectItem key={card.id} value={card.id}>
                         {card.name} ({card.card_type === 'credit' ? 'Crédito' : 'Débito'})
+                        {card.owner_user && (
+                          <span className="text-muted-foreground ml-1">• {card.owner_user}</span>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
