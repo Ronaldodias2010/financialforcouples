@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCouple } from '@/hooks/useCouple';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface Subcategory {
   id: string;
