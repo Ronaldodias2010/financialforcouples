@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useCouple } from './useCouple';
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 
 export interface TodayFutureIncome {
   id: string;
