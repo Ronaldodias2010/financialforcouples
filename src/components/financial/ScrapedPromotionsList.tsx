@@ -49,6 +49,15 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [matchedPromotions, setMatchedPromotions] = useState<PromotionMatch[]>([]);
+  const [dismissedPromotions, setDismissedPromotions] = useState<Set<string>>(() => {
+    // Load dismissed promotions from localStorage
+    try {
+      const stored = localStorage.getItem('dismissedFeaturedPromotions');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
 
   // Load goals if not provided via props
   useEffect(() => {
@@ -153,6 +162,24 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
     }
   };
 
+  const dismissPromotion = (promotionId: string) => {
+    const newDismissed = new Set(dismissedPromotions);
+    newDismissed.add(promotionId);
+    setDismissedPromotions(newDismissed);
+    
+    // Persist to localStorage
+    try {
+      localStorage.setItem('dismissedFeaturedPromotions', JSON.stringify([...newDismissed]));
+    } catch (error) {
+      console.warn('Could not save dismissed promotions:', error);
+    }
+    
+    toast({
+      title: t('promotions.dismissed') || 'Promoção dispensada',
+      description: t('promotions.dismissedDescription') || 'Esta promoção não será mais exibida em destaque.',
+    });
+  };
+
   const getProgramColor = (programa: string) => {
     const colors: Record<string, string> = {
       'Smiles': 'bg-orange-500/10 text-orange-700 border-orange-200 dark:text-orange-400',
@@ -240,14 +267,15 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
     );
   }
 
-  // Get unique matched promotion IDs to exclude from regular grid
+  // Get unique matched promotion IDs to exclude from regular grid (also filter dismissed ones)
+  const visibleMatchedPromotions = matchedPromotions.filter(m => !dismissedPromotions.has(m.promotion.id));
   const matchedPromoIds = new Set(matchedPromotions.map(m => m.promotion.id));
   const regularPromotions = promotions.filter(p => !matchedPromoIds.has(p.id));
 
   return (
     <div className="space-y-6">
       {/* Featured Promotions - Matching Goals */}
-      {matchedPromotions.length > 0 && (
+      {visibleMatchedPromotions.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -256,7 +284,7 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
             </h3>
           </div>
           <div className="space-y-4">
-            {matchedPromotions.slice(0, 3).map((match) => (
+            {visibleMatchedPromotions.slice(0, 3).map((match) => (
               <FeaturedPromotionCard
                 key={`featured-${match.promotion.id}-${match.goal.id}`}
                 promotion={match.promotion}
@@ -266,6 +294,7 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
                   target_miles: match.goal.target_miles,
                 }}
                 userTotalMiles={userTotalMiles}
+                onDismiss={dismissPromotion}
               />
             ))}
           </div>

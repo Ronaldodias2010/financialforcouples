@@ -1536,6 +1536,9 @@ const translations = {
     'promotions.needMore': 'Faltam',
     'promotions.redeemNow': 'Resgatar Agora!',
     'promotions.seeDetails': 'Ver Detalhes',
+    'promotions.dismissPromotion': 'Dispensar esta promoção',
+    'promotions.dismissed': 'Promoção dispensada',
+    'promotions.dismissedDescription': 'Esta promoção não será mais exibida em destaque.',
     
     // Mileage Programs (Connected Accounts)
     'mileage.programs.title': 'Programas de Milhagem Conectados',
@@ -4300,6 +4303,9 @@ const translations = {
     'promotions.needMore': 'Need',
     'promotions.redeemNow': 'Redeem Now!',
     'promotions.seeDetails': 'See Details',
+    'promotions.dismissPromotion': 'Dismiss this promotion',
+    'promotions.dismissed': 'Promotion dismissed',
+    'promotions.dismissedDescription': 'This promotion will no longer be shown as featured.',
     'mileage.goalDeleteError': 'Error deleting goal',
     'mileage.ruleStatusError': 'Error updating rule status',
     
@@ -7153,6 +7159,9 @@ const translations = {
     'promotions.needMore': 'Faltan',
     'promotions.redeemNow': '¡Canjear Ahora!',
     'promotions.seeDetails': 'Ver Detalles',
+    'promotions.dismissPromotion': 'Descartar esta promoción',
+    'promotions.dismissed': 'Promoción descartada',
+    'promotions.dismissedDescription': 'Esta promoción ya no se mostrará como destacada.',
     'mileage.goalDeleteError': 'Error al eliminar meta',
     'mileage.ruleStatusError': 'Error al actualizar estado de la regla',
     

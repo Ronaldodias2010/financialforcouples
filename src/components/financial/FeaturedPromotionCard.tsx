@@ -2,7 +2,8 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Plane, MapPin, Sparkles, Target, TrendingDown, CheckCircle2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ExternalLink, Plane, MapPin, Sparkles, Target, TrendingDown, CheckCircle2, X } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
@@ -26,12 +27,14 @@ interface FeaturedPromotionCardProps {
     target_miles: number;
   };
   userTotalMiles: number;
+  onDismiss?: (promotionId: string) => void;
 }
 
 export const FeaturedPromotionCard = ({ 
   promotion, 
   matchedGoal, 
-  userTotalMiles 
+  userTotalMiles,
+  onDismiss
 }: FeaturedPromotionCardProps) => {
   const { t, language } = useLanguage();
   
@@ -64,6 +67,27 @@ export const FeaturedPromotionCard = ({
     <Card className="relative overflow-hidden border-2 border-primary/50 bg-gradient-to-br from-primary/5 via-background to-secondary/5 shadow-lg hover:shadow-xl transition-all duration-300">
       {/* Animated glow effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10 animate-pulse pointer-events-none" />
+      
+      {/* Dismiss button */}
+      {onDismiss && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-1 right-1 z-10 h-7 w-7 p-0 bg-background/80 hover:bg-destructive/10 hover:text-destructive rounded-full"
+                onClick={() => onDismiss(promotion.id)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">{t('promotions.dismissPromotion') || 'Dispensar esta promoção'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       
       {/* Featured badge */}
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-secondary text-primary-foreground py-1.5 px-4 flex items-center justify-center gap-2">
