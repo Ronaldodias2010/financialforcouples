@@ -321,6 +321,13 @@ export function TwoFactorVerification({
             <Shield className="h-6 w-6 text-primary" />
             <DialogTitle>{t('2fa.verification.title')}</DialogTitle>
           </div>
+          {/* Method badge in header - always visible */}
+          {methodInfo && (
+            <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold border ${methodInfo.color} w-fit`}>
+              <methodInfo.icon className={`h-4 w-4 ${methodInfo.iconColor}`} />
+              <span>{methodInfo.title}</span>
+            </div>
+          )}
           <DialogDescription>
             {t('2fa.verification.subtitle')}
           </DialogDescription>
