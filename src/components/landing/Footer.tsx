@@ -74,11 +74,6 @@ const Footer = () => {
                   {t('footer.tutorialComplete')}
                 </button>
               </li>
-              <li>
-                <Link to="/support" className="hover:text-background transition-colors">
-                  {language === 'pt' ? 'Central de Suporte' : language === 'es' ? 'Centro de Soporte' : 'Support Center'}
-                </Link>
-              </li>
             </ul>
           </div>
           
