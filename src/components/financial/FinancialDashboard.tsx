@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { FinancialCard } from "./FinancialCard";
 import { TransactionForm } from "./TransactionForm";
 import { UserExpenseChart } from "./UserExpenseChart";
