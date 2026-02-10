@@ -3423,7 +3423,7 @@ const translations = {
     'currency.updatesInfo': 'Exchange rates updated 3x daily',
     
     // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Current Expenses',
+    'monthlyExpenses.currentExpenses': 'Paid Expenses',
     'monthlyExpenses.futureExpenses': 'Future Expenses',
     'monthlyExpenses.overdueExpenses': 'Overdue Expenses',
     'monthlyExpenses.title': 'Monthly Expenses',
