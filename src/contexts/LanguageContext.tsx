@@ -6216,7 +6216,7 @@ const translations = {
     'currency.updatesInfo': 'Cotizaciones actualizadas 3x al día',
     
     // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Gastos Actuales',
+    'monthlyExpenses.currentExpenses': 'Gastos Pagados',
     'monthlyExpenses.futureExpenses': 'Gastos Futuros',
     'monthlyExpenses.overdueExpenses': 'Gastos Atrasados',
     

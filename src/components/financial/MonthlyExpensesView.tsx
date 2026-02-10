@@ -436,7 +436,7 @@ const fetchCategories = async () => {
             >
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">{t('monthlyExpenses.currentExpenses')}</span>
-              <span className="sm:hidden">Atuais</span>
+              <span className="sm:hidden">Pagas</span>
             </TabsTrigger>
             <TabsTrigger 
               value="future" 
