@@ -3201,7 +3201,7 @@ const translations = {
     'futureExpenses.todayAlert.dismiss': 'Dismiss alert',
     
     // Dashboard Info Notice
-    'dashboard.infoNotice': 'The Main Dashboard shows all expenses made this month: credit card purchases, card payments, debit and cash transactions.',
+    'dashboard.infoNotice': 'The Main Dashboard shows all expenses made this month: credit card purchases, debit and cash transactions. Credit card bill payments are treated as transfers between accounts and do not appear as expenses.',
     
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Last 90 days',
