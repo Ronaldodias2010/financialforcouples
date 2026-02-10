@@ -17,6 +17,7 @@ import TestimonialFormModal from "@/components/landing/TestimonialFormModal";
 import { FirstAccessWelcomeModal } from "@/components/onboarding/FirstAccessWelcomeModal";
 import { WhatsAppPhoneRequiredModal } from "@/components/onboarding/WhatsAppPhoneRequiredModal";
 import { TwoFactorToggle } from "@/components/auth/TwoFactorToggle";
+import { useTheme } from "@/hooks/useTheme";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
