@@ -22,6 +22,7 @@ import { useTheme } from "@/hooks/useTheme";
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
   const { t, tFor, inBrazil, language } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const { currentStep, completeWelcome, completePhone } = useFirstAccess();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
