@@ -143,7 +143,7 @@ const AppDashboard = () => {
               )}
             </div>
 
-            {/* Menu dropdown para mobile */}
+            {/* Menu dropdown para mobile - contém TUDO */}
             <div className="md:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -187,6 +187,27 @@ const AppDashboard = () => {
                     {t('2fa.security.title')}
                   </DropdownMenuItem>
 
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem onClick={() => {
+                    const isDark = document.documentElement.classList.contains('dark');
+                    document.documentElement.classList.toggle('dark', !isDark);
+                    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                    window.dispatchEvent(new Event('storage'));
+                  }}>
+                    {document.documentElement.classList.contains('dark') ? (
+                      <Sun className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Moon className="h-4 w-4 mr-2" />
+                    )}
+                    {document.documentElement.classList.contains('dark') ? (t('theme.light') || 'Claro') : (t('theme.dark') || 'Escuro')}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    {t('nav.logout')}
+                  </DropdownMenuItem>
+
                   {isAdmin && (
                     <>
                       <DropdownMenuSeparator />
@@ -204,17 +225,19 @@ const AppDashboard = () => {
               </DropdownMenu>
             </div>
 
-            {/* ThemeSwitcher e Logout - sempre visíveis */}
-            <ThemeSwitcher />
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={signOut}
-              title={t('nav.logout')}
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">{t('nav.logout')}</span>
-            </Button>
+            {/* ThemeSwitcher e Logout - apenas desktop */}
+            <div className="hidden md:flex items-center gap-2">
+              <ThemeSwitcher />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={signOut}
+                title={t('nav.logout')}
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline ml-2">{t('nav.logout')}</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
