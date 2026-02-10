@@ -61,8 +61,18 @@ export function BiometricLoginButton({
   const { toast } = useToast();
   const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
   const [showError, setShowError] = useState(false);
+  const [isMobileOrPWA, setIsMobileOrPWA] = useState(false);
 
   const t = translations[language as keyof typeof translations] || translations.pt;
+
+  // Only show biometric login on mobile devices or PWA
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSStandalone = (window.navigator as any).standalone === true;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isMobileUA = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    setIsMobileOrPWA(isStandalone || isIOSStandalone || (isTouchDevice && isMobileUA));
+  }, []);
 
   // Check if user has biometric credentials when email changes
   useEffect(() => {
