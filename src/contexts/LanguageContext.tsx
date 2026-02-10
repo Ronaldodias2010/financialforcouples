@@ -3320,6 +3320,7 @@ const translations = {
     'cards.editing': 'Saving...',
     'cards.editSuccess': 'Card updated successfully!',
     'cards.editError': 'Error updating card',
+    'cards.paymentNote': 'Credit card payments are not considered expenses, as purchases were already recorded at the time they were made.',
     
     // Accounts
     'accounts.title': 'Manage Bank Accounts',
