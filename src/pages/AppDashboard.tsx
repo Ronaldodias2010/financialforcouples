@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useFirstAccess } from "@/hooks/useFirstAccess";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical, Shield, Moon, Sun } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, Menu, Shield, Moon, Sun } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
