@@ -591,7 +591,7 @@ const translations = {
     'currency.updatesInfo': 'Cotações atualizadas 3x ao dia',
     
     // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Despesas Atuais',
+    'monthlyExpenses.currentExpenses': 'Despesas Pagas',
     'monthlyExpenses.futureExpenses': 'Despesas Futuras',
     'monthlyExpenses.overdueExpenses': 'Despesas Atrasadas',
     'monthlyExpenses.title': 'Despesas Mensais',
@@ -3423,7 +3423,7 @@ const translations = {
     'currency.updatesInfo': 'Exchange rates updated 3x daily',
     
     // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Current Expenses',
+    'monthlyExpenses.currentExpenses': 'Paid Expenses',
     'monthlyExpenses.futureExpenses': 'Future Expenses',
     'monthlyExpenses.overdueExpenses': 'Overdue Expenses',
     'monthlyExpenses.title': 'Monthly Expenses',
@@ -6216,7 +6216,7 @@ const translations = {
     'currency.updatesInfo': 'Cotizaciones actualizadas 3x al día',
     
     // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Gastos Actuales',
+    'monthlyExpenses.currentExpenses': 'Gastos Pagados',
     'monthlyExpenses.futureExpenses': 'Gastos Futuros',
     'monthlyExpenses.overdueExpenses': 'Gastos Atrasados',
     

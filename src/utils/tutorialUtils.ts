@@ -406,8 +406,8 @@ const getTutorialContentPT = (): TutorialContent => ({
       intro: 'O módulo de despesas mensais organiza todos os seus gastos em 3 abas principais para controle completo e eficiente.',
       subSections: [
         {
-          title: 'Despesas Atuais',
-          content: 'Despesas do mês selecionado que já foram realizadas:',
+          title: 'Despesas Pagas',
+          content: 'Despesas do mês selecionado que já foram pagas:',
           bullets: [
             'Gastos já pagos e registrados no sistema',
             'Compras à vista, cartão de crédito, PIX, dinheiro',
