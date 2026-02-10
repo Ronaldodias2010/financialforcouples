@@ -7,7 +7,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useCurrencyConverter, type CurrencyCode } from "@/hooks/useCurrencyConverter";
 import { supabase } from "@/integrations/supabase/client";
-import { CreditCard, Trash2, Edit } from "lucide-react";
+import { CreditCard, Trash2, Edit, Info } from "lucide-react";
 import { toast } from "sonner";
 import { CardEditForm } from "./CardEditForm";
 import { cn } from "@/lib/utils";
