@@ -191,18 +191,13 @@ const AppDashboard = () => {
 
                   <DropdownMenuSeparator />
 
-                  <DropdownMenuItem onClick={() => {
-                    const isDark = document.documentElement.classList.contains('dark');
-                    document.documentElement.classList.toggle('dark', !isDark);
-                    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-                    window.dispatchEvent(new Event('storage'));
-                  }}>
-                    {document.documentElement.classList.contains('dark') ? (
+                  <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                    {theme === 'dark' ? (
                       <Sun className="h-4 w-4 mr-2" />
                     ) : (
                       <Moon className="h-4 w-4 mr-2" />
                     )}
-                    {document.documentElement.classList.contains('dark') ? (t('theme.light') || 'Claro') : (t('theme.dark') || 'Escuro')}
+                    {theme === 'dark' ? (t('theme.light') || 'Claro') : (t('theme.dark') || 'Escuro')}
                   </DropdownMenuItem>
 
                   <DropdownMenuItem onClick={signOut}>
