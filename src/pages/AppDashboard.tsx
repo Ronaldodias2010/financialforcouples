@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useFirstAccess } from "@/hooks/useFirstAccess";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical, Shield } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical, Shield, Moon, Sun } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,10 +17,12 @@ import TestimonialFormModal from "@/components/landing/TestimonialFormModal";
 import { FirstAccessWelcomeModal } from "@/components/onboarding/FirstAccessWelcomeModal";
 import { WhatsAppPhoneRequiredModal } from "@/components/onboarding/WhatsAppPhoneRequiredModal";
 import { TwoFactorToggle } from "@/components/auth/TwoFactorToggle";
+import { useTheme } from "@/hooks/useTheme";
 
 const AppDashboard = () => {
   const { user, signOut } = useAuth();
   const { t, tFor, inBrazil, language } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const { currentStep, completeWelcome, completePhone } = useFirstAccess();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
@@ -143,7 +145,7 @@ const AppDashboard = () => {
               )}
             </div>
 
-            {/* Menu dropdown para mobile */}
+            {/* Menu dropdown para mobile - contém TUDO */}
             <div className="md:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -187,6 +189,22 @@ const AppDashboard = () => {
                     {t('2fa.security.title')}
                   </DropdownMenuItem>
 
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                    {theme === 'dark' ? (
+                      <Sun className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Moon className="h-4 w-4 mr-2" />
+                    )}
+                    {theme === 'dark' ? (t('theme.light') || 'Claro') : (t('theme.dark') || 'Escuro')}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    {t('nav.logout')}
+                  </DropdownMenuItem>
+
                   {isAdmin && (
                     <>
                       <DropdownMenuSeparator />
@@ -204,17 +222,19 @@ const AppDashboard = () => {
               </DropdownMenu>
             </div>
 
-            {/* ThemeSwitcher e Logout - sempre visíveis */}
-            <ThemeSwitcher />
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={signOut}
-              title={t('nav.logout')}
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">{t('nav.logout')}</span>
-            </Button>
+            {/* ThemeSwitcher e Logout - apenas desktop */}
+            <div className="hidden md:flex items-center gap-2">
+              <ThemeSwitcher />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={signOut}
+                title={t('nav.logout')}
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline ml-2">{t('nav.logout')}</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
