@@ -488,6 +488,7 @@ const translations = {
     'cards.editing': 'Salvando...',
     'cards.editSuccess': 'Cartão atualizado com sucesso!',
     'cards.editError': 'Erro ao atualizar cartão',
+    'cards.paymentNote': 'Pagamentos de cartão não são considerados despesas, pois os gastos já foram contabilizados no momento da compra.',
     
     // Accounts
     'accounts.title': 'Gerenciar Contas Bancárias',
