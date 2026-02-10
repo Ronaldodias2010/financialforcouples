@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useFirstAccess } from "@/hooks/useFirstAccess";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, MoreVertical, Shield, Moon, Sun } from "lucide-react";
+import { LogOut, User, Crown, Settings, Mail, ArrowLeft, BookOpen, Download, ExternalLink, MessageSquare, Menu, Shield, Moon, Sun } from "lucide-react";
 import { SubscriptionPage } from "./SubscriptionPage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -150,7 +150,7 @@ const AppDashboard = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
-                    <MoreVertical className="h-4 w-4" />
+                    <Menu className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-popover border border-border shadow-lg z-50 min-w-[200px]">
