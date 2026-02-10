@@ -1,191 +1,55 @@
 
-# Plano: Corrigir Extensão Couples Miles para Capturar Milhas LATAM
 
-## Diagnóstico do Problema
+## Plano: Corrigir Classificacao de Pagamentos de Cartao de Credito
 
-### Problema 1: Domínios não reconhecidos
-A extensão só reconhece `latam.com`, mas as páginas de milhas LATAM usam dois domínios diferentes:
-- `latamairlines.com` (mais comum - ex: `https://www.latamairlines.com/br/pt/minha-conta`)
-- `latampass.com` (ex: `https://latampass.com/myaccount`)
+### Resumo
 
-### Problema 2: Popup em branco
-Quando a extensão não reconhece o domínio, ela deveria mostrar "Site não suportado", mas está aparecendo em branco. Isso indica que há um erro de JavaScript impedindo a renderização.
+O sistema ja possui logica parcial para excluir pagamentos de cartao dos calculos de despesa (via `dashboardRules.ts`), mas existem caminhos de calculo que nao aplicam essa regra. Alem disso, os pagamentos sao gravados como `type='expense'` no banco, o que causa inconsistencias. Este plano corrige todos os pontos para garantir que pagamentos de fatura nunca aparecam como despesa.
 
-### Problema 3: Redirecionamento ao clicar
-Quando o usuário clica em "Ir para página de milhas", ele é redirecionado para uma URL antiga (`latam.com/pt_br/latam-pass/minha-conta/`) que não contém as milhas.
+---
 
-## Solução Proposta
+### Mudancas
 
-### Etapa 1: Atualizar `manifest.json`
-Adicionar os novos domínios na lista de permissões de host:
+#### 1. Banco de Dados - Funcao `process_card_payment`
 
-```json
-"host_permissions": [
-  "https://*.latam.com/*",
-  "https://*.latamairlines.com/*",
-  "https://*.latampass.com/*",
-  "https://*.tudoazul.com/*",
-  "https://*.smiles.com.br/*",
-  "https://*.livelo.com.br/*"
-]
-```
+Alterar a funcao para gravar pagamentos com `payment_method = 'card_payment'` e `card_transaction_type = 'card_payment'`, garantindo que os filtros existentes continuem funcionando. O `type` permanecera como `expense` no banco (por compatibilidade com triggers existentes), mas sera filtrado em todos os calculos do frontend.
 
-### Etapa 2: Atualizar `popup.js` (SUPPORTED_DOMAINS)
-Adicionar os novos domínios na lógica de detecção e atualizar a URL de milhas:
+**Alternativa avaliada**: Mudar `type` para `transfer` no banco. Isso quebraria triggers e funcoes RPC existentes que dependem de `type='expense'`. A abordagem mais segura e manter o filtro via `card_transaction_type`.
 
-```javascript
-var SUPPORTED_DOMAINS = {
-  'latam.com': { 
-    name: 'LATAM Pass', 
-    code: 'latam_pass', 
-    programKey: 'latam', 
-    icon: '✈️', 
-    milesUrl: 'https://www.latamairlines.com/br/pt/minha-conta' 
-  },
-  'latamairlines.com': { 
-    name: 'LATAM Pass', 
-    code: 'latam_pass', 
-    programKey: 'latam', 
-    icon: '✈️', 
-    milesUrl: 'https://www.latamairlines.com/br/pt/minha-conta' 
-  },
-  'latampass.com': { 
-    name: 'LATAM Pass', 
-    code: 'latam_pass', 
-    programKey: 'latam', 
-    icon: '✈️', 
-    milesUrl: 'https://latampass.com/myaccount' 
-  },
-  // ... outros programas
-};
-```
+#### 2. `useFinancialData.tsx` - Corrigir caminhos de calculo duplicados
 
-### Etapa 3: Atualizar `selectors.js`
-Adicionar os novos domínios na configuração de seletores:
+O arquivo tem dois blocos de calculo (linhas ~359-416) que filtram transacoes manualmente sem usar as regras centralizadas de `dashboardRules.ts`. Esses blocos precisam excluir transacoes com `card_transaction_type = 'card_payment'` para nao contar pagamentos como despesa.
 
-```javascript
-const MILEAGE_SELECTORS = {
-  latam: {
-    domains: ['latam.com', 'latamairlines.com', 'latampass.com'],
-    // ... restante da configuração
-  }
-};
-```
+Adicionar filtro: `if (transaction.card_transaction_type === 'card_payment') return;` nos dois blocos (prevTransactions e currentTransactions).
 
-### Etapa 4: Corrigir `detectProgram()` em `popup.js`
-Atualizar para reconhecer os novos domínios:
+#### 3. Nota explicativa na aba de Cartao de Credito (`CardList.tsx`)
 
-```javascript
-function detectProgram(url) {
-  if (!url) return null;
-  var lowerUrl = url.toLowerCase();
-  
-  if (lowerUrl.includes('latam.com') || 
-      lowerUrl.includes('latamairlines.com') || 
-      lowerUrl.includes('latampass.com')) {
-    return 'latam';
-  }
-  // ... outros programas
-}
-```
+Adicionar um componente informativo abaixo da lista de cartoes com texto em 3 idiomas:
 
-### Etapa 5: Adicionar tratamento de erro no popup
-Envolver o código de inicialização em try-catch para evitar popup em branco:
+- **PT**: "Pagamentos de cartao nao sao considerados despesas, pois os gastos ja foram contabilizados no momento da compra."
+- **EN**: "Credit card payments are not considered expenses, as purchases were already recorded at the time they were made."
+- **ES**: "Los pagos de la tarjeta no se consideran gastos, ya que las compras fueron registradas en el momento en que se realizaron."
 
-```javascript
-async function init() {
-  try {
-    console.log('🔧 [Init] Iniciando...');
-    // ... código existente
-  } catch (error) {
-    console.error('❌ [Init] Erro crítico:', error);
-    // Mostrar seção de erro ao invés de popup em branco
-    showNotSupportedSection();
-  }
-}
-```
+Usar o icone `Info` do lucide-react com estilo discreto (muted background).
 
-### Etapa 6: Melhorar fluxo de extração com fallback visual
-Quando não encontrar saldo, mostrar mensagem mais clara com instruções:
+#### 4. Traducoes em `LanguageContext.tsx`
 
-```html
-<div id="not-found-section" class="not-found-section hidden">
-  <div class="info-card warning">
-    <span class="icon">🔍</span>
-    <div>
-      <strong>Saldo não encontrado nesta página</strong>
-      <p>Navegue até onde seu saldo de milhas esteja visível e clique em "Tentar Novamente".</p>
-    </div>
-  </div>
-  <button id="retry-here-btn" class="btn btn-primary">
-    🔄 Tentar Novamente (nesta página)
-  </button>
-  <button id="go-to-miles-btn" class="btn btn-secondary">
-    🔗 Ir para página de milhas
-  </button>
-</div>
-```
+Adicionar chave `cards.paymentNote` nos 3 idiomas para a nota explicativa.
 
-## Arquivos a Modificar
+---
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `manifest.json` | Adicionar `latamairlines.com` e `latampass.com` nas host_permissions |
-| `popup.js` | Atualizar SUPPORTED_DOMAINS, detectProgram(), adicionar tratamento de erro |
-| `selectors.js` | Atualizar configuração LATAM para múltiplos domínios |
-| `popup.html` | Melhorar seção not-found com botão "Tentar Novamente" |
-| `content.js` | Atualizar detectCurrentProgram() para múltiplos domínios |
+### Detalhes Tecnicos
 
-## Fluxo Após Correção
+| Arquivo | Alteracao |
+|---|---|
+| `src/hooks/useFinancialData.tsx` | Adicionar filtro `card_transaction_type === 'card_payment'` nos 2 blocos de calculo manual (prev/current) |
+| `src/components/cards/CardList.tsx` | Adicionar nota informativa com icone Info abaixo da lista de cartoes |
+| `src/contexts/LanguageContext.tsx` | Adicionar traducao `cards.paymentNote` em PT/EN/ES |
+| `src/utils/dashboardRules.ts` | Ja esta correto - nenhuma alteracao necessaria |
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    Usuário abre extensão                        │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Detecta domínio (latamairlines.com, latampass.com, latam.com)  │
-│  → Mostra "LATAM Pass detectado" + botão "Sincronizar"          │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│           Usuário clica em "Sincronizar Milhas"                 │
-│           (NÃO navega - extrai na página atual)                 │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-            ┌───────────────┴───────────────┐
-            │                               │
-            ▼                               ▼
-   ┌────────────────┐             ┌────────────────────┐
-   │ Saldo Encontrado│             │ Saldo NÃO Encontrado│
-   │ → Preview:      │             │ → Mensagem:         │
-   │ "183.401 milhas"│             │ "Navegue até a      │
-   │ "Está correto?" │             │ página de milhas"   │
-   │                 │             │                     │
-   │ [Sim] [Não]     │             │ [Tentar Novamente]  │
-   │                 │             │ [Ir para página]    │
-   └───────┬────────┘             └─────────┬──────────┘
-           │                                 │
-           ▼                                 │
-   ┌────────────────┐                        │
-   │ Envia para API │                        │
-   │ → Atualiza card│                        │
-   │ no dashboard   │◀───────────────────────┘
-   └────────────────┘     (após navegar e tentar novamente)
-```
+### O que NAO muda
 
-## Seção Técnica
+- A funcao `dashboardRules.ts` ja exclui pagamentos corretamente nos graficos de categoria e calculos do dashboard principal
+- O componente `ExpensesPieChart.tsx` ja usa `isDashboardExpense` que filtra pagamentos
+- O `process_card_payment` no banco ja marca `card_transaction_type = 'card_payment'`
 
-### Detalhes da Implementação
-
-1. **Manifest V3 Host Permissions**: O Chrome exige que todos os domínios onde a extensão vai executar scripts estejam declarados em `host_permissions`. Sem isso, `chrome.scripting.executeScript()` falha silenciosamente.
-
-2. **Detecção de Domínio**: A função `getProgramInfo()` usa `hostname.includes(domain)` para matching parcial. Com múltiplas entradas para LATAM, qualquer variação será reconhecida.
-
-3. **Universal Extractor Engine**: O motor de extração já está preparado para LATAM com scoring específico (+120 para "milhas acumuladas"). Não precisa de alteração.
-
-4. **Rate Limit**: O backend já impõe limite de 6 horas por programa. Não será afetado.
-
-5. **Atualização da Extensão**: Após as mudanças, será necessário recarregar a extensão no Chrome (`chrome://extensions/` → ícone de atualização) para que as novas permissões entrem em vigor.
