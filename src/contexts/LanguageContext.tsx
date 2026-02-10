@@ -369,7 +369,7 @@ const translations = {
     'futureExpenses.todayAlert.dismiss': 'Dispensar alerta',
     
     // Dashboard Info Notice
-    'dashboard.infoNotice': 'O Dashboard Principal apresenta todos os gastos que foram realizados no mês: compras no cartão de crédito, pagamentos de fatura, débito e dinheiro.',
+    'dashboard.infoNotice': 'O Dashboard Principal apresenta todos os gastos realizados no mês: compras no cartão de crédito, débito e dinheiro. Pagamentos de fatura de cartão de crédito são considerados transferências entre contas e não aparecem como despesa.',
     
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Últimos 90 dias',
