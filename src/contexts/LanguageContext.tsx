@@ -6003,7 +6003,7 @@ const translations = {
     'futureExpenses.todayAlert.dismiss': 'Descartar alerta',
     
     // Dashboard Info Notice
-    'dashboard.infoNotice': 'El Panel Principal muestra todos los gastos realizados este mes: compras con tarjeta de crédito, pagos de tarjeta, débito y efectivo.',
+    'dashboard.infoNotice': 'El Panel Principal muestra todos los gastos realizados este mes: compras con tarjeta de crédito, débito y efectivo. Los pagos de factura de tarjeta de crédito se consideran transferencias entre cuentas y no aparecen como gastos.',
     
     // Overdue Expenses Filters
     'overdueExpenses.filter.90days': 'Últimos 90 días',
