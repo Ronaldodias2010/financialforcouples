@@ -51,9 +51,9 @@ const AppDashboard = () => {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center overflow-hidden">
           {/* Cotações à esquerda */}
           <div className="flex-shrink-0">
             <CurrencyRatesDisplay compact />
