@@ -6116,6 +6116,7 @@ const translations = {
     'cards.selectDay': 'Seleccionar día',
     'cards.adding': 'Agregando...',
     'cards.addCard': 'Agregar Tarjeta',
+    'cards.paymentNote': 'Los pagos de la tarjeta no se consideran gastos, ya que las compras fueron registradas en el momento en que se realizaron.',
     
     // Accounts
     'accounts.title': 'Gestionar Cuentas Bancarias',

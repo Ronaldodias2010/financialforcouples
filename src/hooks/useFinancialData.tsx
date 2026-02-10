@@ -408,6 +408,11 @@ export const useFinancialData = () => {
           return;
         }
 
+        // Skip card payments - they are transfers, not expenses
+        if (transaction.card_transaction_type === 'card_payment') {
+          return;
+        }
+
         const amountInUserCurrency = convertCurrency(
           transaction.amount,
           transaction.currency,

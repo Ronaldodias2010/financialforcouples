@@ -339,6 +339,12 @@ const getOwnerNameForCard = (card: CardData) => {
         </div>
       )}
 
+      {/* Nota explicativa sobre pagamentos de cartão */}
+      <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 text-muted-foreground text-sm">
+        <Info className="h-4 w-4 mt-0.5 shrink-0" />
+        <p>{t('cards.paymentNote')}</p>
+      </div>
+
       <CardEditForm
         card={editingCard}
         isOpen={!!editingCard}
