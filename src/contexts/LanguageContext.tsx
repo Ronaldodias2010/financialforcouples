@@ -488,6 +488,7 @@ const translations = {
     'cards.editing': 'Salvando...',
     'cards.editSuccess': 'Cartão atualizado com sucesso!',
     'cards.editError': 'Erro ao atualizar cartão',
+    'cards.paymentNote': 'Pagamentos de cartão não são considerados despesas, pois os gastos já foram contabilizados no momento da compra.',
     
     // Accounts
     'accounts.title': 'Gerenciar Contas Bancárias',
@@ -3319,6 +3320,7 @@ const translations = {
     'cards.editing': 'Saving...',
     'cards.editSuccess': 'Card updated successfully!',
     'cards.editError': 'Error updating card',
+    'cards.paymentNote': 'Credit card payments are not considered expenses, as purchases were already recorded at the time they were made.',
     
     // Accounts
     'accounts.title': 'Manage Bank Accounts',
@@ -6114,6 +6116,7 @@ const translations = {
     'cards.selectDay': 'Seleccionar día',
     'cards.adding': 'Agregando...',
     'cards.addCard': 'Agregar Tarjeta',
+    'cards.paymentNote': 'Los pagos de la tarjeta no se consideran gastos, ya que las compras fueron registradas en el momento en que se realizaron.',
     
     // Accounts
     'accounts.title': 'Gestionar Cuentas Bancarias',
