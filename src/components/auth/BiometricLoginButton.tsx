@@ -131,14 +131,14 @@ export function BiometricLoginButton({
     }
   };
 
+  // Don't show on desktop web - only mobile/PWA
+  if (!isMobileOrPWA) {
+    return null;
+  }
+
   // Don't show if not supported
   if (!isSupported) {
-    return (
-      <Alert variant="default" className="mb-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>{t.notSupported}</AlertDescription>
-      </Alert>
-    );
+    return null;
   }
 
   // If no email yet or checking credentials
