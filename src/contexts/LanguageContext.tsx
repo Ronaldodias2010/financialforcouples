@@ -591,7 +591,7 @@ const translations = {
     'currency.updatesInfo': 'Cotações atualizadas 3x ao dia',
     
     // Monthly Expenses
-    'monthlyExpenses.currentExpenses': 'Despesas Atuais',
+    'monthlyExpenses.currentExpenses': 'Despesas Pagas',
     'monthlyExpenses.futureExpenses': 'Despesas Futuras',
     'monthlyExpenses.overdueExpenses': 'Despesas Atrasadas',
     'monthlyExpenses.title': 'Despesas Mensais',
