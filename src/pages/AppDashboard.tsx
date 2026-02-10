@@ -53,18 +53,18 @@ const AppDashboard = () => {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center overflow-hidden">
+        <div className="container mx-auto px-2 sm:px-4 py-3 flex justify-between items-center gap-2 min-w-0">
           {/* Cotações à esquerda */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 min-w-0">
             <CurrencyRatesDisplay compact />
           </div>
           
           {/* Controles à direita */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             {/* Nome do usuário - sempre visível */}
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
+            <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
               <User className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate max-w-[80px] sm:max-w-[120px]">{displayName}</span>
+              <span className="truncate max-w-[60px] sm:max-w-[120px]">{displayName}</span>
             </div>
 
             {/* Botões visíveis apenas em desktop */}
