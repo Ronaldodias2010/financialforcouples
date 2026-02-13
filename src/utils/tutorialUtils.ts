@@ -572,7 +572,7 @@ const getTutorialContentPT = (): TutorialContent => ({
       id: 'milhas',
       title: '11. Sistema de Milhas',
       icon: '✈️',
-      intro: 'Acompanhe e otimize suas milhas aéreas com estratégias inteligentes de acúmulo e resgate.',
+      intro: 'Acompanhe e otimize suas milhas aéreas com estratégias inteligentes de acúmulo e resgate. Conecte seus programas de fidelidade e sincronize saldos automaticamente via extensão Chrome.',
       subSections: [
         {
           title: 'Configuração de Programas',
@@ -581,6 +581,52 @@ const getTutorialContentPT = (): TutorialContent => ({
             { num: 2, title: 'Metas de Acúmulo', desc: 'Defina objetivos específicos: "Acumular 50.000 milhas LATAM até dezembro para viagem à Europa" com prazo e valor de passagem desejada.' },
             { num: 3, title: 'Vinculação com Cartões', desc: 'Configure quais cartões geram milhas em cada programa e suas respectivas taxas de conversão (ex: 1 real = 1 ponto Livelo).' },
           ]
+        },
+        {
+          title: 'Conectando Programas de Milhas',
+          content: 'O Couples Financials suporta os principais programas de milhas do Brasil e dos EUA:',
+          features: [
+            { title: 'LATAM Pass', desc: 'Programa da LATAM Airlines. Conecte sua conta para acompanhar saldo, metas e promoções de bonificação.' },
+            { title: 'Smiles (GOL)', desc: 'Programa da GOL Linhas Aéreas. Monitore seus pontos e aproveite promoções de passagens.' },
+            { title: 'Azul Fidelidade (TudoAzul)', desc: 'Programa da Azul. Acompanhe pontos acumulados e oportunidades de resgate.' },
+            { title: 'Livelo / Esfera', desc: 'Programas de pontos bancários. Gerencie transferências para companhias aéreas parceiras.' },
+          ]
+        },
+        {
+          title: 'Como Conectar um Programa',
+          steps: [
+            { num: 1, title: 'Acesse o Módulo de Milhas', desc: 'No menu principal, navegue até "Milhagem" para acessar o dashboard de milhas.' },
+            { num: 2, title: 'Adicione um Programa', desc: 'Clique em "Adicionar Programa" e selecione o programa desejado na lista (LATAM Pass, Smiles, Azul, Livelo, Esfera, AAdvantage, MileagePlus, SkyMiles).' },
+            { num: 3, title: 'Informe o Saldo Inicial', desc: 'Digite o saldo atual de milhas/pontos que você possui no programa. Este valor será o ponto de partida para o acompanhamento.' },
+            { num: 4, title: 'Configure Metas (Opcional)', desc: 'Defina uma meta de acúmulo com prazo para acompanhar o progresso no dashboard.' },
+          ]
+        },
+        {
+          title: 'Extensão Chrome - Couples Miles',
+          content: 'A extensão Couples Miles permite sincronizar automaticamente o saldo dos seus programas de milhas diretamente do navegador, de forma segura e sem armazenar senhas.',
+          features: [
+            { title: 'Sincronização Segura', desc: 'A extensão captura apenas o saldo visível na página do programa, sem acessar senhas ou dados de login.' },
+            { title: 'Extração sob Demanda', desc: 'A sincronização é acionada exclusivamente por clique manual do usuário - nunca automática.' },
+            { title: 'Confirmação de Dados', desc: 'Antes de enviar o saldo para o Couples Financials, a extensão mostra um preview para você confirmar se o valor está correto.' },
+            { title: 'Programas Suportados', desc: 'LATAM Pass, Smiles, Azul Fidelidade e Livelo. Novos programas são adicionados regularmente.' },
+          ]
+        },
+        {
+          title: 'Como Usar a Extensão Couples Miles',
+          steps: [
+            { num: 1, title: 'Instalar a Extensão', desc: 'Acesse a Chrome Web Store e procure por "Couples Miles Secure Sync" ou acesse diretamente pelo link disponível no dashboard de milhas. Clique em "Adicionar ao Chrome".' },
+            { num: 2, title: 'Fazer Login na Extensão', desc: 'Após instalar, clique no ícone da extensão e faça login com sua conta do Couples Financials.' },
+            { num: 3, title: 'Acessar o Site do Programa', desc: 'Abra o site oficial do programa de milhas (ex: latam.com) e faça login na sua conta. Navegue até a página onde seu saldo de milhas está visível.' },
+            { num: 4, title: 'Sincronizar', desc: 'Com a página de milhas aberta, clique no ícone da extensão Couples Miles e depois em "Sincronizar Milhas". Confirme se o valor capturado está correto.' },
+            { num: 5, title: 'Verificar no Dashboard', desc: 'Retorne ao Couples Financials e verifique que o saldo foi atualizado automaticamente no dashboard de milhas.' },
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Dica sobre a Extensão',
+            content: 'A extensão funciona melhor quando você está na página principal da sua conta no programa de milhas (geralmente "Minha Conta" ou "Resumo"). Certifique-se de que o saldo está visível na tela antes de clicar em sincronizar. Se a captura falhar, a extensão oferece um botão de ajuda para navegar até a página correta.'
+          }
         },
         {
           title: 'Estratégias de Acúmulo',
@@ -627,7 +673,7 @@ const getTutorialContentPT = (): TutorialContent => ({
           title: '',
           premiumBox: {
             title: 'Recursos Premium de Milhas',
-            content: 'Sincronização automática com sites de programas, alertas de promoções personalizados, calculadora avançada de CPM, sugestões de estratégias otimizadas por IA e análise preditiva de melhores períodos para resgates.'
+            content: 'Sincronização automática com sites de programas via extensão Chrome, alertas de promoções personalizados, calculadora avançada de CPM, sugestões de estratégias otimizadas por IA e análise preditiva de melhores períodos para resgates.'
           }
         },
         {
@@ -1294,7 +1340,7 @@ const getTutorialContentEN = (): TutorialContent => {
     'despesas-recorrentes': 'Automatic management of fixed expenses that repeat monthly, such as subscriptions and bills.',
     'fluxo-caixa': 'Consolidated view of all inflows and outflows that affect your actual bank balance.',
     'investimentos': 'Track your investment portfolio with profitability and performance analysis.',
-    'milhas': 'Track and optimize your airline miles with smart accumulation and redemption strategies.',
+    'milhas': 'Track and optimize your airline miles with smart accumulation and redemption strategies. Connect your loyalty programs and sync balances automatically via Chrome extension.',
     'imposto-renda': 'Complete module to organize your annual Income Tax return. Brazil version available - other versions under construction.',
     'converter': 'Import and process bank statements automatically with OCR and AI technology.',
     'ia': 'Use artificial intelligence to get personalized financial insights and automate tasks.',
@@ -1366,7 +1412,7 @@ const getTutorialContentES = (): TutorialContent => {
     'despesas-recorrentes': 'Gestión automática de gastos fijos que se repiten mensualmente, como suscripciones y facturas.',
     'fluxo-caixa': 'Vista consolidada de todas las entradas y salidas que afectan tu saldo bancario real.',
     'investimentos': 'Acompaña tu cartera de inversiones con análisis de rentabilidad y rendimiento.',
-    'milhas': 'Acompaña y optimiza tus millas aéreas con estrategias inteligentes de acumulación y canje.',
+    'milhas': 'Acompaña y optimiza tus millas aéreas con estrategias inteligentes de acumulación y canje. Conecta tus programas de fidelidad y sincroniza saldos automáticamente con la extensión de Chrome.',
     'imposto-renda': 'Módulo completo para organizar tu declaración anual del Impuesto de Renta. Versión Brasil disponible - otras versiones en construcción.',
     'converter': 'Importa y procesa extractos bancarios automáticamente con tecnología OCR e IA.',
     'ia': 'Usa inteligencia artificial para obtener insights financieros personalizados y automatizar tareas.',
