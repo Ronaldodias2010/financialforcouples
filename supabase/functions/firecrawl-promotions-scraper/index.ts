@@ -226,6 +226,14 @@ function matchKnownDestination(text: string): string | null {
 }
 
 function extractRoute(text: string): { origem: string | null; destino: string | null } {
+  // Try known destinations FIRST (most reliable)
+  const knownDest = matchKnownDestination(text);
+  if (knownDest) {
+    // Try to also find origin
+    const originMatch = text.match(/(?:de\s+|saindo\s+de\s+)([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)\s*(?:→|->|para|–)/);
+    return { origem: originMatch ? originMatch[1].trim() : null, destino: knownDest };
+  }
+
   // "São Paulo → Miami", "de Guarulhos para Lisboa"
   const arrowMatch = text.match(/(?:de\s+|saindo\s+de\s+)?([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)\s*(?:→|->|para|–)\s*([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)/);
   if (arrowMatch) {
@@ -236,12 +244,6 @@ function extractRoute(text: string): { origem: string | null; destino: string | 
   const toMatch = text.match(/(?:passagem|voo|viaje?|ida|voe)\s+(?:para|a)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)/i);
   if (toMatch) {
     return { origem: null, destino: toMatch[1].trim() };
-  }
-
-  // Try known destinations from the comprehensive list
-  const knownDest = matchKnownDestination(text);
-  if (knownDest) {
-    return { origem: null, destino: knownDest };
   }
 
   return { origem: null, destino: null };
@@ -359,15 +361,18 @@ function parsePromotion(titulo: string, url: string, articleMarkdown?: string): 
     return null;
   }
 
-  // 4. Extract destination (MANDATORY)
-  const route = extractRoute(fullText);
+  // 4. Extract destination (MANDATORY) - use title first, fallback to full text
+  let route = extractRoute(titulo);
+  if (!route.destino && articleMarkdown) {
+    route = extractRoute(fullText);
+  }
   if (!route.destino) {
     console.log(`  ✗ No destination found: ${titulo.substring(0, 60)}`);
     return null;
   }
 
-  // 5. Detect program
-  const programa = detectProgram(fullText);
+  // 5. Detect program FROM TITLE ONLY to avoid article body pollution
+  const programa = detectProgram(titulo);
 
   // Build description
   let descricao: string | null = null;

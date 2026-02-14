@@ -1,0 +1,1 @@
+DELETE FROM scraped_promotions WHERE link LIKE '%.png%' OR link LIKE '%.jpg%' OR link LIKE '%.webp%' OR link LIKE '%/wp-content/uploads/%';
