@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Plane, MapPin, RefreshCw, Gift, TrendingDown, Sparkles } from 'lucide-react';
+import { ExternalLink, Plane, MapPin, Gift, TrendingDown, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -47,7 +47,6 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
   const [promotions, setPromotions] = useState<ScrapedPromotion[]>([]);
   const [goals, setGoals] = useState<MileageGoal[]>(mileageGoals);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [matchedPromotions, setMatchedPromotions] = useState<PromotionMatch[]>([]);
   const [dismissedPromotions, setDismissedPromotions] = useState<Set<string>>(() => {
     // Load dismissed promotions from localStorage
@@ -119,46 +118,6 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
     }
   };
 
-  const runScraper = async () => {
-    setRefreshing(true);
-    try {
-      // Call Firecrawl-based promotions scraper (100% cloud)
-      const { data, error } = await supabase.functions.invoke('firecrawl-promotions-scraper', {
-        body: { max_articles: 20 }
-      });
-
-      if (error) throw error;
-
-      const found = data?.promotions_found || 0;
-      
-      // Clear dismissed promotions so they can reappear if still available
-      setDismissedPromotions(new Set());
-      try {
-        localStorage.removeItem('dismissedFeaturedPromotions');
-      } catch (e) {
-        console.warn('Could not clear dismissed promotions:', e);
-      }
-      
-      toast({
-        title: "Promoções atualizadas ☁️",
-        description: found > 0 
-          ? `${found} novas promoções importadas via Firecrawl`
-          : 'Nenhuma promoção nova encontrada',
-      });
-
-      // Reload promotions
-      await loadPromotions();
-    } catch (error) {
-      console.error('Error running scraper:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível buscar promoções via Firecrawl.",
-        variant: "destructive"
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   const dismissPromotion = (promotionId: string, goalId?: string) => {
     const newDismissed = new Set(dismissedPromotions);
@@ -265,27 +224,16 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
     return (
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5 text-primary" />
-              Promoções de Milhas
-            </CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={runScraper}
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Buscar Promoções
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Gift className="h-5 w-5 text-primary" />
+            Promoções de Milhas
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
             <Plane className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p>Nenhuma promoção encontrada.</p>
-            <p className="text-sm mt-2">Clique em "Buscar Promoções" para atualizar.</p>
+            <p>Nenhuma promoção encontrada no momento.</p>
+            <p className="text-sm mt-2">As promoções são atualizadas automaticamente todos os dias às 14h.</p>
           </div>
         </CardContent>
       </Card>
@@ -342,15 +290,6 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
                 {regularPromotions.length} promoções disponíveis
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={runScraper}
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
