@@ -74,13 +74,25 @@ export function BiometricLoginButton({
     setIsMobileOrPWA(isStandalone || isIOSStandalone || (isTouchDevice && isMobileUA));
   }, []);
 
-  // Check if user has biometric credentials when email changes
+  // Check if user has biometric credentials when email changes (debounced)
   useEffect(() => {
-    if (email && isSupported) {
-      checkHasCredentials(email).then(setHasCredentials);
-    } else {
+    if (!email || !isSupported) {
       setHasCredentials(null);
+      return;
     }
+
+    // Only check when email looks complete (contains @, has domain with dot)
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValidEmail) {
+      setHasCredentials(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      checkHasCredentials(email).then(setHasCredentials);
+    }, 600);
+
+    return () => clearTimeout(timer);
   }, [email, isSupported, checkHasCredentials]);
 
   const handleBiometricLogin = async () => {
