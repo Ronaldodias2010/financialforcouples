@@ -226,13 +226,17 @@ export const AccountList = ({ refreshTrigger }: AccountListProps) => {
                       )}
                     </div>
                     <p className="text-lg font-bold">
-                      {account.balance < 0 ? (
-                        <span className="text-destructive inline-flex items-center gap-1">
-                          <AlertTriangle className="h-4 w-4" /> {formatCurrency(account.balance, account.currency)}
-                        </span>
-                      ) : (
-                        <span className="text-primary">{formatCurrency(account.balance, account.currency)}</span>
-                      )}
+                      {(() => {
+                        const limit = Number(account.overdraft_limit || 0);
+                        const bal = Number(account.balance || 0);
+                        const availableToSpend = bal + limit;
+                        const isUsingLimit = bal < 0;
+                        return (
+                          <span className={isUsingLimit ? "text-destructive" : "text-primary"}>
+                            {formatCurrency(Math.max(0, availableToSpend), account.currency)}
+                          </span>
+                        );
+                      })()}
                     </p>
                     <p className="text-sm mt-1">
                       <span className="font-medium">{t('accounts.limitUsed')}: </span>
