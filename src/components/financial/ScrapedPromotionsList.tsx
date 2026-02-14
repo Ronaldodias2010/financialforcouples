@@ -303,24 +303,23 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
                   : ''
               }`}
             >
-              {/* Program badge */}
-              <div className="absolute top-3 right-3">
-                <Badge 
-                  variant="outline" 
-                  className={getProgramColor(promo.programa)}
-                >
-                  {promo.programa}
-                </Badge>
-              </div>
 
               <CardContent className="pt-4 pb-4">
-                {/* Title with source badge */}
-                <div className="flex items-start gap-2 mb-3">
-                  <h3 className="font-semibold text-sm line-clamp-2 pr-16 flex-1">
-                    {promo.titulo || `${promo.programa} - ${promo.destino}`}
-                  </h3>
+                {/* Program + source badges */}
+                <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+                  <Badge 
+                    variant="outline" 
+                    className={getProgramColor(promo.programa)}
+                  >
+                    {promo.programa}
+                  </Badge>
                   {getSourceBadge(promo.fonte)}
                 </div>
+
+                {/* Title */}
+                <h3 className="font-semibold text-sm line-clamp-2 mb-3">
+                  {promo.titulo || `${promo.programa} - ${promo.destino}`}
+                </h3>
 
                 {/* Route */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">

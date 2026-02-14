@@ -285,6 +285,7 @@ function extractArticlesFromListing(markdown: string): ListingArticle[] {
     const rawTitulo = match[1].trim();
     const url = match[2];
 
+    // Skip non-article URLs
     if (
       url.includes('/categorias/') ||
       url.includes('/tag/') ||
@@ -293,6 +294,11 @@ function extractArticlesFromListing(markdown: string): ListingArticle[] {
       url.endsWith('.com/') ||
       url.endsWith('.com')
     ) continue;
+
+    // Skip image/media URLs - these are NOT article links
+    if (/\.(png|jpg|jpeg|gif|webp|svg|bmp|ico|mp4|mp3|pdf)(\?.*)?$/i.test(url)) continue;
+    // Also skip wp-content/uploads paths (image storage)
+    if (url.includes('/wp-content/uploads/')) continue;
 
     if (seen.has(url)) continue;
     seen.add(url);
