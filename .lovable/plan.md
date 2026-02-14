@@ -1,55 +1,114 @@
 
 
-## Plano: Corrigir Classificacao de Pagamentos de Cartao de Credito
+# Migrar Scraping do Python/ngrok para Firecrawl (100% interno)
 
-### Resumo
+## Resposta: SIM, e possivel!
 
-O sistema ja possui logica parcial para excluir pagamentos de cartao dos calculos de despesa (via `dashboardRules.ts`), mas existem caminhos de calculo que nao aplicam essa regra. Alem disso, os pagamentos sao gravados como `type='expense'` no banco, o que causa inconsistencias. Este plano corrige todos os pontos para garantir que pagamentos de fatura nunca aparecam como despesa.
+Fiz testes reais contra o site `passageirodeprimeira.com` e confirmei que:
+- A homepage retorna markdown limpo com titulos e links de artigos
+- A pagina `/categorias/promocoes/` retorna lista de promocoes com titulos e URLs
+- Artigos individuais retornam conteudo completo com detalhes de milhas, programas, cupons, etc.
+- O conector Firecrawl ja esta instalado e a chave `FIRECRAWL_API_KEY` esta disponivel
+
+O site NAO usa proteçoes anti-bot ou renderizaçao JS pesada - e um WordPress simples, ideal para o Firecrawl.
+
+## O que muda
+
+| Aspecto | Hoje (Python/ngrok) | Firecrawl (novo) |
+|---------|-------------------|------------------|
+| Dependencia | PC local ligado + ngrok ativo | Nenhuma - 100% cloud |
+| Ponto de falha | URL ngrok muda/expira | Nenhum |
+| Infraestrutura | Python + Flask + tunnel | Edge Function unica |
+| Custo | Gratuito (seu PC) | Creditos Firecrawl (por pagina scrapeada) |
+
+## Plano de Implementaçao
+
+### Etapa 1 - Criar Edge Function `firecrawl-scrape`
+Edge function generica que encapsula chamadas ao Firecrawl API. Essa funçao ja estava prevista no codigo (`src/lib/api/firecrawl.ts`) mas nunca foi criada.
+
+### Etapa 2 - Reescrever `firecrawl-promotions-scraper`
+Substituir os dados demo atuais por scraping real usando Firecrawl:
+
+1. **Scrape da pagina de promocoes**: `passageirodeprimeira.com/categorias/promocoes/` para obter lista de artigos
+2. **Scrape de cada artigo individual**: Extrair titulo, conteudo completo
+3. **Parsing inteligente**: Reaproveitar as funçoes `parseMiles()` e `detectProgram()` que ja existem em `import-pdp-deals` para extrair:
+   - Programa de milhas (Smiles, LATAM Pass, TudoAzul, Livelo, Esfera, etc.)
+   - Quantidade de milhas/pontos
+   - Origem/Destino (quando mencionado)
+4. **Gravar no banco**: Inserir na tabela `scraped_promotions` com deduplicaçao via `external_hash`
+
+### Etapa 3 - Atualizar `import-pdp-deals`
+Adicionar um novo modo `firecrawl` que usa o Firecrawl internamente ao inves de depender do ngrok:
+- Manter compatibilidade com o modo ngrok existente (fallback)
+- Quando chamado sem `ngrok_url`, usar Firecrawl automaticamente
+
+### Etapa 4 - Atualizar o Admin Panel
+Alterar `ScraperControlSection.tsx` para:
+- Remover referencia hardcoded ao ngrok URL
+- Botao "Executar Scraper" usa Firecrawl diretamente
+- Indicar modo "Firecrawl Cloud" no status
+
+### Etapa 5 - Atualizar o Cron Job
+O cron diario que ja existe passara a chamar a versao Firecrawl sem depender de serviço externo.
 
 ---
 
-### Mudancas
+## Detalhes Tecnicos
 
-#### 1. Banco de Dados - Funcao `process_card_payment`
+### Fluxo do Scraping
 
-Alterar a funcao para gravar pagamentos com `payment_method = 'card_payment'` e `card_transaction_type = 'card_payment'`, garantindo que os filtros existentes continuem funcionando. O `type` permanecera como `expense` no banco (por compatibilidade com triggers existentes), mas sera filtrado em todos os calculos do frontend.
+```text
++---------------------------+
+|  Cron Job (12h BRT)       |
+|  ou Admin Manual          |
++------------+--------------+
+             |
+             v
++---------------------------+
+|  Edge Function:           |
+|  firecrawl-promotions-    |
+|  scraper                  |
++------------+--------------+
+             |
+             v
++---------------------------+
+| 1. Firecrawl Scrape       |
+|    /categorias/promocoes/ |
+|    -> Lista de URLs       |
++------------+--------------+
+             |
+             v
++---------------------------+
+| 2. Firecrawl Scrape       |
+|    cada artigo (max 20)   |
+|    -> Markdown completo   |
++------------+--------------+
+             |
+             v
++---------------------------+
+| 3. Parsing local          |
+|    parseMiles()           |
+|    detectProgram()        |
+|    extrair origem/destino |
++------------+--------------+
+             |
+             v
++---------------------------+
+| 4. Gravar em              |
+|    scraped_promotions     |
+|    com deduplicaçao       |
++---------------------------+
+```
 
-**Alternativa avaliada**: Mudar `type` para `transfer` no banco. Isso quebraria triggers e funcoes RPC existentes que dependem de `type='expense'`. A abordagem mais segura e manter o filtro via `card_transaction_type`.
+### Estimativa de creditos Firecrawl por execuçao
+- 1 credito para pagina de listagem
+- ~10-20 creditos para artigos individuais
+- Total: ~15-25 creditos por execuçao diaria
 
-#### 2. `useFinancialData.tsx` - Corrigir caminhos de calculo duplicados
-
-O arquivo tem dois blocos de calculo (linhas ~359-416) que filtram transacoes manualmente sem usar as regras centralizadas de `dashboardRules.ts`. Esses blocos precisam excluir transacoes com `card_transaction_type = 'card_payment'` para nao contar pagamentos como despesa.
-
-Adicionar filtro: `if (transaction.card_transaction_type === 'card_payment') return;` nos dois blocos (prevTransactions e currentTransactions).
-
-#### 3. Nota explicativa na aba de Cartao de Credito (`CardList.tsx`)
-
-Adicionar um componente informativo abaixo da lista de cartoes com texto em 3 idiomas:
-
-- **PT**: "Pagamentos de cartao nao sao considerados despesas, pois os gastos ja foram contabilizados no momento da compra."
-- **EN**: "Credit card payments are not considered expenses, as purchases were already recorded at the time they were made."
-- **ES**: "Los pagos de la tarjeta no se consideran gastos, ya que las compras fueron registradas en el momento en que se realizaron."
-
-Usar o icone `Info` do lucide-react com estilo discreto (muted background).
-
-#### 4. Traducoes em `LanguageContext.tsx`
-
-Adicionar chave `cards.paymentNote` nos 3 idiomas para a nota explicativa.
-
----
-
-### Detalhes Tecnicos
-
-| Arquivo | Alteracao |
-|---|---|
-| `src/hooks/useFinancialData.tsx` | Adicionar filtro `card_transaction_type === 'card_payment'` nos 2 blocos de calculo manual (prev/current) |
-| `src/components/cards/CardList.tsx` | Adicionar nota informativa com icone Info abaixo da lista de cartoes |
-| `src/contexts/LanguageContext.tsx` | Adicionar traducao `cards.paymentNote` em PT/EN/ES |
-| `src/utils/dashboardRules.ts` | Ja esta correto - nenhuma alteracao necessaria |
-
-### O que NAO muda
-
-- A funcao `dashboardRules.ts` ja exclui pagamentos corretamente nos graficos de categoria e calculos do dashboard principal
-- O componente `ExpensesPieChart.tsx` ja usa `isDashboardExpense` que filtra pagamentos
-- O `process_card_payment` no banco ja marca `card_transaction_type = 'card_payment'`
+### Arquivos que serao criados/modificados
+- **CRIAR**: `supabase/functions/firecrawl-scrape/index.ts` (edge function generica)
+- **MODIFICAR**: `supabase/functions/firecrawl-promotions-scraper/index.ts` (scraping real)
+- **MODIFICAR**: `supabase/functions/import-pdp-deals/index.ts` (modo firecrawl)
+- **MODIFICAR**: `src/components/admin/ScraperControlSection.tsx` (UI admin)
+- **MODIFICAR**: `src/components/financial/ScrapedPromotionsList.tsx` (remover ngrok)
 
