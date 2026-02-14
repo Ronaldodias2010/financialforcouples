@@ -109,6 +109,7 @@ const KNOWN_DESTINATIONS: { name: string; aliases: string[] }[] = [
   { name: 'João Pessoa', aliases: ['joao pessoa', 'joão pessoa'] },
   { name: 'Fernando de Noronha', aliases: ['fernando de noronha', 'noronha'] },
   { name: 'Foz do Iguaçu', aliases: ['foz do iguacu', 'foz do iguaçu', 'iguaçu'] },
+  { name: 'St. Martin', aliases: ['st. martin', 'saint martin', 'são martinho', 'st martin'] },
   { name: 'Gramado', aliases: ['gramado'] },
   { name: 'Búzios', aliases: ['buzios', 'búzios'] },
   // Generic regions
@@ -143,15 +144,17 @@ function parseMilesReal(text: string): number | null {
   if (!text) return null;
   const lower = text.toLowerCase();
 
-  // "X mil milhas/pontos" → X * 1000
-  const milPattern = /(\d+(?:[.,]\d+)?)\s*mil\s*(milhas|pontos|miles)/i;
+  // "X mil milhas/pontos [ProgramName]" → X * 1000
+  // Accepts text after pontos/milhas (e.g. "66 mil pontos Azul")
+  const milPattern = /(\d+(?:[.,]\d+)?)\s*mil\s+(?:milhas|pontos|miles)(?:\s+\w+)*/i;
   const milMatch = lower.match(milPattern);
   if (milMatch) {
     return Math.round(parseFloat(milMatch[1].replace(',', '.')) * 1000);
   }
 
-  // "35.000 milhas" or "4.510 Milhas"
-  const directPattern = /(\d{1,3}(?:[.,]\d{3})*|\d+)\s*(milhas|pontos|miles)/i;
+  // "44.500 pontos Azul Fidelidade" or "8.400 pontos Azul"
+  // Accepts text after pontos/milhas
+  const directPattern = /(\d{1,3}(?:[.,]\d{3})*|\d+)\s+(?:milhas|pontos|miles)(?:\s+\w+)*/i;
   const directMatch = lower.match(directPattern);
   if (directMatch) {
     const numStr = directMatch[1].replace(/\./g, '').replace(/,/g, '');
@@ -262,6 +265,16 @@ interface ListingArticle {
   url: string;
 }
 
+function cleanTitle(raw: string): string {
+  // Remove markdown image syntax: ![alt text](url)
+  let cleaned = raw.replace(/!\[[^\]]*\]\([^)]*\)/g, '').trim();
+  // Remove leading ![  (incomplete image syntax)
+  cleaned = cleaned.replace(/^!\[/g, '').trim();
+  // Remove trailing image remnants
+  cleaned = cleaned.replace(/\]\([^)]*\)$/g, '').trim();
+  return cleaned;
+}
+
 function extractArticlesFromListing(markdown: string): ListingArticle[] {
   const articles: ListingArticle[] = [];
   const seen = new Set<string>();
@@ -269,7 +282,7 @@ function extractArticlesFromListing(markdown: string): ListingArticle[] {
   const linkRegex = /\[([^\]]+)\]\((https?:\/\/(?:www\.)?passageirodeprimeira\.com\/[^\s)]+)\)/gm;
   let match;
   while ((match = linkRegex.exec(markdown)) !== null) {
-    const titulo = match[1].trim();
+    const rawTitulo = match[1].trim();
     const url = match[2];
 
     if (
@@ -284,9 +297,13 @@ function extractArticlesFromListing(markdown: string): ListingArticle[] {
     if (seen.has(url)) continue;
     seen.add(url);
 
+    const titulo = cleanTitle(rawTitulo);
+    if (titulo.length < 10) continue;
+
     articles.push({ titulo, url });
   }
 
+  // No limit here - return ALL articles found
   return articles;
 }
 
@@ -464,11 +481,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 2: Extract articles
-    const articles = extractArticlesFromListing(listingResult.markdown).slice(0, maxArticles);
-    console.log(`Found ${articles.length} unique articles on listing`);
+    // Step 2: Extract ALL articles (no early limit) and clean titles
+    const allArticles = extractArticlesFromListing(listingResult.markdown);
+    console.log(`Found ${allArticles.length} unique articles on listing`);
 
-    if (articles.length === 0) {
+    if (allArticles.length === 0) {
       if (jobId) {
         await supabase.from('scraping_jobs').update({
           status: 'completed',
@@ -484,43 +501,85 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 3: Parse promotions - title first, then enrich if needed
+    // Step 3: Smart parsing - filter BEFORE spending credits
+    // Group A: titles with destination + miles → card directly (0 extra credits)
+    // Group B: titles with destination but no miles → scrape article (1 credit each)
+    // Group C: no destination → discard (0 credits)
     const parsedPromotions: ParsedPromotion[] = [];
     let pagesScraped = 1;
     const enrichArticles = body.enrich !== false;
+    const groupA: { article: ListingArticle; promo: ParsedPromotion }[] = [];
+    const groupB: ListingArticle[] = [];
 
-    for (const article of articles) {
-      // First try parsing from title alone
-      let promo = parsePromotion(article.titulo, article.url);
+    for (const article of allArticles) {
+      const lower = article.titulo.toLowerCase();
+      
+      // Skip blocked/non-travel titles
+      if (BLOCKED_TITLE_PATTERNS.some(p => lower.includes(p))) continue;
+      if (NON_TRAVEL_PATTERNS.some(p => lower.includes(p))) continue;
 
-      if (promo && enrichArticles) {
-        // Enrich with article content for better data
-        console.log(`Enriching: ${article.titulo.substring(0, 60)}...`);
+      const dest = matchKnownDestination(article.titulo);
+      if (!dest) {
+        console.log(`  ✗ No destination: ${article.titulo.substring(0, 60)}`);
+        continue; // Group C: discard
+      }
+
+      // Try parsing from title alone
+      const promo = parsePromotion(article.titulo, article.url);
+      if (promo) {
+        groupA.push({ article, promo });
+        console.log(`  ✓ Title-parsed: ${promo.destino} | ${promo.milhas_min} pts | ${promo.programa}`);
+      } else {
+        groupB.push(article);
+        console.log(`  → Needs scrape: ${article.titulo.substring(0, 60)}`);
+      }
+    }
+
+    // Add all Group A promotions directly
+    for (const { promo } of groupA) {
+      parsedPromotions.push(promo);
+    }
+
+    // Scrape Group B articles (only those with destination but no miles)
+    const maxGroupBScrapes = Math.min(groupB.length, maxArticles - groupA.length);
+    if (enrichArticles && maxGroupBScrapes > 0) {
+      for (let i = 0; i < maxGroupBScrapes; i++) {
+        const article = groupB[i];
+        console.log(`Scraping for enrichment: ${article.titulo.substring(0, 60)}...`);
+        const articleResult = await firecrawlScrape(firecrawlApiKey, article.url);
+        pagesScraped++;
+
+        if (articleResult.markdown && !articleResult.markdown.includes('is blocked')) {
+          const promo = parsePromotion(article.titulo, article.url, articleResult.markdown);
+          if (promo) {
+            parsedPromotions.push(promo);
+            console.log(`  ✓ Enriched: ${promo.destino} | ${promo.milhas_min} pts | ${promo.programa}`);
+          }
+        }
+      }
+    }
+
+    // Also enrich Group A for better descriptions (limited)
+    if (enrichArticles) {
+      const enrichLimit = Math.min(groupA.length, 5);
+      for (let i = 0; i < enrichLimit; i++) {
+        const { article } = groupA[i];
+        console.log(`Enriching Group A: ${article.titulo.substring(0, 60)}...`);
         const articleResult = await firecrawlScrape(firecrawlApiKey, article.url);
         pagesScraped++;
 
         if (articleResult.markdown && !articleResult.markdown.includes('is blocked')) {
           const enriched = parsePromotion(article.titulo, article.url, articleResult.markdown);
-          if (enriched) promo = enriched;
+          if (enriched) {
+            // Replace the title-only version with enriched version
+            const idx = parsedPromotions.findIndex(p => p.link === article.url);
+            if (idx >= 0) parsedPromotions[idx] = enriched;
+          }
         }
-      } else if (!promo && enrichArticles) {
-        // Title alone failed, try with full article
-        console.log(`Scraping for parsing: ${article.titulo.substring(0, 60)}...`);
-        const articleResult = await firecrawlScrape(firecrawlApiKey, article.url);
-        pagesScraped++;
-
-        if (articleResult.markdown && !articleResult.markdown.includes('is blocked')) {
-          promo = parsePromotion(article.titulo, article.url, articleResult.markdown);
-        }
-      }
-
-      if (promo) {
-        parsedPromotions.push(promo);
-        console.log(`  ✓ ${promo.destino} | ${promo.milhas_min} pts | ${promo.programa}`);
       }
     }
 
-    console.log(`Parsed ${parsedPromotions.length} valid promotions from ${pagesScraped} pages`);
+    console.log(`Parsed ${parsedPromotions.length} valid promotions from ${pagesScraped} pages (GroupA: ${groupA.length}, GroupB scraped: ${maxGroupBScrapes})`);
 
     // Step 4: Deduplicate and insert
     if (parsedPromotions.length > 0) {
@@ -539,7 +598,7 @@ Deno.serve(async (req) => {
       if (newPromotions.length > 0) {
         const { data: inserted, error: insertError } = await supabase
           .from('scraped_promotions')
-          .insert(newPromotions)
+          .upsert(newPromotions, { onConflict: 'external_hash', ignoreDuplicates: true })
           .select('id');
 
         if (insertError) {
@@ -584,7 +643,7 @@ Deno.serve(async (req) => {
           success: true,
           job_id: jobId,
           pages_scraped: pagesScraped,
-          articles_found: articles.length,
+          articles_found: allArticles.length,
           promotions_parsed: parsedPromotions.length,
           promotions_found: insertedCount,
           duplicates_skipped: parsedPromotions.length - newPromotions.length,
@@ -610,7 +669,7 @@ Deno.serve(async (req) => {
         success: true,
         job_id: jobId,
         pages_scraped: pagesScraped,
-        articles_found: articles.length,
+        articles_found: allArticles.length,
         promotions_parsed: 0,
         promotions_found: 0,
         errors_count: errors.length,
