@@ -98,30 +98,20 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
 
   const loadPromotions = async () => {
     try {
-      // Calculate 30 days ago for expiration filter
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Calculate 21 days ago for expiration filter
+      const twentyOneDaysAgo = new Date();
+      twentyOneDaysAgo.setDate(twentyOneDaysAgo.getDate() - 21);
       
       const { data, error } = await supabase
         .from('scraped_promotions')
         .select('*')
         .eq('is_active', true)
-        .gte('created_at', thirtyDaysAgo.toISOString())
+        .gte('created_at', twentyOneDaysAgo.toISOString())
         .order('milhas_min', { ascending: true })
         .limit(20);
 
       if (error) throw error;
       setPromotions(data || []);
-      
-      // Auto-cleanup: Delete promotions older than 30 days
-      const { error: cleanupError } = await supabase
-        .from('scraped_promotions')
-        .delete()
-        .lt('created_at', thirtyDaysAgo.toISOString());
-      
-      if (cleanupError) {
-        console.warn('Cleanup warning:', cleanupError);
-      }
     } catch (error) {
       console.error('Error loading scraped promotions:', error);
     } finally {
@@ -218,6 +208,9 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
       'LATAM Pass': 'bg-red-500/10 text-red-700 border-red-200 dark:text-red-400',
       'TudoAzul': 'bg-blue-500/10 text-blue-700 border-blue-200 dark:text-blue-400',
       'Livelo': 'bg-purple-500/10 text-purple-700 border-purple-200 dark:text-purple-400',
+      'Esfera': 'bg-green-500/10 text-green-700 border-green-200 dark:text-green-400',
+      'AAdvantage': 'bg-sky-500/10 text-sky-700 border-sky-200 dark:text-sky-400',
+      'Avianca': 'bg-rose-500/10 text-rose-700 border-rose-200 dark:text-rose-400',
       'Diversos': 'bg-gray-500/10 text-gray-700 border-gray-200 dark:text-gray-400',
     };
     return colors[programa] || colors['Diversos'];

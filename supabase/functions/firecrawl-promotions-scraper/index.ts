@@ -5,9 +5,141 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// ── Known destinations for matching ──────────────────────────────
+
+const KNOWN_DESTINATIONS: { name: string; aliases: string[] }[] = [
+  // Americas
+  { name: 'Miami', aliases: ['miami'] },
+  { name: 'Orlando', aliases: ['orlando'] },
+  { name: 'New York', aliases: ['new york', 'nova york', 'nova iorque', 'nyc'] },
+  { name: 'Los Angeles', aliases: ['los angeles', 'la'] },
+  { name: 'Las Vegas', aliases: ['las vegas', 'vegas'] },
+  { name: 'San Francisco', aliases: ['san francisco', 'são francisco'] },
+  { name: 'Chicago', aliases: ['chicago'] },
+  { name: 'Boston', aliases: ['boston'] },
+  { name: 'Washington', aliases: ['washington'] },
+  { name: 'Houston', aliases: ['houston'] },
+  { name: 'Dallas', aliases: ['dallas'] },
+  { name: 'Atlanta', aliases: ['atlanta'] },
+  { name: 'Denver', aliases: ['denver'] },
+  { name: 'Seattle', aliases: ['seattle'] },
+  { name: 'Cancún', aliases: ['cancun', 'cancún'] },
+  { name: 'Cidade do México', aliases: ['cidade do mexico', 'ciudad de mexico', 'mexico city'] },
+  { name: 'Punta Cana', aliases: ['punta cana'] },
+  { name: 'Havana', aliases: ['havana'] },
+  { name: 'Aruba', aliases: ['aruba'] },
+  { name: 'Curaçao', aliases: ['curacao', 'curaçao'] },
+  { name: 'Buenos Aires', aliases: ['buenos aires'] },
+  { name: 'Santiago', aliases: ['santiago'] },
+  { name: 'Lima', aliases: ['lima'] },
+  { name: 'Bogotá', aliases: ['bogota', 'bogotá'] },
+  { name: 'Montevidéu', aliases: ['montevideu', 'montevideo'] },
+  { name: 'Cartagena', aliases: ['cartagena'] },
+  { name: 'Bariloche', aliases: ['bariloche'] },
+  { name: 'Mendoza', aliases: ['mendoza'] },
+  { name: 'Toronto', aliases: ['toronto'] },
+  { name: 'Vancouver', aliases: ['vancouver'] },
+  // Europe
+  { name: 'Lisboa', aliases: ['lisboa', 'lisbon'] },
+  { name: 'Porto', aliases: ['porto'] },
+  { name: 'Paris', aliases: ['paris'] },
+  { name: 'Londres', aliases: ['londres', 'london'] },
+  { name: 'Madri', aliases: ['madri', 'madrid'] },
+  { name: 'Barcelona', aliases: ['barcelona'] },
+  { name: 'Roma', aliases: ['roma', 'rome'] },
+  { name: 'Milão', aliases: ['milao', 'milão', 'milan'] },
+  { name: 'Veneza', aliases: ['veneza', 'venice'] },
+  { name: 'Florença', aliases: ['florenca', 'florença', 'florence'] },
+  { name: 'Amsterdam', aliases: ['amsterdam', 'amsterdã'] },
+  { name: 'Berlim', aliases: ['berlim', 'berlin'] },
+  { name: 'Munique', aliases: ['munique', 'munich'] },
+  { name: 'Frankfurt', aliases: ['frankfurt'] },
+  { name: 'Zurique', aliases: ['zurique', 'zurich'] },
+  { name: 'Genebra', aliases: ['genebra', 'geneva'] },
+  { name: 'Viena', aliases: ['viena', 'vienna'] },
+  { name: 'Praga', aliases: ['praga', 'prague'] },
+  { name: 'Dublin', aliases: ['dublin'] },
+  { name: 'Edimburgo', aliases: ['edimburgo', 'edinburgh'] },
+  { name: 'Atenas', aliases: ['atenas', 'athens'] },
+  { name: 'Istambul', aliases: ['istambul', 'istanbul'] },
+  { name: 'Copenhague', aliases: ['copenhague', 'copenhagen'] },
+  { name: 'Estocolmo', aliases: ['estocolmo', 'stockholm'] },
+  { name: 'Oslo', aliases: ['oslo'] },
+  { name: 'Varsóvia', aliases: ['varsovia', 'varsóvia', 'warsaw'] },
+  { name: 'Budapeste', aliases: ['budapeste', 'budapest'] },
+  { name: 'Bruxelas', aliases: ['bruxelas', 'brussels'] },
+  // Middle East & Africa
+  { name: 'Dubai', aliases: ['dubai'] },
+  { name: 'Abu Dhabi', aliases: ['abu dhabi'] },
+  { name: 'Doha', aliases: ['doha'] },
+  { name: 'Tel Aviv', aliases: ['tel aviv'] },
+  { name: 'Cairo', aliases: ['cairo'] },
+  { name: 'Cidade do Cabo', aliases: ['cidade do cabo', 'cape town'] },
+  { name: 'Joanesburgo', aliases: ['joanesburgo', 'johannesburg'] },
+  // Asia & Oceania
+  { name: 'Tóquio', aliases: ['toquio', 'tóquio', 'tokyo'] },
+  { name: 'Seul', aliases: ['seul', 'seoul'] },
+  { name: 'Bangkok', aliases: ['bangkok'] },
+  { name: 'Singapura', aliases: ['singapura', 'singapore'] },
+  { name: 'Hong Kong', aliases: ['hong kong'] },
+  { name: 'Xangai', aliases: ['xangai', 'shanghai'] },
+  { name: 'Pequim', aliases: ['pequim', 'beijing'] },
+  { name: 'Sydney', aliases: ['sydney'] },
+  { name: 'Auckland', aliases: ['auckland'] },
+  { name: 'Bali', aliases: ['bali'] },
+  { name: 'Maldivas', aliases: ['maldivas', 'maldives'] },
+  // Central America & Caribbean
+  { name: 'Cidade do Panamá', aliases: ['cidade do panama', 'panama city', 'panamá'] },
+  { name: 'San José', aliases: ['san jose', 'costa rica'] },
+  // Brazil (domestic)
+  { name: 'São Paulo', aliases: ['sao paulo', 'são paulo', 'guarulhos', 'congonhas', 'gru'] },
+  { name: 'Rio de Janeiro', aliases: ['rio de janeiro', 'galeão', 'galeao', 'santos dumont'] },
+  { name: 'Salvador', aliases: ['salvador'] },
+  { name: 'Recife', aliases: ['recife'] },
+  { name: 'Fortaleza', aliases: ['fortaleza'] },
+  { name: 'Natal', aliases: ['natal'] },
+  { name: 'Florianópolis', aliases: ['florianopolis', 'florianópolis', 'floripa'] },
+  { name: 'Porto Alegre', aliases: ['porto alegre'] },
+  { name: 'Brasília', aliases: ['brasilia', 'brasília'] },
+  { name: 'Belo Horizonte', aliases: ['belo horizonte', 'confins'] },
+  { name: 'Curitiba', aliases: ['curitiba'] },
+  { name: 'Manaus', aliases: ['manaus'] },
+  { name: 'Belém', aliases: ['belem', 'belém'] },
+  { name: 'Maceió', aliases: ['maceio', 'maceió'] },
+  { name: 'João Pessoa', aliases: ['joao pessoa', 'joão pessoa'] },
+  { name: 'Fernando de Noronha', aliases: ['fernando de noronha', 'noronha'] },
+  { name: 'Foz do Iguaçu', aliases: ['foz do iguacu', 'foz do iguaçu', 'iguaçu'] },
+  { name: 'Gramado', aliases: ['gramado'] },
+  { name: 'Búzios', aliases: ['buzios', 'búzios'] },
+  // Generic regions
+  { name: 'Europa', aliases: ['europa', 'europe'] },
+  { name: 'Estados Unidos', aliases: ['estados unidos', 'eua', 'usa'] },
+  { name: 'Caribe', aliases: ['caribe', 'caribbean'] },
+  { name: 'Ásia', aliases: ['asia', 'ásia'] },
+  { name: 'África', aliases: ['africa', 'áfrica'] },
+  { name: 'Oceania', aliases: ['oceania'] },
+];
+
+// ── Blocked title patterns ──────────────────────────────────────
+
+const BLOCKED_TITLE_PATTERNS = [
+  'is blocked', 'rezync', 'whatsapp', 'baixe o app', 'download',
+  'política de privacidade', 'canal gratuito', 'grupo do telegram',
+  'inscreva-se', 'newsletter', 'cupom de desconto',
+];
+
+// ── Non-travel content patterns ─────────────────────────────────
+
+const NON_TRAVEL_PATTERNS = [
+  'compra de pontos', 'comprar pontos', 'transferência de pontos',
+  'transferir pontos', 'bônus de transferência', 'bonus de transferencia',
+  'desconto na compra', 'milheiro', 'assinatura do clube',
+  'cartão de crédito', 'cashback',
+];
+
 // ── Parsing helpers ──────────────────────────────────────────────
 
-function parseMiles(text: string): number | null {
+function parseMilesReal(text: string): number | null {
   if (!text) return null;
   const lower = text.toLowerCase();
 
@@ -23,39 +155,39 @@ function parseMiles(text: string): number | null {
   const directMatch = lower.match(directPattern);
   if (directMatch) {
     const numStr = directMatch[1].replace(/\./g, '').replace(/,/g, '');
-    return parseInt(numStr, 10);
-  }
-
-  // Standalone large number that looks like miles (e.g. "35000", "120.000")
-  const standalonePattern = /\b(\d{1,3}(?:\.\d{3})+|\d{4,6})\b/;
-  const standaloneMatch = text.match(standalonePattern);
-  if (standaloneMatch) {
-    const num = parseInt(standaloneMatch[1].replace(/\./g, ''), 10);
+    const num = parseInt(numStr, 10);
     if (num >= 1000 && num <= 500000) return num;
   }
 
   return null;
 }
 
-// Context-aware miles parser: looks for miles near relevant keywords
-function parseMilesFromContext(markdown: string): number | null {
-  // Split into sentences/lines and find ones with mile-related keywords
-  const lines = markdown.split('\n');
+// Context-aware: scan lines with mile keywords
+function parseMilesFromContext(text: string): number | null {
+  const lines = text.split('\n');
   const mileKeywords = ['milha', 'ponto', 'miles', 'points', 'resgate', 'trecho', 'ida e volta', 'round trip'];
   
   for (const line of lines) {
     const lower = line.toLowerCase();
     if (mileKeywords.some(k => lower.includes(k))) {
-      const miles = parseMiles(line);
-      if (miles && miles >= 1000 && miles <= 500000) return miles;
+      const miles = parseMilesReal(line);
+      if (miles) return miles;
     }
   }
 
-  // Fallback: try title line
-  const titleMatch = markdown.match(/^#\s+(.+)$/m);
+  // Try title line
+  const titleMatch = text.match(/^#\s+(.+)$/m);
   if (titleMatch) {
-    const miles = parseMiles(titleMatch[1]);
-    if (miles && miles >= 1000 && miles <= 500000) return miles;
+    const miles = parseMilesReal(titleMatch[1]);
+    if (miles) return miles;
+  }
+
+  // Try standalone numbers near "voe", "passagem", "emissão"
+  const contextPattern = /(?:voe|passagem|emiss[aã]o|resgate)[^.]{0,50}?(\d{1,3}(?:\.\d{3})+|\d{4,6})/gi;
+  let ctxMatch;
+  while ((ctxMatch = contextPattern.exec(text)) !== null) {
+    const num = parseInt(ctxMatch[1].replace(/\./g, ''), 10);
+    if (num >= 1000 && num <= 500000) return num;
   }
 
   return null;
@@ -63,13 +195,31 @@ function parseMilesFromContext(markdown: string): number | null {
 
 function detectProgram(text: string): string {
   const l = text.toLowerCase();
-  if (l.includes('smiles')) return 'Smiles';
-  if (l.includes('latam') || l.includes('multiplus')) return 'LATAM Pass';
-  if (l.includes('azul') || l.includes('tudoazul')) return 'TudoAzul';
-  if (l.includes('livelo')) return 'Livelo';
+  // Order by specificity: more specific first
   if (l.includes('esfera')) return 'Esfera';
+  if (l.includes('tudoazul') || /tudo\s*azul/i.test(l)) return 'TudoAzul';
+  if (l.includes('smiles')) return 'Smiles';
+  if (l.includes('latam') || l.includes('multiplus') || l.includes('latam pass')) return 'LATAM Pass';
+  if (l.includes('livelo')) return 'Livelo';
+  if (l.includes('azul')) return 'TudoAzul'; // "Azul" alone → TudoAzul
   if (l.includes('aadvantage') || l.includes('american airlines')) return 'AAdvantage';
+  if (l.includes('avianca')) return 'Avianca';
   return 'Diversos';
+}
+
+function matchKnownDestination(text: string): string | null {
+  const lower = text.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // remove accents for matching
+  
+  for (const dest of KNOWN_DESTINATIONS) {
+    for (const alias of dest.aliases) {
+      const normalizedAlias = alias.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (lower.includes(normalizedAlias)) {
+        return dest.name;
+      }
+    }
+  }
+  return null;
 }
 
 function extractRoute(text: string): { origem: string | null; destino: string | null } {
@@ -80,9 +230,15 @@ function extractRoute(text: string): { origem: string | null; destino: string | 
   }
 
   // "passagem para Paris", "voo para Orlando"
-  const toMatch = text.match(/(?:passagem|voo|viaje?|ida)\s+(?:para|a)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)/i);
+  const toMatch = text.match(/(?:passagem|voo|viaje?|ida|voe)\s+(?:para|a)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)/i);
   if (toMatch) {
     return { origem: null, destino: toMatch[1].trim() };
+  }
+
+  // Try known destinations from the comprehensive list
+  const knownDest = matchKnownDestination(text);
+  if (knownDest) {
+    return { origem: null, destino: knownDest };
   }
 
   return { origem: null, destino: null };
@@ -99,7 +255,7 @@ function generateHash(titulo: string, miles: number): string {
   return Math.abs(hash).toString(16);
 }
 
-// ── Extract articles (title + URL) from the listing markdown ──
+// ── Extract articles from listing markdown ──────────────────────
 
 interface ListingArticle {
   titulo: string;
@@ -110,14 +266,12 @@ function extractArticlesFromListing(markdown: string): ListingArticle[] {
   const articles: ListingArticle[] = [];
   const seen = new Set<string>();
 
-  // Match markdown links in H1 headers: # [Title](URL)
-  const linkRegex = /^#\s+\[([^\]]+)\]\((https?:\/\/(?:www\.)?passageirodeprimeira\.com\/[^\s)]+)\)/gm;
+  const linkRegex = /\[([^\]]+)\]\((https?:\/\/(?:www\.)?passageirodeprimeira\.com\/[^\s)]+)\)/gm;
   let match;
   while ((match = linkRegex.exec(markdown)) !== null) {
     const titulo = match[1].trim();
     const url = match[2];
 
-    // Skip category/tag/page/generic URLs
     if (
       url.includes('/categorias/') ||
       url.includes('/tag/') ||
@@ -127,7 +281,6 @@ function extractArticlesFromListing(markdown: string): ListingArticle[] {
       url.endsWith('.com')
     ) continue;
 
-    // Deduplicate
     if (seen.has(url)) continue;
     seen.add(url);
 
@@ -137,7 +290,7 @@ function extractArticlesFromListing(markdown: string): ListingArticle[] {
   return articles;
 }
 
-// ── Parse a single article markdown into a promotion ──────────
+// ── Parse a single article into a promotion ──────────────────────
 
 interface ParsedPromotion {
   programa: string;
@@ -153,54 +306,47 @@ interface ParsedPromotion {
   external_hash: string;
 }
 
-// Extract a percentage value from text (e.g., "70% de bônus" → 70)
-function extractPercentage(text: string): number | null {
-  const match = text.match(/(\d+)%/);
-  return match ? parseInt(match[1], 10) : null;
-}
-
-// Extract cost per thousand points (milheiro) e.g., "R$ 33,60" → 3360 (in centavos)
-function extractMilheiroCost(text: string): number | null {
-  const match = text.match(/R\$\s*(\d+[.,]\d{2})/);
-  if (match) {
-    return Math.round(parseFloat(match[1].replace(',', '.')) * 100);
-  }
-  return null;
-}
-
-// Parse promotion from listing title + optional article content
 function parsePromotion(titulo: string, url: string, articleMarkdown?: string): ParsedPromotion | null {
   if (!titulo || titulo.length < 10) return null;
 
   const lower = titulo.toLowerCase();
 
-  // Skip non-promotion content
-  const skipPatterns = ['whatsapp', 'canal gratuito', 'baixe o app', 'download', 'política de privacidade'];
-  if (skipPatterns.some(p => lower.includes(p))) return null;
-
-  const fullText = articleMarkdown ? `${titulo}\n${articleMarkdown}` : titulo;
-  const programa = detectProgram(fullText);
-
-  // Try to extract miles from title first, then article
-  let miles = parseMilesFromContext(titulo) || (articleMarkdown ? parseMilesFromContext(articleMarkdown) : null);
-
-  // For bonus/discount promotions without explicit miles, use a synthetic value
-  // based on the percentage or cost info
-  if (!miles) {
-    const pct = extractPercentage(titulo);
-    if (pct && pct >= 10) {
-      // Use percentage as a relevance indicator (not actual miles)
-      // Store as a synthetic value: percentage * 1000 for sorting
-      miles = pct * 1000;
-    }
+  // 1. Filter blocked titles
+  if (BLOCKED_TITLE_PATTERNS.some(p => lower.includes(p))) {
+    console.log(`  ✗ Blocked title: ${titulo.substring(0, 60)}`);
+    return null;
   }
 
-  // Still no value? Skip this article
-  if (!miles || miles < 1000) return null;
+  // 2. Filter non-travel content
+  if (NON_TRAVEL_PATTERNS.some(p => lower.includes(p))) {
+    console.log(`  ✗ Non-travel content: ${titulo.substring(0, 60)}`);
+    return null;
+  }
 
+  const fullText = articleMarkdown ? `${titulo}\n${articleMarkdown}` : titulo;
+
+  // 3. Extract REAL miles only (no synthetic from percentages)
+  let miles = parseMilesFromContext(titulo);
+  if (!miles && articleMarkdown) {
+    miles = parseMilesFromContext(articleMarkdown);
+  }
+
+  if (!miles || miles < 1000) {
+    console.log(`  ✗ No real miles found: ${titulo.substring(0, 60)}`);
+    return null;
+  }
+
+  // 4. Extract destination (MANDATORY)
   const route = extractRoute(fullText);
+  if (!route.destino) {
+    console.log(`  ✗ No destination found: ${titulo.substring(0, 60)}`);
+    return null;
+  }
 
-  // Build description from article content or title
+  // 5. Detect program
+  const programa = detectProgram(fullText);
+
+  // Build description
   let descricao: string | null = null;
   if (articleMarkdown) {
     const paragraphs = articleMarkdown
@@ -212,12 +358,10 @@ function parsePromotion(titulo: string, url: string, articleMarkdown?: string): 
     descricao = titulo;
   }
 
-  const destino = route.destino || 'Promoção Geral';
-
   return {
     programa,
     origem: route.origem,
-    destino,
+    destino: route.destino,
     milhas_min: miles,
     link: url,
     titulo: titulo.substring(0, 200),
@@ -229,7 +373,7 @@ function parsePromotion(titulo: string, url: string, articleMarkdown?: string): 
   };
 }
 
-// ── Firecrawl helper ──────────────────────────────────────────
+// ── Firecrawl helper ──────────────────────────────────────────────
 
 async function firecrawlScrape(apiKey: string, url: string): Promise<{ markdown?: string; error?: string }> {
   try {
@@ -251,7 +395,6 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<{ markdown?
       return { error: data.error || `HTTP ${response.status}` };
     }
 
-    // Firecrawl v1 nests content in data.data
     const markdown = data.data?.markdown || data.markdown || '';
     return { markdown };
   } catch (err) {
@@ -259,7 +402,7 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<{ markdown?
   }
 }
 
-// ── Main handler ──────────────────────────────────────────────
+// ── Main handler ──────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -321,7 +464,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 2: Extract articles from listing (title + URL)
+    // Step 2: Extract articles
     const articles = extractArticlesFromListing(listingResult.markdown).slice(0, maxArticles);
     console.log(`Found ${articles.length} unique articles on listing`);
 
@@ -341,51 +484,45 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 3: Parse promotions from titles first (no extra credits)
-    // Then scrape individual articles only for those that need enrichment
+    // Step 3: Parse promotions - title first, then enrich if needed
     const parsedPromotions: ParsedPromotion[] = [];
-    let pagesScraped = 1; // listing page
-    const enrichArticles = body.enrich !== false; // default: true
+    let pagesScraped = 1;
+    const enrichArticles = body.enrich !== false;
 
     for (const article of articles) {
       // First try parsing from title alone
       let promo = parsePromotion(article.titulo, article.url);
 
-      // If title-based parsing succeeded but we want richer data, scrape the article
-      if (enrichArticles && promo) {
+      if (promo && enrichArticles) {
+        // Enrich with article content for better data
         console.log(`Enriching: ${article.titulo.substring(0, 60)}...`);
         const articleResult = await firecrawlScrape(firecrawlApiKey, article.url);
         pagesScraped++;
 
         if (articleResult.markdown && !articleResult.markdown.includes('is blocked')) {
-          // Re-parse with full article content
           const enriched = parsePromotion(article.titulo, article.url, articleResult.markdown);
           if (enriched) promo = enriched;
         }
-      } else if (!promo) {
-        // Title alone didn't yield a result, try scraping the article
-        if (enrichArticles) {
-          console.log(`Scraping for parsing: ${article.titulo.substring(0, 60)}...`);
-          const articleResult = await firecrawlScrape(firecrawlApiKey, article.url);
-          pagesScraped++;
+      } else if (!promo && enrichArticles) {
+        // Title alone failed, try with full article
+        console.log(`Scraping for parsing: ${article.titulo.substring(0, 60)}...`);
+        const articleResult = await firecrawlScrape(firecrawlApiKey, article.url);
+        pagesScraped++;
 
-          if (articleResult.markdown && !articleResult.markdown.includes('is blocked')) {
-            promo = parsePromotion(article.titulo, article.url, articleResult.markdown);
-          }
+        if (articleResult.markdown && !articleResult.markdown.includes('is blocked')) {
+          promo = parsePromotion(article.titulo, article.url, articleResult.markdown);
         }
       }
 
       if (promo) {
         parsedPromotions.push(promo);
-        console.log(`  ✓ ${promo.titulo.substring(0, 60)} (${promo.milhas_min} pts, ${promo.programa})`);
-      } else {
-        console.log(`  ✗ Skipped: ${article.titulo.substring(0, 60)}`);
+        console.log(`  ✓ ${promo.destino} | ${promo.milhas_min} pts | ${promo.programa}`);
       }
     }
 
-    console.log(`Parsed ${parsedPromotions.length} promotions from ${pagesScraped} pages`);
+    console.log(`Parsed ${parsedPromotions.length} valid promotions from ${pagesScraped} pages`);
 
-    // Step 4: Deduplicate against existing promotions
+    // Step 4: Deduplicate and insert
     if (parsedPromotions.length > 0) {
       const hashes = parsedPromotions.map(p => p.external_hash);
       const { data: existing } = await supabase
@@ -398,7 +535,6 @@ Deno.serve(async (req) => {
 
       console.log(`${newPromotions.length} new, ${parsedPromotions.length - newPromotions.length} duplicates`);
 
-      // Insert new promotions
       let insertedCount = 0;
       if (newPromotions.length > 0) {
         const { data: inserted, error: insertError } = await supabase
@@ -414,15 +550,18 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Cleanup old promotions (>7 days inactive, >30 days delete)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // Cleanup: 21-day rule
+      const twentyOneDaysAgo = new Date();
+      twentyOneDaysAgo.setDate(twentyOneDaysAgo.getDate() - 21);
+      
+      // Deactivate promotions older than 21 days
       await supabase
         .from('scraped_promotions')
         .update({ is_active: false })
-        .lt('data_coleta', sevenDaysAgo.toISOString())
+        .lt('data_coleta', twentyOneDaysAgo.toISOString())
         .eq('is_active', true);
 
+      // Delete promotions older than 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       await supabase
@@ -430,7 +569,6 @@ Deno.serve(async (req) => {
         .delete()
         .lt('data_coleta', thirtyDaysAgo.toISOString());
 
-      // Update job
       if (jobId) {
         await supabase.from('scraping_jobs').update({
           status: 'completed',
@@ -457,7 +595,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // No promotions parsed
     if (jobId) {
       await supabase.from('scraping_jobs').update({
         status: 'completed',
@@ -478,7 +615,7 @@ Deno.serve(async (req) => {
         promotions_found: 0,
         errors_count: errors.length,
         mode: 'firecrawl',
-        message: 'No promotions with valid miles data found in articles',
+        message: 'No promotions with valid destination + miles found',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
