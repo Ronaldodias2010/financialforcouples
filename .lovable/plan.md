@@ -1,114 +1,90 @@
 
 
-# Migrar Scraping do Python/ngrok para Firecrawl (100% interno)
+# Corrigir Qualidade dos Cards de Milhagem - Scraping Assertivo
 
-## Resposta: SIM, e possivel!
+## Problemas Identificados
 
-Fiz testes reais contra o site `passageirodeprimeira.com` e confirmei que:
-- A homepage retorna markdown limpo com titulos e links de artigos
-- A pagina `/categorias/promocoes/` retorna lista de promocoes com titulos e URLs
-- Artigos individuais retornam conteudo completo com detalhes de milhas, programas, cupons, etc.
-- O conector Firecrawl ja esta instalado e a chave `FIRECRAWL_API_KEY` esta disponivel
+Analisando os dados atuais no banco, encontrei exatamente os problemas reportados:
 
-O site NAO usa proteçoes anti-bot ou renderizaçao JS pesada - e um WordPress simples, ideal para o Firecrawl.
+1. **Cards sem destino de viagem**: "Promoção Geral" ou "Destino não especificado" -- ex: "Esfera oferece ate 52% de desconto na compra de pontos" (nao e uma viagem)
+2. **Milhas sinteticas falsas**: O scraper converte porcentagens em milhas (52% -> 52.000, 70% -> 70.000) -- isso e enganoso
+3. **Programas errados**: "Esfera 52% desconto" aparece como "Livelo" em vez de "Esfera"
+4. **Titulos com lixo**: "live.rezync.com is blocked" salvo como titulo
+5. **Badges sobrepostos**: Dois programas aparecendo no mesmo card (Livelo + Azul)
+6. **Sem regra de 21 dias**: Promotions expiram com 7 dias (inativo) e 30 dias (delete), mas a regra deveria ser 21 dias
 
-## O que muda
+## Regra de Ouro para os Cards
 
-| Aspecto | Hoje (Python/ngrok) | Firecrawl (novo) |
-|---------|-------------------|------------------|
-| Dependencia | PC local ligado + ngrok ativo | Nenhuma - 100% cloud |
-| Ponto de falha | URL ngrok muda/expira | Nenhum |
-| Infraestrutura | Python + Flask + tunnel | Edge Function unica |
-| Custo | Gratuito (seu PC) | Creditos Firecrawl (por pagina scrapeada) |
+Um card so sera exibido se contiver TODOS estes 3 elementos:
+- **Destino de viagem** (cidade/pais real, nao "Promocao Geral")
+- **Quantidade de milhas/pontos** (numero real extraido do artigo, nao sintetico)
+- **Programa/companhia** (Azul, LATAM, Smiles, Livelo, etc.)
 
-## Plano de Implementaçao
+Cards que nao atendam aos 3 criterios serao descartados silenciosamente.
 
-### Etapa 1 - Criar Edge Function `firecrawl-scrape`
-Edge function generica que encapsula chamadas ao Firecrawl API. Essa funçao ja estava prevista no codigo (`src/lib/api/firecrawl.ts`) mas nunca foi criada.
+## Plano de Implementacao
 
-### Etapa 2 - Reescrever `firecrawl-promotions-scraper`
-Substituir os dados demo atuais por scraping real usando Firecrawl:
+### 1. Reescrever logica de parsing no scraper
 
-1. **Scrape da pagina de promocoes**: `passageirodeprimeira.com/categorias/promocoes/` para obter lista de artigos
-2. **Scrape de cada artigo individual**: Extrair titulo, conteudo completo
-3. **Parsing inteligente**: Reaproveitar as funçoes `parseMiles()` e `detectProgram()` que ja existem em `import-pdp-deals` para extrair:
-   - Programa de milhas (Smiles, LATAM Pass, TudoAzul, Livelo, Esfera, etc.)
-   - Quantidade de milhas/pontos
-   - Origem/Destino (quando mencionado)
-4. **Gravar no banco**: Inserir na tabela `scraped_promotions` com deduplicaçao via `external_hash`
+**Arquivo**: `supabase/functions/firecrawl-promotions-scraper/index.ts`
 
-### Etapa 3 - Atualizar `import-pdp-deals`
-Adicionar um novo modo `firecrawl` que usa o Firecrawl internamente ao inves de depender do ngrok:
-- Manter compatibilidade com o modo ngrok existente (fallback)
-- Quando chamado sem `ngrok_url`, usar Firecrawl automaticamente
+Mudancas:
+- **Remover milhas sinteticas**: Eliminar a logica que converte porcentagens em milhas (`pct * 1000`). Se nao ha milhas reais no texto, o card nao e criado.
+- **Validar destino obrigatorio**: Se `extractRoute()` retornar `destino: null`, o artigo e descartado. Nunca usar "Promocao Geral" ou "Destino nao especificado".
+- **Expandir `extractRoute()`**: Adicionar uma lista abrangente de destinos conhecidos (cidades, paises) para detectar no titulo e conteudo -- ex: "Cancun", "Miami", "Paris", "Lisboa", "Orlando", "Buenos Aires", "Santiago", etc.
+- **Filtrar conteudo nao-viagem**: Bloquear artigos sobre compra de pontos, bonus de transferencia, descontos genericos que nao mencionam um destino de viagem.
+- **Corrigir `detectProgram()`**: Adicionar "Esfera" como programa. Priorizar deteccao pela ordem de especificidade (Esfera antes de Livelo, TudoAzul antes de Azul generico).
+- **Filtrar titulos com lixo**: Rejeitar artigos cujo titulo contenha "is blocked", "rezync", "whatsapp", "baixe o app".
 
-### Etapa 4 - Atualizar o Admin Panel
-Alterar `ScraperControlSection.tsx` para:
-- Remover referencia hardcoded ao ngrok URL
-- Botao "Executar Scraper" usa Firecrawl diretamente
-- Indicar modo "Firecrawl Cloud" no status
+### 2. Regra de expiracao de 21 dias
 
-### Etapa 5 - Atualizar o Cron Job
-O cron diario que ja existe passara a chamar a versao Firecrawl sem depender de serviço externo.
+**Arquivo**: `supabase/functions/firecrawl-promotions-scraper/index.ts` e `src/components/financial/ScrapedPromotionsList.tsx`
+
+- Mudar a janela de limpeza de 7 dias (inativo) para **21 dias** (inativo + delete)
+- Na query de listagem, filtrar `created_at >= 21 dias atras` em vez de 30 dias
+- Se o artigo mencionar uma data de validade explicita (ex: "valido ate 18/02"), extrair e usar como data de expiracao
+
+### 3. Corrigir exibicao dos cards
+
+**Arquivo**: `src/components/financial/ScrapedPromotionsList.tsx` e `src/components/admin/PromotionCard.tsx`
+
+- Garantir que apenas **um** badge de programa apareca por card (sem sobreposicao)
+- O card exibira: **Destino** (grande), **Milhas** (destaque), **Programa** (badge unico), **Link** (ver oferta)
+- Adicionar cor para "Esfera" no mapa de cores dos programas
+
+### 4. Limpar dados atuais invalidos
+
+Executar limpeza no banco para remover os cards problematicos atuais:
+- Cards com `destino = 'Promocao Geral'` ou `'Destino nao especificado'`
+- Cards com `titulo` contendo "is blocked"
+- Cards com milhas sinteticas (valores como 2.699, 2.026 que sao claramente errados)
 
 ---
 
 ## Detalhes Tecnicos
 
-### Fluxo do Scraping
+### Nova logica de validacao (pseudocodigo)
 
 ```text
-+---------------------------+
-|  Cron Job (12h BRT)       |
-|  ou Admin Manual          |
-+------------+--------------+
-             |
-             v
-+---------------------------+
-|  Edge Function:           |
-|  firecrawl-promotions-    |
-|  scraper                  |
-+------------+--------------+
-             |
-             v
-+---------------------------+
-| 1. Firecrawl Scrape       |
-|    /categorias/promocoes/ |
-|    -> Lista de URLs       |
-+------------+--------------+
-             |
-             v
-+---------------------------+
-| 2. Firecrawl Scrape       |
-|    cada artigo (max 20)   |
-|    -> Markdown completo   |
-+------------+--------------+
-             |
-             v
-+---------------------------+
-| 3. Parsing local          |
-|    parseMiles()           |
-|    detectProgram()        |
-|    extrair origem/destino |
-+------------+--------------+
-             |
-             v
-+---------------------------+
-| 4. Gravar em              |
-|    scraped_promotions     |
-|    com deduplicaçao       |
-+---------------------------+
+parsePromotion(titulo, url, markdown):
+  1. Filtrar titulo com palavras bloqueadas
+  2. Extrair milhas REAIS (nao percentuais)
+     - Se nao encontrar milhas >= 1000 -> DESCARTAR
+  3. Extrair destino de viagem
+     - Tentar extractRoute() com regex
+     - Tentar matchKnownDestinations() com lista de cidades
+     - Se destino = null -> DESCARTAR
+  4. Detectar programa (com Esfera adicionado)
+  5. Montar card com os 3 dados obrigatorios
 ```
 
-### Estimativa de creditos Firecrawl por execuçao
-- 1 credito para pagina de listagem
-- ~10-20 creditos para artigos individuais
-- Total: ~15-25 creditos por execuçao diaria
+### Lista de destinos conhecidos para matching
 
-### Arquivos que serao criados/modificados
-- **CRIAR**: `supabase/functions/firecrawl-scrape/index.ts` (edge function generica)
-- **MODIFICAR**: `supabase/functions/firecrawl-promotions-scraper/index.ts` (scraping real)
-- **MODIFICAR**: `supabase/functions/import-pdp-deals/index.ts` (modo firecrawl)
-- **MODIFICAR**: `src/components/admin/ScraperControlSection.tsx` (UI admin)
-- **MODIFICAR**: `src/components/financial/ScrapedPromotionsList.tsx` (remover ngrok)
+Mais de 60 cidades/regioes incluindo: Miami, Orlando, New York, Los Angeles, Las Vegas, Cancun, Punta Cana, Buenos Aires, Santiago, Lima, Bogota, Lisboa, Paris, Londres, Madri, Roma, Barcelona, Amsterdam, Dublin, Toquio, Dubai, Cidade do Panama, Sao Paulo, Rio de Janeiro, Salvador, Recife, Fortaleza, Natal, Florianopolis, entre outras.
+
+### Arquivos modificados
+- `supabase/functions/firecrawl-promotions-scraper/index.ts` -- logica principal de parsing
+- `src/components/financial/ScrapedPromotionsList.tsx` -- regra de 21 dias + exibicao
+- `src/components/admin/PromotionCard.tsx` -- cor Esfera + prevenir sobreposicao
+- `src/components/financial/FeaturedPromotionCard.tsx` -- cor Esfera
 
