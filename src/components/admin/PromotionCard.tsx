@@ -25,6 +25,9 @@ const programColors: Record<string, string> = {
   'LATAM Pass': 'bg-red-500',
   'TudoAzul': 'bg-blue-500',
   'Livelo': 'bg-purple-500',
+  'Esfera': 'bg-green-600',
+  'AAdvantage': 'bg-sky-500',
+  'Avianca': 'bg-rose-500',
   'Diversos': 'bg-gray-500',
 };
 

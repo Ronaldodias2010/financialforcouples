@@ -59,6 +59,9 @@ export const FeaturedPromotionCard = ({
       'LATAM Pass': 'bg-red-500 text-white',
       'TudoAzul': 'bg-blue-500 text-white',
       'Livelo': 'bg-purple-500 text-white',
+      'Esfera': 'bg-green-600 text-white',
+      'AAdvantage': 'bg-sky-500 text-white',
+      'Avianca': 'bg-rose-500 text-white',
       'Diversos': 'bg-gray-500 text-white',
     };
     return colors[programa] || colors['Diversos'];
