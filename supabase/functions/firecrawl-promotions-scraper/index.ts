@@ -198,15 +198,17 @@ function parseMilesFromContext(text: string): number | null {
 
 function detectProgram(text: string): string {
   const l = text.toLowerCase();
-  // Order by specificity: more specific first
-  if (l.includes('esfera')) return 'Esfera';
-  if (l.includes('tudoazul') || /tudo\s*azul/i.test(l)) return 'TudoAzul';
-  if (l.includes('smiles')) return 'Smiles';
-  if (l.includes('latam') || l.includes('multiplus') || l.includes('latam pass')) return 'LATAM Pass';
-  if (l.includes('livelo')) return 'Livelo';
-  if (l.includes('azul')) return 'TudoAzul'; // "Azul" alone → TudoAzul
+  // Order matters! Check most specific/unique keywords first
+  // AAdvantage before Azul (avoid "AAdvantage" being caught by "azul" check)
   if (l.includes('aadvantage') || l.includes('american airlines')) return 'AAdvantage';
+  if (l.includes('esfera')) return 'Esfera';
+  if (l.includes('smiles') || l.includes('gol smiles') || l.includes('clube smiles')) return 'Smiles';
+  if (l.includes('livelo')) return 'Livelo';
   if (l.includes('avianca')) return 'Avianca';
+  // "pontos Azul" or "Azul Fidelidade" → TudoAzul (check BEFORE LATAM)
+  if (l.includes('tudoazul') || /tudo\s*azul/i.test(l)) return 'TudoAzul';
+  if (/pontos\s+azul/i.test(l) || /azul\s+fidelidade/i.test(l) || l.includes('azul')) return 'TudoAzul';
+  if (l.includes('latam') || l.includes('multiplus') || l.includes('latam pass')) return 'LATAM Pass';
   return 'Diversos';
 }
 
