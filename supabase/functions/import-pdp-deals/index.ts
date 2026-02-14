@@ -244,9 +244,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Support both modes:
+    // Support three modes:
     // 1. PULL mode: provide ngrok_url to fetch from
     // 2. PUSH mode: provide deals array directly
+    // 3. FIRECRAWL mode: no ngrok_url and no deals → use Firecrawl to scrape directly
 
     let deals: IncomingDeal[] = [];
 
@@ -291,6 +292,27 @@ Deno.serve(async (req) => {
     } else if (body.deals && Array.isArray(body.deals)) {
       // PUSH mode: deals provided directly
       deals = body.deals;
+    } else if (body.mode === 'firecrawl' || (!body.ngrok_url && !body.deals)) {
+      // FIRECRAWL mode: delegate to firecrawl-promotions-scraper
+      console.log('No ngrok_url or deals provided, delegating to firecrawl-promotions-scraper');
+
+      const firecrawlResponse = await fetch(
+        `${supabaseUrl}/functions/v1/firecrawl-promotions-scraper`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader,
+          },
+          body: JSON.stringify({ max_articles: body.max_articles || 20 }),
+        }
+      );
+
+      const firecrawlData = await firecrawlResponse.json();
+      return jsonResponse({
+        ...firecrawlData,
+        delegated_to: 'firecrawl-promotions-scraper',
+      }, firecrawlResponse.status);
     }
 
     console.log(`Processing ${deals.length} deals from Passageiro de Primeira`);

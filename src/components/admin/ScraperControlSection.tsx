@@ -185,26 +185,25 @@ export function ScraperControlSection() {
       setIsRunningScaper(true);
       toast({
         title: 'Iniciando Scraper',
-        description: 'Conectando ao scraper Python local via ngrok...',
+        description: 'Coletando promoções via Firecrawl Cloud...',
       });
 
-      // Call the import-pdp-deals function to fetch from ngrok scraper
-      const ngrokUrl = 'https://unbefriended-unprecisive-selah.ngrok-free.dev/deals';
-      
-      const { data, error } = await supabase.functions.invoke('import-pdp-deals', {
-        body: { ngrok_url: ngrokUrl }
+      // Call Firecrawl-based promotions scraper (100% cloud)
+      const { data, error } = await supabase.functions.invoke('firecrawl-promotions-scraper', {
+        body: { max_articles: 20 }
       });
 
       if (error) throw error;
 
-      const inserted = data?.inserted || 0;
-      const skipped = data?.skipped || 0;
+      const found = data?.promotions_found || 0;
+      const parsed = data?.promotions_parsed || 0;
+      const duplicates = data?.duplicates_skipped || 0;
       
       toast({
-        title: 'Scraper Concluído',
-        description: inserted > 0 
-          ? `${inserted} novas promoções importadas${skipped > 0 ? `, ${skipped} já existiam` : ''}`
-          : 'Nenhuma promoção nova encontrada (todas já existem)',
+        title: 'Scraper Concluído ☁️',
+        description: found > 0 
+          ? `${found} novas promoções importadas (${parsed} analisadas, ${duplicates} duplicatas)`
+          : `${parsed} artigos analisados, nenhuma promoção nova encontrada`,
       });
 
       // Refresh data
@@ -213,7 +212,7 @@ export function ScraperControlSection() {
       console.error('Error running scraper:', error);
       toast({
         title: 'Erro no Scraper',
-        description: 'Não foi possível conectar ao scraper local. Verifique se o Python está rodando e o ngrok está ativo.',
+        description: 'Não foi possível executar o scraper Firecrawl. Verifique se o conector está configurado.',
         variant: 'destructive'
       });
     } finally {
@@ -294,7 +293,7 @@ export function ScraperControlSection() {
           Controle do Scraper de Promoções
         </CardTitle>
         <CardDescription>
-          Gerencie a coleta automática de promoções de milhas. Execução agendada: 14h diariamente.
+          Coleta 100% cloud via Firecrawl · Execução agendada: 14h diariamente
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
