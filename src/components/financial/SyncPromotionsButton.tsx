@@ -16,7 +16,7 @@ export const SyncPromotionsButton = ({ onSyncComplete }: SyncPromotionsButtonPro
       setSyncing(true);
       
       const { data, error } = await supabase.functions.invoke('firecrawl-promotions-scraper', {
-        body: { demo: true }
+        body: { max_articles: 20 }
       });
 
       if (error) {

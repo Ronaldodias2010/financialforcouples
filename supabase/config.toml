@@ -1,5 +1,8 @@
 project_id = "elxttabdtddlavhseipz"
 
+[functions.firecrawl-scrape]
+verify_jwt = false
+
 [functions.firecrawl-promotions-scraper]
 verify_jwt = false
 

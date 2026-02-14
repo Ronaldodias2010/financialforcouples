@@ -132,17 +132,14 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
   const runScraper = async () => {
     setRefreshing(true);
     try {
-      // Call the import-pdp-deals function to fetch from ngrok scraper
-      const ngrokUrl = 'https://unbefriended-unprecisive-selah.ngrok-free.dev/deals';
-      
-      const { data, error } = await supabase.functions.invoke('import-pdp-deals', {
-        body: { ngrok_url: ngrokUrl }
+      // Call Firecrawl-based promotions scraper (100% cloud)
+      const { data, error } = await supabase.functions.invoke('firecrawl-promotions-scraper', {
+        body: { max_articles: 20 }
       });
 
       if (error) throw error;
 
-      const inserted = data?.inserted || 0;
-      const skipped = data?.skipped || 0;
+      const found = data?.promotions_found || 0;
       
       // Clear dismissed promotions so they can reappear if still available
       setDismissedPromotions(new Set());
@@ -153,8 +150,10 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
       }
       
       toast({
-        title: "Promoções atualizadas",
-        description: `${inserted} novas promoções importadas${skipped > 0 ? `, ${skipped} já existiam` : ''}. Promoções dispensadas foram resetadas.`,
+        title: "Promoções atualizadas ☁️",
+        description: found > 0 
+          ? `${found} novas promoções importadas via Firecrawl`
+          : 'Nenhuma promoção nova encontrada',
       });
 
       // Reload promotions
@@ -163,7 +162,7 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
       console.error('Error running scraper:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível buscar promoções. Verifique se o scraper local está rodando.",
+        description: "Não foi possível buscar promoções via Firecrawl.",
         variant: "destructive"
       });
     } finally {
