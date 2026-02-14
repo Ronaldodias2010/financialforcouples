@@ -263,17 +263,34 @@ const getOwnerNameForCard = (card: CardData) => {
                     )}
                     {card.card_type === "credit" && card.credit_limit && (
                       (() => {
-                        const availableLimit = (card.initial_balance ?? card.credit_limit) - (card.current_balance ?? 0);
-                        const displayAvailable = Math.max(0, availableLimit);
+                        const totalGasto = card.current_balance ?? 0;
+                        const saldoCartao = totalGasto > 0 ? totalGasto * -1 : 0;
+                        const percentualUtilizado = Math.min(100, (totalGasto / card.credit_limit) * 100);
+                        const barColor = percentualUtilizado >= 90 
+                          ? "bg-red-600" 
+                          : percentualUtilizado >= 70 
+                            ? "bg-yellow-500" 
+                            : "bg-green-500";
                         return (
-                          <p className="text-sm text-destructive font-semibold">
-                            Limite Disponível: {formatCurrency(getConvertedValue(displayAvailable, card.currency), getDisplayCurrency(card.currency))}
-                            {card.currency !== getDisplayCurrency(card.currency) && (
-                              <span className="text-xs text-muted-foreground ml-1">
-                                (orig: {formatCurrency(displayAvailable, card.currency)})
-                              </span>
-                            )}
-                          </p>
+                          <div className="mt-1 space-y-1">
+                            <p className={cn("text-sm font-semibold", saldoCartao < 0 ? "text-red-600" : "text-muted-foreground")}>
+                              Saldo do Cartão: {saldoCartao < 0 ? "– " : ""}{formatCurrency(getConvertedValue(Math.abs(saldoCartao), card.currency), getDisplayCurrency(card.currency))}
+                              {card.currency !== getDisplayCurrency(card.currency) && (
+                                <span className="text-xs text-muted-foreground ml-1">
+                                  (orig: {saldoCartao < 0 ? "– " : ""}{formatCurrency(Math.abs(saldoCartao), card.currency)})
+                                </span>
+                              )}
+                            </p>
+                            <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+                              <div 
+                                className={cn("h-full rounded-full transition-all duration-300", barColor)}
+                                style={{ width: `${Math.max(0, percentualUtilizado)}%` }}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {percentualUtilizado.toFixed(0)}% do limite utilizado
+                            </p>
+                          </div>
                         );
                       })()
                     )}
