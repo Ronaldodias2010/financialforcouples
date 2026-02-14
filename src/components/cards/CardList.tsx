@@ -263,17 +263,14 @@ const getOwnerNameForCard = (card: CardData) => {
                     )}
                     {card.card_type === "credit" && card.credit_limit && (
                       (() => {
-                        // Limite disponível = initial_balance (informado pelo usuário) - current_balance (gastos acumulados)
                         const availableLimit = (card.initial_balance ?? card.credit_limit) - (card.current_balance ?? 0);
+                        const displayAvailable = Math.max(0, availableLimit);
                         return (
-                          <p className={cn(
-                            "text-sm",
-                            availableLimit < 0 ? "text-destructive font-semibold" : ""
-                          )}>
-                            Limite Disponível: {formatCurrency(getConvertedValue(availableLimit, card.currency), getDisplayCurrency(card.currency))}
+                          <p className="text-sm text-destructive font-semibold">
+                            Limite Disponível: {formatCurrency(getConvertedValue(displayAvailable, card.currency), getDisplayCurrency(card.currency))}
                             {card.currency !== getDisplayCurrency(card.currency) && (
                               <span className="text-xs text-muted-foreground ml-1">
-                                (orig: {formatCurrency(availableLimit, card.currency)})
+                                (orig: {formatCurrency(displayAvailable, card.currency)})
                               </span>
                             )}
                           </p>
