@@ -42,9 +42,14 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     
-    // Check if user is admin
-    const isAdmin = user.email === 'admin@arxexperience.com.br' || user.email === 'admin@example.com' || user.email.includes('admin');
-    if (!isAdmin) throw new Error("Access denied - admin privileges required");
+    // Check admin role via RBAC
+    const { data: adminRole } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    if (!adminRole) throw new Error("Access denied - admin privileges required");
     logStep("Admin access verified", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });

@@ -85,9 +85,15 @@ serve(async (req) => {
     }
 
 
-    // Check if user is admin - admins automatically get premium access
-    const adminEmails = ['admin@arxexperience.com.br', 'admin@example.com'];
-    if (adminEmails.includes(user.email)) {
+    // Check if user is admin via RBAC - admins automatically get premium access
+    const { data: adminRole } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    if (adminRole) {
       logStep("Admin user detected, granting premium access", { email: user.email });
       
       // Update database with premium status for the admin

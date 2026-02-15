@@ -36,8 +36,15 @@ serve(async (req) => {
     }
 
     const user = userData.user;
-    const isAdmin = user.email === 'admin@arxexperience.com.br' || user.email === 'admin@example.com' || (user.email?.includes('admin') ?? false);
-    if (!isAdmin) {
+    // Check admin role via RBAC
+    const { data: adminRole } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    if (!adminRole) {
       return new Response(JSON.stringify({ error: "Access denied - admin only" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 403,
