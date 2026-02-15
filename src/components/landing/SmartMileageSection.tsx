@@ -70,40 +70,40 @@ const SmartMileageSection = () => {
                 
                 {/* Nova Headline impactante */}
                 <h2 className="text-3xl md:text-5xl font-bold text-foreground leading-tight">
-                  Você sonha com a{" "}
+                  {t('smartMileage.headline.dream')}{" "}
                   <span 
                     className="bg-clip-text text-transparent font-extrabold"
                     style={{
                       backgroundImage: "linear-gradient(135deg, hsl(var(--cherry-light)), hsl(var(--primary)), hsl(var(--blue-soft)))"
                     }}
                   >
-                    viagem
+                    {t('smartMileage.headline.trip')}
                   </span>
                   .<br />
-                  <span className="text-foreground">A </span>
+                  <span className="text-foreground">{t('smartMileage.headline.ai')} </span>
                   <span 
                     className="bg-clip-text text-transparent font-extrabold"
                     style={{
                       backgroundImage: "linear-gradient(135deg, hsl(var(--primary)), hsl(142 76% 36%), hsl(var(--blue-soft)))"
                     }}
                   >
-                    IA
+                    {t('smartMileage.headline.aiLabel')}
                   </span>
-                  <span className="text-foreground"> cuida das </span>
+                  <span className="text-foreground"> {t('smartMileage.headline.cares')} </span>
                   <span 
                     className="bg-clip-text text-transparent font-extrabold"
                     style={{
                       backgroundImage: "linear-gradient(135deg, hsl(45 93% 47%), hsl(var(--cherry-light)), hsl(var(--primary)))"
                     }}
                   >
-                    milhas
+                    {t('smartMileage.headline.miles')}
                   </span>
                   .
                 </h2>
                 
-                {/* Nova Subheadline */}
+                {/* Subheadline */}
                 <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                  Chega de perder promoções. <span className="font-medium text-foreground">Acompanhe, otimize e use suas milhas</span> no melhor momento — <span style={{ color: "hsl(var(--primary))" }} className="font-semibold">automaticamente</span>.
+                  {t('smartMileage.subheadline')} <span className="font-medium text-foreground">{t('smartMileage.subheadline.track')}</span> {t('smartMileage.subheadline.moment')} <span style={{ color: "hsl(var(--primary))" }} className="font-semibold">{t('smartMileage.subheadline.auto')}</span>.
                 </p>
               </div>
 
