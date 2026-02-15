@@ -128,7 +128,11 @@ export function MileageProgramCard({
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
-                      target.parentElement!.innerHTML = `<span class="text-lg font-bold" style="color: ${programConfig.primaryColor}">${program.program_name.charAt(0)}</span>`;
+                      const span = document.createElement('span');
+                      span.className = 'text-lg font-bold';
+                      span.style.color = programConfig.primaryColor;
+                      span.textContent = program.program_name.charAt(0);
+                      target.parentElement!.appendChild(span);
                     }}
                   />
                 </div>

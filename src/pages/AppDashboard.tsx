@@ -28,8 +28,22 @@ const AppDashboard = () => {
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'subscription'>('dashboard');
   const [displayName, setDisplayName] = useState<string>('');
   const [testimonialOpen, setTestimonialOpen] = useState(false);
-  // Check if user is admin (simplified - in production use proper role system)
-  const isAdmin = user?.email === 'admin@arxexperience.com.br' || user?.email?.includes('admin');
+  // Check if user is admin via RBAC
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user?.id) return;
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    checkAdminRole();
+  }, [user?.id]);
 
   useEffect(() => {
     const fetchDisplayName = async () => {

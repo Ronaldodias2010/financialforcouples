@@ -35,7 +35,11 @@ export function MileageProgramSelector({ programs, onSelect }: MileageProgramSel
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
-                target.parentElement!.innerHTML = `<span class="text-sm font-bold" style="color: ${program.primaryColor}">${program.name.charAt(0)}</span>`;
+                const span = document.createElement('span');
+                span.className = 'text-sm font-bold';
+                span.style.color = program.primaryColor;
+                span.textContent = program.name.charAt(0);
+                target.parentElement!.appendChild(span);
               }}
             />
           ) : (

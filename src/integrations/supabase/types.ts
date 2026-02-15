@@ -4432,6 +4432,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_travel_suggestions: {
         Row: {
           created_at: string
@@ -5423,6 +5447,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       hash_temp_password: { Args: { password: string }; Returns: string }
       insert_normalized_user_tag: {
         Args: {
@@ -5571,6 +5602,7 @@ export type Database = {
     }
     Enums: {
       account_type: "checking" | "savings" | "investment" | "emergency"
+      app_role: "admin" | "moderator" | "user"
       card_type: "credit" | "debit"
       currency_type: "BRL" | "USD" | "EUR"
       transaction_type: "income" | "expense"
@@ -5703,6 +5735,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["checking", "savings", "investment", "emergency"],
+      app_role: ["admin", "moderator", "user"],
       card_type: ["credit", "debit"],
       currency_type: ["BRL", "USD", "EUR"],
       transaction_type: ["income", "expense"],
