@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import AIBetaModal from "@/components/landing/AIBetaModal";
 import { trackCtaClick } from "@/utils/analytics";
 const HeroSection = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -44,6 +44,9 @@ const HeroSection = () => {
             <LanguageSelector />
             <Button asChild size="sm" variant="outline" className="bg-white text-black border-white hover:bg-gray-100">
               <Link to="/sobre-nos">{t('nav.aboutUs')}</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="bg-white text-black border-white hover:bg-gray-100">
+              <Link to={language === 'en' ? '/blog?lang=en' : language === 'es' ? '/blog?lang=es' : '/blog'}>Blog</Link>
             </Button>
             <Button asChild size="sm" variant="outline" className="text-xs sm:text-sm px-2 sm:px-3">
               <Link to="/auth">{t('header.login')}</Link>
