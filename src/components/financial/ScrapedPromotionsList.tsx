@@ -110,7 +110,16 @@ export const ScrapedPromotionsList = ({ userTotalMiles = 0, mileageGoals = [] }:
         .limit(20);
 
       if (error) throw error;
-      setPromotions(data || []);
+      
+      // Deduplicate promotions by titulo+destino+programa+milhas_min
+      const seen = new Set<string>();
+      const unique = (data || []).filter((p: ScrapedPromotion) => {
+        const key = `${(p.titulo || '').toLowerCase()}|${p.destino.toLowerCase()}|${p.programa.toLowerCase()}|${p.milhas_min}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      setPromotions(unique);
     } catch (error) {
       console.error('Error loading scraped promotions:', error);
     } finally {
