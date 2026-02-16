@@ -296,9 +296,17 @@ export const TagEditModal = ({
             </div>
           )}
 
+          <p className="text-xs text-muted-foreground italic text-center">
+            {language === 'pt' 
+              ? '✅ As subcategorias são salvas automaticamente ao clicar no botão +' 
+              : language === 'es'
+              ? '✅ Las subcategorías se guardan automáticamente al hacer clic en el botón +'
+              : '✅ Subcategories are saved automatically when you click the + button'}
+          </p>
+
           <div className="flex justify-end">
             <Button variant="outline" onClick={onClose}>
-              {t('common.close')}
+              {language === 'pt' ? 'Concluído' : language === 'es' ? 'Listo' : 'Done'}
             </Button>
           </div>
         </div>
