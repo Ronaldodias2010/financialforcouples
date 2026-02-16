@@ -944,77 +944,99 @@ Deno.serve(async (req) => {
         const searchTerm = mergedState.category_hint.trim().toLowerCase();
         console.log('[whatsapp-input] FALLBACK: Resolving category from AI hint:', searchTerm);
         
-        // 1) Buscar tag por KEYWORDS_PT (match exato no array)
-        const { data: tagByKeyword } = await supabase
-          .from('category_tags')
-          .select('id, name_pt, keywords_pt')
-          .contains('keywords_pt', [searchTerm]);
-        
-        let tagMatches = tagByKeyword;
-        
-        if (tagByKeyword && tagByKeyword.length > 0) {
-          console.log('[whatsapp-input] Found tag via KEYWORDS_PT:', tagByKeyword.map((t: { name_pt: string }) => t.name_pt));
-        } else {
-          // 2) FALLBACK: Buscar tag por nome parcial
-          const { data: tagByName } = await supabase
-            .from('category_tags')
-            .select('id, name_pt, keywords_pt')
-            .ilike('name_pt', `%${searchTerm}%`);
-          
-          tagMatches = tagByName;
-          if (tagByName && tagByName.length > 0) {
-            console.log('[whatsapp-input] Found tag via NAME_PT:', tagByName.map((t: { name_pt: string }) => t.name_pt));
-          }
+        // 1) PRIORIDADE: Busca direta pelo nome da categoria do usuário
+        // Mais confiável que tags, pois evita ambiguidade de keywords compartilhadas
+        const { data: categoryByName } = await supabase
+          .from('categories')
+          .select('id, name')
+          .eq('user_id', existingInput.user_id)
+          .is('deleted_at', null)
+          .ilike('name', `%${mergedState.category_hint.trim()}%`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (categoryByName) {
+          mergedState.resolved_category_id = categoryByName.id;
+          console.log('[whatsapp-input] Category resolved by DIRECT NAME MATCH:', mergedState.category_hint, '->', categoryByName.name);
         }
         
-        if (tagMatches && tagMatches.length > 0) {
-          const tagIds = tagMatches.map((t: { id: string }) => t.id);
-          const { data: relations } = await supabase
-            .from('category_tag_relations')
-            .select('category_id')
-            .in('tag_id', tagIds)
-            .eq('is_active', true)
-            .limit(1);
+        // 2) FALLBACK: Buscar tag por KEYWORDS_PT (match exato no array)
+        if (!mergedState.resolved_category_id) {
+          console.log('[whatsapp-input] Direct name match failed, trying tag keywords...');
+          const { data: tagByKeyword } = await supabase
+            .from('category_tags')
+            .select('id, name_pt, keywords_pt')
+            .contains('keywords_pt', [searchTerm]);
           
-          if (relations && relations.length > 0) {
-            const defaultCategoryId = relations[0].category_id;
+          let tagMatches = tagByKeyword;
+          
+          if (tagByKeyword && tagByKeyword.length > 0) {
+            console.log('[whatsapp-input] Found tag via KEYWORDS_PT:', tagByKeyword.map((t: { name_pt: string }) => t.name_pt));
+          } else {
+            // 3) FALLBACK: Buscar tag por nome parcial
+            const { data: tagByName } = await supabase
+              .from('category_tags')
+              .select('id, name_pt, keywords_pt')
+              .ilike('name_pt', `%${searchTerm}%`);
             
-            const { data: userCategory } = await supabase
-              .from('categories')
-              .select('id, name')
-              .eq('user_id', existingInput.user_id)
-              .eq('default_category_id', defaultCategoryId)
-              .is('deleted_at', null)
-              .limit(1)
-              .single();
+            tagMatches = tagByName;
+            if (tagByName && tagByName.length > 0) {
+              console.log('[whatsapp-input] Found tag via NAME_PT:', tagByName.map((t: { name_pt: string }) => t.name_pt));
+            }
+          }
+          
+          if (tagMatches && tagMatches.length > 0) {
+            const tagIds = tagMatches.map((t: { id: string }) => t.id);
+            // Buscar TODAS as relações (sem limit) para poder escolher a melhor
+            const { data: relations } = await supabase
+              .from('category_tag_relations')
+              .select('category_id, tag_id')
+              .in('tag_id', tagIds)
+              .eq('is_active', true);
             
-            if (userCategory) {
-              mergedState.resolved_category_id = userCategory.id;
-              console.log('[whatsapp-input] Category resolved via AI HINT TAG/KEYWORD:', searchTerm, '->', userCategory.name);
+            if (relations && relations.length > 0) {
+              // Buscar os nomes das default_categories para priorizar match por nome
+              const defaultCatIds = [...new Set(relations.map((r: { category_id: string }) => r.category_id))];
+              const { data: defaultCats } = await supabase
+                .from('default_categories')
+                .select('id, name_pt')
+                .in('id', defaultCatIds);
+              
+              // Priorizar a default_category cujo nome faz match com o hint
+              let bestDefaultCatId: string | null = null;
+              if (defaultCats) {
+                const exactMatch = defaultCats.find((dc: { name_pt: string }) => 
+                  dc.name_pt.toLowerCase() === searchTerm
+                );
+                const partialMatch = defaultCats.find((dc: { name_pt: string }) => 
+                  dc.name_pt.toLowerCase().includes(searchTerm) || searchTerm.includes(dc.name_pt.toLowerCase())
+                );
+                bestDefaultCatId = (exactMatch || partialMatch)?.id || relations[0].category_id;
+                console.log('[whatsapp-input] Tag relations found', relations.length, 'default cats:', defaultCats.map((dc: { name_pt: string }) => dc.name_pt), 'chosen:', (exactMatch || partialMatch)?.name_pt || 'first');
+              } else {
+                bestDefaultCatId = relations[0].category_id;
+              }
+              
+              const { data: userCategory } = await supabase
+                .from('categories')
+                .select('id, name')
+                .eq('user_id', existingInput.user_id)
+                .eq('default_category_id', bestDefaultCatId)
+                .is('deleted_at', null)
+                .limit(1)
+                .single();
+              
+              if (userCategory) {
+                mergedState.resolved_category_id = userCategory.id;
+                console.log('[whatsapp-input] Category resolved via AI HINT TAG/KEYWORD:', searchTerm, '->', userCategory.name);
+              }
             }
           }
         }
         
-        // 3) FALLBACK: Busca direta pelo nome da categoria
         if (!mergedState.resolved_category_id) {
-          console.log('[whatsapp-input] Tag search failed, trying direct name match...');
-          
-          const { data: category } = await supabase
-            .from('categories')
-            .select('id, name')
-            .eq('user_id', existingInput.user_id)
-            .is('deleted_at', null)
-            .ilike('name', `%${mergedState.category_hint.trim()}%`)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (category) {
-            mergedState.resolved_category_id = category.id;
-            console.log('[whatsapp-input] Category resolved by NAME:', mergedState.category_hint, '->', category.name);
-          } else {
-            console.log('[whatsapp-input] Category not found for hint:', mergedState.category_hint);
-          }
+          console.log('[whatsapp-input] Category not found for hint:', mergedState.category_hint);
         }
       }
 
