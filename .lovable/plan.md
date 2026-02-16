@@ -1,85 +1,84 @@
 
-# Correcao Definitiva: Categoria + Saldo do Cartao + Idioma
 
-## Resumo dos 3 Problemas
+# Corrigir Prioridade de Classificação de Categorias
 
-1. **Categoria "Outros"**: Quando o hint da IA e ignorado (fix anterior), o codigo cai na inferencia contextual (linhas 1132-1184) que apenas SUGERE categorias ao usuario -- nao resolve automaticamente via banco de dados. Resultado: mesmo com "supermercado" no texto, o sistema pergunta ao usuario em vez de resolver sozinho.
+## Problema Identificado
 
-2. **Saldo do cartao Inter Black**: O trigger `update_card_balance` calcula `current_balance = SUM(transacoes)` = R$ 5.724,27, ignorando `initial_balance_original` = R$ 10.035,73. Deveria ser R$ 15.760,00.
+O fluxo de classificação no `whatsapp-input` tem duas etapas:
 
-3. **Idioma das respostas**: As perguntas do `whatsapp-input` (ex: "Qual a forma de pagamento?") sao fixas em portugues, mesmo quando o usuario escreve em ingles ou espanhol.
+1. **Etapa 1 (linha 723)**: Usa o `category_hint` da IA (n8n) para resolver a categoria. Se a IA diz "Moradia", o sistema aceita.
+2. **Etapa 2 (linha 1216)**: Faz lookup nas keywords da mensagem original contra as tags do banco de dados. Essa etapa **nunca executa** se a Etapa 1 já resolveu.
 
----
+No caso "gastei na minha conta do Santander de mercado de farmácia":
+- A IA classificou como "Moradia" (provavelmente por causa da palavra "conta")
+- O edge confiou na IA e resolveu para Moradia
+- As keywords "farmácia" (Saude) e "mercado" (Alimentacao) nunca foram consultadas
 
-## Correcao 1: Resolucao Automatica via Tags do Banco
+## Solucao
 
-**Arquivo**: `supabase/functions/whatsapp-input/index.ts`
-
-**Mudanca**: Quando `category_hint` e limpo (era "Outros"), em vez de ir direto para sugestoes, primeiro tentar resolver automaticamente usando as tags do banco de dados a partir de palavras-chave do `raw_message`.
-
-Logica:
-1. Extrair palavras relevantes do `raw_message` (ex: "supermercado", "padaria")
-2. Para cada palavra, buscar na tabela `category_tags` por `keywords_pt` (mesmo caminho das linhas 648-700)
-3. Se encontrar match, resolver o `resolved_category_id` automaticamente
-4. Se nao encontrar, ai sim cair nas sugestoes
-
-Isso garante que qualquer tag configurada em "Gerenciar Categorias" (como "supermercado" em "Alimentacao") sera respeitada, sem depender de listas hardcoded.
-
-## Correcao 2: Trigger do Saldo
-
-**Tipo**: Migracao SQL
-
-**Mudanca**: Em todos os 3 blocos do trigger (INSERT, UPDATE, DELETE), alterar:
-
-```
-SET current_balance = total_expenses
-```
-
-Para:
-
-```
-SET current_balance = COALESCE(initial_balance_original, 0) + total_expenses
-```
-
-Isso faz o saldo refletir a divida total: pre-existente (R$ 10.035,73) + novos gastos (R$ 5.724,27) = R$ 15.760,00.
-
-Apos aplicar, executar um recalculo para corrigir o saldo atual do cartao Inter Black do Ronaldo.
-
-## Correcao 3: Respostas no Idioma do Usuario
-
-**Arquivo**: `supabase/functions/whatsapp-input/index.ts`
-
-**Mudanca**: Adicionar deteccao de idioma baseada no `raw_message` e traduzir as perguntas geradas pelo sistema.
-
-Logica:
-- Detectar idioma do `raw_message` usando patterns simples (palavras-chave PT/EN/ES)
-- Usar templates de perguntas traduzidos: "Qual a forma de pagamento?" / "What payment method?" / "Cual metodo de pago?"
-- Aplicar para todas as perguntas: categoria, cartao, conta, metodo de pagamento
+Inverter a prioridade: **keywords da mensagem original devem ter prioridade sobre o hint da IA**.
 
 ---
 
 ## Detalhes Tecnicos
 
-### Arquivo 1: `supabase/functions/whatsapp-input/index.ts`
+### Arquivo: `supabase/functions/whatsapp-input/index.ts`
 
-**Secao 1 - Resolucao automatica via tags (antes da linha 1132)**:
-- Quando `!mergedState.resolved_category_id && !mergedState.category_hint`, extrair keywords do `raw_message`
-- Buscar cada keyword em `category_tags.keywords_pt` usando `contains()`
-- Se match, seguir o caminho existente: `category_tag_relations` -> `categories` (via `default_category_id`)
-- Se resolver, setar `mergedState.resolved_category_id` e pular as sugestoes
+**Mudanca principal**: Mover o bloco de DB TAG LOOKUP (linhas 1216-1288) para **antes** da resolucao por `category_hint` (linha 723), dentro do bloco PATCH.
 
-**Secao 2 - Deteccao de idioma e templates**:
-- Funcao `detectLanguage(message)` simples baseada em patterns
-- Objeto `QUESTION_TEMPLATES` com traducoes para PT/EN/ES
-- Substituir strings hardcoded por templates[lang]
+A nova ordem sera:
 
-### Arquivo 2: Migracao SQL - `update_card_balance`
+```text
+1. PRIMEIRO: Buscar keywords da mensagem original no banco (farmacia -> Saude)
+2. SEGUNDO: Se nao encontrou, usar category_hint da IA
+3. TERCEIRO: Fallback por nome direto da categoria
+```
 
-- Recriar funcao com `current_balance = COALESCE(initial_balance_original, 0) + total_expenses` em todos os blocos
-- Recalcular saldo do cartao Inter Black imediatamente
+### Mudancas especificas:
 
-### Impacto
+1. **No bloco PATCH (apos o merge state, ~linha 712)**: Adicionar o lookup de DB TAGS usando `raw_message` ANTES de usar `category_hint`:
+   - Extrair palavras da `raw_message` (normalizar acentos)
+   - Buscar todas as `category_tags` com keywords
+   - Para cada palavra, verificar match nas keywords (pt, en, es)
+   - Se encontrar match, resolver via `category_tag_relations` -> `categories` do usuario
+   - Implementar sistema de **pontuacao**: se multiplas keywords matcham categorias diferentes (ex: "mercado" -> Alimentacao, "farmacia" -> Saude), a keyword mais especifica (menos categorias associadas) vence
 
-- **Categorias**: Toda compra cujo texto contenha palavras configuradas nas tags do usuario sera resolvida automaticamente, sem depender da IA
-- **Saldo**: O valor exibido no cartao refletira a divida real (pre-existente + gastos)
-- **Idioma**: Perguntas de acompanhamento serao no mesmo idioma da mensagem do usuario
+2. **Manter o `category_hint` como fallback**: So usar quando o DB TAG LOOKUP nao encontrar nada
+
+3. **Adicionar logica de desempate por especificidade**: Se "conta" matcha Moradia, Tecnologia, etc. (keyword generica) mas "farmacia" matcha so Saude (keyword especifica), "farmacia" vence
+
+### Logica de pontuacao proposta:
+
+```text
+Para cada palavra da mensagem:
+  - Contar quantas categorias diferentes essa keyword aparece
+  - Keywords que aparecem em 1 categoria = peso 10 (muito especifica)
+  - Keywords que aparecem em 2-3 categorias = peso 5
+  - Keywords que aparecem em 4+ categorias = peso 1 (generica, ex: "conta")
+  
+Somar pontos por categoria e escolher a de maior pontuacao.
+```
+
+### Exemplo com a mensagem "gastei na minha conta do Santander de mercado de farmacia":
+
+```text
+Palavras extraidas: ["gastei", "conta", "santander", "mercado", "farmacia"]
+
+- "conta" -> Moradia (luz, gas, agua), Tecnologia (celular) = peso 1 (generica)
+- "mercado" -> Alimentacao = peso 10 (especifica)
+- "farmacia" -> Saude = peso 10 (especifica)
+
+Pontuacao: Alimentacao=10, Saude=10, Moradia=1
+Desempate: primeira keyword mais especifica encontrada = "mercado" -> Alimentacao
+
+Ou: manter a ULTIMA keyword especifica = "farmacia" -> Saude
+```
+
+4. **Tambem aplicar a mesma correcao no `process-financial-input/index.ts`** (linhas 794-902): Mesmo problema existe la - o `category_hint` e usado diretamente sem consultar keywords da mensagem.
+
+### Limpeza de tags duplicadas
+
+Existem 4 tags "farmacia" duplicadas no banco. Apos a correcao de prioridade, limpar duplicatas com uma migration:
+- Manter apenas 1 tag "farmacia" (a mais completa em keywords)
+- Remover as 3 duplicadas e suas relacoes
+
