@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
@@ -117,7 +117,7 @@ const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
     return () => clearInterval(interval);
   }, []);
 
-  const convertCurrency = (
+  const convertCurrency = useCallback((
     amount: number,
     fromCurrency: CurrencyCode,
     toCurrency: CurrencyCode
@@ -147,7 +147,7 @@ const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({
     
     // Convert back to decimal with precision
     return resultCents / 100;
-  };
+  }, [exchangeRates]);
 
   const formatCurrency = (amount: number, currency: CurrencyCode): string => {
     const currencyInfo = CURRENCY_INFO[currency];
