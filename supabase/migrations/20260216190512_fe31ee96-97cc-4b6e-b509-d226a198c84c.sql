@@ -1,0 +1,1 @@
+UPDATE public.categories SET deleted_at = now() WHERE name ILIKE '%quita%' AND name ILIKE '%cart%' AND name ILIKE '%cr%dito%' AND deleted_at IS NULL;
