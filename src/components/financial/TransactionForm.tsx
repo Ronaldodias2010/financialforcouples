@@ -1355,11 +1355,23 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               <div className="relative">
                 <Input
                   id="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="0,00"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={currency === 'BRL' ? '0,00' : '0.00'}
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const decimalSep = currency === 'BRL' ? ',' : '.';
+                    const otherSep = decimalSep === ',' ? '.' : ',';
+                    // Allow only digits and the correct decimal separator
+                    let cleaned = val.replace(new RegExp(`[^\\d${decimalSep === '.' ? '\\.' : ','}]`, 'g'), '');
+                    // Ensure only one decimal separator
+                    const parts = cleaned.split(decimalSep);
+                    if (parts.length > 2) {
+                      cleaned = parts[0] + decimalSep + parts.slice(1).join('');
+                    }
+                    setAmount(cleaned);
+                  }}
                   className="text-lg pl-12"
                   required
                 />
