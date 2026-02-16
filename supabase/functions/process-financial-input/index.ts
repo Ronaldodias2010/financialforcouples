@@ -790,64 +790,132 @@ serve(async (req) => {
     let resolved_card_id: string | null = input.resolved_card_id;
     let resolved_account_id: string | null = input.resolved_account_id;
 
-    // 2.1 Resolver CATEGORIA se não tiver UUID válido (BUSCAR POR KEYWORDS DAS TAGS - MULTI-IDIOMA)
+    // 2.1 PRIORIDADE 1: Resolver CATEGORIA por KEYWORDS da mensagem original (raw_message)
+    if (!isValidUUID(resolved_category_id)) {
+      const rawMsgForLookup = (input.raw_message || '').toLowerCase();
+      const rawWords = rawMsgForLookup
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((w: string) => w.length > 3);
+
+      console.log('[process-financial-input] RAW MESSAGE KEYWORD LOOKUP - words:', rawWords.slice(0, 10));
+
+      if (rawWords.length > 0) {
+        const { data: allTagsForScoring } = await supabase
+          .from('category_tags')
+          .select('id, name_pt, keywords_pt, keywords_en, keywords_es');
+
+        if (allTagsForScoring && allTagsForScoring.length > 0) {
+          const allTagIds = allTagsForScoring.map((t: { id: string }) => t.id);
+          const { data: allRelationsForScoring } = await supabase
+            .from('category_tag_relations')
+            .select('tag_id, category_id')
+            .in('tag_id', allTagIds)
+            .eq('is_active', true);
+
+          if (allRelationsForScoring && allRelationsForScoring.length > 0) {
+            const tagCategoryCount: Record<string, number> = {};
+            const tagToDefaultCategories: Record<string, string[]> = {};
+            for (const rel of allRelationsForScoring) {
+              if (!tagToDefaultCategories[rel.tag_id]) tagToDefaultCategories[rel.tag_id] = [];
+              tagToDefaultCategories[rel.tag_id].push(rel.category_id);
+              tagCategoryCount[rel.tag_id] = (tagCategoryCount[rel.tag_id] || 0) + 1;
+            }
+
+            const categoryScores: Record<string, number> = {};
+            const categoryMatchDetails: Record<string, string[]> = {};
+
+            for (const word of rawWords) {
+              for (const tag of allTagsForScoring) {
+                const allKeywords = [
+                  ...(tag.keywords_pt || []),
+                  ...(tag.keywords_en || []),
+                  ...(tag.keywords_es || [])
+                ].map((k: string) => k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+
+                if (allKeywords.includes(word)) {
+                  const catCount = tagCategoryCount[tag.id] || 1;
+                  const weight = catCount === 1 ? 10 : catCount <= 3 ? 5 : 1;
+                  const defaultCats = tagToDefaultCategories[tag.id] || [];
+
+                  for (const defaultCatId of defaultCats) {
+                    categoryScores[defaultCatId] = (categoryScores[defaultCatId] || 0) + weight;
+                    if (!categoryMatchDetails[defaultCatId]) categoryMatchDetails[defaultCatId] = [];
+                    categoryMatchDetails[defaultCatId].push(`${word}→${tag.name_pt}(w${weight})`);
+                  }
+                }
+              }
+            }
+
+            console.log('[process-financial-input] KEYWORD SCORING results:', categoryScores, categoryMatchDetails);
+
+            const sortedCategories = Object.entries(categoryScores).sort((a, b) => b[1] - a[1]);
+            if (sortedCategories.length > 0) {
+              const bestDefaultCatId = sortedCategories[0][0];
+              const bestScore = sortedCategories[0][1];
+              console.log('[process-financial-input] BEST KEYWORD MATCH: default_category=', bestDefaultCatId, 'score=', bestScore);
+
+              const { data: userCatByKeyword } = await supabase
+                .from('categories')
+                .select('id, name')
+                .eq('user_id', input.user_id)
+                .eq('default_category_id', bestDefaultCatId)
+                .is('deleted_at', null)
+                .limit(1)
+                .single();
+
+              if (userCatByKeyword) {
+                resolved_category_id = userCatByKeyword.id;
+                console.log('[process-financial-input] CATEGORY RESOLVED VIA RAW MESSAGE KEYWORDS:', userCatByKeyword.name, '(score:', bestScore, ')');
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 2.1b PRIORIDADE 2: Resolver CATEGORIA por category_hint da IA (FALLBACK)
     if (!isValidUUID(resolved_category_id) && input.category_hint) {
-      console.log('[process-financial-input] Resolving category from hint:', input.category_hint);
+      console.log('[process-financial-input] FALLBACK: Resolving category from AI hint:', input.category_hint);
       const searchTerm = input.category_hint.trim().toLowerCase();
       
-      // 1) PRIMEIRO: Buscar tag por KEYWORDS em TODOS OS IDIOMAS (pt, en, es)
-      // Isso encontra "food" nas keywords_en, "comida" nas keywords_pt, etc.
+      // Buscar em keywords_pt, en, es
       let tagMatches: any[] = [];
       
-      // Buscar em keywords_pt
       const { data: tagByKeywordPt } = await supabase
         .from('category_tags')
         .select('id, name_pt, name_en, name_es, keywords_pt, keywords_en, keywords_es')
         .contains('keywords_pt', [searchTerm]);
       
       if (tagByKeywordPt && tagByKeywordPt.length > 0) {
-        console.log('[process-financial-input] Found tag via KEYWORDS_PT:', tagByKeywordPt.map((t: any) => t.name_pt));
         tagMatches = tagByKeywordPt;
       }
       
-      // Se não encontrou, buscar em keywords_en
       if (tagMatches.length === 0) {
         const { data: tagByKeywordEn } = await supabase
           .from('category_tags')
           .select('id, name_pt, name_en, name_es, keywords_pt, keywords_en, keywords_es')
           .contains('keywords_en', [searchTerm]);
-        
-        if (tagByKeywordEn && tagByKeywordEn.length > 0) {
-          console.log('[process-financial-input] Found tag via KEYWORDS_EN:', tagByKeywordEn.map((t: any) => t.name_en));
-          tagMatches = tagByKeywordEn;
-        }
+        if (tagByKeywordEn && tagByKeywordEn.length > 0) tagMatches = tagByKeywordEn;
       }
       
-      // Se não encontrou, buscar em keywords_es
       if (tagMatches.length === 0) {
         const { data: tagByKeywordEs } = await supabase
           .from('category_tags')
           .select('id, name_pt, name_en, name_es, keywords_pt, keywords_en, keywords_es')
           .contains('keywords_es', [searchTerm]);
-        
-        if (tagByKeywordEs && tagByKeywordEs.length > 0) {
-          console.log('[process-financial-input] Found tag via KEYWORDS_ES:', tagByKeywordEs.map((t: any) => t.name_es));
-          tagMatches = tagByKeywordEs;
-        }
+        if (tagByKeywordEs && tagByKeywordEs.length > 0) tagMatches = tagByKeywordEs;
       }
       
-      // 2) FALLBACK: Buscar tag por nome parcial em todos os idiomas
+      // FALLBACK: nome parcial
       if (tagMatches.length === 0) {
-        console.log('[process-financial-input] No keyword match, trying name ilike in all languages...');
-        
-        // Tentar por name_pt
         let { data: tagByName } = await supabase
           .from('category_tags')
           .select('id, name_pt, name_en, name_es')
           .ilike('name_pt', `%${searchTerm}%`);
         
         if (!tagByName || tagByName.length === 0) {
-          // Tentar por name_en
           const { data: tagByNameEn } = await supabase
             .from('category_tags')
             .select('id, name_pt, name_en, name_es')
@@ -855,23 +923,10 @@ serve(async (req) => {
           tagByName = tagByNameEn;
         }
         
-        if (!tagByName || tagByName.length === 0) {
-          // Tentar por name_es
-          const { data: tagByNameEs } = await supabase
-            .from('category_tags')
-            .select('id, name_pt, name_en, name_es')
-            .ilike('name_es', `%${searchTerm}%`);
-          tagByName = tagByNameEs;
-        }
-        
-        if (tagByName && tagByName.length > 0) {
-          console.log('[process-financial-input] Found tag via NAME (multi-lang):', tagByName.map((t: any) => t.name_pt || t.name_en));
-          tagMatches = tagByName;
-        }
+        if (tagByName && tagByName.length > 0) tagMatches = tagByName;
       }
       
       if (tagMatches && tagMatches.length > 0) {
-        // 3) Buscar category_tag_relations para encontrar default_category_id
         const tagIds = tagMatches.map((t: { id: string }) => t.id);
         const { data: relations } = await supabase
           .from('category_tag_relations')
@@ -882,9 +937,7 @@ serve(async (req) => {
         
         if (relations && relations.length > 0) {
           const defaultCategoryId = relations[0].category_id;
-          console.log('[process-financial-input] Found default category via tag:', defaultCategoryId);
           
-          // 4) Mapear para categoria do usuário via default_category_id
           const { data: userCategory } = await supabase
             .from('categories')
             .select('id, name')
@@ -896,15 +949,13 @@ serve(async (req) => {
           
           if (userCategory) {
             resolved_category_id = userCategory.id;
-            console.log('[process-financial-input] Category resolved via TAG/KEYWORD (multi-lang):', searchTerm, '->', userCategory.name);
+            console.log('[process-financial-input] Category resolved via AI HINT TAG/KEYWORD:', searchTerm, '->', userCategory.name);
           }
         }
       }
       
-      // 5) FALLBACK: Busca direta pelo nome da categoria do usuário
+      // FALLBACK: Busca direta pelo nome
       if (!resolved_category_id) {
-        console.log('[process-financial-input] Tag search failed, trying direct name match...');
-        
         const { data: category } = await supabase
           .from('categories')
           .select('id')

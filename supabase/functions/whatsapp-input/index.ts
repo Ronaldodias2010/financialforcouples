@@ -710,8 +710,100 @@ serve(async (req) => {
       let resolved_card_id: string | null = null;
 
       // =====================================================
-      // RESOLVER CATEGORIA POR KEYWORDS DAS TAGS OU NOME
-      // Usar mergedState.category_hint em vez de category_hint raw
+      // RESOLVER CATEGORIA POR KEYWORDS DA MENSAGEM ORIGINAL (PRIORIDADE 1)
+      // Busca keywords do raw_message ANTES de usar category_hint da IA
+      // =====================================================
+      const rawMsgForKeywordLookup = (existingInput.raw_message || body.raw_message || '').toLowerCase();
+      const rawWords = rawMsgForKeywordLookup
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((w: string) => w.length > 3);
+
+      console.log('[whatsapp-input] RAW MESSAGE KEYWORD LOOKUP - words:', rawWords.slice(0, 10));
+
+      if (rawWords.length > 0 && !mergedState.resolved_category_id) {
+        // Buscar TODAS as tags ativas com keywords
+        const { data: allTagsForScoring } = await supabase
+          .from('category_tags')
+          .select('id, name_pt, keywords_pt, keywords_en, keywords_es');
+
+        if (allTagsForScoring && allTagsForScoring.length > 0) {
+          // Buscar todas as relações tag->categoria de uma vez
+          const allTagIds = allTagsForScoring.map((t: { id: string }) => t.id);
+          const { data: allRelationsForScoring } = await supabase
+            .from('category_tag_relations')
+            .select('tag_id, category_id')
+            .in('tag_id', allTagIds)
+            .eq('is_active', true);
+
+          if (allRelationsForScoring && allRelationsForScoring.length > 0) {
+            // Contar em quantas categorias cada tag aparece (especificidade)
+            const tagCategoryCount: Record<string, number> = {};
+            const tagToDefaultCategories: Record<string, string[]> = {};
+            for (const rel of allRelationsForScoring) {
+              if (!tagToDefaultCategories[rel.tag_id]) tagToDefaultCategories[rel.tag_id] = [];
+              tagToDefaultCategories[rel.tag_id].push(rel.category_id);
+              tagCategoryCount[rel.tag_id] = (tagCategoryCount[rel.tag_id] || 0) + 1;
+            }
+
+            // Para cada palavra, verificar match e acumular pontuação por default_category
+            const categoryScores: Record<string, number> = {};
+            const categoryMatchDetails: Record<string, string[]> = {};
+
+            for (const word of rawWords) {
+              for (const tag of allTagsForScoring) {
+                const allKeywords = [
+                  ...(tag.keywords_pt || []),
+                  ...(tag.keywords_en || []),
+                  ...(tag.keywords_es || [])
+                ].map((k: string) => k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+
+                if (allKeywords.includes(word)) {
+                  const catCount = tagCategoryCount[tag.id] || 1;
+                  const weight = catCount === 1 ? 10 : catCount <= 3 ? 5 : 1;
+                  const defaultCats = tagToDefaultCategories[tag.id] || [];
+
+                  for (const defaultCatId of defaultCats) {
+                    categoryScores[defaultCatId] = (categoryScores[defaultCatId] || 0) + weight;
+                    if (!categoryMatchDetails[defaultCatId]) categoryMatchDetails[defaultCatId] = [];
+                    categoryMatchDetails[defaultCatId].push(`${word}→${tag.name_pt}(w${weight})`);
+                  }
+                }
+              }
+            }
+
+            console.log('[whatsapp-input] KEYWORD SCORING results:', categoryScores, categoryMatchDetails);
+
+            // Escolher a categoria com maior pontuação
+            const sortedCategories = Object.entries(categoryScores).sort((a, b) => b[1] - a[1]);
+            if (sortedCategories.length > 0) {
+              const bestDefaultCatId = sortedCategories[0][0];
+              const bestScore = sortedCategories[0][1];
+              console.log('[whatsapp-input] BEST KEYWORD MATCH: default_category=', bestDefaultCatId, 'score=', bestScore);
+
+              // Mapear para categoria do usuário
+              const { data: userCatByKeyword } = await supabase
+                .from('categories')
+                .select('id, name')
+                .eq('user_id', existingInput.user_id)
+                .eq('default_category_id', bestDefaultCatId)
+                .is('deleted_at', null)
+                .limit(1)
+                .single();
+
+              if (userCatByKeyword) {
+                mergedState.resolved_category_id = userCatByKeyword.id;
+                console.log('[whatsapp-input] CATEGORY RESOLVED VIA RAW MESSAGE KEYWORDS:', userCatByKeyword.name, '(score:', bestScore, ')');
+              }
+            }
+          }
+        }
+      }
+
+      // =====================================================
+      // RESOLVER CATEGORIA POR CATEGORY_HINT DA IA (PRIORIDADE 2 - FALLBACK)
+      // Só executa se keywords da mensagem original não resolveram
       // =====================================================
       // REGRA: Tratar "Outros"/"Other"/"Otros" como hint VAZIO - forçar inferência contextual
       const ignoredCategoryHints = ['outros', 'other', 'otros', 'miscellaneous', 'general', 'varios'];
@@ -722,10 +814,9 @@ serve(async (req) => {
 
       if (mergedState.category_hint && !mergedState.resolved_category_id) {
         const searchTerm = mergedState.category_hint.trim().toLowerCase();
-        console.log('[whatsapp-input] Resolving category from merged hint:', searchTerm);
+        console.log('[whatsapp-input] FALLBACK: Resolving category from AI hint:', searchTerm);
         
-        // 1) PRIMEIRO: Buscar tag por KEYWORDS_PT (match exato no array)
-        // Isso encontra "ifood" nas keywords ["ifood", "delivery", "comida"]
+        // 1) Buscar tag por KEYWORDS_PT (match exato no array)
         const { data: tagByKeyword } = await supabase
           .from('category_tags')
           .select('id, name_pt, keywords_pt')
@@ -736,8 +827,7 @@ serve(async (req) => {
         if (tagByKeyword && tagByKeyword.length > 0) {
           console.log('[whatsapp-input] Found tag via KEYWORDS_PT:', tagByKeyword.map((t: { name_pt: string }) => t.name_pt));
         } else {
-          // 2) FALLBACK: Buscar tag por nome parcial (ex: "livro" → tag "livros")
-          console.log('[whatsapp-input] No keyword match, trying name_pt ilike...');
+          // 2) FALLBACK: Buscar tag por nome parcial
           const { data: tagByName } = await supabase
             .from('category_tags')
             .select('id, name_pt, keywords_pt')
@@ -750,7 +840,6 @@ serve(async (req) => {
         }
         
         if (tagMatches && tagMatches.length > 0) {
-          // 3) Buscar category_tag_relations para encontrar default_category_id
           const tagIds = tagMatches.map((t: { id: string }) => t.id);
           const { data: relations } = await supabase
             .from('category_tag_relations')
@@ -761,9 +850,7 @@ serve(async (req) => {
           
           if (relations && relations.length > 0) {
             const defaultCategoryId = relations[0].category_id;
-            console.log('[whatsapp-input] Found default category via tag:', defaultCategoryId);
             
-            // 4) Mapear para categoria do usuário via default_category_id
             const { data: userCategory } = await supabase
               .from('categories')
               .select('id, name')
@@ -775,12 +862,12 @@ serve(async (req) => {
             
             if (userCategory) {
               mergedState.resolved_category_id = userCategory.id;
-              console.log('[whatsapp-input] Category resolved via TAG/KEYWORD:', searchTerm, '->', userCategory.name);
+              console.log('[whatsapp-input] Category resolved via AI HINT TAG/KEYWORD:', searchTerm, '->', userCategory.name);
             }
           }
         }
         
-        // 4) FALLBACK: Busca direta pelo nome da categoria
+        // 3) FALLBACK: Busca direta pelo nome da categoria
         if (!mergedState.resolved_category_id) {
           console.log('[whatsapp-input] Tag search failed, trying direct name match...');
           
@@ -1211,108 +1298,32 @@ serve(async (req) => {
       // NUNCA usar "Outros" como fallback automático
       // =====================================================
       if (!mergedState.resolved_category_id) {
-        console.log('[whatsapp-input] CATEGORY NOT RESOLVED - attempting DB tag lookup before asking user');
+        console.log('[whatsapp-input] CATEGORY NOT RESOLVED after keyword scoring + AI hint - asking user');
         
-        // =====================================================
-        // RESOLUÇÃO AUTOMÁTICA VIA TAGS DO BANCO DE DADOS
-        // Busca keywords do raw_message nas tags configuradas em "Gerenciar Categorias"
-        // =====================================================
-        const rawMessageForLookup = (existingInput.raw_message || body.raw_message || '').toLowerCase();
-        const words = rawMessageForLookup
-          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9\s]/g, ' ')
-          .split(/\s+/)
-          .filter((w: string) => w.length > 3);
+        const rawMessageForLang = (existingInput.raw_message || body.raw_message || '');
+        const lang = detectLanguage(rawMessageForLang);
         
-        console.log('[whatsapp-input] DB TAG LOOKUP - extracted words:', words.slice(0, 10));
-        
-        let resolvedViaDbTags = false;
-        
-        if (words.length > 0) {
-          // Buscar TODAS as tags ativas com keywords
-          const { data: allTags } = await supabase
-            .from('category_tags')
-            .select('id, name_pt, keywords_pt, keywords_en, keywords_es');
+        if (!mergedState.category_hint) {
+          const allSuggestions = [...new Set([...frequentCategories])].slice(0, 5);
           
-          if (allTags && allTags.length > 0) {
-            // Para cada palavra do raw_message, verificar se existe nas keywords de alguma tag
-            let matchedTagId: string | null = null;
-            
-            for (const word of words) {
-              if (matchedTagId) break;
-              for (const tag of allTags) {
-                const allKeywords = [
-                  ...(tag.keywords_pt || []),
-                  ...(tag.keywords_en || []),
-                  ...(tag.keywords_es || [])
-                ].map((k: string) => k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
-                
-                if (allKeywords.includes(word)) {
-                  matchedTagId = tag.id;
-                  console.log('[whatsapp-input] DB TAG MATCH:', word, '→ tag:', tag.name_pt);
-                  break;
-                }
-              }
-            }
-            
-            if (matchedTagId) {
-              // Buscar default_category via category_tag_relations
-              const { data: tagRelations } = await supabase
-                .from('category_tag_relations')
-                .select('category_id')
-                .eq('tag_id', matchedTagId)
-                .eq('is_active', true)
-                .limit(1);
-              
-              if (tagRelations && tagRelations.length > 0) {
-                const defaultCatId = tagRelations[0].category_id;
-                
-                // Mapear para categoria do usuário
-                const { data: userCat } = await supabase
-                  .from('categories')
-                  .select('id, name')
-                  .eq('user_id', existingInput.user_id)
-                  .eq('default_category_id', defaultCatId)
-                  .is('deleted_at', null)
-                  .limit(1)
-                  .single();
-                
-                if (userCat) {
-                  mergedState.resolved_category_id = userCat.id;
-                  resolvedViaDbTags = true;
-                  console.log('[whatsapp-input] CATEGORY RESOLVED VIA DB TAGS:', userCat.name);
-                }
-              }
-            }
-          }
+          questions.push({ 
+            field: 'category', 
+            question: allSuggestions.length > 0 
+              ? QUESTION_TEMPLATES.category_with_suggestions[lang](allSuggestions)
+              : QUESTION_TEMPLATES.category_no_hint[lang],
+            suggestions: allSuggestions,
+            type: allSuggestions.length > 0 ? 'selection' : 'text'
+          });
+        } else {
+          console.log('[whatsapp-input] Category hint provided but not resolved:', mergedState.category_hint);
+          questions.push({ 
+            field: 'category', 
+            question: QUESTION_TEMPLATES.category_not_found[lang](mergedState.category_hint, frequentCategories),
+            hint: mergedState.category_hint,
+            suggestions: frequentCategories,
+            type: frequentCategories.length > 0 ? 'selection' : 'text'
+          });
         }
-        
-        // Se não resolveu via DB tags, perguntar ao usuário (com idioma detectado)
-        if (!resolvedViaDbTags) {
-          const lang = detectLanguage(rawMessageForLookup);
-          console.log('[whatsapp-input] Category not resolved via DB tags, asking user (lang:', lang, ')');
-          
-          if (!mergedState.category_hint) {
-            const allSuggestions = [...new Set([...frequentCategories])].slice(0, 5);
-            
-            questions.push({ 
-              field: 'category', 
-              question: allSuggestions.length > 0 
-                ? QUESTION_TEMPLATES.category_with_suggestions[lang](allSuggestions)
-                : QUESTION_TEMPLATES.category_no_hint[lang],
-              suggestions: allSuggestions,
-              type: allSuggestions.length > 0 ? 'selection' : 'text'
-            });
-          } else {
-            console.log('[whatsapp-input] Category hint provided but not resolved:', mergedState.category_hint);
-            questions.push({ 
-              field: 'category', 
-              question: QUESTION_TEMPLATES.category_not_found[lang](mergedState.category_hint, frequentCategories),
-              hint: mergedState.category_hint,
-              suggestions: frequentCategories,
-              type: frequentCategories.length > 0 ? 'selection' : 'text'
-            });
-          }
         }
       } else {
         console.log('[whatsapp-input] Category resolved successfully:', mergedState.resolved_category_id);
