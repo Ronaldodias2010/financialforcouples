@@ -111,6 +111,7 @@ const CategoryManagerContent = () => {
         .from('categories')
         .select('*')
         .eq('user_id', user.id)
+        .is('deleted_at', null)
         .order('name');
 
       if (error) throw error;
