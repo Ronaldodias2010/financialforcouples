@@ -768,6 +768,28 @@ serve(async (req) => {
         console.error('[process-financial-input] Confirm error:', confirmError);
         throw confirmError;
       }
+    } else if (input.status === 'processed') {
+      // Auto-confirm inputs that came from direct resolution (skip_ai_extraction flow)
+      console.log('[process-financial-input] Auto-confirming processed input:', input_id);
+      
+      if (!input.amount || input.amount <= 0) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Valor inválido. Não é possível confirmar.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { error: autoConfirmError } = await supabase
+        .from('incoming_financial_inputs')
+        .update({ status: 'confirmed', pending_question_field: null })
+        .eq('id', input_id);
+
+      if (autoConfirmError) {
+        console.error('[process-financial-input] Auto-confirm error:', autoConfirmError);
+        throw autoConfirmError;
+      }
+      
+      input.status = 'confirmed';
     } else if (input.status !== 'confirmed') {
       console.log('[process-financial-input] Not confirmed:', input.status);
       return new Response(
