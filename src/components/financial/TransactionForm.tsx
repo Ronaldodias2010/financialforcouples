@@ -60,6 +60,11 @@ interface Card {
   currency?: CurrencyCode;
 }
 const CREDIT_CARD_PAYMENT_NAMES = { pt: "Quitação Dívida Crédito", en: "Credit Debt Settlement" } as const;
+const CREDIT_CARD_PAYMENT_ALIASES = [
+  "Quitação Dívida Crédito", "Credit Debt Settlement",
+  "Pagamento de Cartão de Crédito", "Credit Card Payment",
+  "Pagamento Cartão de Crédito", "Pagamento de Cartao de Credito"
+];
 interface Account {
   id: string;
   user_id: string;
@@ -254,8 +259,9 @@ const getAccountOwnerName = (account: Account) => {
     if (type === "expense" && categoryId && (paymentMethod === "cash" || paymentMethod === "debit_card")) {
       const selectedCat = categories.find(c => c.id === categoryId);
       if (selectedCat) {
-        const ccPaymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
-        if (ccPaymentNames.includes(selectedCat.name)) {
+        const normalized = normalizeCategory(selectedCat.name);
+        const ccNormalized = CREDIT_CARD_PAYMENT_ALIASES.map(n => normalizeCategory(n));
+        if (ccNormalized.includes(normalized)) {
           setPaymentMethod("card_payment");
         }
       }
@@ -435,8 +441,8 @@ const getAccountOwnerName = (account: Account) => {
   };
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
-  const paymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
-  const isCreditCardPaymentCategory = selectedCategory ? paymentNames.includes(selectedCategory.name) : false;
+  const normalizedAliases = CREDIT_CARD_PAYMENT_ALIASES.map(n => normalizeCategory(n));
+  const isCreditCardPaymentCategory = selectedCategory ? normalizedAliases.includes(normalizeCategory(selectedCategory.name)) : false;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
