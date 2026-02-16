@@ -256,17 +256,26 @@ const getAccountOwnerName = (account: Account) => {
   // Auto-redirect: quando o usuário seleciona a categoria "Pagamento de Cartão de Crédito" com método cash/debit_card,
   // ativar o modo "Pagamento Inteligente de Cartão" inline na aba Despesas
   useEffect(() => {
-    if (type === "expense" && categoryId && !isTransferMode && (paymentMethod === "cash" || paymentMethod === "debit_card")) {
+    if (type === "expense" && categoryId && !isTransferMode) {
       const selectedCat = categories.find(c => c.id === categoryId);
       if (selectedCat) {
         const normalized = normalizeCategory(selectedCat.name);
         const ccNormalized = CREDIT_CARD_PAYMENT_ALIASES.map(n => normalizeCategory(n));
         if (ccNormalized.includes(normalized)) {
-          setPaymentMethod("card_payment");
+          // Only auto-switch to card_payment if currently on cash or debit_card
+          if (paymentMethod === "cash" || paymentMethod === "debit_card") {
+            setPaymentMethod("card_payment");
+          }
+          return;
         }
       }
+      // If category changed to something else, revert from card_payment back to cash
+      if (paymentMethod === "card_payment") {
+        setPaymentMethod("cash");
+      }
     }
-  }, [categoryId, type, paymentMethod, categories, isTransferMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId, type, categories, isTransferMode]);
 
   const fetchUserPreferredCurrency = async () => {
     try {
