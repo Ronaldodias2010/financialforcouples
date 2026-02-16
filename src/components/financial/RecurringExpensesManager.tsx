@@ -517,7 +517,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
           </TabsTrigger>
           <TabsTrigger value="debts">
             <Landmark className="h-4 w-4 mr-2" />
-            Dívidas
+            Empréstimos
           </TabsTrigger>
         </TabsList>
 
