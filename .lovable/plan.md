@@ -1,58 +1,60 @@
 
+# Correcao Definitiva: Categoria + Saldo do Cartao + Idioma
 
-# Correção dos 2 Problemas Criticos do Cartao Inter Black
+## Resumo dos 3 Problemas
 
-## Problema 1: Categoria sempre "Outros"
+1. **Categoria "Outros"**: Quando o hint da IA e ignorado (fix anterior), o codigo cai na inferencia contextual (linhas 1132-1184) que apenas SUGERE categorias ao usuario -- nao resolve automaticamente via banco de dados. Resultado: mesmo com "supermercado" no texto, o sistema pergunta ao usuario em vez de resolver sozinho.
 
-### Causa Raiz
-O fluxo funciona assim: N8N envia a mensagem -> `whatsapp-input` cria o input -> `process-financial-input` processa. O problema esta em DUAS camadas:
+2. **Saldo do cartao Inter Black**: O trigger `update_card_balance` calcula `current_balance = SUM(transacoes)` = R$ 5.724,27, ignorando `initial_balance_original` = R$ 10.035,73. Deveria ser R$ 15.760,00.
 
-1. **A IA do N8N esta enviando `category_hint: "Outros"`** em vez de inferir categorias como "Alimentacao" a partir do contexto (ex: "supermercado", "almoco").
-2. **O `whatsapp-input` trata "Outros" como hint valido** - busca a categoria "Outros" no banco, encontra (id: `d07169a9`), e resolve com sucesso. Isso burla a regra critica de "NUNCA usar Outros como fallback".
-3. **A inferencia de contexto (linhas 1128-1152)** so roda quando `category_hint` esta VAZIO - mas como a IA envia "Outros", nunca executa. Alem disso, "supermercado" esta mapeado para "Compras" em vez de "Alimentacao" nessa inferencia.
-
-### Correcao
-
-**A) No `whatsapp-input/index.ts` (PATCH handler):**
-- Tratar `category_hint = "Outros"` como se fosse vazio (ignorar o hint da IA)
-- Forcar a inferencia de contexto a partir do `raw_message` quando o hint for "Outros"
-- Corrigir o mapeamento: "supermercado" deve inferir "Alimentacao" (nao "Compras")
-
-**B) No `whatsapp-input/index.ts` (resolucao de categoria):**
-- Adicionar verificacao antes da resolucao: se `category_hint` for "Outros", "Other", "Otros", limpar o hint e usar inferencia contextual
-- A inferencia contextual ja faz match correto de keywords do raw_message (supermercado -> Alimentacao, padaria -> Alimentacao, etc.)
+3. **Idioma das respostas**: As perguntas do `whatsapp-input` (ex: "Qual a forma de pagamento?") sao fixas em portugues, mesmo quando o usuario escreve em ingles ou espanhol.
 
 ---
 
-## Problema 2: Saldo do Cartao volta para R$ 5.724,27
+## Correcao 1: Resolucao Automatica via Tags do Banco
 
-### Causa Raiz
-O trigger `update_card_balance` recalcula o `current_balance` a cada INSERT/UPDATE/DELETE em `transactions`. A formula atual e:
+**Arquivo**: `supabase/functions/whatsapp-input/index.ts`
+
+**Mudanca**: Quando `category_hint` e limpo (era "Outros"), em vez de ir direto para sugestoes, primeiro tentar resolver automaticamente usando as tags do banco de dados a partir de palavras-chave do `raw_message`.
+
+Logica:
+1. Extrair palavras relevantes do `raw_message` (ex: "supermercado", "padaria")
+2. Para cada palavra, buscar na tabela `category_tags` por `keywords_pt` (mesmo caminho das linhas 648-700)
+3. Se encontrar match, resolver o `resolved_category_id` automaticamente
+4. Se nao encontrar, ai sim cair nas sugestoes
+
+Isso garante que qualquer tag configurada em "Gerenciar Categorias" (como "supermercado" em "Alimentacao") sera respeitada, sem depender de listas hardcoded.
+
+## Correcao 2: Trigger do Saldo
+
+**Tipo**: Migracao SQL
+
+**Mudanca**: Em todos os 3 blocos do trigger (INSERT, UPDATE, DELETE), alterar:
 
 ```
-current_balance = SUM(expense transactions)  -- apenas transacoes no sistema
+SET current_balance = total_expenses
 ```
 
-O cartao Inter Black tem:
-- `initial_balance_original = 10.035,73` (divida pre-existente ao configurar o cartao)
-- `SUM(transacoes de despesa) = 5.694,27`
-- **Total real da fatura = 10.035,73 + 5.694,27 = 15.730,00** (proximo aos R$ 15.700 que voce ajustou)
-
-Mas o trigger IGNORA o `initial_balance_original`, setando `current_balance = 5.694,27`. Toda vez que uma transacao e criada/editada, o saldo volta para esse valor.
-
-### Correcao
-
-**No trigger `update_card_balance` (migracao SQL):**
-- Alterar a formula para incluir o saldo pre-existente:
+Para:
 
 ```
-current_balance = COALESCE(initial_balance_original, 0) + total_expenses
+SET current_balance = COALESCE(initial_balance_original, 0) + total_expenses
 ```
 
-Isso garante que:
-- Saldo da fatura = divida pre-existente + novos gastos registrados
-- `initial_balance` (limite disponivel) permanece com a formula atual: `GREATEST(0, credit_limit - initial_balance_original - total_expenses)`
-- Ao pagar a fatura (`process_card_payment`), o `initial_balance_original` e reduzido, restaurando o limite
+Isso faz o saldo refletir a divida total: pre-existente (R$ 10.035,73) + novos gastos (R$ 5.724,27) = R$ 15.760,00.
+
+Apos aplicar, executar um recalculo para corrigir o saldo atual do cartao Inter Black do Ronaldo.
+
+## Correcao 3: Respostas no Idioma do Usuario
+
+**Arquivo**: `supabase/functions/whatsapp-input/index.ts`
+
+**Mudanca**: Adicionar deteccao de idioma baseada no `raw_message` e traduzir as perguntas geradas pelo sistema.
+
+Logica:
+- Detectar idioma do `raw_message` usando patterns simples (palavras-chave PT/EN/ES)
+- Usar templates de perguntas traduzidos: "Qual a forma de pagamento?" / "What payment method?" / "Cual metodo de pago?"
+- Aplicar para todas as perguntas: categoria, cartao, conta, metodo de pagamento
 
 ---
 
@@ -60,27 +62,24 @@ Isso garante que:
 
 ### Arquivo 1: `supabase/functions/whatsapp-input/index.ts`
 
-**Mudanca na secao PATCH (apos o merge de estado, ~linha 635):**
-- Antes de resolver categoria, verificar se `category_hint` e "Outros"/"Other"/"Otros"
-- Se for, limpar o hint e rodar inferencia contextual a partir do `raw_message`
-- Corrigir a lista de inferencia contextual: mover "supermercado" para "Alimentacao"
+**Secao 1 - Resolucao automatica via tags (antes da linha 1132)**:
+- Quando `!mergedState.resolved_category_id && !mergedState.category_hint`, extrair keywords do `raw_message`
+- Buscar cada keyword em `category_tags.keywords_pt` usando `contains()`
+- Se match, seguir o caminho existente: `category_tag_relations` -> `categories` (via `default_category_id`)
+- Se resolver, setar `mergedState.resolved_category_id` e pular as sugestoes
 
-**Mudanca na inferencia contextual (~linha 1128-1152):**
-- Rodar a inferencia tambem quando `category_hint` foi limpado por ser "Outros"
-- Adicionar mais keywords: "bolo", "doceira", "padaria", "acougue" em "Alimentacao"
+**Secao 2 - Deteccao de idioma e templates**:
+- Funcao `detectLanguage(message)` simples baseada em patterns
+- Objeto `QUESTION_TEMPLATES` com traducoes para PT/EN/ES
+- Substituir strings hardcoded por templates[lang]
 
-### Arquivo 2: Migracao SQL - `update_card_balance` trigger
+### Arquivo 2: Migracao SQL - `update_card_balance`
 
-```sql
-CREATE OR REPLACE FUNCTION public.update_card_balance()
-RETURNS TRIGGER ...
--- Em TODOS os blocos (INSERT, UPDATE, DELETE):
--- Buscar initial_balance_original do cartao
--- Alterar: SET current_balance = COALESCE(ibo, 0) + total_expenses
-```
+- Recriar funcao com `current_balance = COALESCE(initial_balance_original, 0) + total_expenses` em todos os blocos
+- Recalcular saldo do cartao Inter Black imediatamente
 
 ### Impacto
 
-- **Problema 1**: Compras em "supermercado", "padaria", "almoco" serao automaticamente categorizadas como "Alimentacao" - a IA nao podera mais "escapar" enviando "Outros"
-- **Problema 2**: O saldo do cartao refletira corretamente a divida total (pre-existente + novos gastos) e nao sera mais resetado pelo trigger
-
+- **Categorias**: Toda compra cujo texto contenha palavras configuradas nas tags do usuario sera resolvida automaticamente, sem depender da IA
+- **Saldo**: O valor exibido no cartao refletira a divida real (pre-existente + gastos)
+- **Idioma**: Perguntas de acompanhamento serao no mesmo idioma da mensagem do usuario
