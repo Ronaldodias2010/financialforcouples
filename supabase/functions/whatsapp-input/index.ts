@@ -1600,12 +1600,26 @@ serve(async (req) => {
         );
       }
 
-      // Status: confirmed
+      // Status: confirmed - retornar dados completos para N8N prosseguir
       return new Response(
         JSON.stringify({ 
           success: true, 
           status: 'confirmed',
-          input_id: input_id
+          input_id: input_id,
+          user_id: existingInput.user_id,
+          transaction_ready: true,
+          resolved_data: {
+            amount: mergedState.amount,
+            currency: mergedState.currency,
+            transaction_type: mergedState.transaction_type,
+            payment_method: mergedState.payment_method,
+            description_hint: mergedState.description_hint,
+            transaction_date: mergedState.transaction_date,
+            resolved_category_id: mergedState.resolved_category_id,
+            resolved_account_id: mergedState.resolved_account_id,
+            resolved_card_id: mergedState.resolved_card_id,
+            owner_user: mergedState.owner_user
+          }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
