@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, CalendarIcon, RotateCcw } from "lucide-react";
+import { Plus, Trash2, Edit, CalendarIcon, RotateCcw, Landmark } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ import { usePartnerNames } from "@/hooks/usePartnerNames";
 import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName } from "@/utils/categoryTranslation";
 import { parseLocalDate } from "@/utils/date";
+import { LoansTab } from "./loans/LoansTab";
 
 // Helper to format date for DB without timezone issues
 const formatDateForDB = (date: Date): string => {
@@ -153,6 +155,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [cards, setCards] = useState<Card[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<RecurringExpense | null>(null);
+  const [activeTab, setActiveTab] = useState('recurring');
   
   // Form states
   const [name, setName] = useState("");
@@ -503,10 +506,27 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     return t('recurring.everyDays').replace('{days}', days.toString());
   };
 
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t('recurring.title')}</h2>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="recurring">
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Recorrentes
+          </TabsTrigger>
+          <TabsTrigger value="debts">
+            <Landmark className="h-4 w-4 mr-2" />
+            Dívidas
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="debts" className="mt-4">
+          <LoansTab viewMode={viewMode} />
+        </TabsContent>
+
+        <TabsContent value="recurring" className="mt-4">
+    <div className="space-y-6">
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
@@ -773,6 +793,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
           ))
         )}
       </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

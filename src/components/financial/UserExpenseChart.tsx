@@ -137,6 +137,7 @@ export const UserExpenseChart = () => {
         .in('user_id', userIds)
         .eq('type', 'income')
         .not('payment_method', 'eq', 'account_transfer')
+        .not('payment_method', 'eq', 'loan_deposit')
         .gte('transaction_date', startStr)
         .lte('transaction_date', endStr);
 
