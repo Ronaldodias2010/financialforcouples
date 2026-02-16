@@ -254,7 +254,7 @@ const getAccountOwnerName = (account: Account) => {
   }, [paymentMethod, categories, categoryId]);
 
   // Auto-redirect: quando o usuário seleciona a categoria "Pagamento de Cartão de Crédito" com método cash/debit_card,
-  // redirecionar para a aba Transferências com tipo "Pagamento Inteligente de Cartão"
+  // ativar o modo "Pagamento Inteligente de Cartão" inline na aba Despesas
   useEffect(() => {
     if (type === "expense" && categoryId && !isTransferMode && (paymentMethod === "cash" || paymentMethod === "debit_card")) {
       const selectedCat = categories.find(c => c.id === categoryId);
@@ -262,16 +262,11 @@ const getAccountOwnerName = (account: Account) => {
         const normalized = normalizeCategory(selectedCat.name);
         const ccNormalized = CREDIT_CARD_PAYMENT_ALIASES.map(n => normalizeCategory(n));
         if (ccNormalized.includes(normalized)) {
-          // Preserve the already-selected account as the source for card payment
-          if (accountId) {
-            setFromAccountId(accountId);
-          }
-          setIsTransferMode(true);
-          setTransferType("card_payment");
+          setPaymentMethod("card_payment");
         }
       }
     }
-  }, [categoryId, type, paymentMethod, categories, accountId, isTransferMode]);
+  }, [categoryId, type, paymentMethod, categories, isTransferMode]);
 
   const fetchUserPreferredCurrency = async () => {
     try {
@@ -1354,6 +1349,8 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               onClick={() => {
                 setType("expense");
                 setIsTransferMode(false);
+                setPaymentMethod("cash");
+                setTransferType("own_accounts");
               }}
               className="flex items-center justify-center gap-1 sm:gap-2 flex-1 text-sm sm:text-base"
             >
@@ -1975,8 +1972,8 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             </div>
           )}
 
-          {/* Account Selection for Expenses with Debit Card */}
-          {type === "expense" && paymentMethod === "debit_card" && (
+          {/* Account Selection for Expenses with Debit Card (hidden when card_payment is active) */}
+          {type === "expense" && paymentMethod === "debit_card" && !isTransferMode && (
             <div>
               <Label htmlFor="account">{t('transactionForm.selectAccount')}</Label>
               <Select value={accountId} onValueChange={setAccountId} required>
@@ -2137,7 +2134,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           )}
 
           {/* Smart Card Payment Section */}
-          {type === "expense" && paymentMethod === "card_payment" && (
+          {type === "expense" && paymentMethod === "card_payment" && !isTransferMode && (
             <div className="space-y-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
@@ -2206,7 +2203,8 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             </div>
           )}
 
-          {/* Category */}
+          {/* Category - Hidden when in transfer mode with card_payment (redundant) */}
+          {!(isTransferMode && transferType === "card_payment") && (
           <div>
             <Label htmlFor="category">{t('transactionForm.category')}</Label>
             <Select value={categoryId} onValueChange={setCategoryId} required>
@@ -2222,9 +2220,10 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               </SelectContent>
             </Select>
           </div>
+          )}
 
           {/* Seleção de Cartão para categoria: Pagamento de Cartão de Crédito - apenas para métodos que não sejam card_payment */}
-          {type === "expense" && isCreditCardPaymentCategory && paymentMethod !== "card_payment" && (
+          {type === "expense" && isCreditCardPaymentCategory && paymentMethod !== "card_payment" && !(isTransferMode && transferType === "card_payment") && (
             <div>
               <Label htmlFor="card">{language === 'pt' ? 'Selecione o cartão para pagamento da fatura' : 'Select the credit card to pay the invoice'}</Label>
               <Select value={cardId} onValueChange={setCardId} required>
