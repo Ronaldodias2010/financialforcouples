@@ -50,11 +50,16 @@ function mapResponseToField(response: string, field: string): Record<string, unk
         // Fallback: usar resposta como hint genérico
         result.payment_method = msg;
       }
-      // Extrair card_hint se mencionou nome de cartão/banco
-      const cardKeywords = ['nubank', 'inter', 'itau', 'itaú', 'bradesco', 'santander', 'bb', 'banco do brasil', 'caixa', 'c6', 'next', 'original', 'pan', 'neon', 'picpay', 'mercado pago', 'stone', 'elo', 'mastercard', 'visa', 'amex'];
-      for (const keyword of cardKeywords) {
+      // Extrair card_hint ou account_hint se mencionou nome de cartão/banco/conta
+      const bankKeywords = ['nubank', 'inter', 'itau', 'itaú', 'bradesco', 'santander', 'bb', 'banco do brasil', 'caixa', 'c6', 'next', 'original', 'pan', 'neon', 'picpay', 'mercado pago', 'stone', 'elo', 'mastercard', 'visa', 'amex', 'sicredi', 'sicoob', 'banrisul', 'safra', 'btg', 'xp', 'rico', 'modal', 'daycoval', 'votorantim', 'bmg', 'agibank', 'will', 'pagbank', 'pagseguro'];
+      for (const keyword of bankKeywords) {
         if (msg.includes(keyword)) {
-          result.card_hint = keyword;
+          // Para débito/pix/dinheiro → account_hint; para crédito → card_hint
+          if (result.payment_method === 'debit_card' || result.payment_method === 'pix' || result.payment_method === 'cash') {
+            result.account_hint = keyword;
+          } else {
+            result.card_hint = keyword;
+          }
           break;
         }
       }
