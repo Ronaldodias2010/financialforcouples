@@ -1965,6 +1965,155 @@ export type Database = {
           },
         ]
       }
+      loan_installments: {
+        Row: {
+          created_at: string
+          due_date: string
+          id: string
+          installment_number: number
+          interest_part: number
+          is_paid: boolean
+          loan_id: string
+          paid_at: string | null
+          principal_part: number
+          remaining_balance_after: number
+          total_value: number
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          due_date: string
+          id?: string
+          installment_number: number
+          interest_part?: number
+          is_paid?: boolean
+          loan_id: string
+          paid_at?: string | null
+          principal_part?: number
+          remaining_balance_after?: number
+          total_value?: number
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          due_date?: string
+          id?: string
+          installment_number?: number
+          interest_part?: number
+          is_paid?: boolean
+          loan_id?: string
+          paid_at?: string | null
+          principal_part?: number
+          remaining_balance_after?: number
+          total_value?: number
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_installments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          account_id: string | null
+          amortization_type: string
+          created_at: string
+          currency: string
+          deposit_transaction_id: string | null
+          first_installment_date: string
+          id: string
+          installment_value: number
+          installments_paid: number
+          institution_name: string
+          interest_rate: number
+          notes: string | null
+          owner_user: string | null
+          principal_amount: number
+          remaining_balance: number
+          status: string
+          total_installments: number
+          total_interest: number
+          total_paid: number
+          total_payable: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amortization_type?: string
+          created_at?: string
+          currency?: string
+          deposit_transaction_id?: string | null
+          first_installment_date: string
+          id?: string
+          installment_value?: number
+          installments_paid?: number
+          institution_name: string
+          interest_rate?: number
+          notes?: string | null
+          owner_user?: string | null
+          principal_amount: number
+          remaining_balance?: number
+          status?: string
+          total_installments: number
+          total_interest?: number
+          total_paid?: number
+          total_payable?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amortization_type?: string
+          created_at?: string
+          currency?: string
+          deposit_transaction_id?: string | null
+          first_installment_date?: string
+          id?: string
+          installment_value?: number
+          installments_paid?: number
+          institution_name?: string
+          interest_rate?: number
+          notes?: string | null
+          owner_user?: string | null
+          principal_amount?: number
+          remaining_balance?: number
+          status?: string
+          total_installments?: number
+          total_interest?: number
+          total_paid?: number
+          total_payable?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_future_expenses: {
         Row: {
           amount: number

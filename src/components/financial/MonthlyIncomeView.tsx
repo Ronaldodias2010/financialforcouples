@@ -171,7 +171,10 @@ const fetchCategories = async () => {
         .order('name');
 
       if (error) throw error;
-      const items = (data || []) as { id: string; name: string }[];
+      // Filter out "Emprestimo" category - loans are not income
+      const items = ((data || []) as { id: string; name: string }[]).filter(
+        (c) => !c.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes('emprestimo')
+      );
       const normalize = (s: string) =>
         s
           .normalize('NFD')
@@ -227,6 +230,7 @@ const fetchCategories = async () => {
         .in('user_id', userIds)
         .eq('type', 'income')
         .not('payment_method', 'eq', 'account_transfer')
+        .not('payment_method', 'eq', 'loan_deposit')
         .gte('transaction_date', startDate)
         .lte('transaction_date', endDate)
         .order('transaction_date', { ascending: false });
