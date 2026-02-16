@@ -101,6 +101,87 @@ function normalizeText(text: string): string {
 }
 
 // ============================================================
+// DETECÇÃO DE IDIOMA DO USUÁRIO
+// ============================================================
+type Lang = 'pt' | 'en' | 'es';
+
+function detectLanguage(message: string): Lang {
+  if (!message) return 'pt';
+  const msg = message.toLowerCase();
+  
+  // English indicators
+  const enPatterns = /\b(spent|paid|bought|received|transferred|deposited|withdrew|grocery|supermarket|credit card|debit card|cash|what|which|how much|please|thanks|hello|hi|good morning|good afternoon)\b/i;
+  // Spanish indicators
+  const esPatterns = /\b(gasté|pagué|compré|recibí|transferí|deposité|retiré|supermercado|tarjeta de crédito|tarjeta de débito|efectivo|cuál|cuánto|por favor|gracias|hola|buenos días|buenas tardes)\b/i;
+  
+  const enScore = (msg.match(enPatterns) || []).length;
+  const esScore = (msg.match(esPatterns) || []).length;
+  
+  if (enScore > esScore && enScore > 0) return 'en';
+  if (esScore > enScore && esScore > 0) return 'es';
+  return 'pt';
+}
+
+// Templates de perguntas multi-idioma
+const QUESTION_TEMPLATES = {
+  payment_method: {
+    pt: 'Qual a forma de pagamento?',
+    en: 'What is the payment method?',
+    es: '¿Cuál es el método de pago?'
+  },
+  payment_method_options: {
+    pt: ['PIX', 'cartão de crédito', 'cartão de débito', 'dinheiro'],
+    en: ['PIX', 'credit card', 'debit card', 'cash'],
+    es: ['PIX', 'tarjeta de crédito', 'tarjeta de débito', 'efectivo']
+  },
+  card_type_ambiguity: {
+    pt: (hint: string) => `"${hint}" - é cartão de crédito ou débito?`,
+    en: (hint: string) => `"${hint}" - is it a credit or debit card?`,
+    es: (hint: string) => `"${hint}" - ¿es tarjeta de crédito o débito?`
+  },
+  card_type_options: {
+    pt: ['cartão de crédito', 'cartão de débito'],
+    en: ['credit card', 'debit card'],
+    es: ['tarjeta de crédito', 'tarjeta de débito']
+  },
+  category_with_suggestions: {
+    pt: (suggestions: string[]) => `Em qual categoria classificar? Sugestões: ${suggestions.join(', ')}`,
+    en: (suggestions: string[]) => `Which category? Suggestions: ${suggestions.join(', ')}`,
+    es: (suggestions: string[]) => `¿En qué categoría clasificar? Sugerencias: ${suggestions.join(', ')}`
+  },
+  category_no_hint: {
+    pt: 'Qual a categoria desse gasto?',
+    en: 'What category is this expense?',
+    es: '¿Cuál es la categoría de este gasto?'
+  },
+  category_not_found: {
+    pt: (hint: string, cats: string[]) => `Não encontrei a categoria "${hint}" nas suas tags. ${cats.length > 0 ? 'Escolha uma: ' + cats.join(', ') : 'Qual categoria deseja usar?'}`,
+    en: (hint: string, cats: string[]) => `Category "${hint}" not found in your tags. ${cats.length > 0 ? 'Choose one: ' + cats.join(', ') : 'Which category would you like to use?'}`,
+    es: (hint: string, cats: string[]) => `No encontré la categoría "${hint}" en tus tags. ${cats.length > 0 ? 'Elige una: ' + cats.join(', ') : '¿Qué categoría deseas usar?'}`
+  },
+  card_which: {
+    pt: (names: string[]) => names.length > 0 ? `Qual cartão de crédito? Opções: ${names.join(', ')}` : 'Qual cartão de crédito foi usado?',
+    en: (names: string[]) => names.length > 0 ? `Which credit card? Options: ${names.join(', ')}` : 'Which credit card was used?',
+    es: (names: string[]) => names.length > 0 ? `¿Qué tarjeta de crédito? Opciones: ${names.join(', ')}` : '¿Qué tarjeta de crédito se usó?'
+  },
+  card_not_found: {
+    pt: (hint: string, names: string[]) => names.length > 0 ? `Não encontrei "${hint}". Seus cartões: ${names.join(', ')}. Qual usar?` : `Não encontrei o cartão "${hint}". Qual cartão deseja usar?`,
+    en: (hint: string, names: string[]) => names.length > 0 ? `Card "${hint}" not found. Your cards: ${names.join(', ')}. Which one?` : `Card "${hint}" not found. Which card to use?`,
+    es: (hint: string, names: string[]) => names.length > 0 ? `No encontré "${hint}". Tus tarjetas: ${names.join(', ')}. ¿Cuál usar?` : `No encontré la tarjeta "${hint}". ¿Cuál tarjeta deseas usar?`
+  },
+  account_which: {
+    pt: (names: string[]) => names.length > 0 ? `Qual conta foi usada? Opções: ${names.join(', ')}` : 'Qual conta foi usada?',
+    en: (names: string[]) => names.length > 0 ? `Which account was used? Options: ${names.join(', ')}` : 'Which account was used?',
+    es: (names: string[]) => names.length > 0 ? `¿Qué cuenta se usó? Opciones: ${names.join(', ')}` : '¿Qué cuenta se usó?'
+  },
+  account_not_found: {
+    pt: (hint: string, names: string[]) => names.length > 0 ? `Não encontrei "${hint}". Suas contas: ${names.join(', ')}. Qual usar?` : `Não encontrei a conta "${hint}". Qual conta deseja usar?`,
+    en: (hint: string, names: string[]) => names.length > 0 ? `Account "${hint}" not found. Your accounts: ${names.join(', ')}. Which one?` : `Account "${hint}" not found. Which account to use?`,
+    es: (hint: string, names: string[]) => names.length > 0 ? `No encontré "${hint}". Tus cuentas: ${names.join(', ')}. ¿Cuál usar?` : `No encontré la cuenta "${hint}". ¿Cuál cuenta deseas usar?`
+  }
+};
+
+// ============================================================
 // FUNÇÃO DE NORMALIZAÇÃO DE TELEFONE (CANÔNICA)
 // Formato: somente números, com código do país, sem "+"
 // Exemplo: 5511994433352
@@ -544,7 +625,7 @@ serve(async (req) => {
       // Verificar se input existe E CARREGAR ESTADO COMPLETO
       const { data: existingInput, error: fetchError } = await supabase
         .from('incoming_financial_inputs')
-        .select('id, status, processed_at, transaction_id, user_id, source, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score')
+        .select('id, status, processed_at, transaction_id, user_id, source, raw_message, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score')
         .eq('id', input_id)
         .single();
 
@@ -1096,30 +1177,30 @@ serve(async (req) => {
           
           console.log('[whatsapp-input] Ambiguity check - Credit matches:', creditMatchCount, 'Debit matches:', debitMatchCount);
           
+          const pmLang = detectLanguage(existingInput.raw_message || '');
           if (creditMatchCount > 0 && debitMatchCount > 0) {
             console.log('[whatsapp-input] Card type ambiguity detected - need to ask user');
             questions.push({ 
               field: 'payment_method', 
-              question: `"${mergedState.card_hint}" - é cartão de crédito ou débito?`,
-              options: ['cartão de crédito', 'cartão de débito'],
+              question: QUESTION_TEMPLATES.card_type_ambiguity[pmLang](mergedState.card_hint),
+              options: QUESTION_TEMPLATES.card_type_options[pmLang],
               type: 'selection'
             });
           } else if (creditMatchCount === 0 && debitMatchCount === 0) {
-            // Sem match, perguntar forma de pagamento
             questions.push({ 
               field: 'payment_method', 
-              question: 'Qual a forma de pagamento?',
-              options: ['PIX', 'cartão de crédito', 'cartão de débito', 'dinheiro'],
+              question: QUESTION_TEMPLATES.payment_method[pmLang],
+              options: QUESTION_TEMPLATES.payment_method_options[pmLang],
               type: 'selection'
             });
           }
-          // Se só tem match em um tipo, já foi resolvido acima - não precisa perguntar
         }
       } else if (!mergedState.payment_method && !mergedState.resolved_card_id) {
+        const pmLang = detectLanguage(existingInput.raw_message || '');
         questions.push({ 
           field: 'payment_method', 
-          question: 'Qual a forma de pagamento?',
-          options: ['PIX', 'cartão de crédito', 'cartão de débito', 'dinheiro'],
+          question: QUESTION_TEMPLATES.payment_method[pmLang],
+          options: QUESTION_TEMPLATES.payment_method_options[pmLang],
           type: 'selection'
         });
       }
@@ -1130,57 +1211,108 @@ serve(async (req) => {
       // NUNCA usar "Outros" como fallback automático
       // =====================================================
       if (!mergedState.resolved_category_id) {
-        console.log('[whatsapp-input] CATEGORY NOT RESOLVED - will ask user (no "Outros" fallback)');
+        console.log('[whatsapp-input] CATEGORY NOT RESOLVED - attempting DB tag lookup before asking user');
         
-        if (!mergedState.category_hint) {
-          // Sem hint da IA - inferir do contexto ou perguntar com sugestões
-          const rawLower = body.raw_message?.toLowerCase() || '';
-          const contextHints: string[] = [];
+        // =====================================================
+        // RESOLUÇÃO AUTOMÁTICA VIA TAGS DO BANCO DE DADOS
+        // Busca keywords do raw_message nas tags configuradas em "Gerenciar Categorias"
+        // =====================================================
+        const rawMessageForLookup = (existingInput.raw_message || body.raw_message || '').toLowerCase();
+        const words = rawMessageForLookup
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9\s]/g, ' ')
+          .split(/\s+/)
+          .filter((w: string) => w.length > 3);
+        
+        console.log('[whatsapp-input] DB TAG LOOKUP - extracted words:', words.slice(0, 10));
+        
+        let resolvedViaDbTags = false;
+        
+        if (words.length > 0) {
+          // Buscar TODAS as tags ativas com keywords
+          const { data: allTags } = await supabase
+            .from('category_tags')
+            .select('id, name_pt, keywords_pt, keywords_en, keywords_es');
           
-          // Inferência básica do contexto da mensagem
-          if (/lanchonete|padaria|restaurante|almoço|jantar|pizza|hamburguer|comida/i.test(rawLower)) {
-            contextHints.push('Alimentação');
+          if (allTags && allTags.length > 0) {
+            // Para cada palavra do raw_message, verificar se existe nas keywords de alguma tag
+            let matchedTagId: string | null = null;
+            
+            for (const word of words) {
+              if (matchedTagId) break;
+              for (const tag of allTags) {
+                const allKeywords = [
+                  ...(tag.keywords_pt || []),
+                  ...(tag.keywords_en || []),
+                  ...(tag.keywords_es || [])
+                ].map((k: string) => k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+                
+                if (allKeywords.includes(word)) {
+                  matchedTagId = tag.id;
+                  console.log('[whatsapp-input] DB TAG MATCH:', word, '→ tag:', tag.name_pt);
+                  break;
+                }
+              }
+            }
+            
+            if (matchedTagId) {
+              // Buscar default_category via category_tag_relations
+              const { data: tagRelations } = await supabase
+                .from('category_tag_relations')
+                .select('category_id')
+                .eq('tag_id', matchedTagId)
+                .eq('is_active', true)
+                .limit(1);
+              
+              if (tagRelations && tagRelations.length > 0) {
+                const defaultCatId = tagRelations[0].category_id;
+                
+                // Mapear para categoria do usuário
+                const { data: userCat } = await supabase
+                  .from('categories')
+                  .select('id, name')
+                  .eq('user_id', existingInput.user_id)
+                  .eq('default_category_id', defaultCatId)
+                  .is('deleted_at', null)
+                  .limit(1)
+                  .single();
+                
+                if (userCat) {
+                  mergedState.resolved_category_id = userCat.id;
+                  resolvedViaDbTags = true;
+                  console.log('[whatsapp-input] CATEGORY RESOLVED VIA DB TAGS:', userCat.name);
+                }
+              }
+            }
           }
-          if (/uber|99|taxi|gasolina|combustível|estacionamento|onibus|metrô/i.test(rawLower)) {
-            contextHints.push('Transporte');
-          }
-          if (/supermercado|mercado|açougue|acougue|feira|hortifruti|padaria|bolo|doceira|confeitaria|sacolao|quitanda/i.test(rawLower)) {
-            contextHints.push('Alimentação');
-          }
-          if (/shopping|loja|roupa|sapato|eletronico|celular|computador/i.test(rawLower)) {
-            contextHints.push('Compras');
-          }
-          if (/farmácia|remédio|médico|consulta|hospital/i.test(rawLower)) {
-            contextHints.push('Saúde');
-          }
-          if (/livro|curso|escola|faculdade|estudo|aula/i.test(rawLower)) {
-            contextHints.push('Educação');
-          }
-          if (/netflix|spotify|cinema|show|teatro|lazer|diversão/i.test(rawLower)) {
-            contextHints.push('Entretenimento');
-          }
+        }
+        
+        // Se não resolveu via DB tags, perguntar ao usuário (com idioma detectado)
+        if (!resolvedViaDbTags) {
+          const lang = detectLanguage(rawMessageForLookup);
+          console.log('[whatsapp-input] Category not resolved via DB tags, asking user (lang:', lang, ')');
           
-          const allSuggestions = [...new Set([...contextHints, ...frequentCategories])].slice(0, 5);
-          
-          questions.push({ 
-            field: 'category', 
-            question: allSuggestions.length > 0 
-              ? `Em qual categoria classificar? Sugestões: ${allSuggestions.join(', ')}`
-              : 'Qual a categoria desse gasto?',
-            suggestions: allSuggestions,
-            type: allSuggestions.length > 0 ? 'selection' : 'text'
-          });
-        } else {
-          // Tinha hint mas não resolveu = perguntar com sugestões
-          console.log('[whatsapp-input] Category hint provided but not resolved:', mergedState.category_hint);
-          const suggestedText = `Não encontrei a categoria "${mergedState.category_hint}" nas suas tags. ${frequentCategories.length > 0 ? 'Escolha uma: ' + frequentCategories.join(', ') : 'Qual categoria deseja usar?'}`;
-          questions.push({ 
-            field: 'category', 
-            question: suggestedText, 
-            hint: mergedState.category_hint,
-            suggestions: frequentCategories,
-            type: frequentCategories.length > 0 ? 'selection' : 'text'
-          });
+          if (!mergedState.category_hint) {
+            const allSuggestions = [...new Set([...frequentCategories])].slice(0, 5);
+            
+            questions.push({ 
+              field: 'category', 
+              question: allSuggestions.length > 0 
+                ? QUESTION_TEMPLATES.category_with_suggestions[lang](allSuggestions)
+                : QUESTION_TEMPLATES.category_no_hint[lang],
+              suggestions: allSuggestions,
+              type: allSuggestions.length > 0 ? 'selection' : 'text'
+            });
+          } else {
+            console.log('[whatsapp-input] Category hint provided but not resolved:', mergedState.category_hint);
+            questions.push({ 
+              field: 'category', 
+              question: QUESTION_TEMPLATES.category_not_found[lang](mergedState.category_hint, frequentCategories),
+              hint: mergedState.category_hint,
+              suggestions: frequentCategories,
+              type: frequentCategories.length > 0 ? 'selection' : 'text'
+            });
+          }
         }
       } else {
         console.log('[whatsapp-input] Category resolved successfully:', mergedState.resolved_category_id);
@@ -1189,23 +1321,19 @@ serve(async (req) => {
       // Cartão - se necessário (usar mergedState)
       if (needsCard) {
         const cardNames = userCards?.map((c: { name: string }) => c.name) || [];
+        const cLang = detectLanguage(existingInput.raw_message || '');
         
         if (!mergedState.card_hint) {
           questions.push({ 
             field: 'card', 
-            question: cardNames.length > 0 
-              ? `Qual cartão de crédito? Opções: ${cardNames.join(', ')}`
-              : 'Qual cartão de crédito foi usado?',
+            question: QUESTION_TEMPLATES.card_which[cLang](cardNames),
             options: cardNames,
             type: cardNames.length > 0 ? 'selection' : 'text'
           });
         } else if (!mergedState.resolved_card_id) {
-          const suggestedText = cardNames.length > 0
-            ? `Não encontrei "${mergedState.card_hint}". Seus cartões: ${cardNames.join(', ')}. Qual usar?`
-            : `Não encontrei o cartão "${mergedState.card_hint}". Qual cartão deseja usar?`;
           questions.push({ 
             field: 'card', 
-            question: suggestedText, 
+            question: QUESTION_TEMPLATES.card_not_found[cLang](mergedState.card_hint, cardNames),
             hint: mergedState.card_hint,
             options: cardNames,
             type: cardNames.length > 0 ? 'selection' : 'text'
@@ -1216,23 +1344,19 @@ serve(async (req) => {
       // Conta - se necessária (usar mergedState)
       if (needsAccount) {
         const accountNames = userAccounts?.map((a: { name: string }) => a.name) || [];
+        const aLang = detectLanguage(existingInput.raw_message || '');
         
         if (!mergedState.account_hint) {
           questions.push({ 
             field: 'account', 
-            question: accountNames.length > 0
-              ? `Qual conta foi usada? Opções: ${accountNames.join(', ')}`
-              : 'Qual conta foi usada?',
+            question: QUESTION_TEMPLATES.account_which[aLang](accountNames),
             options: accountNames,
             type: accountNames.length > 0 ? 'selection' : 'text'
           });
         } else if (!mergedState.resolved_account_id) {
-          const suggestedText = accountNames.length > 0
-            ? `Não encontrei "${mergedState.account_hint}". Suas contas: ${accountNames.join(', ')}. Qual usar?`
-            : `Não encontrei a conta "${mergedState.account_hint}". Qual conta deseja usar?`;
           questions.push({ 
             field: 'account', 
-            question: suggestedText, 
+            question: QUESTION_TEMPLATES.account_not_found[aLang](mergedState.account_hint, accountNames),
             hint: mergedState.account_hint,
             options: accountNames,
             type: accountNames.length > 0 ? 'selection' : 'text'
