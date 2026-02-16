@@ -34,7 +34,7 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { t } = useLanguage();
   const { names } = usePartnerNames();
-  const { convertCurrency } = useCurrencyConverter();
+  const { convertCurrency, exchangeRates } = useCurrencyConverter();
   const navigate = useNavigate();
   
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
@@ -142,7 +142,7 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
     })));
     console.log(`Current User Total: R$ ${total}`);
     return total;
-  }, [cardsData, user?.id, convertCurrency]);
+  }, [cardsData, user?.id, convertCurrency, exchangeRates]);
 
   const partnerTotal = useMemo(() => {
     if (!partnerId) return 0;
@@ -156,7 +156,7 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
     })));
     console.log(`Partner Total: R$ ${total}`);
     return total;
-  }, [cardsData, partnerId, convertCurrency]);
+  }, [cardsData, partnerId, convertCurrency, exchangeRates]);
 
   const bothTotal = useMemo(() => {
     const total = currentUserTotal + partnerTotal;
@@ -183,7 +183,7 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
     
     console.log(`User1 (${user1Id}) total: R$ ${total}`);
     return total;
-  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency]);
+  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency, exchangeRates]);
 
   const user2Total = useMemo(() => {
     if (!user?.id) return 0;
@@ -201,20 +201,20 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
     
     console.log(`User2 (${user2Id}) total: R$ ${total}`);
     return total;
-  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency]);
+  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency, exchangeRates]);
 
   // Total Limit calculations
   const currentUserTotalLimit = useMemo(() => {
     if (!user?.id) return 0;
     const mine = cardsData.filter(c => c.user_id === user.id);
     return mine.reduce((sum, c) => sum + computeTotalLimit(c), 0);
-  }, [cardsData, user?.id, convertCurrency]);
+  }, [cardsData, user?.id, convertCurrency, exchangeRates]);
 
   const partnerTotalLimit = useMemo(() => {
     if (!partnerId) return 0;
     const theirs = cardsData.filter(c => c.user_id === partnerId);
     return theirs.reduce((sum, c) => sum + computeTotalLimit(c), 0);
-  }, [cardsData, partnerId, convertCurrency]);
+  }, [cardsData, partnerId, convertCurrency, exchangeRates]);
 
   const bothTotalLimit = useMemo(() => {
     return currentUserTotalLimit + partnerTotalLimit;
@@ -232,7 +232,7 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
     const user1Id = isUserOne() ? user.id : partnerId;
     const user1Cards = cardsData.filter(c => c.user_id === user1Id);
     return user1Cards.reduce((sum, c) => sum + computeTotalLimit(c), 0);
-  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency]);
+  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency, exchangeRates]);
 
   const user2TotalLimit = useMemo(() => {
     if (!user?.id) return 0;
@@ -243,7 +243,7 @@ export const CardsPage = ({ onBack, onNavigateToAccounts }: CardsPageProps) => {
     const user2Id = isUserOne() ? partnerId : user.id;
     const user2Cards = cardsData.filter(c => c.user_id === user2Id);
     return user2Cards.reduce((sum, c) => sum + computeTotalLimit(c), 0);
-  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency]);
+  }, [cardsData, user?.id, partnerId, isUserOne, convertCurrency, exchangeRates]);
 
   // Used Limit calculations (Total - Available)
   const currentUserUsedLimit = currentUserTotalLimit - currentUserTotal;
