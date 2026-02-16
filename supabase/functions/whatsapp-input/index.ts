@@ -632,6 +632,13 @@ serve(async (req) => {
       // RESOLVER CATEGORIA POR KEYWORDS DAS TAGS OU NOME
       // Usar mergedState.category_hint em vez de category_hint raw
       // =====================================================
+      // REGRA: Tratar "Outros"/"Other"/"Otros" como hint VAZIO - forçar inferência contextual
+      const ignoredCategoryHints = ['outros', 'other', 'otros', 'miscellaneous', 'general', 'varios'];
+      if (mergedState.category_hint && ignoredCategoryHints.includes(mergedState.category_hint.trim().toLowerCase())) {
+        console.log('[whatsapp-input] IGNORING generic category hint:', mergedState.category_hint, '→ will use contextual inference');
+        mergedState.category_hint = null;
+      }
+
       if (mergedState.category_hint && !mergedState.resolved_category_id) {
         const searchTerm = mergedState.category_hint.trim().toLowerCase();
         console.log('[whatsapp-input] Resolving category from merged hint:', searchTerm);
@@ -1137,7 +1144,10 @@ serve(async (req) => {
           if (/uber|99|taxi|gasolina|combustível|estacionamento|onibus|metrô/i.test(rawLower)) {
             contextHints.push('Transporte');
           }
-          if (/mercado|supermercado|açougue|feira|hortifruti/i.test(rawLower)) {
+          if (/supermercado|mercado|açougue|acougue|feira|hortifruti|padaria|bolo|doceira|confeitaria|sacolao|quitanda/i.test(rawLower)) {
+            contextHints.push('Alimentação');
+          }
+          if (/shopping|loja|roupa|sapato|eletronico|celular|computador/i.test(rawLower)) {
             contextHints.push('Compras');
           }
           if (/farmácia|remédio|médico|consulta|hospital/i.test(rawLower)) {
