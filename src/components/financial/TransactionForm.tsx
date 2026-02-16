@@ -262,11 +262,15 @@ const getAccountOwnerName = (account: Account) => {
         const normalized = normalizeCategory(selectedCat.name);
         const ccNormalized = CREDIT_CARD_PAYMENT_ALIASES.map(n => normalizeCategory(n));
         if (ccNormalized.includes(normalized)) {
+          // Preserve the already-selected account as the source for card payment
+          if (accountId) {
+            setFromAccountId(accountId);
+          }
           setPaymentMethod("card_payment");
         }
       }
     }
-  }, [categoryId, type, paymentMethod, categories]);
+  }, [categoryId, type, paymentMethod, categories, accountId]);
 
   const fetchUserPreferredCurrency = async () => {
     try {
