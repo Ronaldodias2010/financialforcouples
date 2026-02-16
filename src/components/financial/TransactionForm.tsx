@@ -248,6 +248,20 @@ const getAccountOwnerName = (account: Account) => {
     }
   }, [paymentMethod, categories, categoryId]);
 
+  // Auto-redirect: quando o usuário seleciona a categoria "Pagamento de Cartão de Crédito" com método cash/debit_card,
+  // redirecionar para o modo "Pagamento Inteligente de Cartão" (card_payment)
+  useEffect(() => {
+    if (type === "expense" && categoryId && (paymentMethod === "cash" || paymentMethod === "debit_card")) {
+      const selectedCat = categories.find(c => c.id === categoryId);
+      if (selectedCat) {
+        const ccPaymentNames = Object.values(CREDIT_CARD_PAYMENT_NAMES) as string[];
+        if (ccPaymentNames.includes(selectedCat.name)) {
+          setPaymentMethod("card_payment");
+        }
+      }
+    }
+  }, [categoryId, type, paymentMethod, categories]);
+
   const fetchUserPreferredCurrency = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
