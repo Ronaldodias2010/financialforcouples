@@ -184,7 +184,12 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
     }
   };
 
-  const getTransferTypeText = (method: string) => {
+  const getTransferTypeText = (method: string, description?: string) => {
+    // Check if it's a card payment by description
+    if (description?.startsWith('Pagamento de Cartão:')) {
+      return language === 'pt' ? 'Pagamento de Cartão' : 
+             language === 'es' ? 'Pago de Tarjeta' : 'Card Payment';
+    }
     switch (method) {
       case 'account_transfer': return t('transfers.betweenAccounts');
       case 'account_investment': return t('transfers.toInvestment');
@@ -218,7 +223,7 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
       transfer.dest_account_name || '',
       formatCurrency(transfer.amount),
       getUserName(transfer),
-      getTransferTypeText(transfer.payment_method || '')
+      getTransferTypeText(transfer.payment_method || '', transfer.description)
     ];
   };
 
@@ -230,7 +235,7 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
       transfer.dest_account_name || '',
       formatCurrency(transfer.amount),
       getUserName(transfer).split(' ')[0], // Apenas primeiro nome para PDF
-      getTransferTypeText(transfer.payment_method || '')
+      getTransferTypeText(transfer.payment_method || '', transfer.description)
     ];
   };
 
@@ -323,7 +328,7 @@ export const TransfersBetweenAccounts: React.FC<TransfersBetweenAccountsProps> =
                         <span>{formatDate(transfer.transaction_date)}</span>
                         <span>{getUserName(transfer)}</span>
                         <Badge variant="outline" className="text-xs">
-                          {getTransferTypeText(transfer.payment_method)}
+                          {getTransferTypeText(transfer.payment_method, transfer.description)}
                         </Badge>
                       </div>
                     </div>

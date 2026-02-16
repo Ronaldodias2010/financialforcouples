@@ -95,9 +95,10 @@ export const isCardPaymentTransaction = (transaction: DashboardTransaction): boo
  */
 export const isInternalTransfer = (transaction: DashboardTransaction): boolean => {
   // Pagamentos de cartão usam account_transfer mas NÃO são transferências internas
-  // São saídas reais de dinheiro que devem aparecer no Dashboard Principal
+  // no sentido de "não existem" - são transferências reais que aparecem em Transferências
+  // Mas NÃO devem aparecer no Dashboard Principal como despesa/receita
   if (transaction.card_transaction_type === 'card_payment') {
-    return false;
+    return true; // Tratar como transferência interna para excluir do Dashboard
   }
   
   return transaction.payment_method === 'account_transfer' || 
@@ -125,7 +126,7 @@ export const isCashOutflow = (transaction: DashboardTransaction): boolean => {
     return false;
   }
   
-  return true; // INCLUI pagamentos de cartão
+  return true;
 };
 
 /**
