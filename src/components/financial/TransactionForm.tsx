@@ -162,7 +162,7 @@ const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const [paymentPlan, setPaymentPlan] = useState<"avista" | "parcelado">("avista");
   const [totalInstallments, setTotalInstallments] = useState<number>(2);
   const installmentValue = paymentPlan === "parcelado" && amount && Number(totalInstallments) > 0
-    ? divideMonetaryValue(parseFloat(amount), Number(totalInstallments))
+    ? divideMonetaryValue(parseMonetaryValue(amount), Number(totalInstallments))
     : 0;
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -536,7 +536,7 @@ const getAccountOwnerName = (account: Account) => {
     if (saqueSourceType === "account") {
       const sourceAccount = accounts.find(a => a.id === saqueSourceAccountId);
       if (sourceAccount) {
-        const transactionAmount = parseFloat(amount);
+        const transactionAmount = parseMonetaryValue(amount);
         const convertedAmount = convertCurrency(transactionAmount, currency, sourceAccount.currency as CurrencyCode);
         if (sourceAccount.balance < convertedAmount) {
           toast({ 
@@ -1376,7 +1376,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                   </div>
                   <div className="font-medium text-primary">
                     {formatCurrency(
-                      convertCurrency(parseFloat(amount), currency, userPreferredCurrency),
+                      convertCurrency(parseMonetaryValue(amount), currency, userPreferredCurrency),
                       userPreferredCurrency
                     )}
                   </div>
@@ -1801,7 +1801,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                         📊 Como esta compra será registrada:
                       </p>
                       <p className="text-muted-foreground">
-                        • <span className="font-medium">Controle mensal:</span> O valor total de {formatCurrency(parseFloat(amount || '0'), currency)} será contabilizado em {format(transactionDate, 'MMMM/yyyy', { locale: dateLocale })}
+                        • <span className="font-medium">Controle mensal:</span> O valor total de {formatCurrency(parseMonetaryValue(amount || '0'), currency)} será contabilizado em {format(transactionDate, 'MMMM/yyyy', { locale: dateLocale })}
                       </p>
                       <p className="text-muted-foreground">
                         • <span className="font-medium">Fatura do cartão:</span> Parcelas de {formatCurrency(isFinite(installmentValue) ? installmentValue : 0, currency)} aparecerão nas próximas {totalInstallments} faturas
@@ -1901,7 +1901,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                     <SelectContent>
                       {accounts.filter(account => !account.is_cash_account).map((account) => {
                         const hasBalance = Number(account.balance || 0) > 0;
-                        const convertedAmount = amount ? convertCurrency(parseFloat(amount), currency, account.currency as CurrencyCode) : 0;
+                        const convertedAmount = amount ? convertCurrency(parseMonetaryValue(amount), currency, account.currency as CurrencyCode) : 0;
                         const sufficientBalance = hasBalance && Number(account.balance) >= convertedAmount;
                         
                         return (
@@ -1929,7 +1929,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                   {saqueSourceAccountId && amount && (() => {
                     const sourceAccount = accounts.find(a => a.id === saqueSourceAccountId);
                     if (!sourceAccount) return null;
-                    const convertedAmount = convertCurrency(parseFloat(amount), currency, sourceAccount.currency as CurrencyCode);
+                    const convertedAmount = convertCurrency(parseMonetaryValue(amount), currency, sourceAccount.currency as CurrencyCode);
                     const sufficientBalance = sourceAccount.balance >= convertedAmount;
                     
                     return !sufficientBalance ? (
@@ -2035,7 +2035,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                   <div className="text-sm text-muted-foreground mb-2">{t('transactionForm.paymentPreview')}:</div>
                   <div className="flex items-center justify-between">
                     <span>{t('transactionForm.amountToPay')}:</span>
-                    <span className="font-semibold text-primary">{formatCurrency(parseFloat(amount), currency)}</span>
+                    <span className="font-semibold text-primary">{formatCurrency(parseMonetaryValue(amount), currency)}</span>
                   </div>
                   <div className="text-xs text-muted-foreground mt-2">
                     ✓ {t('transactionForm.autoDetectFutureExpenses')}
@@ -2091,9 +2091,9 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           {/* Cash Balance Warning */}
           {!isTransferMode && type === "expense" && paymentMethod === "cash" && amount && (
             <div className="mt-2">
-              {!canSpendCash(parseFloat(amount), currency) ? (
+              {!canSpendCash(parseMonetaryValue(amount), currency) ? (
                 <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                  ⚠️ {getCashBalanceError(parseFloat(amount), currency)}
+                  ⚠️ {getCashBalanceError(parseMonetaryValue(amount), currency)}
                 </div>
               ) : (
                 <div className="text-sm text-muted-foreground">
@@ -2167,7 +2167,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               type === "expense" &&
               (
                 // Cash payment validation (not in transfer mode)
-                (!isTransferMode && paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency)) ||
+                (!isTransferMode && paymentMethod === "cash" && amount && !canSpendCash(parseMonetaryValue(amount), currency)) ||
                 // Debit card and transfer validation
                 ((paymentMethod === "debit_card" || paymentMethod === "payment_transfer") &&
                 (() => {
@@ -2176,7 +2176,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                   const limit = Number(acc.overdraft_limit || 0);
                   const bal = Number(acc.balance || 0);
                   if (amount) {
-                    const amtNum = parseFloat(amount || "0");
+                    const amtNum = parseMonetaryValue(amount || "0");
                     const amtInAcc = convertCurrency(amtNum, currency, (acc.currency || "BRL") as CurrencyCode);
                     const proposed = bal - amtInAcc;
                     return proposed < -limit;
@@ -2187,8 +2187,8 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               )
             }
             title={
-              (!isTransferMode && type === "expense" && paymentMethod === "cash" && amount && !canSpendCash(parseFloat(amount), currency))
-                ? getCashBalanceError(parseFloat(amount), currency) || t('insufficientCashBalance')
+              (!isTransferMode && type === "expense" && paymentMethod === "cash" && amount && !canSpendCash(parseMonetaryValue(amount), currency))
+                ? getCashBalanceError(parseMonetaryValue(amount), currency) || t('insufficientCashBalance')
                 : type === "expense" && (paymentMethod === "debit_card" || paymentMethod === "payment_transfer") 
                 ? t('transactionForm.blockedLimitExhausted') 
                 : undefined

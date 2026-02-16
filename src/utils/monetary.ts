@@ -8,9 +8,35 @@
  */
 export const parseMonetaryValue = (value: string | number): number => {
   if (typeof value === 'string') {
-    // Remove any non-numeric characters except decimal point
-    const cleanValue = value.replace(/[^\d.,]/g, '').replace(',', '.');
-    return parseFloat(cleanValue) || 0;
+    let str = value.trim();
+    // Remove currency symbols and spaces
+    str = str.replace(/[¤$\u20AC£¥R\s]/g, '');
+    // Remove any remaining non-numeric chars except . and ,
+    str = str.replace(/[^\d.,-]/g, '');
+    
+    if (!str) return 0;
+
+    const lastComma = str.lastIndexOf(',');
+    const lastDot = str.lastIndexOf('.');
+
+    // Auto-detect: if comma appears after dot, comma is decimal (Brazilian: 1.234,56)
+    // If dot appears after comma, dot is decimal (US: 1,234.56)
+    // If only comma exists, treat as decimal separator
+    // If only dot exists, treat as decimal separator
+    if (lastComma > lastDot) {
+      // Brazilian format: dots are thousands, comma is decimal
+      str = str.replace(/\./g, '');
+      str = str.replace(',', '.');
+    } else if (lastDot > lastComma) {
+      // US format: commas are thousands, dot is decimal
+      str = str.replace(/,/g, '');
+    } else if (lastComma !== -1 && lastDot === -1) {
+      // Only comma: treat as decimal (e.g. "21,78")
+      str = str.replace(',', '.');
+    }
+    // If only dot or no separator, parseFloat handles it
+
+    return parseFloat(str) || 0;
   }
   return value || 0;
 };
