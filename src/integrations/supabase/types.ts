@@ -1678,6 +1678,7 @@ export type Database = {
           ip_address: string | null
           owner_user: string | null
           payment_method: string | null
+          pending_question_field: string | null
           processed_at: string | null
           raw_message: string
           resolved_account_id: string | null
@@ -1710,6 +1711,7 @@ export type Database = {
           ip_address?: string | null
           owner_user?: string | null
           payment_method?: string | null
+          pending_question_field?: string | null
           processed_at?: string | null
           raw_message: string
           resolved_account_id?: string | null
@@ -1742,6 +1744,7 @@ export type Database = {
           ip_address?: string | null
           owner_user?: string | null
           payment_method?: string | null
+          pending_question_field?: string | null
           processed_at?: string | null
           raw_message?: string
           resolved_account_id?: string | null
