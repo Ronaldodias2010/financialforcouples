@@ -325,6 +325,7 @@ const getAccountOwnerName = (account: Account) => {
         .select('id, name, category_type, user_id')
         .eq('category_type', categoryTypeFilter)
         .in('user_id', userIds)
+        .is('deleted_at', null)
         .order('name');
 
       if (error) throw error;
