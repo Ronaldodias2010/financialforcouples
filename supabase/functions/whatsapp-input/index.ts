@@ -29,6 +29,65 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const CONVERSATION_TIMEOUT_MINUTES = 15;
 
 // Comandos que o usuário pode usar para cancelar/reiniciar conversa (multi-idioma)
+// ============================================================
+// RESOLUÇÃO DIRETA DE RESPOSTAS (mapResponseToField)
+// Mapeia a resposta do usuário para o campo pendente sem IA
+// ============================================================
+function mapResponseToField(response: string, field: string): Record<string, unknown> {
+  const msg = response.toLowerCase().trim();
+
+  switch (field) {
+    case 'payment_method': {
+      const result: Record<string, unknown> = {};
+      if (msg.includes('pix')) {
+        result.payment_method = 'pix';
+      } else if (msg.includes('credito') || msg.includes('crédito') || msg.includes('credit')) {
+        result.payment_method = 'credit_card';
+      } else if (msg.includes('debito') || msg.includes('débito') || msg.includes('debit')) {
+        result.payment_method = 'debit_card';
+      } else if (msg.includes('dinheiro') || msg.includes('cash') || msg.includes('efectivo') || msg.includes('especie') || msg.includes('espécie')) {
+        result.payment_method = 'cash';
+      } else {
+        // Fallback: usar resposta como hint genérico
+        result.payment_method = msg;
+      }
+      // Extrair card_hint se mencionou nome de cartão/banco
+      const cardKeywords = ['nubank', 'inter', 'itau', 'itaú', 'bradesco', 'santander', 'bb', 'banco do brasil', 'caixa', 'c6', 'next', 'original', 'pan', 'neon', 'picpay', 'mercado pago', 'stone', 'elo', 'mastercard', 'visa', 'amex'];
+      for (const keyword of cardKeywords) {
+        if (msg.includes(keyword)) {
+          result.card_hint = keyword;
+          break;
+        }
+      }
+      return result;
+    }
+    case 'category':
+      return { category_hint: response.trim() };
+    case 'card':
+      return { card_hint: response.trim() };
+    case 'account':
+      return { account_hint: response.trim() };
+    case 'amount': {
+      const match = msg.match(/[\d]+[.,]?\d*/);
+      if (match) {
+        return { amount: parseFloat(match[0].replace(',', '.')) };
+      }
+      return {};
+    }
+    case 'transaction_type': {
+      if (msg.includes('despesa') || msg.includes('gasto') || msg.includes('expense') || msg.includes('gastei')) {
+        return { transaction_type: 'expense' };
+      }
+      if (msg.includes('receita') || msg.includes('income') || msg.includes('recebi') || msg.includes('salario') || msg.includes('salário')) {
+        return { transaction_type: 'income' };
+      }
+      return { transaction_type: msg };
+    }
+    default:
+      return {};
+  }
+}
+
 const RESET_COMMANDS = [
   // Português
   'cancelar', 'reiniciar', 'nova', 'começar de novo', 'limpar', 'novo',
@@ -398,7 +457,7 @@ serve(async (req) => {
       // =====================================================
       let { data: pendingInput, error: pendingError } = await supabase
         .from('incoming_financial_inputs')
-        .select('id, status, raw_message, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score, updated_at')
+        .select('id, status, raw_message, amount, currency, transaction_type, category_hint, account_hint, card_hint, description_hint, transaction_date, payment_method, owner_user, resolved_category_id, resolved_account_id, resolved_card_id, confidence_score, updated_at, pending_question_field')
         .eq('user_id', profile.user_id)
         .eq('status', 'waiting_user_input')
         .order('created_at', { ascending: false })
@@ -488,6 +547,71 @@ serve(async (req) => {
           throw updateError;
         }
 
+        // =====================================================
+        // RESOLUÇÃO DIRETA: Se há pending_question_field, resolver sem IA
+        // =====================================================
+        if (pendingInput.pending_question_field) {
+          console.log('[whatsapp-input] DIRECT RESOLUTION: Resolving field', pendingInput.pending_question_field, 'with response:', raw_message?.substring(0, 50));
+          
+          const mappedFields = mapResponseToField(raw_message, pendingInput.pending_question_field);
+          console.log('[whatsapp-input] Mapped fields:', JSON.stringify(mappedFields));
+
+          // Atualizar o input no banco com os campos mapeados
+          if (Object.keys(mappedFields).length > 0) {
+            const { error: mapUpdateError } = await supabase
+              .from('incoming_financial_inputs')
+              .update({
+                ...mappedFields,
+                status: 'processed',
+                pending_question_field: null, // Limpar campo pendente
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', pendingInput.id);
+
+            if (mapUpdateError) {
+              console.error('[whatsapp-input] Error updating mapped fields:', mapUpdateError);
+            }
+          }
+
+          // Consolidar existing_data + mapped_fields para patch_data
+          const existingData = {
+            amount: pendingInput.amount,
+            currency: pendingInput.currency,
+            transaction_type: pendingInput.transaction_type,
+            category_hint: pendingInput.category_hint,
+            account_hint: pendingInput.account_hint,
+            card_hint: pendingInput.card_hint,
+            description_hint: pendingInput.description_hint,
+            transaction_date: pendingInput.transaction_date,
+            payment_method: pendingInput.payment_method,
+            owner_user: pendingInput.owner_user,
+            resolved_category_id: pendingInput.resolved_category_id,
+            resolved_account_id: pendingInput.resolved_account_id,
+            resolved_card_id: pendingInput.resolved_card_id
+          };
+
+          const patchData = {
+            input_id: pendingInput.id,
+            ...existingData,
+            ...mappedFields
+          };
+
+          console.log('[whatsapp-input] DIRECT RESOLUTION: Returning processed with skip_ai_extraction=true');
+          return new Response(
+            JSON.stringify({
+              success: true,
+              status: 'processed',
+              input_id: pendingInput.id,
+              skip_ai_extraction: true,
+              user_id: profile.user_id,
+              user_name: profile.display_name,
+              patch_data: patchData
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // SEM pending_question_field → fluxo antigo: enviar para IA
         // Retornar o input pendente para a IA processar
         // Status: waiting_user_input (contrato válido)
         return new Response(
@@ -1324,7 +1448,6 @@ serve(async (req) => {
             type: frequentCategories.length > 0 ? 'selection' : 'text'
           });
         }
-        }
       } else {
         console.log('[whatsapp-input] Category resolved successfully:', mergedState.resolved_category_id);
       }
@@ -1434,7 +1557,11 @@ serve(async (req) => {
         // IDs resolvidos
         resolved_category_id: mergedState.resolved_category_id,
         resolved_account_id: mergedState.resolved_account_id,
-        resolved_card_id: mergedState.resolved_card_id
+        resolved_card_id: mergedState.resolved_card_id,
+        // PENDING QUESTION FIELD: salvar qual campo está pendente para resolução direta no POST
+        pending_question_field: newStatus === 'waiting_user_input' && questions.length > 0 
+          ? questions[0].field 
+          : null
       };
 
       const { error: updateError } = await supabase

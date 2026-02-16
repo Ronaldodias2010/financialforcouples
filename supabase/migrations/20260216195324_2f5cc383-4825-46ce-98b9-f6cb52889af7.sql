@@ -1,0 +1,1 @@
+ALTER TABLE public.incoming_financial_inputs ADD COLUMN IF NOT EXISTS pending_question_field TEXT;
