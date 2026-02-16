@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
+import { useSubcategories } from "@/hooks/useSubcategories";
 import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
 import { translateCategoryName as translateCategoryUtil, translateCategoryDescription } from "@/utils/categoryTranslation";
 import { TagEditModal } from "./TagEditModal";
@@ -56,6 +57,7 @@ const CategoryManagerContent = () => {
     getUserTagsForCategory,
     refetch: refetchUserTags
   } = useUserCategoryTags();
+  const { getSubcategoriesForCategory, getLocalizedName } = useSubcategories();
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
   // Safe translation helper with deduplication
@@ -372,6 +374,7 @@ const CategoryManagerContent = () => {
           {categories.map((category) => {
             const systemTags = categoryTags[category.id] || [];
             const userTagsForCategory = getUserTagsForCategory(category.id);
+            const userSubcategories = getSubcategoriesForCategory(category.id).filter(s => !s.is_system);
             const excludedTagIds = excludedSystemTags[category.id] || [];
 
             return (
@@ -479,8 +482,23 @@ const CategoryManagerContent = () => {
                           {userTag.tag_name}
                         </Badge>
                       ))}
+
+                      {userSubcategories.map((sub) => (
+                        <Badge
+                          key={sub.id}
+                          variant="secondary"
+                          className="text-xs"
+                          style={{
+                            backgroundColor: (sub.color || '#6366f1') + '20',
+                            borderColor: sub.color || '#6366f1',
+                            color: sub.color || '#6366f1',
+                          }}
+                        >
+                          {getLocalizedName(sub)}
+                        </Badge>
+                      ))}
                       
-                      {systemTags.length === 0 && userTagsForCategory.length === 0 && (
+                      {systemTags.length === 0 && userTagsForCategory.length === 0 && userSubcategories.length === 0 && (
                         <span className="text-xs text-muted-foreground italic">
                           Nenhuma tag disponível
                         </span>
