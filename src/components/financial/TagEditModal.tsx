@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,8 +71,15 @@ export const TagEditModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { addUserTag, removeUserTag, getUserTagsForCategory } = useUserCategoryTags();
-  const { addSubcategory, deleteSubcategory, getSubcategoriesForCategory, getLocalizedName } = useSubcategories();
+  const { addSubcategory, deleteSubcategory, getSubcategoriesForCategory, getLocalizedName, fetchAllSubcategories } = useSubcategories();
   const { language, t } = useLanguage();
+
+  // Refresh subcategories when modal opens
+  useEffect(() => {
+    if (isOpen && categoryId) {
+      fetchAllSubcategories();
+    }
+  }, [isOpen, categoryId, fetchAllSubcategories]);
 
   const userTags = getUserTagsForCategory(categoryId);
   const subcategories = getSubcategoriesForCategory(categoryId).filter(s => !s.is_system);
