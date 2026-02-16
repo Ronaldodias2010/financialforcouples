@@ -254,9 +254,9 @@ const getAccountOwnerName = (account: Account) => {
   }, [paymentMethod, categories, categoryId]);
 
   // Auto-redirect: quando o usuário seleciona a categoria "Pagamento de Cartão de Crédito" com método cash/debit_card,
-  // redirecionar para o modo "Pagamento Inteligente de Cartão" (card_payment)
+  // redirecionar para a aba Transferências com tipo "Pagamento Inteligente de Cartão"
   useEffect(() => {
-    if (type === "expense" && categoryId && (paymentMethod === "cash" || paymentMethod === "debit_card")) {
+    if (type === "expense" && categoryId && !isTransferMode && (paymentMethod === "cash" || paymentMethod === "debit_card")) {
       const selectedCat = categories.find(c => c.id === categoryId);
       if (selectedCat) {
         const normalized = normalizeCategory(selectedCat.name);
@@ -266,11 +266,12 @@ const getAccountOwnerName = (account: Account) => {
           if (accountId) {
             setFromAccountId(accountId);
           }
-          setPaymentMethod("card_payment");
+          setIsTransferMode(true);
+          setTransferType("card_payment");
         }
       }
     }
-  }, [categoryId, type, paymentMethod, categories, accountId]);
+  }, [categoryId, type, paymentMethod, categories, accountId, isTransferMode]);
 
   const fetchUserPreferredCurrency = async () => {
     try {
