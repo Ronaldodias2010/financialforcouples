@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { X, Plus, Tag, Globe } from "lucide-react";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
-import { useSubcategories } from "@/hooks/useSubcategories";
+import { useSubcategories, Subcategory } from "@/hooks/useSubcategories";
 import { useLanguage } from "@/hooks/useLanguage";
 
 interface CategoryTag {
@@ -71,18 +71,28 @@ export const TagEditModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { addUserTag, removeUserTag, getUserTagsForCategory } = useUserCategoryTags();
-  const { addSubcategory, deleteSubcategory, getSubcategoriesForCategory, getLocalizedName, fetchAllSubcategories } = useSubcategories();
+  const { addSubcategory, deleteSubcategory, getLocalizedName, fetchSubcategoriesForCategory } = useSubcategories();
   const { language, t } = useLanguage();
 
-  // Refresh subcategories when modal opens
+  // Local state for subcategories to ensure immediate UI updates
+  const [localSubcategories, setLocalSubcategories] = useState<Subcategory[]>([]);
+
+  // Refresh subcategories when modal opens or categoryId changes
+  const refreshSubcategories = useCallback(async () => {
+    if (categoryId) {
+      const fresh = await fetchSubcategoriesForCategory(categoryId);
+      setLocalSubcategories(fresh.filter(s => !s.is_system));
+    }
+  }, [categoryId, fetchSubcategoriesForCategory]);
+
   useEffect(() => {
     if (isOpen && categoryId) {
-      fetchAllSubcategories();
+      refreshSubcategories();
     }
-  }, [isOpen, categoryId, fetchAllSubcategories]);
+  }, [isOpen, categoryId, refreshSubcategories]);
 
   const userTags = getUserTagsForCategory(categoryId);
-  const subcategories = getSubcategoriesForCategory(categoryId).filter(s => !s.is_system);
+  const subcategories = localSubcategories;
 
   const handleAddSubcategory = async () => {
     if (!newTagName.trim() || isSubmitting) return;
@@ -102,9 +112,18 @@ export const TagEditModal = ({
         setNewTagNameEn("");
         setNewTagNameEs("");
         setShowTranslations(false);
+        // Force refresh local subcategories list
+        await refreshSubcategories();
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteSubcategory = async (subcategoryId: string) => {
+    const success = await deleteSubcategory(subcategoryId);
+    if (success) {
+      await refreshSubcategories();
     }
   };
 
@@ -247,7 +266,7 @@ export const TagEditModal = ({
                     key={sub.id}
                     variant="outline"
                     className="text-xs bg-accent/30 hover:bg-destructive/10 cursor-pointer transition-colors"
-                    onClick={() => deleteSubcategory(sub.id)}
+                    onClick={() => handleDeleteSubcategory(sub.id)}
                   >
                     {getLocalizedName(sub)}
                     <X className="h-3 w-3 ml-1" />
