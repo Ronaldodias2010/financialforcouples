@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRealtimeTable } from '@/hooks/useRealtimeManager';
 import { FinancialCard } from "./FinancialCard";
 import { TransactionForm } from "./TransactionForm";
@@ -67,12 +67,22 @@ export const FinancialDashboard = () => {
   const { count: todayIncomesCount } = useTodayFutureIncomes();
   const { count: todayExpensesCount } = useTodayFutureExpenses();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [categoryRefreshKey, setCategoryRefreshKey] = useState(0);
   const [currentPage, setCurrentPage] = useState<"dashboard" | "cards" | "accounts" | "profile" | "investments" | "mileage" | "decisions">("dashboard");
   const [activeTabForProfile, setActiveTabForProfile] = useState<string>("");
   const [viewMode, setViewMode] = useState<"both" | "user1" | "user2">("both");
   const [financialComparison, setFinancialComparison] = useState({ incomeChange: 0, expenseChange: 0, balanceChange: 0 });
   const currentUser = "user1"; // Fixed to user1 (logged user)
-  
+
+  // Refresh categories in TransactionForm when leaving the categories tab
+  const prevTabRef = useRef(activeTab);
+  useEffect(() => {
+    if (prevTabRef.current === "categories" && activeTab !== "categories") {
+      setCategoryRefreshKey(k => k + 1);
+    }
+    prevTabRef.current = activeTab;
+  }, [activeTab]);
+
   const financialSummary = getFinancialSummary(viewMode);
   const accountsBalance = getAccountsBalance(viewMode);
   const formatCurrency = (value: number) => {
@@ -272,7 +282,7 @@ export const FinancialDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Transaction Form */}
               <div>
-                <TransactionForm onSubmit={handleAddTransaction} />
+                <TransactionForm onSubmit={handleAddTransaction} refreshKey={categoryRefreshKey} />
               </div>
               
               {/* User Expense Comparison Chart */}

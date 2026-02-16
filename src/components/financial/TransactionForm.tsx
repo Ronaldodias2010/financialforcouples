@@ -27,6 +27,7 @@ import { useSubcategories, type Subcategory } from "@/hooks/useSubcategories";
 
 interface TransactionFormProps {
   onSubmit: (transaction: Transaction) => void;
+  refreshKey?: number;
 }
 
 interface Transaction {
@@ -115,7 +116,7 @@ const translateCategoryName = (name: string, lang: 'pt' | 'en') => {
   return name;
 };
 
-export const TransactionForm = ({ onSubmit }: TransactionFormProps) => {
+export const TransactionForm = ({ onSubmit, refreshKey }: TransactionFormProps) => {
   const { invalidateAll } = useInvalidateFinancialData();
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
@@ -232,7 +233,7 @@ const getAccountOwnerName = (account: Account) => {
       fetchCards();
       fetchAccounts();
     }
-  }, [type, paymentMethod, isTransferMode, transferType]);
+  }, [type, paymentMethod, isTransferMode, transferType, refreshKey]);
 
   // Limpar seleção de categoria quando mudar o tipo de transação
   useEffect(() => {
