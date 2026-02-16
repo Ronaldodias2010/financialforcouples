@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw, CreditCard, ArrowLeftRight, Shield } from "lucide-react";
+import { PlusCircle, MinusCircle, CalendarIcon, RefreshCw, CreditCard, ArrowLeftRight, ArrowRight, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { enUS, ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -148,7 +148,7 @@ const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   
   // Transfer states
   const [isTransferMode, setIsTransferMode] = useState(false);
-  const [transferType, setTransferType] = useState<'own_accounts' | 'investment' | 'third_party_pix' | 'third_party_zelle'>('own_accounts');
+  const [transferType, setTransferType] = useState<'own_accounts' | 'investment' | 'third_party_pix' | 'third_party_zelle' | 'card_payment'>('own_accounts');
   const [beneficiaryName, setBeneficiaryName] = useState("");
   const [beneficiaryKey, setBeneficiaryKey] = useState("");
   const [beneficiaryBank, setBeneficiaryBank] = useState("");
@@ -221,6 +221,11 @@ const getAccountOwnerName = (account: Account) => {
     // Carregar investimentos quando estiver no modo de transferência para investimento
     if (isTransferMode && transferType === "investment") {
       fetchInvestments();
+    }
+    // Carregar cartões e contas quando estiver no modo de transferência para pagamento de cartão
+    if (isTransferMode && transferType === "card_payment") {
+      fetchCards();
+      fetchAccounts();
     }
   }, [type, paymentMethod, isTransferMode, transferType]);
 
@@ -524,6 +529,17 @@ const getAccountOwnerName = (account: Account) => {
       return;
     }
   }
+  // Validar pagamento de cartão como transferência
+  if (isTransferMode && transferType === "card_payment") {
+    if (!fromAccountId) {
+      toast({ title: "Erro", description: "Selecione a conta de origem para o pagamento", variant: "destructive" });
+      return;
+    }
+    if (!cardId) {
+      toast({ title: "Erro", description: "Selecione o cartão que será pago", variant: "destructive" });
+      return;
+    }
+  }
 
   // Validar saque
   if (type === "expense" && paymentMethod === "saque") {
@@ -736,6 +752,45 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setInvestmentId(""); setSaqueSourceAccountId(""); setSaqueSourceType("account"); setCardId(""); setCurrency(userPreferredCurrency);
         setIsTransferMode(false); setTransferType("own_accounts"); setBeneficiaryName(""); setBeneficiaryKey(""); setBeneficiaryBank(""); setBeneficiaryAccount("");
         return;
+      }
+
+      // Handle card payment as transfer
+      if (isTransferMode && transferType === "card_payment") {
+        const { data, error } = await supabase.rpc('process_card_payment', {
+          p_card_id: cardId,
+          p_user_id: user.id,
+          p_account_id: fromAccountId,
+          p_payment_amount: transactionAmount,
+          p_payment_date: format(transactionDate, 'yyyy-MM-dd'),
+          p_notes: description || null,
+        });
+
+        if (error) throw error;
+
+        if (data && typeof data === 'object' && 'success' in data && data.success) {
+          toast({
+            title: t('transactionForm.success'),
+            description: (data as any).message || "Pagamento de cartão processado como transferência",
+          });
+
+          try {
+            await invalidateAll(true);
+          } catch (e) {
+            console.error('Error invalidating:', e);
+          }
+
+          // Reset
+          setAmount(""); setDescription(""); setCategoryId(""); setSubcategory(""); setSubcategoryId(""); setTransactionDate(() => {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            return now;
+          });
+          setPaymentMethod("cash"); setAccountId(""); setFromAccountId(""); setToAccountId(""); setCardId(""); setCurrency(userPreferredCurrency);
+          setIsTransferMode(false); setTransferType("own_accounts");
+          return;
+        } else {
+          throw new Error('Falha no processamento do pagamento');
+        }
       }
 
       // Handle SAQUE (withdrawal) - expenses only
@@ -1448,12 +1503,13 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             <div className="space-y-4">
               <div>
                 <Label>{t('transactionForm.transferType')}</Label>
-                <Select value={transferType} onValueChange={(value) => setTransferType(value as "own_accounts" | "investment" | "third_party_pix" | "third_party_zelle")}>
+                <Select value={transferType} onValueChange={(value) => setTransferType(value as "own_accounts" | "investment" | "third_party_pix" | "third_party_zelle" | "card_payment")}>
                   <SelectTrigger>
                     <SelectValue placeholder={t('transactionForm.selectTransferType')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="own_accounts">{t('transactionForm.ownAccounts')}</SelectItem>
+                    <SelectItem value="card_payment">{t('transactionForm.cardPayment')}</SelectItem>
                     <SelectItem value="investment">{t('transactionForm.toInvestment')}</SelectItem>
                     {language === 'pt' && <SelectItem value="third_party_pix">{t('transactionForm.pixTransfer')}</SelectItem>}
                     {language === 'en' && <SelectItem value="third_party_zelle">{t('transactionForm.zelleTransfer')}</SelectItem>}
@@ -1572,6 +1628,72 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+              )}
+
+              {/* Card Payment Transfer */}
+              {transferType === "card_payment" && (
+                <div className="space-y-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    <h4 className="font-semibold text-primary">{t('transactionForm.cardPayment')}</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>{t('transactionForm.sourceAccount')}</Label>
+                      <Select value={fromAccountId} onValueChange={setFromAccountId} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('transactionForm.selectAccountToPay')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accounts.filter(acc => !acc.is_cash_account).map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{account.name}</span>
+                                <span className="text-muted-foreground ml-2">
+                                  {account.currency} {account.balance.toFixed(2)} • {getAccountOwnerName(account)}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>{t('transactionForm.cardToPay')}</Label>
+                      <Select value={cardId} onValueChange={setCardId} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('transactionForm.selectCardForPayment')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cards.filter(card => card.card_type === 'credit').map((card) => (
+                            <SelectItem key={card.id} value={card.id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{card.name}</span>
+                                <span className="text-muted-foreground ml-2">
+                                  {getCardOwnerName(card)}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {fromAccountId && cardId && amount && (
+                    <div className="p-3 bg-background/50 border border-primary/10 rounded-md">
+                      <div className="text-sm text-muted-foreground mb-2">{t('transactionForm.paymentPreview')}:</div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-medium">{accounts.find(a => a.id === fromAccountId)?.name}</span>
+                        <ArrowRight className="h-4 w-4" />
+                        <span className="font-medium">{cards.find(c => c.id === cardId)?.name}</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-sm">{t('transactionForm.amountToPay')}:</span>
+                        <span className="font-semibold text-primary">{formatCurrency(parseMonetaryValue(amount), currency)}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
