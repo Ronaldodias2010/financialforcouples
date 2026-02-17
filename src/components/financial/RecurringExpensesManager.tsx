@@ -513,11 +513,11 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="recurring">
             <RotateCcw className="h-4 w-4 mr-2" />
-            Recorrentes
+            {t('loans.tabRecurring')}
           </TabsTrigger>
           <TabsTrigger value="debts">
             <Landmark className="h-4 w-4 mr-2" />
-            Empréstimos
+            {t('loans.tabLoans')}
           </TabsTrigger>
         </TabsList>
 

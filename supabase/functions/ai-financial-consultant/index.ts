@@ -57,6 +57,8 @@ interface FinancialData {
   manualFutureExpenses: any[];
   futureInstallments: any[];
   futureCardPayments: any[];
+  loans: any[];
+  loanInstallments: any[];
   relationshipInfo?: {
     isCouple: boolean;
     currentUserName: string;
@@ -75,6 +77,8 @@ interface FinancialData {
       cardMileageRules: any[];
       recurringExpenses: any[];
       manualFutureExpenses: any[];
+      loans: any[];
+      loanInstallments: any[];
     };
     partner?: {
       transactions: any[];
@@ -87,6 +91,8 @@ interface FinancialData {
       cardMileageRules: any[];
       recurringExpenses: any[];
       manualFutureExpenses: any[];
+      loans: any[];
+      loanInstallments: any[];
     };
     combined: {
       transactions: any[];
@@ -99,6 +105,8 @@ interface FinancialData {
       cardMileageRules: any[];
       recurringExpenses: any[];
       manualFutureExpenses: any[];
+      loans: any[];
+      loanInstallments: any[];
     };
   };
 }
@@ -476,7 +484,9 @@ async function collectFinancialData(
     { data: recurringExpensesInactive = [] },
     { data: manualFutureExpenses = [] },
     { data: futureInstallments = [] },
-    { data: futureCardPayments = [] }
+    { data: futureCardPayments = [] },
+    { data: loans = [] },
+    { data: loanInstallments = [] }
   ] = await Promise.all([
     supabase
       .from('transactions')
@@ -516,7 +526,19 @@ async function collectFinancialData(
       .select('*')
       .in('user_id', userIds)
       .eq('card_type', 'credit')
-      .not('due_date', 'is', null)
+      .not('due_date', 'is', null),
+
+    // Loans
+    supabase
+      .from('loans')
+      .select('*, accounts(name)')
+      .in('user_id', userIds),
+
+    // Loan installments for active loans
+    supabase
+      .from('loan_installments')
+      .select('*')
+      .in('user_id', userIds)
   ]);
 
   // Combine recurring expenses and add detailed logging
@@ -555,7 +577,9 @@ async function collectFinancialData(
         mileageHistory: mileageHistory.filter((h: any) => h.user_id === userId),
         cardMileageRules: cardMileageRules.filter((r: any) => r.user_id === userId),
         recurringExpenses: recurringExpenses.filter((r: any) => r.user_id === userId),
-        manualFutureExpenses: manualFutureExpenses.filter((m: any) => m.user_id === userId)
+        manualFutureExpenses: manualFutureExpenses.filter((m: any) => m.user_id === userId),
+        loans: loans.filter((l: any) => l.user_id === userId),
+        loanInstallments: loanInstallments.filter((li: any) => li.user_id === userId)
       },
       partner: {
         transactions: transactions.filter((t: any) => t.user_id === partnerUserId),
@@ -567,7 +591,9 @@ async function collectFinancialData(
         mileageHistory: mileageHistory.filter((h: any) => h.user_id === partnerUserId),
         cardMileageRules: cardMileageRules.filter((r: any) => r.user_id === partnerUserId),
         recurringExpenses: recurringExpenses.filter((r: any) => r.user_id === partnerUserId),
-        manualFutureExpenses: manualFutureExpenses.filter((m: any) => m.user_id === partnerUserId)
+        manualFutureExpenses: manualFutureExpenses.filter((m: any) => m.user_id === partnerUserId),
+        loans: loans.filter((l: any) => l.user_id === partnerUserId),
+        loanInstallments: loanInstallments.filter((li: any) => li.user_id === partnerUserId)
       },
       combined: {
         transactions,
@@ -579,7 +605,9 @@ async function collectFinancialData(
         mileageHistory,
         cardMileageRules,
         recurringExpenses,
-        manualFutureExpenses
+        manualFutureExpenses,
+        loans,
+        loanInstallments
       }
     };
   }
@@ -598,6 +626,8 @@ async function collectFinancialData(
     manualFutureExpenses,
     futureInstallments,
     futureCardPayments,
+    loans,
+    loanInstallments,
     relationshipInfo,
     segmentedData
   };
@@ -639,6 +669,13 @@ PERGUNTA DO USUÁRIO: ${userMessage}
   • Arrojado: Ações, ETFs, Fundos Imobiliários, BDRs
 - Calcule quanto o usuário pode investir: Receitas - Despesas - Reserva = Valor disponível
 - SEMPRE inclua disclaimer: "⚠️ Isso é orientação educacional. Consulte um especialista antes de investir de verdade."
+
+INSTRUÇÕES SOBRE EMPRÉSTIMOS E FINANCIAMENTOS:
+- Empréstimos são DÍVIDAS/PASSIVOS, nunca receitas
+- Analise a taxa de juros, saldo devedor e progresso de quitação para dar conselhos sobre antecipação de parcelas
+- Se o usuário tem empréstimos com juros altos, sugira estratégias de amortização (pagar parcelas extras, refinanciar)
+- Compare os juros dos empréstimos com rendimentos dos investimentos para recomendar a melhor alocação de recursos
+- Seja DIRETA e dura se o usuário estiver acumulando dívidas sem controle
 
 INSTRUÇÕES SOBRE GASTOS RECORRENTES E FUTUROS:
 - GASTOS RECORRENTES ATIVOS: São despesas que se repetem automaticamente (ex: conta de luz, Netflix)
@@ -696,6 +733,13 @@ USER QUESTION: ${userMessage}
 - Calculate how much the user can invest: Income - Expenses - Reserve = Available amount
 - ALWAYS include disclaimer: "⚠️ This is educational guidance. Consult a specialist before actually investing."
 
+LOAN & FINANCING INSTRUCTIONS:
+- Loans are DEBTS/LIABILITIES, never income
+- Analyze interest rates, outstanding balance and payoff progress to advise on early repayment
+- If user has high-interest loans, suggest amortization strategies (extra payments, refinancing)
+- Compare loan interest rates with investment returns to recommend best resource allocation
+- Be DIRECT and harsh if the user is accumulating debt without control
+
 MILEAGE SYSTEM INSTRUCTIONS:
 - CRITICAL: Miles in goals (current_miles) ALREADY INCLUDE initial card miles when the goal was created
 - Miles shown in history are ONLY from transactions/spending
@@ -741,6 +785,13 @@ PREGUNTA DEL USUARIO: ${userMessage}
   • Agresivo: Acciones, ETFs, fondos inmobiliarios, fondos internacionales
 - Calcula cuánto puede invertir el usuario: Ingresos - Gastos - Reserva = Cantidad disponible
 - SIEMPRE incluye disclaimer: "⚠️ Esto es orientación educativa. Consulta a un especialista antes de invertir de verdad."
+
+INSTRUCCIONES SOBRE PRÉSTAMOS Y FINANCIAMIENTOS:
+- Los préstamos son DEUDAS/PASIVOS, nunca ingresos
+- Analiza la tasa de interés, saldo deudor y progreso de liquidación para aconsejar sobre anticipación de cuotas
+- Si el usuario tiene préstamos con intereses altos, sugiere estrategias de amortización (pagar cuotas extras, refinanciar)
+- Compara los intereses de los préstamos con los rendimientos de las inversiones para recomendar la mejor asignación de recursos
+- Sé DIRECTA y dura si el usuario está acumulando deudas sin control
 
 INSTRUCCIONES DEL SISTEMA DE MILLAS:
 - CRÍTICO: Las millas en metas (current_miles) YA INCLUYEN las millas iniciales de las tarjetas cuando se creó la meta
@@ -1382,6 +1433,67 @@ function generateIndividualContext(
       : language === 'en' 
       ? `No manual future expenses registered.\n`
       : `No hay gastos futuros manuales registrados.\n`;
+  }
+
+  // ====== EMPRÉSTIMOS & FINANCIAMENTOS ======
+  context += language === 'pt' 
+    ? `\n====== EMPRÉSTIMOS & FINANCIAMENTOS ======\n`
+    : language === 'en' 
+    ? `\n====== LOANS & FINANCING ======\n`
+    : `\n====== PRÉSTAMOS Y FINANCIAMIENTOS ======\n`;
+
+  const loansData = data.loans || [];
+  const loanInstallmentsData = data.loanInstallments || [];
+
+  if (loansData.length > 0) {
+    const activeLoans = loansData.filter((l: any) => l.status === 'active');
+    const completedLoans = loansData.filter((l: any) => l.status === 'completed');
+    
+    const totalActiveDebt = activeLoans.reduce((sum: number, l: any) => sum + Number(l.remaining_balance || 0), 0);
+    const totalInterestPaid = loansData.reduce((sum: number, l: any) => {
+      const loanInst = loanInstallmentsData.filter((i: any) => i.loan_id === l.id && i.is_paid);
+      return sum + loanInst.reduce((s: number, i: any) => s + Number(i.interest_part || 0), 0);
+    }, 0);
+    const totalContracted = loansData.reduce((sum: number, l: any) => sum + Number(l.principal_amount || 0), 0);
+
+    context += language === 'pt'
+      ? `Resumo: ${activeLoans.length} dívida(s) ativa(s), Saldo devedor total: ${formatCurrency(totalActiveDebt)}, Juros pagos total: ${formatCurrency(totalInterestPaid)}, Total contratado: ${formatCurrency(totalContracted)}\n\n`
+      : language === 'en'
+      ? `Summary: ${activeLoans.length} active debt(s), Total outstanding balance: ${formatCurrency(totalActiveDebt)}, Total interest paid: ${formatCurrency(totalInterestPaid)}, Total contracted: ${formatCurrency(totalContracted)}\n\n`
+      : `Resumen: ${activeLoans.length} deuda(s) activa(s), Saldo deudor total: ${formatCurrency(totalActiveDebt)}, Intereses pagados total: ${formatCurrency(totalInterestPaid)}, Total contratado: ${formatCurrency(totalContracted)}\n\n`;
+
+    activeLoans.forEach((loan: any) => {
+      const paidInstallments = loanInstallmentsData.filter((i: any) => i.loan_id === loan.id && i.is_paid).length;
+      const nextInstallment = loanInstallmentsData
+        .filter((i: any) => i.loan_id === loan.id && !i.is_paid)
+        .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())[0];
+
+      const accountName = loan.accounts?.name || '';
+      const nextDueInfo = nextInstallment 
+        ? ` | Próx. parcela: ${formatCurrency(nextInstallment.total_value)} em ${new Date(nextInstallment.due_date).toLocaleDateString('pt-BR')}`
+        : '';
+
+      context += language === 'pt'
+        ? `- ${loan.institution_name} (${loan.amortization_type.toUpperCase()}): Contratado ${formatCurrency(loan.principal_amount)}, Saldo devedor ${formatCurrency(loan.remaining_balance)}, Parcelas ${paidInstallments}/${loan.total_installments}, Taxa ${loan.interest_rate}% a.a.${accountName ? `, Conta: ${accountName}` : ''}${nextDueInfo}\n`
+        : language === 'en'
+        ? `- ${loan.institution_name} (${loan.amortization_type.toUpperCase()}): Contracted ${formatCurrency(loan.principal_amount)}, Outstanding ${formatCurrency(loan.remaining_balance)}, Installments ${paidInstallments}/${loan.total_installments}, Rate ${loan.interest_rate}% p.a.${accountName ? `, Account: ${accountName}` : ''}${nextDueInfo}\n`
+        : `- ${loan.institution_name} (${loan.amortization_type.toUpperCase()}): Contratado ${formatCurrency(loan.principal_amount)}, Saldo deudor ${formatCurrency(loan.remaining_balance)}, Cuotas ${paidInstallments}/${loan.total_installments}, Tasa ${loan.interest_rate}% anual${accountName ? `, Cuenta: ${accountName}` : ''}${nextDueInfo}\n`;
+    });
+
+    if (completedLoans.length > 0) {
+      context += language === 'pt'
+        ? `\nEmpréstimos quitados: ${completedLoans.length}\n`
+        : language === 'en'
+        ? `\nPaid off loans: ${completedLoans.length}\n`
+        : `\nPréstamos liquidados: ${completedLoans.length}\n`;
+    }
+    context += '\n';
+  } else {
+    context += language === 'pt'
+      ? `Nenhum empréstimo ou financiamento registrado.\n`
+      : language === 'en'
+      ? `No loans or financing registered.\n`
+      : `No hay préstamos o financiamientos registrados.\n`;
   }
 
   // Categories with descriptions for AI context
