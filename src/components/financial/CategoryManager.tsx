@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useUserCategoryTags } from "@/hooks/useUserCategoryTags";
-import { useSubcategories } from "@/hooks/useSubcategories";
+
 import { getTranslatedTagName, sortTagsByTranslatedName } from "@/utils/userTagTranslation";
 import { translateCategoryName as translateCategoryUtil, translateCategoryDescription } from "@/utils/categoryTranslation";
 import { TagEditModal } from "./TagEditModal";
@@ -57,7 +57,7 @@ const CategoryManagerContent = () => {
     getUserTagsForCategory,
     refetch: refetchUserTags
   } = useUserCategoryTags();
-  const { getSubcategoriesForCategory, getLocalizedName } = useSubcategories();
+  
   const [hasEnsuredDefaults, setHasEnsuredDefaults] = useState(false);
 
   // Safe translation helper with deduplication
@@ -375,8 +375,25 @@ const CategoryManagerContent = () => {
           {categories.map((category) => {
             const systemTags = categoryTags[category.id] || [];
             const userTagsForCategory = getUserTagsForCategory(category.id);
-            const userSubcategories = getSubcategoriesForCategory(category.id).filter(s => !s.is_system);
             const excludedTagIds = excludedSystemTags[category.id] || [];
+
+            // Deduplicate: collect all tag names to avoid showing the same name from both system tags and user tags
+            const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+            const seenNames = new Set<string>();
+            
+            const dedupedSystemTags = deduplicateSystemTags(systemTags).filter(tag => {
+              const name = normalize(getTranslatedTagName(tag, language));
+              if (seenNames.has(name)) return false;
+              seenNames.add(name);
+              return true;
+            });
+
+            const dedupedUserTags = userTagsForCategory.filter(tag => {
+              const name = normalize(tag.tag_name);
+              if (seenNames.has(name)) return false;
+              seenNames.add(name);
+              return true;
+            });
 
             return (
               <Card key={category.id} className="border border-border/50 hover:border-border transition-colors">
@@ -441,14 +458,14 @@ const CategoryManagerContent = () => {
                      </div>
                   </div>
 
-                  {/* Tags Section */}
+                  {/* Tags Section - Unified (no more separate subcategories) */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                       <Tag className="h-4 w-4" />
                       Tags disponíveis
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {deduplicateSystemTags(systemTags).map((tag) => {
+                      {dedupedSystemTags.map((tag) => {
                         const isExcluded = excludedTagIds.includes(tag.id);
                         const translatedName = getTranslatedTagName(tag, language);
                         
@@ -469,7 +486,7 @@ const CategoryManagerContent = () => {
                         );
                       })}
                       
-                      {userTagsForCategory.map((userTag) => (
+                      {dedupedUserTags.map((userTag) => (
                         <Badge
                           key={userTag.id}
                           variant="secondary"
@@ -483,23 +500,8 @@ const CategoryManagerContent = () => {
                           {userTag.tag_name}
                         </Badge>
                       ))}
-
-                      {userSubcategories.map((sub) => (
-                        <Badge
-                          key={sub.id}
-                          variant="secondary"
-                          className="text-xs"
-                          style={{
-                            backgroundColor: (sub.color || '#6366f1') + '20',
-                            borderColor: sub.color || '#6366f1',
-                            color: sub.color || '#6366f1',
-                          }}
-                        >
-                          {getLocalizedName(sub)}
-                        </Badge>
-                      ))}
                       
-                      {systemTags.length === 0 && userTagsForCategory.length === 0 && userSubcategories.length === 0 && (
+                      {dedupedSystemTags.length === 0 && dedupedUserTags.length === 0 && (
                         <span className="text-xs text-muted-foreground italic">
                           Nenhuma tag disponível
                         </span>
