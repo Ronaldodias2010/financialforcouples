@@ -13,7 +13,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { calculateLoanSchedule } from '@/utils/loanCalculations';
+import { calculateLoanSchedule, reverseCalculateInterestRate } from '@/utils/loanCalculations';
 import { parseLocalDate } from '@/utils/date';
 
 interface NewLoanModalProps {
@@ -54,6 +54,21 @@ export const NewLoanModal: React.FC<NewLoanModalProps> = ({
   useEffect(() => {
     if (isOpen) fetchAccounts();
   }, [isOpen]);
+
+  // Auto-calculate interest rate when user provides installment value, principal and installments
+  useEffect(() => {
+    if (installmentValue && principalAmount && totalInstallments && !interestRate) {
+      const rate = reverseCalculateInterestRate(
+        parseFloat(principalAmount),
+        parseFloat(installmentValue),
+        parseInt(totalInstallments),
+        amortizationType
+      );
+      if (rate !== null && rate > 0) {
+        setInterestRate(rate.toString());
+      }
+    }
+  }, [installmentValue, principalAmount, totalInstallments, amortizationType]);
 
   // Live preview of calculation
   useEffect(() => {
@@ -151,15 +166,14 @@ export const NewLoanModal: React.FC<NewLoanModalProps> = ({
               />
             </div>
             <div className="space-y-2">
-              <Label>Taxa de Juros (% a.a.) *</Label>
+              <Label>Taxa de Juros (% a.a.)</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={interestRate}
                 onChange={(e) => setInterestRate(e.target.value)}
-                placeholder="12.00"
-                required
+                placeholder="Auto ou manual"
               />
             </div>
           </div>

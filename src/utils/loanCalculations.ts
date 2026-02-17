@@ -179,3 +179,57 @@ export function calculateLoanSchedule(
   }
   return calculatePrice(principal, monthlyRate, totalInstallments, firstInstallmentDate);
 }
+
+/**
+ * Reverse-calculate annual interest rate from principal, installment value, and number of installments.
+ * Uses Newton-Raphson method for Price system.
+ * For SAC, uses algebraic derivation.
+ * Returns annual rate as percentage (e.g. 12 for 12%).
+ */
+export function reverseCalculateInterestRate(
+  principal: number,
+  installmentValue: number,
+  totalInstallments: number,
+  amortizationType: 'price' | 'sac'
+): number | null {
+  if (principal <= 0 || installmentValue <= 0 || totalInstallments <= 0) return null;
+
+  const totalPaid = installmentValue * totalInstallments;
+  if (totalPaid <= principal) return 0; // No interest or negative — treat as 0
+
+  if (amortizationType === 'sac') {
+    // For SAC first installment: PMT1 = principal/n + principal * r
+    // r = (PMT1 - principal/n) / principal
+    const fixedPrincipal = principal / totalInstallments;
+    const monthlyRate = (installmentValue - fixedPrincipal) / principal;
+    if (monthlyRate < 0) return 0;
+    return Math.round(monthlyRate * 12 * 100 * 100) / 100;
+  }
+
+  // Price: Newton-Raphson to solve PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
+  let r = 0.01; // initial guess: 1% monthly
+  for (let iter = 0; iter < 100; iter++) {
+    const rn = Math.pow(1 + r, totalInstallments);
+    const f = principal * (r * rn) / (rn - 1) - installmentValue;
+    
+    // Derivative of PMT w.r.t. r
+    const drndr = totalInstallments * Math.pow(1 + r, totalInstallments - 1);
+    const num = r * rn;
+    const den = rn - 1;
+    const dnum = rn + r * drndr;
+    const dden = drndr;
+    const dfdr = principal * (dnum * den - num * dden) / (den * den);
+    
+    if (Math.abs(dfdr) < 1e-15) break;
+    const rNew = r - f / dfdr;
+    if (Math.abs(rNew - r) < 1e-10) {
+      r = rNew;
+      break;
+    }
+    r = rNew;
+    if (r <= 0) r = 0.0001;
+  }
+
+  const annualRate = r * 12 * 100;
+  return Math.round(annualRate * 100) / 100;
+}
