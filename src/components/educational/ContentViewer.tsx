@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,8 +6,9 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Download, X, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
-// Configure PDF.js worker (local to avoid CORS/dynamic import issues)
+// Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+
 interface ContentViewerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -30,11 +31,51 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [iframeBlocked, setIframeBlocked] = useState(false);
   const [pdfError, setPdfError] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState(1.1);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+
+  // Reset state when content changes
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+    setPdfError(false);
+    setNumPages(0);
+    setPageNumber(1);
+    setPdfBlobUrl(null);
+  }, [content?.id]);
+
+  // Fetch PDF as blob to avoid CORS issues
+  const fetchPdfAsBlob = useCallback(async (url: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch PDF');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      setPdfBlobUrl(blobUrl);
+    } catch (err) {
+      console.error('Error fetching PDF blob:', err);
+      setPdfError(true);
+      setLoading(false);
+    }
+  }, []);
+
+  // Load PDF blob when content is a PDF
+  useEffect(() => {
+    const isPdf = content && (
+      content.content_type === 'pdf' ||
+      content.file_type?.toLowerCase().includes('pdf') ||
+      content.file_name?.toLowerCase().endsWith('.pdf')
+    );
+    if (isPdf && content?.file_url && isOpen) {
+      fetchPdfAsBlob(content.file_url);
+    }
+    return () => {
+      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+    };
+  }, [content?.id, isOpen]);
 
   if (!content) return null;
 
@@ -48,25 +89,25 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
     document.body.removeChild(link);
   };
 
-  const isVideo = content.content_type === 'video' || 
-                  content.file_type?.toLowerCase().includes('video') ||
-                  /\.(mp4|webm|ogg|avi|mov)$/i.test(content.file_name);
+  const isVideo = content.content_type === 'video' ||
+    content.file_type?.toLowerCase().includes('video') ||
+    /\.(mp4|webm|ogg|avi|mov)$/i.test(content.file_name);
 
-  const isPDF = content.content_type === 'pdf' || 
-                content.file_type?.toLowerCase().includes('pdf') ||
-                content.file_name?.toLowerCase().endsWith('.pdf');
+  const isPDF = content.content_type === 'pdf' ||
+    content.file_type?.toLowerCase().includes('pdf') ||
+    content.file_name?.toLowerCase().endsWith('.pdf');
 
-  const isImage = content.content_type === 'image' || 
-                  content.file_type?.toLowerCase().includes('image') ||
-                  /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(content.file_name);
+  const isImage = content.content_type === 'image' ||
+    content.file_type?.toLowerCase().includes('image') ||
+    /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(content.file_name);
 
   const openInNewTab = () => {
-    window.open(content.file_url, '_blank', 'noopener,noreferrer');
-  };
-
-  const getPDFViewerUrl = () => {
-    // Usar o visualizador PDF.js do navegador quando disponível
-    return `https://docs.google.com/gview?url=${encodeURIComponent(content.file_url)}&embedded=true`;
+    // Use Google Docs viewer for PDFs so the user can actually view it
+    if (isPDF) {
+      window.open(`https://docs.google.com/gview?url=${encodeURIComponent(content.file_url)}&embedded=true`, '_blank', 'noopener,noreferrer');
+    } else {
+      window.open(content.file_url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const renderContent = () => {
@@ -97,10 +138,7 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
             className="w-full max-h-[70vh] rounded-lg"
             onLoadStart={() => setLoading(true)}
             onCanPlay={() => setLoading(false)}
-            onError={() => {
-              setLoading(false);
-              setError(true);
-            }}
+            onError={() => { setLoading(false); setError(true); }}
           >
             <source src={content.file_url} />
             {t('educational.viewer.videoNotSupported')}
@@ -113,13 +151,13 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
       if (pdfError) {
         return (
           <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
+            <AlertCircle className="h-12 w-12 text-warning mb-4" />
             <div>
               <h3 className="text-lg font-semibold mb-2">{t('educational.viewer.blocked')}</h3>
               <p className="text-muted-foreground mb-4">{t('educational.viewer.blockedDesc')}</p>
             </div>
             <div className="flex gap-2">
-              <Button onClick={openInNewTab} className="bg-gradient-to-r from-blue-500 to-blue-600">
+              <Button onClick={openInNewTab} variant="default">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 {t('educational.viewer.openInNewTab')}
               </Button>
@@ -132,6 +170,14 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
         );
       }
 
+      if (!pdfBlobUrl) {
+        return (
+          <div className="flex items-center justify-center h-96">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        );
+      }
+
       return (
         <div className="relative w-full">
           {loading && (
@@ -139,18 +185,15 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           )}
-
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <div className="text-sm text-muted-foreground">
               {numPages ? (
-                <span>
-                  Página {pageNumber} / {numPages}
-                </span>
+                <span>Página {pageNumber} / {numPages}</span>
               ) : (
                 <span>Carregando...</span>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button size="sm" variant="outline" onClick={() => setScale((s) => Math.max(0.5, s - 0.1))}>-</Button>
               <Button size="sm" variant="outline" onClick={() => setScale((s) => Math.min(2, s + 0.1))}>+</Button>
               <Button size="sm" variant="outline" onClick={() => setPageNumber((p) => Math.max(1, p - 1))} disabled={pageNumber <= 1}>Anterior</Button>
@@ -161,10 +204,9 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
               </Button>
             </div>
           </div>
-
           <div className="w-full max-h-[80vh] overflow-auto rounded-lg border p-2">
             <Document
-              file={content.file_url}
+              file={pdfBlobUrl}
               onLoadSuccess={({ numPages }) => {
                 setNumPages(numPages);
                 setLoading(false);
@@ -201,10 +243,7 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
             alt={content.title}
             className="max-w-full max-h-[80vh] rounded-lg"
             onLoad={() => setLoading(false)}
-            onError={() => {
-              setLoading(false);
-              setError(true);
-            }}
+            onError={() => { setLoading(false); setError(true); }}
           />
         </div>
       );
@@ -223,14 +262,14 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
         );
       }
       return (
-        <div 
+        <div
           className="prose prose-sm dark:prose-invert max-w-none max-h-[75vh] overflow-auto p-4 rounded-lg border bg-card"
           dangerouslySetInnerHTML={{ __html: webContent }}
         />
       );
     }
 
-    // Tipo não suportado para visualização
+    // Unsupported
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
@@ -256,7 +295,7 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
               </DialogDescription>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="secondary">{content.content_type}</Badge>
-                <span className="text-sm text-muted-foreground">{content.file_name}</span>
+                {content.file_name && <span className="text-sm text-muted-foreground">{content.file_name}</span>}
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -273,10 +312,12 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
         </div>
 
         <DialogFooter className="flex-row gap-2 sm:gap-2">
-          <Button onClick={handleDownload} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            {t('educational.download')}
-          </Button>
+          {content.file_url && (
+            <Button onClick={handleDownload} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              {t('educational.download')}
+            </Button>
+          )}
           <Button onClick={onClose} variant="secondary">
             {t('common.close')}
           </Button>
