@@ -43,6 +43,7 @@ export const NewLoanModal: React.FC<NewLoanModalProps> = ({
   const [accountId, setAccountId] = useState('');
   const [institutionName, setInstitutionName] = useState('');
   const [amortizationType, setAmortizationType] = useState<'price' | 'sac'>('price');
+  const [installmentValue, setInstallmentValue] = useState('');
   const [notes, setNotes] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,6 +117,7 @@ export const NewLoanModal: React.FC<NewLoanModalProps> = ({
     setPrincipalAmount('');
     setInterestRate('');
     setTotalInstallments('');
+    setInstallmentValue('');
     setFirstDate(undefined);
     setAccountId('');
     setInstitutionName('');
@@ -236,6 +238,18 @@ export const NewLoanModal: React.FC<NewLoanModalProps> = ({
               onChange={(e) => setInstitutionName(e.target.value)}
               placeholder="Ex: Banco do Brasil, Nubank..."
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Valor da Parcela</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={installmentValue}
+              onChange={(e) => setInstallmentValue(e.target.value)}
+              placeholder="Opcional - calculado automaticamente"
             />
           </div>
 
