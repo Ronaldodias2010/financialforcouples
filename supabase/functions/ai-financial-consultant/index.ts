@@ -49,6 +49,7 @@ interface FinancialData {
   cards: any[];
   investments: any[];
   investmentGoals: any[];
+  mileagePrograms: any[];
   mileageGoals: any[];
   mileageHistory: any[];
   cardMileageRules: any[];
@@ -72,6 +73,7 @@ interface FinancialData {
       cards: any[];
       investments: any[];
       investmentGoals: any[];
+      mileagePrograms: any[];
       mileageGoals: any[];
       mileageHistory: any[];
       cardMileageRules: any[];
@@ -86,6 +88,7 @@ interface FinancialData {
       cards: any[];
       investments: any[];
       investmentGoals: any[];
+      mileagePrograms: any[];
       mileageGoals: any[];
       mileageHistory: any[];
       cardMileageRules: any[];
@@ -100,6 +103,7 @@ interface FinancialData {
       cards: any[];
       investments: any[];
       investmentGoals: any[];
+      mileagePrograms: any[];
       mileageGoals: any[];
       mileageHistory: any[];
       cardMileageRules: any[];
@@ -476,6 +480,7 @@ async function collectFinancialData(
     { data: cards = [] },
     { data: investments = [] },
     { data: investmentGoals = [] },
+    { data: mileagePrograms = [] },
     { data: mileageGoals = [] },
     { data: mileageHistory = [] },
     { data: cardMileageRules = [] },
@@ -500,6 +505,7 @@ async function collectFinancialData(
     supabase.from('cards').select('*').in('user_id', userIds),
     supabase.from('investments').select('*').in('user_id', userIds),
     supabase.from('investment_goals').select('*').in('user_id', userIds),
+    supabase.from('mileage_programs').select('*').in('user_id', userIds),
     supabase.from('mileage_goals').select('*').in('user_id', userIds),
     supabase.from('mileage_history').select('*').in('user_id', userIds),
     supabase.from('card_mileage_rules').select('*').in('user_id', userIds).eq('is_active', true),
@@ -573,6 +579,7 @@ async function collectFinancialData(
         cards: cards.filter((c: any) => c.user_id === userId),
         investments: investments.filter((i: any) => i.user_id === userId),
         investmentGoals: investmentGoals.filter((g: any) => g.user_id === userId),
+        mileagePrograms: mileagePrograms.filter((p: any) => p.user_id === userId),
         mileageGoals: mileageGoals.filter((g: any) => g.user_id === userId),
         mileageHistory: mileageHistory.filter((h: any) => h.user_id === userId),
         cardMileageRules: cardMileageRules.filter((r: any) => r.user_id === userId),
@@ -587,6 +594,7 @@ async function collectFinancialData(
         cards: cards.filter((c: any) => c.user_id === partnerUserId),
         investments: investments.filter((i: any) => i.user_id === partnerUserId),
         investmentGoals: investmentGoals.filter((g: any) => g.user_id === partnerUserId),
+        mileagePrograms: mileagePrograms.filter((p: any) => p.user_id === partnerUserId),
         mileageGoals: mileageGoals.filter((g: any) => g.user_id === partnerUserId),
         mileageHistory: mileageHistory.filter((h: any) => h.user_id === partnerUserId),
         cardMileageRules: cardMileageRules.filter((r: any) => r.user_id === partnerUserId),
@@ -601,6 +609,7 @@ async function collectFinancialData(
         cards,
         investments,
         investmentGoals,
+        mileagePrograms,
         mileageGoals,
         mileageHistory,
         cardMileageRules,
@@ -618,6 +627,7 @@ async function collectFinancialData(
     cards,
     investments,
     investmentGoals,
+    mileagePrograms,
     mileageGoals,
     mileageHistory,
     cardMileageRules,
@@ -1081,6 +1091,42 @@ function generateIndividualContext(
   }
 
   context += '\n';
+
+  // Mileage Programs (connected airline programs with balances)
+  if (data.mileagePrograms && data.mileagePrograms.length > 0) {
+    context += language === 'pt' 
+      ? `\nPROGRAMAS DE MILHAGEM CONECTADOS:\n`
+      : language === 'en' 
+      ? `\nCONNECTED MILEAGE PROGRAMS:\n`
+      : `\nPROGRAMAS DE MILLAS CONECTADOS:\n`;
+
+    const connectedPrograms = data.mileagePrograms.filter((p: any) => p.status === 'connected');
+    const totalMiles = connectedPrograms.reduce((sum: number, p: any) => sum + (p.balance_miles || 0), 0);
+
+    context += language === 'pt'
+      ? `Total de milhas em programas aéreos: ${formatMiles(totalMiles)}\n`
+      : language === 'en'
+      ? `Total miles in airline programs: ${formatMiles(totalMiles)}\n`
+      : `Total de millas en programas aéreos: ${formatMiles(totalMiles)}\n`;
+
+    connectedPrograms.forEach((prog: any) => {
+      const lastSync = prog.last_synced_at ? new Date(prog.last_synced_at).toLocaleDateString('pt-BR') : 'nunca';
+      context += language === 'pt'
+        ? `- ${prog.program_name} (${prog.program_code}): ${formatMiles(prog.balance_miles || 0)} milhas, Última sync: ${lastSync}\n`
+        : language === 'en'
+        ? `- ${prog.program_name} (${prog.program_code}): ${formatMiles(prog.balance_miles || 0)} miles, Last sync: ${lastSync}\n`
+        : `- ${prog.program_name} (${prog.program_code}): ${formatMiles(prog.balance_miles || 0)} millas, Última sync: ${lastSync}\n`;
+    });
+
+    const disconnectedPrograms = data.mileagePrograms.filter((p: any) => p.status !== 'connected');
+    if (disconnectedPrograms.length > 0) {
+      context += language === 'pt'
+        ? `Programas desconectados: ${disconnectedPrograms.map((p: any) => p.program_name).join(', ')}\n`
+        : language === 'en'
+        ? `Disconnected programs: ${disconnectedPrograms.map((p: any) => p.program_name).join(', ')}\n`
+        : `Programas desconectados: ${disconnectedPrograms.map((p: any) => p.program_name).join(', ')}\n`;
+    }
+  }
 
   // Mileage Goals Analysis - COM CORREÇÃO CRÍTICA
   if (data.mileageGoals && data.mileageGoals.length > 0) {
