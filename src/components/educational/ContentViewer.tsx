@@ -19,6 +19,10 @@ interface ContentViewerProps {
     file_name: string;
     file_type: string;
     content_type: string;
+    web_content?: string;
+    web_content_pt?: string;
+    web_content_en?: string;
+    web_content_es?: string;
   } | null;
 }
 
@@ -203,6 +207,26 @@ export const ContentViewer = ({ isOpen, onClose, content }: ContentViewerProps) 
             }}
           />
         </div>
+      );
+    }
+
+    // Web content / Article
+    const webContent = content.web_content_pt || content.web_content_en || content.web_content_es || content.web_content;
+    if (webContent || content.content_type === 'article') {
+      if (!webContent) {
+        return (
+          <div className="flex flex-col items-center justify-center h-96 text-center">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{t('educational.viewer.unsupported')}</h3>
+            <p className="text-muted-foreground mb-4">{t('educational.viewer.unsupportedDesc')}</p>
+          </div>
+        );
+      }
+      return (
+        <div 
+          className="prose prose-sm dark:prose-invert max-w-none max-h-[75vh] overflow-auto p-4 rounded-lg border bg-card"
+          dangerouslySetInnerHTML={{ __html: webContent }}
+        />
       );
     }
 

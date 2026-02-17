@@ -20,6 +20,10 @@ interface EducationalContent {
   content_type: string;
   image_url?: string;
   created_at: string;
+  web_content?: string;
+  web_content_pt?: string;
+  web_content_en?: string;
+  web_content_es?: string;
 }
 
 export const EducationalContentSection = () => {
