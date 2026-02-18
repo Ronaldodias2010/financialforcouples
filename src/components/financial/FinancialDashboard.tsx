@@ -301,93 +301,6 @@ export const FinancialDashboard = () => {
               monthlyExpensesAverage={getTransactionsTotalOutflows(viewMode)}
             />
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              <Button 
-                id="onboarding-accounts-btn"
-                variant="outline" 
-                className={`h-20 flex flex-col gap-2 w-full ${onboardingStep === 1 ? 'ring-4 ring-destructive ring-offset-2 ring-offset-background animate-pulse' : ''}`}
-                onClick={() => setCurrentPage("accounts")}
-              >
-                <Wallet className="h-6 w-6" />
-                <span>{t('nav.accounts')}</span>
-              </Button>
-              <Button 
-                id="onboarding-cards-btn"
-                variant="outline" 
-                className={`h-20 flex flex-col gap-2 w-full ${onboardingStep === 2 ? 'ring-4 ring-destructive ring-offset-2 ring-offset-background animate-pulse' : ''}`}
-                onClick={() => setCurrentPage("cards")}
-              >
-                <CreditCard className="h-6 w-6" />
-                <span>{t('nav.cards')}</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col gap-2 w-full"
-                onClick={() => setCurrentPage("investments")}
-              >
-                <TrendingUp className="h-6 w-6" />
-                <span>{t('nav.investments')}</span>
-              </Button>
-              <div className="w-full">
-                <PremiumFeatureGuard 
-                  feature="decisions"
-                  fallback={
-                    <Button 
-                      variant="outline" 
-                      className="h-20 flex flex-col gap-2 w-full border-rose-200 opacity-60 cursor-not-allowed relative"
-                      disabled
-                    >
-                      <Heart className="h-6 w-6 text-rose-400" />
-                      <span className="text-rose-500">{t('nav.decisions')}</span>
-                      <Badge variant="secondary" className="absolute top-1 right-1 text-[10px] px-1">Premium</Badge>
-                    </Button>
-                  }
-                >
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex flex-col gap-2 w-full border-rose-200 hover:border-rose-400 hover:bg-rose-50 dark:border-rose-800 dark:hover:border-rose-600 dark:hover:bg-rose-950"
-                    onClick={() => setCurrentPage("decisions")}
-                  >
-                    <Heart className="h-6 w-6 text-rose-500" />
-                    <span className="text-rose-700 dark:text-rose-300">{t('nav.decisions')}</span>
-                  </Button>
-                </PremiumFeatureGuard>
-              </div>
-              <div className="w-full">
-                <PremiumFeatureGuard 
-                  feature="aiMileage"
-                  fallback={
-                    <Button 
-                      variant="outline" 
-                      className="h-20 flex flex-col gap-2 w-full opacity-50 cursor-not-allowed relative"
-                      disabled
-                    >
-                      <Plane className="h-6 w-6" />
-                      <span>{t('nav.mileage')}</span>
-                      <Badge variant="secondary" className="absolute top-1 right-1 text-[10px] px-1">Premium</Badge>
-                    </Button>
-                  }
-                >
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex flex-col gap-2 w-full"
-                    onClick={() => setCurrentPage("mileage")}
-                  >
-                    <Plane className="h-6 w-6" />
-                    <span>{t('nav.mileage')}</span>
-                  </Button>
-                </PremiumFeatureGuard>
-              </div>
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col gap-2 w-full"
-                onClick={() => setCurrentPage("profile")}
-              >
-                <Settings className="h-6 w-6" />
-                <span>{t('nav.profile')}</span>
-              </Button>
-            </div>
           </>
         );
       case "transactions":
@@ -717,6 +630,94 @@ export const FinancialDashboard = () => {
         </div>
 
         {renderTabContent()}
+
+        {/* Quick Actions - visible on all tabs */}
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <Button 
+            id="onboarding-accounts-btn"
+            variant="outline" 
+            className={`h-20 flex flex-col gap-2 w-full ${onboardingStep === 1 ? 'ring-4 ring-destructive ring-offset-2 ring-offset-background animate-pulse' : ''}`}
+            onClick={() => setCurrentPage("accounts")}
+          >
+            <Wallet className="h-6 w-6" />
+            <span>{t('nav.accounts')}</span>
+          </Button>
+          <Button 
+            id="onboarding-cards-btn"
+            variant="outline" 
+            className={`h-20 flex flex-col gap-2 w-full ${onboardingStep === 2 ? 'ring-4 ring-destructive ring-offset-2 ring-offset-background animate-pulse' : ''}`}
+            onClick={() => setCurrentPage("cards")}
+          >
+            <CreditCard className="h-6 w-6" />
+            <span>{t('nav.cards')}</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col gap-2 w-full"
+            onClick={() => setCurrentPage("investments")}
+          >
+            <TrendingUp className="h-6 w-6" />
+            <span>{t('nav.investments')}</span>
+          </Button>
+          <div className="w-full">
+            <PremiumFeatureGuard 
+              feature="decisions"
+              fallback={
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 w-full border-rose-200 opacity-60 cursor-not-allowed relative"
+                  disabled
+                >
+                  <Heart className="h-6 w-6 text-rose-400" />
+                  <span className="text-rose-500">{t('nav.decisions')}</span>
+                  <Badge variant="secondary" className="absolute top-1 right-1 text-[10px] px-1">Premium</Badge>
+                </Button>
+              }
+            >
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 w-full border-rose-200 hover:border-rose-400 hover:bg-rose-50 dark:border-rose-800 dark:hover:border-rose-600 dark:hover:bg-rose-950"
+                onClick={() => setCurrentPage("decisions")}
+              >
+                <Heart className="h-6 w-6 text-rose-500" />
+                <span className="text-rose-700 dark:text-rose-300">{t('nav.decisions')}</span>
+              </Button>
+            </PremiumFeatureGuard>
+          </div>
+          <div className="w-full">
+            <PremiumFeatureGuard 
+              feature="aiMileage"
+              fallback={
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 w-full opacity-50 cursor-not-allowed relative"
+                  disabled
+                >
+                  <Plane className="h-6 w-6" />
+                  <span>{t('nav.mileage')}</span>
+                  <Badge variant="secondary" className="absolute top-1 right-1 text-[10px] px-1">Premium</Badge>
+                </Button>
+              }
+            >
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 w-full"
+                onClick={() => setCurrentPage("mileage")}
+              >
+                <Plane className="h-6 w-6" />
+                <span>{t('nav.mileage')}</span>
+              </Button>
+            </PremiumFeatureGuard>
+          </div>
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col gap-2 w-full"
+            onClick={() => setCurrentPage("profile")}
+          >
+            <Settings className="h-6 w-6" />
+            <span>{t('nav.profile')}</span>
+          </Button>
+        </div>
 
         {onboardingStep > 0 && currentPage === "dashboard" && activeTab === "dashboard" && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
