@@ -1,10 +1,9 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "npm:stripe@14.21.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const logStep = (step: string, details?: any) => {
@@ -12,7 +11,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -84,7 +83,6 @@ serve(async (req) => {
       });
     }
 
-
     // Check if user is admin via RBAC - admins automatically get premium access
     const { data: adminRole } = await supabaseClient
       .from('user_roles')
@@ -96,7 +94,6 @@ serve(async (req) => {
     if (adminRole) {
       logStep("Admin user detected, granting premium access", { email: user.email });
       
-      // Update database with premium status for the admin
       await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
@@ -171,7 +168,6 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No Stripe customer found, checking local subscription data");
       
-      // If user has local subscription data (like manual premium), preserve it
       if (existingSubscriber && existingSubscriber.subscribed) {
         logStep("Local subscription found, preserving it", { 
           tier: existingSubscriber.subscription_tier,
@@ -234,7 +230,6 @@ serve(async (req) => {
         }
       }
       
-      // No subscription anywhere, set as essential
       logStep("No local or partner subscription found, setting as essential");
       await supabaseClient.from("subscribers").upsert({
         email: user.email,
@@ -246,7 +241,6 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
       
-      // Update profiles table as well
       await supabaseClient.from("profiles").update({
         subscribed: false,
         subscription_tier: 'essential'
@@ -282,7 +276,7 @@ serve(async (req) => {
       logStep("No active subscription found");
     }
 
-    // If user has no active subscription, check if their partner has one (shared premium for couples)
+    // If user has no active subscription, check if their partner has one
     if (!hasActiveSub) {
       const { data: couple } = await supabaseClient
         .from('user_couples')
@@ -319,13 +313,12 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    // Update profiles table as well
     await supabaseClient.from("profiles").update({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier
     }).eq('user_id', user.id);
 
-    // If the user has an active subscription, grant shared access to partner as well
+    // If the user has an active subscription, grant shared access to partner
     if (hasActiveSub) {
       const { data: couple } = await supabaseClient
         .from('user_couples')
