@@ -614,8 +614,8 @@ export const FinancialDashboard = () => {
                 { id: "dashboard", label: t('nav.dashboard'), icon: TrendingUp },
                 { id: "transactions", label: t('nav.monthlyExpenses'), icon: Wallet },
                 { id: "income", label: t('nav.monthlyIncome'), icon: TrendingUp },
-                { id: "categories", label: t('nav.categories'), icon: Settings },
                 { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                { id: "categories", label: t('nav.categories'), icon: Settings },
                 { id: "converter", label: t('nav.converter'), icon: ArrowLeftRight },
                 { id: "cashFlow", label: t('nav.cashFlow'), icon: Banknote },
                 { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
@@ -684,8 +684,8 @@ export const FinancialDashboard = () => {
               </div>
               <div className="flex space-x-1 justify-center">
                 {[
-                  { id: "categories", label: t('nav.categories'), icon: Settings },
                   { id: "recurring", label: t('nav.recurring'), icon: TrendingDown },
+                  { id: "categories", label: t('nav.categories'), icon: Settings },
                   { id: "converter", label: t('nav.converter'), icon: ArrowLeftRight },
                   { id: "cashFlow", label: t('nav.cashFlow'), icon: Banknote },
                   { id: "aiRecommendations", label: t('nav.aiRecommendations'), icon: Brain }
