@@ -28,6 +28,21 @@ async function cleanupServiceWorkerCaches() {
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
     }
+
+    // Force cleanup of old SW caches on production (fixes stale content on Safari/Mac)
+    if (!isLovablePreview && "caches" in window) {
+      const keys = await caches.keys();
+      const oldCaches = keys.filter(k => !k.includes('v18'));
+      if (oldCaches.length > 0) {
+        console.log('[App] Cleaning old caches:', oldCaches);
+        await Promise.all(oldCaches.map(k => caches.delete(k)));
+      }
+    }
+
+    // Tell active SW to skip waiting if there's a new version
+    if (!isLovablePreview && "serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    }
   } catch {
     // ignore
   }
