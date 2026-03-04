@@ -1277,6 +1277,55 @@ const transferInserts: TablesInsert<'transactions'>[] = [
       }
 
       console.log('💾 Transaction saved successfully, invalidating queries...');
+
+      // Auto-create future expense/income if transaction date is in the future
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
+      const txDateStr = format(transactionDate, 'yyyy-MM-dd');
+      
+      if (txDateStr > todayStr) {
+        try {
+          if (type === 'expense') {
+            const { error: futureError } = await supabase
+              .from('manual_future_expenses')
+              .insert({
+                user_id: user.id,
+                owner_user: ownerUser,
+                description: description || 'Despesa futura',
+                amount: transactionAmount,
+                due_date: txDateStr,
+                category_id: categoryId || null,
+                payment_method: paymentMethod,
+                is_paid: false,
+              });
+            if (futureError) {
+              console.error('⚠️ Error creating future expense:', futureError);
+            } else {
+              console.log('✅ Future expense created automatically for date:', txDateStr);
+            }
+          } else if (type === 'income') {
+            const { error: futureError } = await supabase
+              .from('manual_future_incomes')
+              .insert({
+                user_id: user.id,
+                owner_user: ownerUser,
+                description: description || 'Receita futura',
+                amount: transactionAmount,
+                due_date: txDateStr,
+                category_id: categoryId || null,
+                account_id: accountId || null,
+                payment_method: paymentMethod,
+                is_received: false,
+              });
+            if (futureError) {
+              console.error('⚠️ Error creating future income:', futureError);
+            } else {
+              console.log('✅ Future income created automatically for date:', txDateStr);
+            }
+          }
+        } catch (futureErr) {
+          console.error('⚠️ Error creating future entry:', futureErr);
+        }
+      }
       
       toast({
         title: t('transactionForm.success'),
