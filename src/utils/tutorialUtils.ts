@@ -454,9 +454,9 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'despesas-recorrentes',
-      title: '8. Despesas Recorrentes',
+      title: '8. Despesas Recorrentes e Débitos Automáticos',
       icon: '🔄',
-      intro: 'Despesas recorrentes são gastos fixos que se repetem periodicamente. Configure-as para automatizar seu controle financeiro.',
+      intro: 'Despesas recorrentes são gastos fixos que se repetem periodicamente. A plataforma oferece dois modelos de automação: o Débito Automático dentro das Recorrentes (para valores fixos) e a aba Débitos Automáticos (para valores variáveis como faturas de cartão).',
       subSections: [
         {
           title: 'O que são Despesas Recorrentes',
@@ -487,10 +487,62 @@ const getTutorialContentPT = (): TutorialContent => ({
           ]
         },
         {
+          title: 'Modelo 1: Débito Automático em Recorrentes (Valores Fixos)',
+          content: 'Dentro das Despesas Recorrentes, você pode ativar a opção "Débito Automático" para que o pagamento seja processado automaticamente na conta bancária vinculada:',
+          steps: [
+            { num: 1, title: 'Ativar Débito Automático', desc: 'Ao criar ou editar uma despesa recorrente, ative a opção "Débito Automático" e selecione a conta bancária de onde o valor será debitado.' },
+            { num: 2, title: 'Processamento Automático', desc: 'No dia do vencimento, o sistema debita automaticamente o valor fixo da conta selecionada e registra a transação.' },
+            { num: 3, title: 'Alerta de Saldo Insuficiente', desc: 'Se a conta não tiver saldo suficiente, o sistema exibe um alerta na tela principal e a despesa vai para "Atrasadas" para pagamento manual.' },
+          ]
+        },
+        {
           title: '',
           tipBox: {
-            title: 'Gestão de Recorrências',
-            content: 'Você pode editar valores, pausar temporariamente, ou cancelar permanentemente uma despesa recorrente. O histórico de todas as ocorrências geradas fica disponível para consulta.'
+            title: 'Quando Usar o Débito Automático em Recorrentes',
+            content: 'Ideal para despesas de valor fixo e previsível como aluguel, condomínio, assinaturas e mensalidades. O valor é sempre o mesmo mês a mês, então a automação é direta e segura.'
+          }
+        },
+        {
+          title: 'Modelo 2: Aba Débitos Automáticos (Valores Variáveis)',
+          content: 'A aba "Débitos Automáticos" (ao lado de Recorrentes e Empréstimos) é dedicada a pagamentos de valores variáveis que mudam a cada mês:',
+          features: [
+            { title: 'Faturas de Cartão de Crédito', desc: 'Vincule um cartão de crédito e o sistema calcula automaticamente o valor da fatura com base nos gastos registrados no período.' },
+            { title: 'Contas de Consumo', desc: 'Ideal para contas que variam mensalmente como energia elétrica, telefone, água e gás.' },
+            { title: 'Dívida Atual em Vermelho', desc: 'Para cartões de crédito, o sistema exibe a "Dívida Atual" em vermelho, que aumenta conforme novos gastos são registrados.' },
+            { title: 'Débito no Dia Programado', desc: 'No dia configurado, o sistema processa o débito da conta vinculada. Se não houver saldo, a despesa fica pendente em "Atrasadas".' },
+          ]
+        },
+        {
+          title: 'Como Configurar um Débito Automático Variável',
+          steps: [
+            { num: 1, title: 'Acesse a Aba', desc: 'Navegue até "Débitos Automáticos" na seção de despesas recorrentes.' },
+            { num: 2, title: 'Selecione o Tipo', desc: 'Escolha entre "Fatura de Cartão" ou "Conta de Consumo" para definir o tipo de débito.' },
+            { num: 3, title: 'Vincule Conta e Cartão', desc: 'Selecione a conta bancária de débito e, se for fatura, o cartão de crédito correspondente.' },
+            { num: 4, title: 'Configure o Dia', desc: 'Defina o dia do mês em que o débito deve ser processado automaticamente.' },
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Regra de Propriedade',
+            content: 'Importante: Você só pode configurar débitos automáticos para suas próprias contas e cartões. O sistema não permite misturar ativos de diferentes usuários. Cada pessoa gerencia apenas seus próprios débitos automáticos, garantindo a separação financeira individual mesmo no dashboard compartilhado.'
+          }
+        },
+        {
+          title: 'Comparação entre os Dois Modelos',
+          bullets: [
+            'Recorrentes com Débito Automático: Valor fixo, mesmo valor todo mês (ex: aluguel R$ 2.000)',
+            'Aba Débitos Automáticos: Valor variável, muda conforme consumo (ex: fatura do cartão, conta de luz)',
+            'Ambos debitam automaticamente da conta bancária no dia programado',
+            'Ambos geram alerta se não houver saldo suficiente na conta',
+            'Ambos movem para "Despesas Atrasadas" em caso de saldo insuficiente',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Gestão de Recorrências e Débitos',
+            content: 'Você pode editar valores, pausar temporariamente, ou cancelar permanentemente uma despesa recorrente. Para débitos automáticos variáveis, acompanhe a evolução da dívida do cartão em tempo real. O histórico de todas as ocorrências geradas fica disponível para consulta.'
           }
         }
       ]
@@ -1313,7 +1365,7 @@ const getTutorialContentEN = (): TutorialContent => {
     '5. Gestão de Contas Bancárias': '5. Bank Account Management',
     '6. Gestão de Cartões': '6. Card Management',
     '7. Despesas Mensais': '7. Monthly Expenses',
-    '8. Despesas Recorrentes': '8. Recurring Expenses',
+    '8. Despesas Recorrentes e Débitos Automáticos': '8. Recurring Expenses & Automatic Debits',
     '9. Fluxo de Caixa': '9. Cash Flow',
     '10. Controle de Investimentos': '10. Investment Management',
     '11. Sistema de Milhas': '11. Mileage System',
@@ -1337,7 +1389,7 @@ const getTutorialContentEN = (): TutorialContent => {
     'contas': 'Manage all your bank accounts in one place with precise balance control.',
     'cartoes': 'Complete control of your credit cards with invoice management, limits, and payments.',
     'despesas-mensais': 'Complete view of monthly expenses organized by status: current, future, and overdue.',
-    'despesas-recorrentes': 'Automatic management of fixed expenses that repeat monthly, such as subscriptions and bills.',
+    'despesas-recorrentes': 'Recurring expenses are fixed costs that repeat periodically. The platform offers two automation models: Automatic Debit within Recurring (for fixed amounts) and the Automatic Debits tab (for variable amounts like credit card bills).',
     'fluxo-caixa': 'Consolidated view of all inflows and outflows that affect your actual bank balance.',
     'investimentos': 'Track your investment portfolio with profitability and performance analysis.',
     'milhas': 'Track and optimize your airline miles with smart accumulation and redemption strategies. Connect your loyalty programs and sync balances automatically via Chrome extension.',
@@ -1385,7 +1437,7 @@ const getTutorialContentES = (): TutorialContent => {
     '5. Gestão de Contas Bancárias': '5. Gestión de Cuentas Bancarias',
     '6. Gestão de Cartões': '6. Gestión de Tarjetas',
     '7. Despesas Mensais': '7. Gastos Mensuales',
-    '8. Despesas Recorrentes': '8. Gastos Recurrentes',
+    '8. Despesas Recorrentes e Débitos Automáticos': '8. Gastos Recurrentes y Débitos Automáticos',
     '9. Fluxo de Caixa': '9. Flujo de Caja',
     '10. Controle de Investimentos': '10. Control de Inversiones',
     '11. Sistema de Milhas': '11. Sistema de Millas',
@@ -1409,7 +1461,7 @@ const getTutorialContentES = (): TutorialContent => {
     'contas': 'Gestiona todas tus cuentas bancarias en un solo lugar con control preciso de saldos.',
     'cartoes': 'Control completo de tus tarjetas de crédito con gestión de facturas, límites y pagos.',
     'despesas-mensais': 'Vista completa de los gastos mensuales organizados por estado: actuales, futuros y atrasados.',
-    'despesas-recorrentes': 'Gestión automática de gastos fijos que se repiten mensualmente, como suscripciones y facturas.',
+    'despesas-recorrentes': 'Los gastos recurrentes son costos fijos que se repiten periódicamente. La plataforma ofrece dos modelos de automatización: Débito Automático dentro de Recurrentes (para valores fijos) y la pestaña Débitos Automáticos (para valores variables como facturas de tarjeta).',
     'fluxo-caixa': 'Vista consolidada de todas las entradas y salidas que afectan tu saldo bancario real.',
     'investimentos': 'Acompaña tu cartera de inversiones con análisis de rentabilidad y rendimiento.',
     'milhas': 'Acompaña y optimiza tus millas aéreas con estrategias inteligentes de acumulación y canje. Conecta tus programas de fidelidad y sincroniza saldos automáticamente con la extensión de Chrome.',
