@@ -168,11 +168,14 @@ export const useTodayFutureExpenses = () => {
     fetchTodayExpenses();
   }, !!user);
 
+  const autoDebitWarnings = todayExpenses.filter(e => e.is_auto_debit && e.has_insufficient_funds);
+
   return {
     todayExpenses,
     loading,
     count: todayExpenses.length,
     totalAmount: todayExpenses.reduce((sum, expense) => sum + expense.amount, 0),
+    autoDebitWarnings,
     refresh: fetchTodayExpenses,
   };
 };
