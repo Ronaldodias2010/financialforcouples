@@ -4803,6 +4803,16 @@ const translations = {
     'recurring.progressLabel': 'Progress',
     'recurring.subcategory': 'Subcategory',
     'recurring.subcategoryPlaceholder': 'Select a subcategory (optional)',
+    'recurring.autoDebit': 'Automatic Debit',
+    'recurring.autoDebitDescription': 'Automatically debit from account on due date',
+    'recurring.autoDebitBadge': 'Auto Debit',
+    'recurring.account': 'Debit Account',
+    'recurring.accountPlaceholder': 'Select account',
+    'recurring.unique': 'One-time (no recurrence)',
+    'recurring.uniqueShort': 'One-time',
+    'recurring.autoDebitInsufficientFunds': 'Insufficient funds for automatic debit',
+    'recurring.autoDebitWarningTitle': 'Auto Debits with Insufficient Funds!',
+    'recurring.autoDebitWarningDescription': 'Some auto-debit expenses do not have enough balance in the linked account.',
     
     // Loans Tab
     'loans.tabRecurring': 'Recurring',
