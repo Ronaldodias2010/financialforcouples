@@ -450,6 +450,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     setAmount(expense.amount.toString());
     setCategoryId(expense.category_id || "");
     setCardId(expense.card_id || "");
+    setAccountId(expense.account_id || "");
+    setIsAutoDebit(expense.is_auto_debit || false);
     setFrequencyDays(expense.frequency_days.toString());
     const monthlyOptions = ['30', '90', '365'];
     setFrequencyType(
