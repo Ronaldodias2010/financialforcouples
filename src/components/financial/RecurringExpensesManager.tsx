@@ -198,6 +198,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     fetchRecurringExpenses();
     fetchCategories();
     fetchCards();
+    fetchAccounts();
   }, [viewMode]);
 
   useEffect(() => {
