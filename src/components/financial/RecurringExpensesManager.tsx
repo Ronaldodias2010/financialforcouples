@@ -164,6 +164,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<RecurringExpense | null>(null);
   const [activeTab, setActiveTab] = useState('recurring');
