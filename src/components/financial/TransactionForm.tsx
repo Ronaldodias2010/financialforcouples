@@ -986,7 +986,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           description,
           category_id: categoryId,
           subcategory: subcategory || null,
-          subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+          subcategory_id: getSafeSubcategoryId(),
           transaction_date: format(dueDate, 'yyyy-MM-dd'),
           purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
           payment_method: "credit_card",
