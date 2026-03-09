@@ -10,6 +10,7 @@ import { useSmartCardPayments } from "@/hooks/useSmartCardPayments";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, ArrowRight, TrendingDown, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface SmartCardPaymentFormProps {
   onPaymentSuccess: () => void;
