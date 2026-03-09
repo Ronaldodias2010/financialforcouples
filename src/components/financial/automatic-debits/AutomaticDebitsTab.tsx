@@ -278,9 +278,20 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
                 <Select value={cardId} onValueChange={setCardId}>
                   <SelectTrigger><SelectValue placeholder={t('autoDebit.selectCard')} /></SelectTrigger>
                   <SelectContent>
-                    {cards.filter(c => c.card_type === 'credit').map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
+                    {cards
+                      .filter(c => {
+                        if (c.card_type !== 'credit') return false;
+                        // Filter cards by selected owner to prevent mixing users
+                        if (ownerUser && coupleData) {
+                          const selectedUserId = ownerUser;
+                          // Match card's user_id with selected owner
+                          return c.user_id === selectedUserId;
+                        }
+                        return true;
+                      })
+                      .map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name} ({c.owner_user === 'user1' ? partnerNames.user1Name : partnerNames.user2Name})</SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
