@@ -260,19 +260,6 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
               <Input value={name} onChange={e => setName(e.target.value)} placeholder={t('autoDebit.namePlaceholder')} required />
             </div>
 
-            {coupleData && (
-              <div>
-                <Label>{t('autoDebit.owner')}</Label>
-                <Select value={ownerUser} onValueChange={(val) => { setOwnerUser(val); setCardId(''); }}>
-                  <SelectTrigger><SelectValue placeholder={t('autoDebit.selectOwner')} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={coupleData.user1_id}>{partnerNames.user1Name}</SelectItem>
-                    <SelectItem value={coupleData.user2_id}>{partnerNames.user2Name}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             <div>
               <Label>{t('autoDebit.type')}</Label>
               <Select value={debitType} onValueChange={setDebitType}>
@@ -294,16 +281,11 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
                     {cards
                       .filter(c => {
                         if (c.card_type !== 'credit') return false;
-                        // Filter cards by selected owner to prevent mixing users
-                        if (ownerUser && coupleData) {
-                          const selectedUserId = ownerUser;
-                          // Match card's user_id with selected owner
-                          return c.user_id === selectedUserId;
-                        }
-                        return true;
+                        // Rule: only show cards owned by the logged-in user
+                        return c.user_id === user?.id;
                       })
                       .map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.name} ({c.owner_user === 'user1' ? partnerNames.user1Name : partnerNames.user2Name})</SelectItem>
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
