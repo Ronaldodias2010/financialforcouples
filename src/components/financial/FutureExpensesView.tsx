@@ -397,6 +397,26 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
 
           const paymentAmount = await calculateCardPaymentAmount(card, user.id);
           if (paymentAmount > 0) {
+            // ⭐ Verificar se já houve pagamento deste cartão no mês do vencimento
+            const nextDueDateObj2 = parseLocalDate(nextDueDate);
+            const monthStart = format(new Date(nextDueDateObj2.getFullYear(), nextDueDateObj2.getMonth(), 1), 'yyyy-MM-dd');
+            const monthEnd = format(new Date(nextDueDateObj2.getFullYear(), nextDueDateObj2.getMonth() + 1, 0), 'yyyy-MM-dd');
+            
+            const { data: cardPayments } = await supabase
+              .from('card_payment_history')
+              .select('payment_amount')
+              .eq('card_id', card.id)
+              .gte('payment_date', monthStart)
+              .lte('payment_date', monthEnd);
+            
+            const totalPaidThisMonth = cardPayments?.reduce((sum: number, p: any) => sum + p.payment_amount, 0) || 0;
+            
+            if (totalPaidThisMonth > 0) {
+              // Já houve pagamento (parcial ou total) neste mês - não mostrar
+              console.log(`[FUTURE EXPENSES] Cartão ${card.name}: já pago R$ ${totalPaidThisMonth} no mês. Removendo de Despesas Futuras.`);
+              continue;
+            }
+
             const isPaid = await isExpensePaid(undefined, undefined, nextDueDate);
             expenses.push({
               id: `card-${card.id}`,
