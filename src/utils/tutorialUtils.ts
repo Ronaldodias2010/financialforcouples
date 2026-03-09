@@ -1437,7 +1437,7 @@ const getTutorialContentES = (): TutorialContent => {
     '5. Gestão de Contas Bancárias': '5. Gestión de Cuentas Bancarias',
     '6. Gestão de Cartões': '6. Gestión de Tarjetas',
     '7. Despesas Mensais': '7. Gastos Mensuales',
-    '8. Despesas Recorrentes': '8. Gastos Recurrentes',
+    '8. Despesas Recorrentes e Débitos Automáticos': '8. Gastos Recurrentes y Débitos Automáticos',
     '9. Fluxo de Caixa': '9. Flujo de Caja',
     '10. Controle de Investimentos': '10. Control de Inversiones',
     '11. Sistema de Milhas': '11. Sistema de Millas',
