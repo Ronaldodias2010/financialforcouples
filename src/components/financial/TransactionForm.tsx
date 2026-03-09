@@ -954,7 +954,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               description: `${description} (${installmentNumber}/${totalInstallments})`,
               category_id: categoryId,
               subcategory: subcategory || null,
-              subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+              subcategory_id: getSafeSubcategoryId(),
               // Todas as parcelas usam a data de vencimento como transaction_date
               transaction_date: format(dueDate, 'yyyy-MM-dd'),
               due_date: format(dueDate, 'yyyy-MM-dd'),
