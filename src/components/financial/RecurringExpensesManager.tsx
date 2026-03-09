@@ -20,6 +20,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName } from "@/utils/categoryTranslation";
 import { parseLocalDate } from "@/utils/date";
 import { LoansTab } from "./loans/LoansTab";
+import { AutomaticDebitsTab } from "./automatic-debits/AutomaticDebitsTab";
 
 // Helper to format date for DB without timezone issues
 const formatDateForDB = (date: Date): string => {
