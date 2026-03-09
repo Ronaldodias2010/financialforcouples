@@ -328,8 +328,8 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
                 <Select value={ownerUser} onValueChange={setOwnerUser}>
                   <SelectTrigger><SelectValue placeholder={t('autoDebit.selectOwner')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={coupleData.user1_id}>{user1Name}</SelectItem>
-                    <SelectItem value={coupleData.user2_id}>{user2Name}</SelectItem>
+                    <SelectItem value={coupleData.user1_id}>{partnerNames.user1Name}</SelectItem>
+                    <SelectItem value={coupleData.user2_id}>{partnerNames.user2Name}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
