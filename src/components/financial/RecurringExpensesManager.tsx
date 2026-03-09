@@ -410,6 +410,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             card_id: cardId || null,
+            account_id: accountId || null,
+            is_auto_debit: isAutoDebit,
             frequency_days: parseInt(frequencyDays),
             frequency_type: frequencyType,
             next_due_date: formatDateForDB(nextDueDate),
