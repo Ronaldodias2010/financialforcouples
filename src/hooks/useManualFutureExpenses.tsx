@@ -150,25 +150,132 @@ export const useManualFutureExpenses = () => {
       
       console.log('🔍 [payManualExpense] Looking for expense:', cleanExpenseId, 'in userIds:', userIds);
       
+      // ⭐ FIRST: Try to find in manual_future_expenses
       const { data: manualExpense, error: fetchError } = await supabase
         .from('manual_future_expenses')
         .select('*')
         .eq('id', cleanExpenseId)
         .in('user_id', userIds)
         .eq('is_paid', false)
-        .single();
+        .maybeSingle();
 
-      if (fetchError || !manualExpense) {
-        console.error('Error fetching manual future expense:', fetchError, 'expenseId:', cleanExpenseId);
+      // ⭐ FALLBACK: If not found in manual_future_expenses, check pending transactions
+      // This handles the case where fetchManualFutureExpenses returns transaction IDs
+      if (!manualExpense) {
+        console.log('🔄 [payManualExpense] Not found in manual_future_expenses, checking pending transactions...');
+        
+        const { data: pendingTransaction, error: txError } = await supabase
+          .from('transactions')
+          .select('*, category:categories(id, name, color)')
+          .eq('id', cleanExpenseId)
+          .in('user_id', userIds)
+          .eq('status', 'pending')
+          .eq('type', 'expense')
+          .maybeSingle();
+
+        if (txError || !pendingTransaction) {
+          console.error('Error fetching pending transaction:', txError, 'expenseId:', cleanExpenseId);
+          toast({
+            title: "Erro",
+            description: "Despesa futura não encontrada",
+            variant: "destructive",
+          });
+          return null;
+        }
+
+        // ⭐ Update the pending transaction directly to completed
+        console.log('✅ [payManualExpense] Found pending transaction:', pendingTransaction.description);
+        
+        const today = new Date();
+        const dueDate = new Date(pendingTransaction.due_date || pendingTransaction.transaction_date);
+        const daysOverdue = dueDate < today ? Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+        const isPaidLate = daysOverdue > 0;
+        const interestAmount = params.interestAmount || 0;
+        const totalAmount = pendingTransaction.amount + interestAmount;
+        const paymentDate = params.paymentDate || new Date().toISOString().split('T')[0];
+        
+        let finalDescription = pendingTransaction.description;
+        if (interestAmount > 0) {
+          finalDescription = `${pendingTransaction.description} (+ juros R$ ${interestAmount.toFixed(2)})`;
+        } else if (isPaidLate) {
+          finalDescription = `${pendingTransaction.description} (pago com ${daysOverdue} dia(s) de atraso)`;
+        }
+
+        const finalCategoryId = params.categoryId || pendingTransaction.category_id;
+
+        // Update the pending transaction to completed
+        const { data: updatedTx, error: updateTxError } = await supabase
+          .from('transactions')
+          .update({
+            status: 'completed',
+            amount: totalAmount,
+            description: finalDescription,
+            transaction_date: paymentDate,
+            purchase_date: paymentDate,
+            category_id: finalCategoryId,
+            account_id: params.accountId || pendingTransaction.account_id,
+            card_id: params.cardId || pendingTransaction.card_id,
+            payment_method: params.paymentMethod || pendingTransaction.payment_method,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', cleanExpenseId)
+          .in('user_id', userIds)
+          .select()
+          .single();
+
+        if (updateTxError) {
+          console.error('Error updating pending transaction:', updateTxError);
+          toast({
+            title: "Erro",
+            description: "Erro ao processar pagamento",
+            variant: "destructive",
+          });
+          return null;
+        }
+
+        // Also mark any linked manual_future_expenses as paid
+        await supabase
+          .from('manual_future_expenses')
+          .update({
+            is_paid: true,
+            paid_at: new Date().toISOString(),
+            transaction_id: cleanExpenseId,
+            updated_at: new Date().toISOString(),
+          })
+          .in('user_id', userIds)
+          .eq('is_paid', false)
+          .ilike('description', `%${pendingTransaction.description}%`);
+
+        // Deduct from account if provided and not already handled
+        if (params.accountId) {
+          await supabase
+            .from('accounts')
+            .update({ 
+              balance: supabase.rpc ? undefined : undefined, // handled by trigger
+            })
+            .eq('id', params.accountId);
+        }
+
+        await Promise.all([
+          invalidateTransactions(),
+          invalidateFutureExpenses(),
+          invalidateFinancialSummary(),
+          invalidateOverdueExpenses(),
+          invalidateAccounts(),
+        ]);
+
         toast({
-          title: "Erro",
-          description: "Despesa futura não encontrada",
-          variant: "destructive",
+          title: "Pagamento processado",
+          description: isPaidLate 
+            ? `Despesa "${pendingTransaction.description}" foi paga com ${daysOverdue} dia(s) de atraso.`
+            : "Despesa futura foi paga e adicionada às despesas mensais",
+          variant: "default",
         });
-        return null;
+
+        return updatedTx;
       }
-      
-      console.log('✅ [payManualExpense] Found expense:', manualExpense.description);
+
+      console.log('✅ [payManualExpense] Found expense in manual_future_expenses:', manualExpense.description);
 
       // Calculate if payment is late
       const today = new Date();
