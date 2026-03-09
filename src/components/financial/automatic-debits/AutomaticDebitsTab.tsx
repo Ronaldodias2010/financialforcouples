@@ -260,6 +260,19 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
               <Input value={name} onChange={e => setName(e.target.value)} placeholder={t('autoDebit.namePlaceholder')} required />
             </div>
 
+            {coupleData && (
+              <div>
+                <Label>{t('autoDebit.owner')}</Label>
+                <Select value={ownerUser} onValueChange={(val) => { setOwnerUser(val); setCardId(''); }}>
+                  <SelectTrigger><SelectValue placeholder={t('autoDebit.selectOwner')} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={coupleData.user1_id}>{partnerNames.user1Name}</SelectItem>
+                    <SelectItem value={coupleData.user2_id}>{partnerNames.user2Name}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div>
               <Label>{t('autoDebit.type')}</Label>
               <Select value={debitType} onValueChange={setDebitType}>
