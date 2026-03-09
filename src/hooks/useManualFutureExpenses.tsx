@@ -365,6 +365,28 @@ export const useManualFutureExpenses = () => {
         console.log('✅ [payManualExpense] Successfully marked as paid:', updateData);
       }
 
+      // ⭐ Also update any linked pending transaction to 'completed' so it disappears from Future Expenses
+      // The manual_future_expenses entry may have been mirrored from a pending transaction
+      if (manualExpense.transaction_id) {
+        await supabase
+          .from('transactions')
+          .update({ status: 'completed', updated_at: new Date().toISOString() })
+          .eq('id', manualExpense.transaction_id)
+          .eq('status', 'pending')
+          .in('user_id', userIds);
+      }
+      // Also try matching by description for cases without direct link
+      await supabase
+        .from('transactions')
+        .update({ status: 'completed', updated_at: new Date().toISOString() })
+        .eq('status', 'pending')
+        .eq('type', 'expense')
+        .in('user_id', userIds)
+        .eq('description', manualExpense.description)
+        .eq('amount', manualExpense.amount)
+        .gte('due_date', manualExpense.due_date)
+        .lte('due_date', manualExpense.due_date);
+
       // ⭐ CRITICAL: Invalidate React Query cache to update dashboard immediately
       await Promise.all([
         invalidateTransactions(),
