@@ -3157,6 +3157,7 @@ export type Database = {
           frequency_type: string | null
           id: string
           is_active: boolean | null
+          is_auto_debit: boolean | null
           is_completed: boolean | null
           is_overdue: boolean | null
           name: string
@@ -3181,6 +3182,7 @@ export type Database = {
           frequency_type?: string | null
           id?: string
           is_active?: boolean | null
+          is_auto_debit?: boolean | null
           is_completed?: boolean | null
           is_overdue?: boolean | null
           name: string
@@ -3205,6 +3207,7 @@ export type Database = {
           frequency_type?: string | null
           id?: string
           is_active?: boolean | null
+          is_auto_debit?: boolean | null
           is_completed?: boolean | null
           is_overdue?: boolean | null
           name?: string
