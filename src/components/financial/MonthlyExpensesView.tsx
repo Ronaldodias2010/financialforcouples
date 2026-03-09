@@ -315,11 +315,9 @@ const fetchCategories = async () => {
       })));
       
       let filteredData = (data || []).filter(transaction => {
-        // Excluir transferências entre contas próprias, MAS manter pagamentos de cartão
+        // Excluir transferências entre contas próprias (incluindo pagamentos de cartão que são transferências internas)
         if (transaction.payment_method === 'account_transfer') {
-          const desc = (transaction.description || '').toLowerCase();
-          // Manter se for pagamento de cartão (contém "pagamento de cartão" ou "card payment")
-          return desc.includes('pagamento de cartão') || desc.includes('card payment');
+          return false;
         }
         return true;
       });

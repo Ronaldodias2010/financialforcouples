@@ -10,6 +10,7 @@ import { useSmartCardPayments } from "@/hooks/useSmartCardPayments";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, ArrowRight, TrendingDown, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface SmartCardPaymentFormProps {
   onPaymentSuccess: () => void;
@@ -34,6 +35,7 @@ interface CardInfo {
 export const SmartCardPaymentForm = ({ onPaymentSuccess }: SmartCardPaymentFormProps) => {
   const { user } = useAuth();
   const { processSmartCardPayment, getCardsWithPendingBalance, getCardPaymentStatus, isProcessing } = useSmartCardPayments();
+  const { toast } = useToast();
   
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [cards, setCards] = useState<CardInfo[]>([]);
@@ -109,6 +111,15 @@ export const SmartCardPaymentForm = ({ onPaymentSuccess }: SmartCardPaymentFormP
       
       // Refresh cards list to update balances
       await fetchCardsWithBalance();
+
+      // Lembrete ao usuário sobre a natureza da transação
+      setTimeout(() => {
+        toast({
+          title: "ℹ️ Lembrete",
+          description: "O pagamento de cartão de crédito é registrado como uma transferência interna entre contas. Por isso, ele não aparecerá na lista de despesas pagas, mas pode ser consultado no histórico de pagamentos do cartão.",
+          duration: 8000,
+        });
+      }, 1500);
       
       onPaymentSuccess();
     }
