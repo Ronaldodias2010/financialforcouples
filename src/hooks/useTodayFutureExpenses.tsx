@@ -15,6 +15,11 @@ export interface TodayFutureExpense {
   user_id: string;
   source_type: 'manual' | 'recurring';
   source_id: string;
+  is_auto_debit?: boolean;
+  account_id?: string;
+  account_name?: string;
+  account_balance?: number;
+  has_insufficient_funds?: boolean;
 }
 
 export const useTodayFutureExpenses = () => {
