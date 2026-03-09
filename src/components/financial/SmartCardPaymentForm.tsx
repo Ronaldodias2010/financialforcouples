@@ -35,6 +35,7 @@ interface CardInfo {
 export const SmartCardPaymentForm = ({ onPaymentSuccess }: SmartCardPaymentFormProps) => {
   const { user } = useAuth();
   const { processSmartCardPayment, getCardsWithPendingBalance, getCardPaymentStatus, isProcessing } = useSmartCardPayments();
+  const { toast } = useToast();
   
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [cards, setCards] = useState<CardInfo[]>([]);
