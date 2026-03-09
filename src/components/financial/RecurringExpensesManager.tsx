@@ -332,6 +332,21 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('id, name, balance, currency, owner_user')
+        .is('deleted_at', null)
+        .order('name');
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !amount) return;
