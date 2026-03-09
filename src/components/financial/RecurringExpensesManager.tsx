@@ -527,6 +527,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     setSubcategoryId("");
     setSubcategories([]);
     setCardId("");
+    setAccountId("");
+    setIsAutoDebit(false);
     setFrequencyDays("30");
     setFrequencyType('months');
     setNextDueDate(new Date());
