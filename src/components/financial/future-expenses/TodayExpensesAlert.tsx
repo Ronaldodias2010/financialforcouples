@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CreditCard, DollarSign, X, Zap, AlertTriangle } from 'lucide-react';
+import { AlertCircle, CreditCard, DollarSign, X, Zap, AlertTrianglet';
 import { useTodayFutureExpenses } from '@/hooks/useTodayFutureExpenses';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PayFutureExpenseModal } from '../PayFutureExpenseModal';
@@ -13,7 +13,7 @@ interface TodayExpensesAlertProps {
 
 export const TodayExpensesAlert = ({ viewMode }: TodayExpensesAlertProps) => {
   const { t } = useLanguage();
-  const { todayExpenses, count, totalAmou, autoDebitWarningsnt, loading, refresh } = useTodayFutureExpenses();
+  const { todayExpenses, count, totalAmou, autoDebitWarningsnnt, autoDebitWarnings = useTodayFutureExpenses();
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [isDismissed, setIsDismissed] = useState(false);
