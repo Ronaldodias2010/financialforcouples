@@ -10,7 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, CalendarIcon, RotateCcw, Landmark } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, Edit, CalendarIcon, RotateCcw, Landmark, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
