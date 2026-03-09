@@ -360,7 +360,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
         const totalInstallments = contractDuration ? 
           Math.ceil((parseInt(contractDuration) * 30) / parseInt(frequencyDays)) : null;
           
-        const { error } = await supabase
+         const { error } = await supabase
           .from('recurring_expenses')
           .update({
             name,
@@ -368,6 +368,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             card_id: cardId || null,
+            account_id: accountId || null,
+            is_auto_debit: isAutoDebit,
             frequency_days: parseInt(frequencyDays),
             frequency_type: frequencyType,
             next_due_date: formatDateForDB(nextDueDate),
