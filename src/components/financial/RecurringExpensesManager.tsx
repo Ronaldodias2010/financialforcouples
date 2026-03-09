@@ -179,6 +179,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [frequencyType, setFrequencyType] = useState<'days' | 'months'>('months');
   const [nextDueDate, setNextDueDate] = useState<Date>(new Date());
   const [contractDuration, setContractDuration] = useState("");
+  const [isAutoDebit, setIsAutoDebit] = useState(false);
+  const [accountId, setAccountId] = useState("");
   
   const { toast } = useToast();
   const { names } = usePartnerNames();
