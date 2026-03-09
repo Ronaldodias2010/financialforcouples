@@ -13,7 +13,7 @@ interface TodayExpensesAlertProps {
 
 export const TodayExpensesAlert = ({ viewMode }: TodayExpensesAlertProps) => {
   const { t } = useLanguage();
-  const { todayExpenses, count, totalAmou, autoDebitWarningsnnt, autoDebitWarnings = useTodayFutureExpenses();
+  const { todayExpenses, count, totalAmount, autoDebitWarnings, loading, refresh } = useTodayFutureExpenses();
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [isDismissed, setIsDismissed] = useState(false);
