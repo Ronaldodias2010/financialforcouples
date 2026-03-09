@@ -1389,7 +1389,7 @@ const getTutorialContentEN = (): TutorialContent => {
     'contas': 'Manage all your bank accounts in one place with precise balance control.',
     'cartoes': 'Complete control of your credit cards with invoice management, limits, and payments.',
     'despesas-mensais': 'Complete view of monthly expenses organized by status: current, future, and overdue.',
-    'despesas-recorrentes': 'Automatic management of fixed expenses that repeat monthly, such as subscriptions and bills.',
+    'despesas-recorrentes': 'Recurring expenses are fixed costs that repeat periodically. The platform offers two automation models: Automatic Debit within Recurring (for fixed amounts) and the Automatic Debits tab (for variable amounts like credit card bills).',
     'fluxo-caixa': 'Consolidated view of all inflows and outflows that affect your actual bank balance.',
     'investimentos': 'Track your investment portfolio with profitability and performance analysis.',
     'milhas': 'Track and optimize your airline miles with smart accumulation and redemption strategies. Connect your loyalty programs and sync balances automatically via Chrome extension.',
