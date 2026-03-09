@@ -20,6 +20,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { translateCategoryName } from "@/utils/categoryTranslation";
 import { parseLocalDate } from "@/utils/date";
 import { LoansTab } from "./loans/LoansTab";
+import { AutomaticDebitsTab } from "./automatic-debits/AutomaticDebitsTab";
 
 // Helper to format date for DB without timezone issues
 const formatDateForDB = (date: Date): string => {
@@ -549,7 +550,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="recurring">
             <RotateCcw className="h-4 w-4 mr-2" />
             {t('loans.tabRecurring')}
@@ -558,10 +559,18 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
             <Landmark className="h-4 w-4 mr-2" />
             {t('loans.tabLoans')}
           </TabsTrigger>
+          <TabsTrigger value="auto_debits">
+            <Zap className="h-4 w-4 mr-2" />
+            {t('autoDebit.tabTitle')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="debts" className="mt-4">
           <LoansTab viewMode={viewMode} />
+        </TabsContent>
+
+        <TabsContent value="auto_debits" className="mt-4">
+          <AutomaticDebitsTab viewMode={viewMode} />
         </TabsContent>
 
         <TabsContent value="recurring" className="mt-4">

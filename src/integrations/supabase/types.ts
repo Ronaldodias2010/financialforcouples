@@ -269,6 +269,103 @@ export type Database = {
         }
         Relationships: []
       }
+      automatic_debits: {
+        Row: {
+          account_id: string
+          card_id: string | null
+          category_id: string | null
+          created_at: string
+          debit_day: number
+          debit_type: string
+          description: string | null
+          fixed_amount: number | null
+          id: string
+          is_active: boolean
+          last_processed_date: string | null
+          name: string
+          owner_user: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          card_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          debit_day: number
+          debit_type?: string
+          description?: string | null
+          fixed_amount?: number | null
+          id?: string
+          is_active?: boolean
+          last_processed_date?: string | null
+          name: string
+          owner_user?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          card_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          debit_day?: number
+          debit_type?: string
+          description?: string | null
+          fixed_amount?: number | null
+          id?: string
+          is_active?: boolean
+          last_processed_date?: string | null
+          name?: string
+          owner_user?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automatic_debits_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automatic_debits_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "active_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automatic_debits_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "active_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automatic_debits_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automatic_debits_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "active_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automatic_debits_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_mileage_rules: {
         Row: {
           amount_threshold: number
@@ -5645,6 +5742,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
+      process_automatic_debits_daily: { Args: never; Returns: undefined }
       process_card_payment: {
         Args: {
           p_account_id?: string
