@@ -124,29 +124,10 @@ export const useSmartCardPayments = () => {
         throw new Error(paymentError.message);
       }
 
-      // 3. Verificar se existe gasto futuro relacionado ao nome do cartão e abater o valor
-      const futureExpense = await findFutureExpenseForCard(cardData.name);
-      if (futureExpense) {
-        const newAmount = Math.max(0, futureExpense.amount - params.paymentAmount);
-        
-        if (newAmount === 0) {
-          // Marcar como pago se o valor foi totalmente abatido
-          await supabase
-            .from('manual_future_expenses')
-            .update({ 
-              is_paid: true, 
-              paid_at: new Date().toISOString(),
-              amount: 0 
-            })
-            .eq('id', futureExpense.id);
-        } else {
-          // Reduzir o valor do gasto futuro
-          await supabase
-            .from('manual_future_expenses')
-            .update({ amount: newAmount })
-            .eq('id', futureExpense.id);
-        }
-      }
+      // 3. Reconciliação com despesas futuras é feita automaticamente no banco (process_card_payment)
+      const reconciled = paymentResult && typeof paymentResult === 'object' && 'reconciled_future_expenses' in paymentResult
+        ? (paymentResult as any).reconciled_future_expenses
+        : 0;
 
       // 4. Determinar status do cartão
       const remainingBalance = cardData.current_balance - params.paymentAmount;
