@@ -125,6 +125,14 @@ export const TransactionForm = ({ onSubmit, refreshKey }: TransactionFormProps) 
   const [subcategory, setSubcategory] = useState(""); // Kept for backward compatibility
   const [subcategoryId, setSubcategoryId] = useState<string>(""); // New: linked subcategory
   const [availableSubcategories, setAvailableSubcategories] = useState<Subcategory[]>([]);
+
+  // Helper: only return subcategory_id if it's from the actual subcategories table (FK-safe)
+  const getSafeSubcategoryId = (): string | null => {
+    if (!subcategoryId || subcategoryId === 'none') return null;
+    const selected = availableSubcategories.find(s => s.id === subcategoryId);
+    if (selected?.source === 'subcategory') return subcategoryId;
+    return null; // system_tag or user_tag IDs are NOT valid for the FK
+  };
   const [transactionDate, setTransactionDate] = useState<Date>(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Ensure we're using midnight local time
