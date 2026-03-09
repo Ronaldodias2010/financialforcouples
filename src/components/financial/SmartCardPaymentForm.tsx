@@ -109,6 +109,15 @@ export const SmartCardPaymentForm = ({ onPaymentSuccess }: SmartCardPaymentFormP
       
       // Refresh cards list to update balances
       await fetchCardsWithBalance();
+
+      // Lembrete ao usuário sobre a natureza da transação
+      setTimeout(() => {
+        toast({
+          title: "ℹ️ Lembrete",
+          description: "O pagamento de cartão de crédito é registrado como uma transferência interna entre contas. Por isso, ele não aparecerá na lista de despesas pagas, mas pode ser consultado no histórico de pagamentos do cartão.",
+          duration: 8000,
+        });
+      }, 1500);
       
       onPaymentSuccess();
     }
