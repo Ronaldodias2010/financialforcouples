@@ -362,9 +362,41 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
           (viewMode === "user2" && card.owner_user === 'user2');
           
         if (shouldInclude && card.due_date) {
+          // ⭐ Verificar se a fatura já fechou antes de mostrar
+          // Se o cartão tem closing_date, só mostrar o pagamento após a fatura fechar
+          const closingDay = card.closing_date || card.due_date;
+          const today = new Date();
+          const currentDay = today.getDate();
+          const currentMonth = today.getMonth();
+          const currentYear = today.getFullYear();
+          
+          // Determinar se a fatura do próximo vencimento já fechou
+          const nextDueDate = getNextDueDate(card.due_date);
+          const nextDueDateObj = parseLocalDate(nextDueDate);
+          const nextDueMonth = nextDueDateObj.getMonth();
+          const nextDueYear = nextDueDateObj.getFullYear();
+          
+          // A fatura fecha no mês ANTERIOR ao vencimento, no dia closing_date
+          // Ex: vencimento dia 7 de abril, fechamento dia 1 de abril (ou março, depende)
+          let closingDate: Date;
+          if (closingDay < card.due_date) {
+            // Fechamento é no mesmo mês do vencimento (ex: fecha dia 1, vence dia 7)
+            closingDate = new Date(nextDueYear, nextDueMonth, closingDay);
+          } else {
+            // Fechamento é no mês anterior ao vencimento (ex: fecha dia 25, vence dia 5)
+            closingDate = new Date(nextDueYear, nextDueMonth - 1, closingDay);
+          }
+          
+          const isBillClosed = today >= closingDate;
+          
+          if (!isBillClosed) {
+            // Fatura ainda não fechou - não mostrar em Despesas Futuras
+            console.log(`[FUTURE EXPENSES] Cartão ${card.name}: fatura fecha em ${format(closingDate, 'dd/MM')}, ainda não fechou. Ignorando.`);
+            continue;
+          }
+
           const paymentAmount = await calculateCardPaymentAmount(card, user.id);
           if (paymentAmount > 0) {
-            const nextDueDate = getNextDueDate(card.due_date);
             const isPaid = await isExpensePaid(undefined, undefined, nextDueDate);
             expenses.push({
               id: `card-${card.id}`,
@@ -375,7 +407,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
               category: t('transactionForm.creditCard'),
               card_name: card.name,
               owner_user: card.owner_user,
-              currency: card.currency as CurrencyCode, // Add card's currency
+              currency: card.currency as CurrencyCode,
               cardPaymentInfo: { 
                 cardId: card.id, 
                 cardName: card.name,
@@ -383,7 +415,7 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                 allowsPartialPayment: card.allows_partial_payment
               },
               isPaid,
-              allowsPayment: true, // Cartões de crédito PODEM ser pagos
+              allowsPayment: true,
             });
           }
         }
