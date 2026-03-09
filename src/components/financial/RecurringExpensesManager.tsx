@@ -654,20 +654,56 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
                     ))}
                   </SelectContent>
                 </Select>
+               </div>
+
+              {/* Auto Debit Toggle */}
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-amber-500" />
+                    {t('recurring.autoDebit')}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('recurring.autoDebitDescription')}
+                  </p>
+                </div>
+                <Switch
+                  checked={isAutoDebit}
+                  onCheckedChange={setIsAutoDebit}
+                />
               </div>
+
+              {/* Account selector - shown when auto-debit is on */}
+              {isAutoDebit && (
+                <div>
+                  <Label>{t('recurring.account')}</Label>
+                  <Select value={accountId} onValueChange={setAccountId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('recurring.accountPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name} ({acc.currency}) • {getOwnerName(acc.owner_user)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
                 <Label>{t('recurring.frequency')}</Label>
                 <Select value={frequencyDays} onValueChange={(value) => {
                   setFrequencyDays(value);
-                  // ⭐ Automaticamente definir frequency_type baseado na seleção
-                  const monthlyOptions = ['30', '90', '365'];
+                  const monthlyOptions = ['30', '90', '365', '0'];
                   setFrequencyType(monthlyOptions.includes(value) ? 'months' : 'days');
                 }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="0">{t('recurring.unique')}</SelectItem>
                     <SelectItem value="7">{t('recurring.weekly')}</SelectItem>
                     <SelectItem value="30">{t('recurring.monthly')}</SelectItem>
                     <SelectItem value="90">{t('recurring.quarterly')}</SelectItem>
