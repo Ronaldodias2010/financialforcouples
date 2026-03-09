@@ -1461,7 +1461,7 @@ const getTutorialContentES = (): TutorialContent => {
     'contas': 'Gestiona todas tus cuentas bancarias en un solo lugar con control preciso de saldos.',
     'cartoes': 'Control completo de tus tarjetas de crédito con gestión de facturas, límites y pagos.',
     'despesas-mensais': 'Vista completa de los gastos mensuales organizados por estado: actuales, futuros y atrasados.',
-    'despesas-recorrentes': 'Gestión automática de gastos fijos que se repiten mensualmente, como suscripciones y facturas.',
+    'despesas-recorrentes': 'Los gastos recurrentes son costos fijos que se repiten periódicamente. La plataforma ofrece dos modelos de automatización: Débito Automático dentro de Recurrentes (para valores fijos) y la pestaña Débitos Automáticos (para valores variables como facturas de tarjeta).',
     'fluxo-caixa': 'Vista consolidada de todas las entradas y salidas que afectan tu saldo bancario real.',
     'investimentos': 'Acompaña tu cartera de inversiones con análisis de rentabilidad y rendimiento.',
     'milhas': 'Acompaña y optimiza tus millas aéreas con estrategias inteligentes de acumulación y canje. Conecta tus programas de fidelidad y sincroniza saldos automáticamente con la extensión de Chrome.',
