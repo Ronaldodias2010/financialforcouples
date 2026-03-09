@@ -268,9 +268,44 @@ export const useFutureExpensePayments = () => {
         return data?.status === 'completed';
       }
 
-      // Only check transactions table for recurring expenses
+      // Check manual_future_expenses for recurring expense payments
       if (recurringExpenseId) {
-        // Recurring expenses are no longer tracked in future_expense_payments
+        // Check if there's a paid manual_future_expense for this recurring expense and due date
+        let query = supabase
+          .from('manual_future_expenses')
+          .select('id, is_paid')
+          .eq('recurring_expense_id', recurringExpenseId)
+          .eq('is_paid', true);
+        
+        if (originalDueDate) {
+          query = query.eq('due_date', originalDueDate);
+        }
+
+        const { data: paidExpense } = await query.maybeSingle();
+        if (paidExpense) return true;
+
+        // Also check if a completed transaction exists with matching description and date
+        if (originalDueDate) {
+          const { data: recurringData } = await supabase
+            .from('recurring_expenses')
+            .select('name')
+            .eq('id', recurringExpenseId)
+            .single();
+
+          if (recurringData) {
+            const { data: completedTx } = await supabase
+              .from('transactions')
+              .select('id')
+              .eq('type', 'expense')
+              .eq('status', 'completed')
+              .ilike('description', `%${recurringData.name}%`)
+              .gte('purchase_date', originalDueDate)
+              .limit(1);
+
+            if (completedTx && completedTx.length > 0) return true;
+          }
+        }
+
         return false;
       }
 
