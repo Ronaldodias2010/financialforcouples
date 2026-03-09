@@ -143,7 +143,7 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
       debit_day: parseInt(debitDay),
       fixed_amount: fixedAmount ? parseFloat(fixedAmount) : null,
       description: description || null,
-      owner_user: ownerUser || null,
+      owner_user: user.id, // Rule: auto-debits always belong to the logged-in user
       is_active: isActive,
     };
 
