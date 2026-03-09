@@ -10,7 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, CalendarIcon, RotateCcw, Landmark } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, Edit, CalendarIcon, RotateCcw, Landmark, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -115,10 +116,12 @@ interface RecurringExpense {
   category_id?: string;
   subcategory_id?: string;
   card_id?: string;
+  account_id?: string;
   frequency_days: number;
   frequency_type?: 'days' | 'months';
   next_due_date: Date;
   is_active: boolean;
+  is_auto_debit?: boolean;
   owner_user?: string;
   contract_duration_months?: number;
   created_at: string;
@@ -142,6 +145,14 @@ interface Card {
   owner_user?: string;
 }
 
+interface Account {
+  id: string;
+  name: string;
+  balance: number;
+  currency: string;
+  owner_user?: string;
+}
+
 interface RecurringExpensesManagerProps {
   viewMode: "both" | "user1" | "user2";
 }
@@ -153,6 +164,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<RecurringExpense | null>(null);
   const [activeTab, setActiveTab] = useState('recurring');
@@ -167,6 +179,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   const [frequencyType, setFrequencyType] = useState<'days' | 'months'>('months');
   const [nextDueDate, setNextDueDate] = useState<Date>(new Date());
   const [contractDuration, setContractDuration] = useState("");
+  const [isAutoDebit, setIsAutoDebit] = useState(false);
+  const [accountId, setAccountId] = useState("");
   
   const { toast } = useToast();
   const { names } = usePartnerNames();
@@ -184,6 +198,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     fetchRecurringExpenses();
     fetchCategories();
     fetchCards();
+    fetchAccounts();
   }, [viewMode]);
 
   useEffect(() => {
@@ -317,6 +332,21 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('id, name, balance, currency, owner_user')
+        .is('deleted_at', null)
+        .order('name');
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !amount) return;
@@ -330,7 +360,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
         const totalInstallments = contractDuration ? 
           Math.ceil((parseInt(contractDuration) * 30) / parseInt(frequencyDays)) : null;
           
-        const { error } = await supabase
+         const { error } = await supabase
           .from('recurring_expenses')
           .update({
             name,
@@ -338,6 +368,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             card_id: cardId || null,
+            account_id: accountId || null,
+            is_auto_debit: isAutoDebit,
             frequency_days: parseInt(frequencyDays),
             frequency_type: frequencyType,
             next_due_date: formatDateForDB(nextDueDate),
@@ -378,6 +410,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             card_id: cardId || null,
+            account_id: accountId || null,
+            is_auto_debit: isAutoDebit,
             frequency_days: parseInt(frequencyDays),
             frequency_type: frequencyType,
             next_due_date: formatDateForDB(nextDueDate),
@@ -416,6 +450,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     setAmount(expense.amount.toString());
     setCategoryId(expense.category_id || "");
     setCardId(expense.card_id || "");
+    setAccountId(expense.account_id || "");
+    setIsAutoDebit(expense.is_auto_debit || false);
     setFrequencyDays(expense.frequency_days.toString());
     const monthlyOptions = ['30', '90', '365'];
     setFrequencyType(
@@ -491,6 +527,8 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
     setSubcategoryId("");
     setSubcategories([]);
     setCardId("");
+    setAccountId("");
+    setIsAutoDebit(false);
     setFrequencyDays("30");
     setFrequencyType('months');
     setNextDueDate(new Date());
@@ -499,6 +537,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   };
 
   const getFrequencyLabel = (days: number) => {
+    if (days === 0) return t('recurring.uniqueShort');
     if (days === 7) return t('recurring.weeklyShort');
     if (days === 30) return t('recurring.monthlyShort');
     if (days === 90) return t('recurring.quarterlyShort');
@@ -616,20 +655,56 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
                     ))}
                   </SelectContent>
                 </Select>
+               </div>
+
+              {/* Auto Debit Toggle */}
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-amber-500" />
+                    {t('recurring.autoDebit')}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('recurring.autoDebitDescription')}
+                  </p>
+                </div>
+                <Switch
+                  checked={isAutoDebit}
+                  onCheckedChange={setIsAutoDebit}
+                />
               </div>
+
+              {/* Account selector - shown when auto-debit is on */}
+              {isAutoDebit && (
+                <div>
+                  <Label>{t('recurring.account')}</Label>
+                  <Select value={accountId} onValueChange={setAccountId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('recurring.accountPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name} ({acc.currency}) • {getOwnerName(acc.owner_user)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
                 <Label>{t('recurring.frequency')}</Label>
                 <Select value={frequencyDays} onValueChange={(value) => {
                   setFrequencyDays(value);
-                  // ⭐ Automaticamente definir frequency_type baseado na seleção
-                  const monthlyOptions = ['30', '90', '365'];
+                  const monthlyOptions = ['30', '90', '365', '0'];
                   setFrequencyType(monthlyOptions.includes(value) ? 'months' : 'days');
                 }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="0">{t('recurring.unique')}</SelectItem>
                     <SelectItem value="7">{t('recurring.weekly')}</SelectItem>
                     <SelectItem value="30">{t('recurring.monthly')}</SelectItem>
                     <SelectItem value="90">{t('recurring.quarterly')}</SelectItem>
@@ -718,6 +793,12 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
                     )}>
                       {expense.is_active ? t('recurring.active') : t('recurring.inactive')}
                     </span>
+                    {expense.is_auto_debit && (
+                      <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0 bg-amber-100 text-amber-800">
+                        <Zap className="h-3 w-3 inline mr-0.5" />
+                        {t('recurring.autoDebitBadge')}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)} • {getOwnerName(expense.owner_user)}

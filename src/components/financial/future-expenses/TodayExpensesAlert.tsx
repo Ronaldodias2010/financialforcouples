@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CreditCard, DollarSign, X } from 'lucide-react';
+import { AlertCircle, CreditCard, DollarSign, X, Zap, AlertTriangle } from 'lucide-react';
 import { useTodayFutureExpenses } from '@/hooks/useTodayFutureExpenses';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PayFutureExpenseModal } from '../PayFutureExpenseModal';
@@ -13,7 +13,7 @@ interface TodayExpensesAlertProps {
 
 export const TodayExpensesAlert = ({ viewMode }: TodayExpensesAlertProps) => {
   const { t } = useLanguage();
-  const { todayExpenses, count, totalAmount, loading, refresh } = useTodayFutureExpenses();
+  const { todayExpenses, count, totalAmount, autoDebitWarnings, loading, refresh } = useTodayFutureExpenses();
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -117,6 +117,31 @@ export const TodayExpensesAlert = ({ viewMode }: TodayExpensesAlertProps) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-2">
+          {/* Auto-debit insufficient funds warning */}
+          {autoDebitWarnings.length > 0 && (
+            <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 space-y-2 mb-3">
+              <div className="flex items-center gap-2 text-destructive font-medium text-sm">
+                <AlertTriangle className="h-4 w-4" />
+                {t('recurring.autoDebitWarningTitle')}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('recurring.autoDebitWarningDescription')}
+              </p>
+              {autoDebitWarnings.map((expense) => (
+                <div key={`warn_${expense.id}`} className="flex items-center justify-between text-xs p-2 bg-background rounded border">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-3 w-3 text-amber-500" />
+                    <span className="font-medium">{expense.description}</span>
+                    <span className="text-muted-foreground">
+                      ({expense.account_name}: {formatCurrency(expense.account_balance || 0)})
+                    </span>
+                  </div>
+                  <span className="font-semibold text-destructive">{formatCurrency(expense.amount)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {todayExpenses.map((expense) => (
             <div
               key={expense.id}
@@ -125,7 +150,15 @@ export const TodayExpensesAlert = ({ viewMode }: TodayExpensesAlertProps) => {
               <div className="flex items-center gap-3 min-w-0">
                 <CreditCard className="h-4 w-4 text-amber-500 shrink-0" />
                 <div className="min-w-0">
-                  <div className="font-medium truncate">{expense.description}</div>
+                  <div className="font-medium truncate flex items-center gap-1">
+                    {expense.description}
+                    {expense.is_auto_debit && (
+                      <Zap className="h-3 w-3 text-amber-500 inline" />
+                    )}
+                    {expense.has_insufficient_funds && (
+                      <AlertTriangle className="h-3 w-3 text-destructive inline" />
+                    )}
+                  </div>
                   <div className="text-sm text-muted-foreground truncate">
                     {expense.category_name || t('common.noCategory')}
                     {expense.source_type === 'recurring' && (

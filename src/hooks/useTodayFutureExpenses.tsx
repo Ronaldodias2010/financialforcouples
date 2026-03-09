@@ -15,6 +15,11 @@ export interface TodayFutureExpense {
   user_id: string;
   source_type: 'manual' | 'recurring';
   source_id: string;
+  is_auto_debit?: boolean;
+  account_id?: string;
+  account_name?: string;
+  account_balance?: number;
+  has_insufficient_funds?: boolean;
 }
 
 export const useTodayFutureExpenses = () => {
@@ -96,7 +101,27 @@ export const useTodayFutureExpenses = () => {
           });
         }
 
+        // Get account info for auto-debit expenses
+        const accountIds = recurringData?.map((r: any) => r.account_id).filter(Boolean) || [];
+        let accountsMap = new Map<string, { name: string; balance: number }>();
+        
+        if (accountIds.length > 0) {
+          const { data: accountsData } = await supabase
+            .from('accounts')
+            .select('id, name, balance')
+            .in('id', accountIds);
+          
+          accountsData?.forEach((acc: any) => {
+            accountsMap.set(acc.id, { name: acc.name, balance: acc.balance });
+          });
+        }
+
         recurringData?.forEach((item: any) => {
+          const accountInfo = item.account_id ? accountsMap.get(item.account_id) : null;
+          const hasInsufficientFunds = item.is_auto_debit && accountInfo 
+            ? accountInfo.balance < item.amount 
+            : false;
+
           expenses.push({
             id: `recurring_${item.id}`,
             description: item.name || 'Sem descrição',
@@ -108,6 +133,11 @@ export const useTodayFutureExpenses = () => {
             user_id: item.user_id,
             source_type: 'recurring',
             source_id: item.id,
+            is_auto_debit: item.is_auto_debit || false,
+            account_id: item.account_id,
+            account_name: accountInfo?.name,
+            account_balance: accountInfo?.balance,
+            has_insufficient_funds: hasInsufficientFunds,
           });
         });
       }
@@ -138,11 +168,14 @@ export const useTodayFutureExpenses = () => {
     fetchTodayExpenses();
   }, !!user);
 
+  const autoDebitWarnings = todayExpenses.filter(e => e.is_auto_debit && e.has_insufficient_funds);
+
   return {
     todayExpenses,
     loading,
     count: todayExpenses.length,
     totalAmount: todayExpenses.reduce((sum, expense) => sum + expense.amount, 0),
+    autoDebitWarnings,
     refresh: fetchTodayExpenses,
   };
 };
