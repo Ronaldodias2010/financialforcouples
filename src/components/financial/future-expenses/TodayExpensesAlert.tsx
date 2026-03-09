@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CreditCard, DollarSign, X, Zap, AlertTriangle, Zap, AlertTriangle } from 'lucide-react';
+import { AlertCircle, CreditCard, DollarSign, X, Zap, AlertTriangle } from 'lucide-react';
 import { useTodayFutureExpenses } from '@/hooks/useTodayFutureExpenses';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PayFutureExpenseModal } from '../PayFutureExpenseModal';
