@@ -7705,6 +7705,16 @@ const translations = {
     'recurring.progressLabel': 'Progreso',
     'recurring.subcategory': 'Subcategoría',
     'recurring.subcategoryPlaceholder': 'Seleccione una subcategoría (opcional)',
+    'recurring.autoDebit': 'Débito Automático',
+    'recurring.autoDebitDescription': 'Debitar automáticamente de la cuenta en la fecha de vencimiento',
+    'recurring.autoDebitBadge': 'Déb. Auto',
+    'recurring.account': 'Cuenta para Débito',
+    'recurring.accountPlaceholder': 'Selecciona la cuenta',
+    'recurring.unique': 'Única (sin repetición)',
+    'recurring.uniqueShort': 'Única',
+    'recurring.autoDebitInsufficientFunds': 'Saldo insuficiente para débito automático',
+    'recurring.autoDebitWarningTitle': '¡Débitos Automáticos con Saldo Insuficiente!',
+    'recurring.autoDebitWarningDescription': 'Algunos gastos con débito automático no tienen saldo suficiente en la cuenta vinculada.',
     
     // Loans Tab
     'loans.tabRecurring': 'Recurrentes',
