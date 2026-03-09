@@ -145,6 +145,14 @@ interface Card {
   owner_user?: string;
 }
 
+interface Account {
+  id: string;
+  name: string;
+  balance: number;
+  currency: string;
+  owner_user?: string;
+}
+
 interface RecurringExpensesManagerProps {
   viewMode: "both" | "user1" | "user2";
 }
