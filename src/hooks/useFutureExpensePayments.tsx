@@ -299,7 +299,7 @@ export const useFutureExpensePayments = () => {
               .eq('type', 'expense')
               .eq('status', 'completed')
               .ilike('description', `%${recurringData.name}%`)
-              .gte('purchase_date', originalDueDate)
+              .eq('due_date', originalDueDate)
               .limit(1);
 
             if (completedTx && completedTx.length > 0) return true;
