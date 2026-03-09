@@ -454,9 +454,9 @@ const getTutorialContentPT = (): TutorialContent => ({
     },
     {
       id: 'despesas-recorrentes',
-      title: '8. Despesas Recorrentes',
+      title: '8. Despesas Recorrentes e Débitos Automáticos',
       icon: '🔄',
-      intro: 'Despesas recorrentes são gastos fixos que se repetem periodicamente. Configure-as para automatizar seu controle financeiro.',
+      intro: 'Despesas recorrentes são gastos fixos que se repetem periodicamente. A plataforma oferece dois modelos de automação: o Débito Automático dentro das Recorrentes (para valores fixos) e a aba Débitos Automáticos (para valores variáveis como faturas de cartão).',
       subSections: [
         {
           title: 'O que são Despesas Recorrentes',
@@ -487,10 +487,62 @@ const getTutorialContentPT = (): TutorialContent => ({
           ]
         },
         {
+          title: 'Modelo 1: Débito Automático em Recorrentes (Valores Fixos)',
+          content: 'Dentro das Despesas Recorrentes, você pode ativar a opção "Débito Automático" para que o pagamento seja processado automaticamente na conta bancária vinculada:',
+          steps: [
+            { num: 1, title: 'Ativar Débito Automático', desc: 'Ao criar ou editar uma despesa recorrente, ative a opção "Débito Automático" e selecione a conta bancária de onde o valor será debitado.' },
+            { num: 2, title: 'Processamento Automático', desc: 'No dia do vencimento, o sistema debita automaticamente o valor fixo da conta selecionada e registra a transação.' },
+            { num: 3, title: 'Alerta de Saldo Insuficiente', desc: 'Se a conta não tiver saldo suficiente, o sistema exibe um alerta na tela principal e a despesa vai para "Atrasadas" para pagamento manual.' },
+          ]
+        },
+        {
           title: '',
           tipBox: {
-            title: 'Gestão de Recorrências',
-            content: 'Você pode editar valores, pausar temporariamente, ou cancelar permanentemente uma despesa recorrente. O histórico de todas as ocorrências geradas fica disponível para consulta.'
+            title: 'Quando Usar o Débito Automático em Recorrentes',
+            content: 'Ideal para despesas de valor fixo e previsível como aluguel, condomínio, assinaturas e mensalidades. O valor é sempre o mesmo mês a mês, então a automação é direta e segura.'
+          }
+        },
+        {
+          title: 'Modelo 2: Aba Débitos Automáticos (Valores Variáveis)',
+          content: 'A aba "Débitos Automáticos" (ao lado de Recorrentes e Empréstimos) é dedicada a pagamentos de valores variáveis que mudam a cada mês:',
+          features: [
+            { title: 'Faturas de Cartão de Crédito', desc: 'Vincule um cartão de crédito e o sistema calcula automaticamente o valor da fatura com base nos gastos registrados no período.' },
+            { title: 'Contas de Consumo', desc: 'Ideal para contas que variam mensalmente como energia elétrica, telefone, água e gás.' },
+            { title: 'Dívida Atual em Vermelho', desc: 'Para cartões de crédito, o sistema exibe a "Dívida Atual" em vermelho, que aumenta conforme novos gastos são registrados.' },
+            { title: 'Débito no Dia Programado', desc: 'No dia configurado, o sistema processa o débito da conta vinculada. Se não houver saldo, a despesa fica pendente em "Atrasadas".' },
+          ]
+        },
+        {
+          title: 'Como Configurar um Débito Automático Variável',
+          steps: [
+            { num: 1, title: 'Acesse a Aba', desc: 'Navegue até "Débitos Automáticos" na seção de despesas recorrentes.' },
+            { num: 2, title: 'Selecione o Tipo', desc: 'Escolha entre "Fatura de Cartão" ou "Conta de Consumo" para definir o tipo de débito.' },
+            { num: 3, title: 'Vincule Conta e Cartão', desc: 'Selecione a conta bancária de débito e, se for fatura, o cartão de crédito correspondente.' },
+            { num: 4, title: 'Configure o Dia', desc: 'Defina o dia do mês em que o débito deve ser processado automaticamente.' },
+          ]
+        },
+        {
+          title: '',
+          warningBox: {
+            title: 'Regra de Propriedade',
+            content: 'Importante: Você só pode configurar débitos automáticos para suas próprias contas e cartões. O sistema não permite misturar ativos de diferentes usuários. Cada pessoa gerencia apenas seus próprios débitos automáticos, garantindo a separação financeira individual mesmo no dashboard compartilhado.'
+          }
+        },
+        {
+          title: 'Comparação entre os Dois Modelos',
+          bullets: [
+            'Recorrentes com Débito Automático: Valor fixo, mesmo valor todo mês (ex: aluguel R$ 2.000)',
+            'Aba Débitos Automáticos: Valor variável, muda conforme consumo (ex: fatura do cartão, conta de luz)',
+            'Ambos debitam automaticamente da conta bancária no dia programado',
+            'Ambos geram alerta se não houver saldo suficiente na conta',
+            'Ambos movem para "Despesas Atrasadas" em caso de saldo insuficiente',
+          ]
+        },
+        {
+          title: '',
+          tipBox: {
+            title: 'Gestão de Recorrências e Débitos',
+            content: 'Você pode editar valores, pausar temporariamente, ou cancelar permanentemente uma despesa recorrente. Para débitos automáticos variáveis, acompanhe a evolução da dívida do cartão em tempo real. O histórico de todas as ocorrências geradas fica disponível para consulta.'
           }
         }
       ]
