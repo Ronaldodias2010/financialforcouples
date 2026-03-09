@@ -304,9 +304,11 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
               <Select value={accountId} onValueChange={setAccountId}>
                 <SelectTrigger><SelectValue placeholder={t('autoDebit.selectAccount')} /></SelectTrigger>
                 <SelectContent>
-                  {accounts.map(a => (
-                    <SelectItem key={a.id} value={a.id}>{a.name} (R$ {a.balance?.toFixed(2)})</SelectItem>
-                  ))}
+                  {accounts
+                    .filter(a => a.user_id === user?.id)
+                    .map(a => (
+                      <SelectItem key={a.id} value={a.id}>{a.name} (R$ {a.balance?.toFixed(2)})</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
