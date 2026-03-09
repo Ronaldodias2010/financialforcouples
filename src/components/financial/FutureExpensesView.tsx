@@ -246,26 +246,69 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       // O valor total das parcelas + compras à vista é calculado em calculateCardPaymentAmount
 
       // Adicionar gastos recorrentes - CALCULAR TODAS AS PARCELAS FUTURAS
-      for (const recur of recurring || []) {
-        // Filtrar por viewMode se necessário
-        const shouldInclude = viewMode === "both" || 
+      // ⭐ OTIMIZAÇÃO: Batch-fetch de status de pagamento ao invés de N+1 queries
+      const filteredRecurring = (recurring || []).filter(recur => {
+        return viewMode === "both" || 
           (viewMode === "user1" && recur.owner_user === 'user1') ||
           (viewMode === "user2" && recur.owner_user === 'user2');
-          
-        if (!shouldInclude) continue;
+      });
 
-        // Calcular todas as ocorrências futuras para os próximos 12 meses
+      const recurringIds = filteredRecurring.map(r => r.id);
+
+      // Batch 1: Buscar TODOS os manual_future_expenses pagos para esses recurring IDs
+      let paidManualSet = new Set<string>(); // key: "recurringId|dueDate"
+      if (recurringIds.length > 0) {
+        const { data: paidManualExpenses } = await supabase
+          .from('manual_future_expenses')
+          .select('recurring_expense_id, due_date')
+          .in('recurring_expense_id', recurringIds)
+          .eq('is_paid', true);
+        
+        paidManualExpenses?.forEach(p => {
+          paidManualSet.add(`${p.recurring_expense_id}|${p.due_date}`);
+        });
+      }
+
+      // Batch 2: Buscar transações completed que correspondem a esses recurring expenses
+      let paidTransactionSet = new Set<string>(); // key: "name_lower|dueDate"
+      if (recurringIds.length > 0) {
+        const recurringNames = filteredRecurring.map(r => r.name).filter(Boolean);
+        const todayStr = format(now, 'yyyy-MM-dd');
+        const futureDateStr = format(futureDate, 'yyyy-MM-dd');
+        
+        if (recurringNames.length > 0) {
+          const { data: completedTxs } = await supabase
+            .from('transactions')
+            .select('description, due_date')
+            .eq('type', 'expense')
+            .eq('status', 'completed')
+            .gte('due_date', todayStr)
+            .lte('due_date', futureDateStr);
+          
+          completedTxs?.forEach(tx => {
+            const descLower = (tx.description || '').toLowerCase();
+            paidTransactionSet.add(`${descLower}|${tx.due_date}`);
+          });
+        }
+      }
+
+      console.log(`[FUTURE EXPENSES] Batch payment check: ${paidManualSet.size} manual paid, ${paidTransactionSet.size} completed transactions`);
+
+      for (const recur of filteredRecurring) {
         let currentDueDate = parseLocalDate(recur.next_due_date);
         let installmentCount = 0;
-        const maxInstallments = recur.contract_duration_months || 120; // Default para 10 anos se não houver duração
+        const maxInstallments = recur.contract_duration_months || 120;
+        const recurNameLower = (recur.name || '').toLowerCase();
         
         while (currentDueDate <= futureDate && installmentCount < maxInstallments) {
-          // Só adicionar se a data é no futuro ou hoje
           if (currentDueDate >= now) {
             const dueDate = format(currentDueDate, 'yyyy-MM-dd');
-            const isPaid = await isExpensePaid(recur.id, undefined, dueDate);
             
-            // Skip paid recurring expenses
+            // Check payment status using pre-fetched data (O(1) lookup)
+            const isPaidManual = paidManualSet.has(`${recur.id}|${dueDate}`);
+            const isPaidTx = paidTransactionSet.has(`${recurNameLower}|${dueDate}`);
+            const isPaid = isPaidManual || isPaidTx;
+            
             if (!isPaid) {
               expenses.push({
                 id: `${recur.id}-installment-${installmentCount}`,
@@ -278,12 +321,11 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
                 owner_user: recur.cards?.owner_user || recur.owner_user,
                 recurringExpenseId: recur.id,
                 isPaid: false,
-                allowsPayment: true, // Gastos recorrentes PODEM ser pagos
+                allowsPayment: true,
               });
             }
           }
           
-          // Calcular próxima data de vencimento
           const nextDate = new Date(currentDueDate);
           nextDate.setDate(nextDate.getDate() + recur.frequency_days);
           currentDueDate = nextDate;
