@@ -46,8 +46,21 @@ serve(async (req) => {
 
     if (error) {
       console.error('❌ Error processing recurring expenses:', error);
+    }
+
+    // Process automatic debits
+    console.log('⚡ Processing automatic debits...');
+    const { error: autoDebitError } = await supabase.rpc('process_automatic_debits_daily');
+    
+    if (autoDebitError) {
+      console.error('❌ Error processing automatic debits:', autoDebitError);
+    } else {
+      console.log('✅ Automatic debits processed successfully');
+    }
+
+    if (error && autoDebitError) {
       return new Response(JSON.stringify({ 
-        error: 'Failed to process recurring expenses', 
+        error: 'Failed to process expenses', 
         details: error.message,
         timestamp: startTime.toISOString()
       }), {
