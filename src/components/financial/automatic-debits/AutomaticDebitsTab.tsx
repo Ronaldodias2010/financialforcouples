@@ -37,7 +37,22 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { user1Name, user2Name, coupleData } = usePartnerNames();
+  const { names: partnerNames } = usePartnerNames();
+  const [coupleData, setCoupleData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchCouple = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('user_couples')
+        .select('user1_id, user2_id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq('status', 'active')
+        .maybeSingle();
+      setCoupleData(data);
+    };
+    fetchCouple();
+  }, [user]);
 
   const [debits, setDebits] = useState<AutomaticDebit[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
