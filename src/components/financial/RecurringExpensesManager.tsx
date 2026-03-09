@@ -116,10 +116,12 @@ interface RecurringExpense {
   category_id?: string;
   subcategory_id?: string;
   card_id?: string;
+  account_id?: string;
   frequency_days: number;
   frequency_type?: 'days' | 'months';
   next_due_date: Date;
   is_active: boolean;
+  is_auto_debit?: boolean;
   owner_user?: string;
   contract_duration_months?: number;
   created_at: string;
