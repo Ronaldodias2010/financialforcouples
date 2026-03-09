@@ -379,9 +379,14 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
                       <p>{t('autoDebit.debitDayLabel')}: {debit.debit_day} | {getDebitTypeLabel(debit.debit_type)}</p>
                       <p>{t('autoDebit.account')}: {getAccountName(debit.account_id)}</p>
                       {isCardDebit && <p>{t('autoDebit.card')}: {getCardName(debit.card_id)}</p>}
-                      {estimatedAmount && estimatedAmount > 0 && (
+                      {isCardDebit && estimatedAmount != null && estimatedAmount > 0 && (
+                        <p className="font-semibold text-destructive">
+                          {t('autoDebit.currentDebt')}: R$ {estimatedAmount.toFixed(2)}
+                        </p>
+                      )}
+                      {!isCardDebit && estimatedAmount != null && estimatedAmount > 0 && (
                         <p className="font-medium text-foreground">
-                          {isCardDebit ? t('autoDebit.currentDebt') : t('autoDebit.amount')}: R$ {estimatedAmount.toFixed(2)}
+                          {t('autoDebit.amount')}: R$ {estimatedAmount.toFixed(2)}
                         </p>
                       )}
                       {debit.last_processed_date && (
