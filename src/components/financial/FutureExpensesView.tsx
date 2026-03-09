@@ -397,89 +397,87 @@ export const FutureExpensesView = ({ viewMode }: FutureExpensesViewProps) => {
       }
 
       // Adicionar vencimentos de cartões com cálculo baseado na data de fechamento (COM botão de pagar)
-      for (const card of cards || []) {
-        // Filtrar por viewMode se necessário
+      // ⭐ OTIMIZAÇÃO: Batch-fetch card_payment_history para todos os cartões
+      const filteredCards = (cards || []).filter(card => {
         const shouldInclude = viewMode === "both" || 
           (viewMode === "user1" && card.owner_user === 'user1') ||
           (viewMode === "user2" && card.owner_user === 'user2');
+        return shouldInclude && card.due_date;
+      });
+
+      // Pre-fetch all card payment history for this month
+      let cardPaymentsMap = new Map<string, number>(); // cardId -> totalPaid
+      if (filteredCards.length > 0) {
+        const cardIds = filteredCards.map(c => c.id);
+        const currentMonthStart = format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd');
+        const nextMonthEnd = format(new Date(now.getFullYear(), now.getMonth() + 2, 0), 'yyyy-MM-dd');
+        
+        const { data: allCardPayments } = await supabase
+          .from('card_payment_history')
+          .select('card_id, payment_amount, payment_date')
+          .in('card_id', cardIds)
+          .gte('payment_date', currentMonthStart)
+          .lte('payment_date', nextMonthEnd);
+        
+        allCardPayments?.forEach(p => {
+          // Group by card_id + month
+          const key = `${p.card_id}|${p.payment_date.substring(0, 7)}`;
+          cardPaymentsMap.set(key, (cardPaymentsMap.get(key) || 0) + p.payment_amount);
+        });
+      }
+
+      for (const card of filteredCards) {
+        const closingDay = card.closing_date || card.due_date;
+        const today = new Date();
+        
+        const nextDueDate = getNextDueDate(card.due_date);
+        const nextDueDateObj = parseLocalDate(nextDueDate);
+        const nextDueMonth = nextDueDateObj.getMonth();
+        const nextDueYear = nextDueDateObj.getFullYear();
+        
+        let closingDate: Date;
+        if (closingDay < card.due_date) {
+          closingDate = new Date(nextDueYear, nextDueMonth, closingDay);
+        } else {
+          closingDate = new Date(nextDueYear, nextDueMonth - 1, closingDay);
+        }
+        
+        const isBillClosed = today >= closingDate;
+        
+        if (!isBillClosed) {
+          console.log(`[FUTURE EXPENSES] Cartão ${card.name}: fatura fecha em ${format(closingDate, 'dd/MM')}, ainda não fechou. Ignorando.`);
+          continue;
+        }
+
+        const paymentAmount = await calculateCardPaymentAmount(card, user.id);
+        if (paymentAmount > 0) {
+          const dueMonthKey = `${card.id}|${nextDueDate.substring(0, 7)}`;
+          const totalPaidThisMonth = cardPaymentsMap.get(dueMonthKey) || 0;
           
-        if (shouldInclude && card.due_date) {
-          // ⭐ Verificar se a fatura já fechou antes de mostrar
-          // Se o cartão tem closing_date, só mostrar o pagamento após a fatura fechar
-          const closingDay = card.closing_date || card.due_date;
-          const today = new Date();
-          const currentDay = today.getDate();
-          const currentMonth = today.getMonth();
-          const currentYear = today.getFullYear();
-          
-          // Determinar se a fatura do próximo vencimento já fechou
-          const nextDueDate = getNextDueDate(card.due_date);
-          const nextDueDateObj = parseLocalDate(nextDueDate);
-          const nextDueMonth = nextDueDateObj.getMonth();
-          const nextDueYear = nextDueDateObj.getFullYear();
-          
-          // A fatura fecha no mês ANTERIOR ao vencimento, no dia closing_date
-          // Ex: vencimento dia 7 de abril, fechamento dia 1 de abril (ou março, depende)
-          let closingDate: Date;
-          if (closingDay < card.due_date) {
-            // Fechamento é no mesmo mês do vencimento (ex: fecha dia 1, vence dia 7)
-            closingDate = new Date(nextDueYear, nextDueMonth, closingDay);
-          } else {
-            // Fechamento é no mês anterior ao vencimento (ex: fecha dia 25, vence dia 5)
-            closingDate = new Date(nextDueYear, nextDueMonth - 1, closingDay);
-          }
-          
-          const isBillClosed = today >= closingDate;
-          
-          if (!isBillClosed) {
-            // Fatura ainda não fechou - não mostrar em Despesas Futuras
-            console.log(`[FUTURE EXPENSES] Cartão ${card.name}: fatura fecha em ${format(closingDate, 'dd/MM')}, ainda não fechou. Ignorando.`);
+          if (totalPaidThisMonth > 0) {
+            console.log(`[FUTURE EXPENSES] Cartão ${card.name}: já pago R$ ${totalPaidThisMonth} no mês. Removendo de Despesas Futuras.`);
             continue;
           }
 
-          const paymentAmount = await calculateCardPaymentAmount(card, user.id);
-          if (paymentAmount > 0) {
-            // ⭐ Verificar se já houve pagamento deste cartão no mês do vencimento
-            const nextDueDateObj2 = parseLocalDate(nextDueDate);
-            const monthStart = format(new Date(nextDueDateObj2.getFullYear(), nextDueDateObj2.getMonth(), 1), 'yyyy-MM-dd');
-            const monthEnd = format(new Date(nextDueDateObj2.getFullYear(), nextDueDateObj2.getMonth() + 1, 0), 'yyyy-MM-dd');
-            
-            const { data: cardPayments } = await supabase
-              .from('card_payment_history')
-              .select('payment_amount')
-              .eq('card_id', card.id)
-              .gte('payment_date', monthStart)
-              .lte('payment_date', monthEnd);
-            
-            const totalPaidThisMonth = cardPayments?.reduce((sum: number, p: any) => sum + p.payment_amount, 0) || 0;
-            
-            if (totalPaidThisMonth > 0) {
-              // Já houve pagamento (parcial ou total) neste mês - não mostrar
-              console.log(`[FUTURE EXPENSES] Cartão ${card.name}: já pago R$ ${totalPaidThisMonth} no mês. Removendo de Despesas Futuras.`);
-              continue;
-            }
-
-            const isPaid = await isExpensePaid(undefined, undefined, nextDueDate);
-            expenses.push({
-              id: `card-${card.id}`,
-              description: `${t('transactionForm.creditCardPayment')} ${card.name}`,
-              amount: paymentAmount,
-              due_date: nextDueDate,
-              type: 'card_payment',
-              category: t('transactionForm.creditCard'),
-              card_name: card.name,
-              owner_user: card.owner_user,
-              currency: card.currency as CurrencyCode,
-              cardPaymentInfo: { 
-                cardId: card.id, 
-                cardName: card.name,
-                minimumPayment: card.minimum_payment_amount || paymentAmount * 0.15,
-                allowsPartialPayment: card.allows_partial_payment
-              },
-              isPaid,
-              allowsPayment: true,
-            });
-          }
+          expenses.push({
+            id: `card-${card.id}`,
+            description: `${t('transactionForm.creditCardPayment')} ${card.name}`,
+            amount: paymentAmount,
+            due_date: nextDueDate,
+            type: 'card_payment',
+            category: t('transactionForm.creditCard'),
+            card_name: card.name,
+            owner_user: card.owner_user,
+            currency: card.currency as CurrencyCode,
+            cardPaymentInfo: { 
+              cardId: card.id, 
+              cardName: card.name,
+              minimumPayment: card.minimum_payment_amount || paymentAmount * 0.15,
+              allowsPartialPayment: card.allows_partial_payment
+            },
+            isPaid: false,
+            allowsPayment: true,
+          });
         }
       }
 
