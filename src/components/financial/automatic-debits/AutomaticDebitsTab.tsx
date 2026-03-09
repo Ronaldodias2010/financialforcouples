@@ -85,7 +85,7 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
     const [debitsRes, accountsRes, cardsRes, categoriesRes] = await Promise.all([
       supabase.from('automatic_debits').select('*').in('user_id', userIds).order('debit_day'),
       supabase.from('accounts').select('id, name, balance, owner_user').in('user_id', userIds).eq('is_active', true).is('deleted_at', null),
-      supabase.from('cards').select('id, name, current_balance, card_type, owner_user').in('user_id', userIds).is('deleted_at', null),
+      supabase.from('cards').select('id, name, current_balance, card_type, owner_user, user_id').in('user_id', userIds).is('deleted_at', null),
       supabase.from('categories').select('id, name').in('user_id', userIds).is('deleted_at', null),
     ]);
 
