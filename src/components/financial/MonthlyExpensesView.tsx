@@ -285,7 +285,7 @@ const fetchCategories = async () => {
         `)
         .in('user_id', userIds)
         .eq('type', 'expense')
-        .not('payment_method', 'in', '(account_transfer,account_investment)')
+        .not('payment_method', 'eq', 'account_investment')
         .or(`and(purchase_date.gte.${startDate},purchase_date.lte.${endDate}),and(purchase_date.is.null,transaction_date.gte.${startDate},transaction_date.lte.${endDate})`)
         .order('purchase_date', { ascending: false, nullsFirst: false })
         .order('transaction_date', { ascending: false });
@@ -314,11 +314,15 @@ const fetchCategories = async () => {
         status: (t as any).status
       })));
       
-      let filteredData = data || [];
-      
-      // NÃO EXCLUIR pagamentos de cartão da listagem
-      // Eles devem aparecer para visibilidade, mas não entram no total de despesas
-      // Isso foi movido para o cálculo do total, não para o filtro de exibição
+      let filteredData = (data || []).filter(transaction => {
+        // Excluir transferências entre contas próprias, MAS manter pagamentos de cartão
+        if (transaction.payment_method === 'account_transfer') {
+          const desc = (transaction.description || '').toLowerCase();
+          // Manter se for pagamento de cartão (contém "pagamento de cartão" ou "card payment")
+          return desc.includes('pagamento de cartão') || desc.includes('card payment');
+        }
+        return true;
+      });
       
       // Apply user filter based on viewMode using user_id mapping to couple
       if (viewMode !== "both" && couple) {
