@@ -793,6 +793,12 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
                     )}>
                       {expense.is_active ? t('recurring.active') : t('recurring.inactive')}
                     </span>
+                    {expense.is_auto_debit && (
+                      <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0 bg-amber-100 text-amber-800">
+                        <Zap className="h-3 w-3 inline mr-0.5" />
+                        {t('recurring.autoDebitBadge')}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     R$ {expense.amount.toFixed(2)} • {getFrequencyLabel(expense.frequency_days)} • {getOwnerName(expense.owner_user)}
