@@ -723,7 +723,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           description: transferDesc,
           category_id: categoryId || null,
           subcategory: subcategory || null,
-          subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+          subcategory_id: getSafeSubcategoryId(),
           transaction_date: format(transactionDate, 'yyyy-MM-dd'),
           payment_method: 'account_investment' as any,
           card_id: null,
