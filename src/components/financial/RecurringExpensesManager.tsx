@@ -537,6 +537,7 @@ export const RecurringExpensesManager = ({ viewMode }: RecurringExpensesManagerP
   };
 
   const getFrequencyLabel = (days: number) => {
+    if (days === 0) return t('recurring.uniqueShort');
     if (days === 7) return t('recurring.weeklyShort');
     if (days === 30) return t('recurring.monthlyShort');
     if (days === 90) return t('recurring.quarterlyShort');
