@@ -85,7 +85,7 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
     const [debitsRes, accountsRes, cardsRes, categoriesRes] = await Promise.all([
       supabase.from('automatic_debits').select('*').in('user_id', userIds).order('debit_day'),
       supabase.from('accounts').select('id, name, balance, owner_user').in('user_id', userIds).eq('is_active', true).is('deleted_at', null),
-      supabase.from('cards').select('id, name, current_balance, card_type, owner_user').in('user_id', userIds).is('deleted_at', null),
+      supabase.from('cards').select('id, name, current_balance, card_type, owner_user, user_id').in('user_id', userIds).is('deleted_at', null),
       supabase.from('categories').select('id, name').in('user_id', userIds).is('deleted_at', null),
     ]);
 
@@ -260,6 +260,19 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
               <Input value={name} onChange={e => setName(e.target.value)} placeholder={t('autoDebit.namePlaceholder')} required />
             </div>
 
+            {coupleData && (
+              <div>
+                <Label>{t('autoDebit.owner')}</Label>
+                <Select value={ownerUser} onValueChange={(val) => { setOwnerUser(val); setCardId(''); }}>
+                  <SelectTrigger><SelectValue placeholder={t('autoDebit.selectOwner')} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={coupleData.user1_id}>{partnerNames.user1Name}</SelectItem>
+                    <SelectItem value={coupleData.user2_id}>{partnerNames.user2Name}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div>
               <Label>{t('autoDebit.type')}</Label>
               <Select value={debitType} onValueChange={setDebitType}>
@@ -278,9 +291,20 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
                 <Select value={cardId} onValueChange={setCardId}>
                   <SelectTrigger><SelectValue placeholder={t('autoDebit.selectCard')} /></SelectTrigger>
                   <SelectContent>
-                    {cards.filter(c => c.card_type === 'credit').map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
+                    {cards
+                      .filter(c => {
+                        if (c.card_type !== 'credit') return false;
+                        // Filter cards by selected owner to prevent mixing users
+                        if (ownerUser && coupleData) {
+                          const selectedUserId = ownerUser;
+                          // Match card's user_id with selected owner
+                          return c.user_id === selectedUserId;
+                        }
+                        return true;
+                      })
+                      .map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name} ({c.owner_user === 'user1' ? partnerNames.user1Name : partnerNames.user2Name})</SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -322,18 +346,6 @@ export const AutomaticDebitsTab: React.FC<AutomaticDebitsTabProps> = ({ viewMode
               </Select>
             </div>
 
-            {coupleData && (
-              <div>
-                <Label>{t('autoDebit.owner')}</Label>
-                <Select value={ownerUser} onValueChange={setOwnerUser}>
-                  <SelectTrigger><SelectValue placeholder={t('autoDebit.selectOwner')} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={coupleData.user1_id}>{partnerNames.user1Name}</SelectItem>
-                    <SelectItem value={coupleData.user2_id}>{partnerNames.user2Name}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
             <div>
               <Label>{t('autoDebit.description')}</Label>
