@@ -125,6 +125,14 @@ export const TransactionForm = ({ onSubmit, refreshKey }: TransactionFormProps) 
   const [subcategory, setSubcategory] = useState(""); // Kept for backward compatibility
   const [subcategoryId, setSubcategoryId] = useState<string>(""); // New: linked subcategory
   const [availableSubcategories, setAvailableSubcategories] = useState<Subcategory[]>([]);
+
+  // Helper: only return subcategory_id if it's from the actual subcategories table (FK-safe)
+  const getSafeSubcategoryId = (): string | null => {
+    if (!subcategoryId || subcategoryId === 'none') return null;
+    const selected = availableSubcategories.find(s => s.id === subcategoryId);
+    if (selected?.source === 'subcategory') return subcategoryId;
+    return null; // system_tag or user_tag IDs are NOT valid for the FK
+  };
   const [transactionDate, setTransactionDate] = useState<Date>(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Ensure we're using midnight local time
@@ -646,7 +654,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             description: transferDescOut,
             category_id: categoryId || null,
             subcategory: subcategory || null,
-            subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+            subcategory_id: getSafeSubcategoryId(),
             transaction_date: format(transactionDate, 'yyyy-MM-dd'),
             payment_method: 'account_transfer' as any,
             card_id: null,
@@ -664,7 +672,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             description: transferDescIn,
             category_id: categoryId || null,
             subcategory: subcategory || null,
-            subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+            subcategory_id: getSafeSubcategoryId(),
             transaction_date: format(transactionDate, 'yyyy-MM-dd'),
             payment_method: 'account_transfer' as any,
             card_id: null,
@@ -715,7 +723,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           description: transferDesc,
           category_id: categoryId || null,
           subcategory: subcategory || null,
-          subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+          subcategory_id: getSafeSubcategoryId(),
           transaction_date: format(transactionDate, 'yyyy-MM-dd'),
           payment_method: 'account_investment' as any,
           card_id: null,
@@ -946,7 +954,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               description: `${description} (${installmentNumber}/${totalInstallments})`,
               category_id: categoryId,
               subcategory: subcategory || null,
-              subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+              subcategory_id: getSafeSubcategoryId(),
               // Todas as parcelas usam a data de vencimento como transaction_date
               transaction_date: format(dueDate, 'yyyy-MM-dd'),
               due_date: format(dueDate, 'yyyy-MM-dd'),
@@ -978,7 +986,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           description,
           category_id: categoryId,
           subcategory: subcategory || null,
-          subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+          subcategory_id: getSafeSubcategoryId(),
           transaction_date: format(dueDate, 'yyyy-MM-dd'),
           purchase_date: format(purchaseDate, 'yyyy-MM-dd'),
           payment_method: "credit_card",
@@ -1118,7 +1126,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                 description,
                 category_id: categoryId,
                 subcategory: subcategory || null,
-                subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+                subcategory_id: getSafeSubcategoryId(),
                 transaction_date: format(transactionDate, 'yyyy-MM-dd'),
                 purchase_date: format(transactionDate, 'yyyy-MM-dd'),
                 payment_method: "payment_transfer",
@@ -1149,7 +1157,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
                 description,
                 category_id: categoryId,
                 subcategory: subcategory || null,
-                subcategory_id: subcategoryId && subcategoryId !== 'none' ? subcategoryId : null,
+                subcategory_id: getSafeSubcategoryId(),
                 transaction_date: format(transactionDate, 'yyyy-MM-dd'),
                 purchase_date: format(transactionDate, 'yyyy-MM-dd'),
                 payment_method: paymentMethod,

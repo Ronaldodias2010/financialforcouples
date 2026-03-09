@@ -85,7 +85,27 @@ export const useSubcategories = () => {
 
       const excludedTagIds = new Set((exclusionsData || []).map(e => e.system_tag_id));
 
-      // 3. Get system tags via category_tag_relations (using default_category_id)
+      // 3. Fetch from subcategories table (the actual FK target)
+      const { data: subcategoriesData } = await supabase
+        .from('subcategories')
+        .select('id, name, name_en, name_es, color, icon, is_system, category_id')
+        .eq('category_id', categoryId)
+        .in('user_id', userIds)
+        .is('deleted_at', null);
+
+      const dbSubcategories: Subcategory[] = (subcategoriesData || []).map(sub => ({
+        id: sub.id,
+        name: sub.name,
+        name_en: sub.name_en,
+        name_es: sub.name_es,
+        color: sub.color,
+        icon: sub.icon,
+        is_system: sub.is_system ?? false,
+        category_id: sub.category_id,
+        source: 'subcategory' as const,
+      }));
+
+      // 4. Get system tags via category_tag_relations (using default_category_id)
       let systemTags: Subcategory[] = [];
       const defaultCatId = categoryData?.default_category_id;
       if (defaultCatId) {
@@ -121,7 +141,7 @@ export const useSubcategories = () => {
         }
       }
 
-      // 4. Get user custom tags for this category
+      // 5. Get user custom tags for this category
       const { data: userTagsData } = await supabase
         .from('user_category_tags')
         .select('id, tag_name, tag_name_en, tag_name_es, color, category_id')
@@ -140,26 +160,39 @@ export const useSubcategories = () => {
         source: 'user_tag' as const,
       }));
 
-      // 5. Merge and deduplicate by normalized name (tags take priority)
+      // 6. Merge and deduplicate by normalized name
       const normalize = (s: string) =>
         s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
       const seen = new Map<string, Subcategory>();
       
-      // Add system tags first
+      // Add DB subcategories first (these are FK-safe)
+      dbSubcategories.forEach(sub => {
+        seen.set(normalize(sub.name), sub);
+      });
+
+      // Add system tags (don't override DB subcategories)
       systemTags.forEach(tag => {
-        seen.set(normalize(tag.name), tag);
+        const key = normalize(tag.name);
+        if (!seen.has(key)) {
+          seen.set(key, tag);
+        }
       });
       
-      // Add user tags (override system if same name)
+      // Add user tags (don't override DB subcategories)
       userTags.forEach(tag => {
-        seen.set(normalize(tag.name), tag);
+        const key = normalize(tag.name);
+        if (!seen.has(key)) {
+          seen.set(key, tag);
+        }
       });
 
       const merged = Array.from(seen.values());
       
-      // Sort: system first, then alphabetical
+      // Sort: subcategory source first, then system, then alphabetical
       merged.sort((a, b) => {
+        if (a.source === 'subcategory' && b.source !== 'subcategory') return -1;
+        if (a.source !== 'subcategory' && b.source === 'subcategory') return 1;
         if (a.is_system !== b.is_system) return a.is_system ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
