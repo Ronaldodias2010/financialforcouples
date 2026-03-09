@@ -157,7 +157,7 @@ export const useSmartCardPayments = () => {
         success: true,
         cardStatus,
         remainingBalance,
-        futureExpenseUpdated: !!futureExpense,
+        futureExpenseUpdated: reconciled > 0,
         paymentResult
       };
 
