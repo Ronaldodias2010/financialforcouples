@@ -1398,7 +1398,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           if (!alreadyReconciled) {
             const { data: matchingRecurring } = await supabase
               .from('recurring_expenses')
-              .select('id, name, amount, next_due_date, frequency')
+              .select('id, name, amount, next_due_date, frequency_type, frequency_days')
               .in('user_id', reconcileUserIds)
               .eq('is_active', true)
               .eq('is_completed', false)
@@ -1412,7 +1412,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               });
 
               if (matchedRecur) {
-                const nextDate = advanceRecurringDate(matchedRecur.next_due_date, matchedRecur.frequency);
+                const nextDate = advanceRecurringDate(matchedRecur.next_due_date, matchedRecur.frequency_type, matchedRecur.frequency_days);
                 await supabase
                   .from('recurring_expenses')
                   .update({ next_due_date: nextDate, is_overdue: false })
