@@ -1334,6 +1334,55 @@ const transferInserts: TablesInsert<'transactions'>[] = [
           console.error('⚠️ Error creating future entry:', futureErr);
         }
       }
+
+      // ⭐ RECONCILIATION: Mark matching manual_future_expenses as paid when expense is completed
+      if (type === 'expense' && txDateStr <= todayStr) {
+        try {
+          let reconcileUserIds = [user.id];
+          if (isPartOfCouple && couple) {
+            reconcileUserIds = [couple.user1_id, couple.user2_id];
+          }
+
+          // Find unpaid manual_future_expenses matching description and due_date
+          const { data: matchingFutureExpenses } = await supabase
+            .from('manual_future_expenses')
+            .select('id, description, due_date, amount')
+            .in('user_id', reconcileUserIds)
+            .eq('is_paid', false)
+            .is('deleted_at', null)
+            .lte('due_date', todayStr);
+
+          if (matchingFutureExpenses && matchingFutureExpenses.length > 0) {
+            const descLower = (description || '').toLowerCase().trim();
+            
+            // Match by description similarity and similar amount
+            const matched = matchingFutureExpenses.find(fe => {
+              const feDescLower = (fe.description || '').toLowerCase().trim();
+              const amountMatch = Math.abs(fe.amount - transactionAmount) < 0.02;
+              return (feDescLower === descLower || feDescLower.includes(descLower) || descLower.includes(feDescLower)) && amountMatch;
+            });
+
+            if (matched) {
+              const { error: reconcileError } = await supabase
+                .from('manual_future_expenses')
+                .update({
+                  is_paid: true,
+                  paid_at: new Date().toISOString(),
+                  is_overdue: false,
+                })
+                .eq('id', matched.id);
+
+              if (reconcileError) {
+                console.error('⚠️ Error reconciling future expense:', reconcileError);
+              } else {
+                console.log('✅ Future expense reconciled automatically:', matched.id, matched.description);
+              }
+            }
+          }
+        } catch (reconcileErr) {
+          console.error('⚠️ Error in future expense reconciliation:', reconcileErr);
+        }
+      }
       
       toast({
         title: t('transactionForm.success'),
