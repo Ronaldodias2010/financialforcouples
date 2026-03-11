@@ -1372,12 +1372,12 @@ const transferInserts: TablesInsert<'transactions'>[] = [
               if (matched.recurring_expense_id) {
                 const { data: recurData } = await supabase
                   .from('recurring_expenses')
-                  .select('id, next_due_date, frequency, is_active')
+                  .select('id, next_due_date, frequency_type, frequency_days, is_active')
                   .eq('id', matched.recurring_expense_id)
                   .single();
 
                 if (recurData && recurData.is_active) {
-                  const nextDate = advanceRecurringDate(recurData.next_due_date, recurData.frequency);
+                  const nextDate = advanceRecurringDate(recurData.next_due_date, recurData.frequency_type, recurData.frequency_days);
                   await supabase
                     .from('recurring_expenses')
                     .update({ next_due_date: nextDate, is_overdue: false })
