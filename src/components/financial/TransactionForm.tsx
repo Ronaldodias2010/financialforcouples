@@ -1479,6 +1479,17 @@ const transferInserts: TablesInsert<'transactions'>[] = [
     }
   };
 
+// Helper to advance recurring expense date based on frequency
+const advanceRecurringDate = (currentDate: string, frequencyType: string | null, frequencyDays: number): string => {
+  const date = new Date(currentDate + 'T12:00:00');
+  switch (frequencyType) {
+    case 'monthly': return format(addMonths(date, 1), 'yyyy-MM-dd');
+    case 'yearly': return format(addYears(date, 1), 'yyyy-MM-dd');
+    case 'weekly': return format(addDays(date, 7), 'yyyy-MM-dd');
+    case 'biweekly': return format(addDays(date, 14), 'yyyy-MM-dd');
+    default: return format(addDays(date, frequencyDays || 30), 'yyyy-MM-dd');
+  }
+};
 
   return (
     <Card className="p-6 border-card-border bg-card">
