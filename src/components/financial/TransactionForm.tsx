@@ -1335,7 +1335,7 @@ const transferInserts: TablesInsert<'transactions'>[] = [
         }
       }
 
-      // ⭐ RECONCILIATION: Mark matching manual_future_expenses as paid when expense is completed
+      // ⭐ RECONCILIATION: Mark matching manual_future_expenses AND recurring_expenses as paid
       if (type === 'expense' && txDateStr <= todayStr) {
         try {
           let reconcileUserIds = [user.id];
@@ -1343,19 +1343,18 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             reconcileUserIds = [couple.user1_id, couple.user2_id];
           }
 
-          // Find unpaid manual_future_expenses matching description and due_date
+          const descLower = (description || '').toLowerCase().trim();
+
+          // 1) Reconcile manual_future_expenses
           const { data: matchingFutureExpenses } = await supabase
             .from('manual_future_expenses')
-            .select('id, description, due_date, amount')
+            .select('id, description, due_date, amount, recurring_expense_id')
             .in('user_id', reconcileUserIds)
             .eq('is_paid', false)
             .is('deleted_at', null)
             .lte('due_date', todayStr);
 
           if (matchingFutureExpenses && matchingFutureExpenses.length > 0) {
-            const descLower = (description || '').toLowerCase().trim();
-            
-            // Match by description similarity and similar amount
             const matched = matchingFutureExpenses.find(fe => {
               const feDescLower = (fe.description || '').toLowerCase().trim();
               const amountMatch = Math.abs(fe.amount - transactionAmount) < 0.02;
@@ -1363,19 +1362,62 @@ const transferInserts: TablesInsert<'transactions'>[] = [
             });
 
             if (matched) {
-              const { error: reconcileError } = await supabase
+              await supabase
                 .from('manual_future_expenses')
-                .update({
-                  is_paid: true,
-                  paid_at: new Date().toISOString(),
-                  is_overdue: false,
-                })
+                .update({ is_paid: true, paid_at: new Date().toISOString(), is_overdue: false })
                 .eq('id', matched.id);
+              console.log('✅ Future expense reconciled:', matched.id, matched.description);
 
-              if (reconcileError) {
-                console.error('⚠️ Error reconciling future expense:', reconcileError);
-              } else {
-                console.log('✅ Future expense reconciled automatically:', matched.id, matched.description);
+              // If linked to a recurring expense, also advance its next_due_date
+              if (matched.recurring_expense_id) {
+                const { data: recurData } = await supabase
+                  .from('recurring_expenses')
+                  .select('id, next_due_date, frequency, is_active')
+                  .eq('id', matched.recurring_expense_id)
+                  .single();
+
+                if (recurData && recurData.is_active) {
+                  const nextDate = advanceRecurringDate(recurData.next_due_date, recurData.frequency);
+                  await supabase
+                    .from('recurring_expenses')
+                    .update({ next_due_date: nextDate, is_overdue: false })
+                    .eq('id', recurData.id);
+                  console.log('✅ Recurring expense advanced to:', nextDate);
+                }
+              }
+            }
+          }
+
+          // 2) Reconcile recurring_expenses directly (if no manual_future_expense was matched)
+          const alreadyReconciled = matchingFutureExpenses?.some(fe => {
+            const feDescLower = (fe.description || '').toLowerCase().trim();
+            const amountMatch = Math.abs(fe.amount - transactionAmount) < 0.02;
+            return (feDescLower === descLower || feDescLower.includes(descLower) || descLower.includes(feDescLower)) && amountMatch;
+          });
+
+          if (!alreadyReconciled) {
+            const { data: matchingRecurring } = await supabase
+              .from('recurring_expenses')
+              .select('id, name, amount, next_due_date, frequency')
+              .in('user_id', reconcileUserIds)
+              .eq('is_active', true)
+              .eq('is_completed', false)
+              .lte('next_due_date', todayStr);
+
+            if (matchingRecurring && matchingRecurring.length > 0) {
+              const matchedRecur = matchingRecurring.find(re => {
+                const reNameLower = (re.name || '').toLowerCase().trim();
+                const amountMatch = Math.abs(re.amount - transactionAmount) < 0.02;
+                return (reNameLower === descLower || reNameLower.includes(descLower) || descLower.includes(reNameLower)) && amountMatch;
+              });
+
+              if (matchedRecur) {
+                const nextDate = advanceRecurringDate(matchedRecur.next_due_date, matchedRecur.frequency);
+                await supabase
+                  .from('recurring_expenses')
+                  .update({ next_due_date: nextDate, is_overdue: false })
+                  .eq('id', matchedRecur.id);
+                console.log('✅ Recurring expense reconciled directly:', matchedRecur.id, matchedRecur.name, '→', nextDate);
               }
             }
           }
