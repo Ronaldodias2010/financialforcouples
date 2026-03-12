@@ -838,19 +838,90 @@ Deno.serve(async (req) => {
       let resolved_card_id: string | null = null;
 
       // =====================================================
-      // RESOLVER CATEGORIA POR KEYWORDS DA MENSAGEM ORIGINAL (PRIORIDADE 1)
-      // Busca keywords do raw_message ANTES de usar category_hint da IA
+      // PRIORIDADE 0: Detectar instrução EXPLÍCITA do usuário ("classificar em X")
       // =====================================================
+      const rawMsgForExplicit = (existingInput.raw_message || body.raw_message || '');
+      const explicitCategoryPatterns = [
+        /classificar\s+(?:em|como|na|no)\s+(.+?)(?:\s+no\s+cart[aã]o|\s+na\s+conta|\s*$|\s*,|\s*\.)/i,
+        /categorizar\s+(?:em|como)\s+(.+?)(?:\s+no\s+cart[aã]o|\s+na\s+conta|\s*$|\s*,|\s*\.)/i,
+        /categoria\s*[:\s]\s*(.+?)(?:\s+no\s+cart[aã]o|\s+na\s+conta|\s*$|\s*,|\s*\.)/i,
+        /classify\s+(?:as|in|under)\s+(.+?)(?:\s+on\s+card|\s+in\s+account|\s*$|\s*,|\s*\.)/i,
+        /clasificar\s+(?:en|como)\s+(.+?)(?:\s+en\s+tarjeta|\s+en\s+cuenta|\s*$|\s*,|\s*\.)/i,
+      ];
+      
+      for (const pattern of explicitCategoryPatterns) {
+        const match = rawMsgForExplicit.match(pattern);
+        if (match && match[1] && !mergedState.resolved_category_id) {
+          const explicitCategory = match[1].trim();
+          console.log('[whatsapp-input] EXPLICIT CATEGORY INSTRUCTION detected:', explicitCategory);
+          
+          const { data: explicitCat } = await supabase
+            .from('categories')
+            .select('id, name')
+            .eq('user_id', existingInput.user_id)
+            .is('deleted_at', null)
+            .ilike('name', `%${explicitCategory}%`)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          if (explicitCat) {
+            mergedState.resolved_category_id = explicitCat.id;
+            // Also update category_hint for downstream use
+            mergedState.category_hint = explicitCategory;
+            console.log('[whatsapp-input] CATEGORY RESOLVED VIA EXPLICIT INSTRUCTION:', explicitCat.name);
+          }
+          break;
+        }
+      }
+
+      // Extract card_hint from "no cartão X" if not already set
+      if (!mergedState.card_hint && !mergedState.resolved_card_id) {
+        const cardHintPatterns = [
+          /no\s+cart[aã]o\s+(.+?)(?:\s*$|\s*,|\s*\.)/i,
+          /on\s+(?:the\s+)?card\s+(.+?)(?:\s*$|\s*,|\s*\.)/i,
+          /en\s+(?:la\s+)?tarjeta\s+(.+?)(?:\s*$|\s*,|\s*\.)/i,
+        ];
+        for (const pattern of cardHintPatterns) {
+          const match = rawMsgForExplicit.match(pattern);
+          if (match && match[1]) {
+            mergedState.card_hint = match[1].trim();
+            // If user says "no cartão X", payment_method should be credit_card
+            if (!mergedState.payment_method) {
+              mergedState.payment_method = 'credit_card';
+            }
+            console.log('[whatsapp-input] CARD HINT extracted from message:', mergedState.card_hint);
+            break;
+          }
+        }
+      }
+
+      // =====================================================
+      // RESOLVER CATEGORIA POR KEYWORDS DA MENSAGEM ORIGINAL (PRIORIDADE 1)
+      // Somente se PRIORIDADE 0 não resolveu
+      // =====================================================
+      if (!mergedState.resolved_category_id) {
       const rawMsgForKeywordLookup = (existingInput.raw_message || body.raw_message || '').toLowerCase();
+      
+      // Excluir palavras de nomes de cartões/bancos/marcas de pagamento
+      const brandExclusionWords = new Set([
+        'mercado', 'pago', 'pagbank', 'pagseguro', 'picpay', 'stone', 'cielo',
+        'nubank', 'inter', 'itau', 'bradesco', 'santander', 'caixa', 'sicredi',
+        'sicoob', 'banrisul', 'safra', 'modal', 'daycoval', 'bmg', 'agibank',
+        'next', 'neon', 'original', 'will', 'rico', 'clear',
+        'classificar', 'categorizar', 'cartao', 'conta', 'resposta', 'usuario',
+        'despesa', 'receita', 'gastei', 'paguei', 'comprei',
+      ]);
+      
       const rawWords = rawMsgForKeywordLookup
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9\s]/g, ' ')
         .split(/\s+/)
-        .filter((w: string) => w.length > 3);
+        .filter((w: string) => w.length > 3 && !brandExclusionWords.has(w));
 
       console.log('[whatsapp-input] RAW MESSAGE KEYWORD LOOKUP - words:', rawWords.slice(0, 10));
 
-      if (rawWords.length > 0 && !mergedState.resolved_category_id) {
+      if (rawWords.length > 0) {
         // Buscar TODAS as tags ativas com keywords
         const { data: allTagsForScoring } = await supabase
           .from('category_tags')
@@ -928,6 +999,7 @@ Deno.serve(async (req) => {
           }
         }
       }
+      } // end if !resolved_category_id
 
       // =====================================================
       // RESOLVER CATEGORIA POR CATEGORY_HINT DA IA (PRIORIDADE 2 - FALLBACK)

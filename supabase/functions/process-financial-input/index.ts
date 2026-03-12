@@ -812,14 +812,82 @@ serve(async (req) => {
     let resolved_card_id: string | null = input.resolved_card_id;
     let resolved_account_id: string | null = input.resolved_account_id;
 
+    // 2.0 PRIORIDADE 0: Detectar instrução EXPLÍCITA do usuário ("classificar em X", "categorizar como X")
+    if (!isValidUUID(resolved_category_id)) {
+      const rawMsg = (input.raw_message || '').toLowerCase();
+      const explicitCategoryPatterns = [
+        /classificar\s+(?:em|como|na|no)\s+(.+?)(?:\s+no\s+cart[aã]o|\s+na\s+conta|\s*$|\s*,|\s*\.)/i,
+        /categorizar\s+(?:em|como)\s+(.+?)(?:\s+no\s+cart[aã]o|\s+na\s+conta|\s*$|\s*,|\s*\.)/i,
+        /categoria\s*[:\s]\s*(.+?)(?:\s+no\s+cart[aã]o|\s+na\s+conta|\s*$|\s*,|\s*\.)/i,
+        /classify\s+(?:as|in|under)\s+(.+?)(?:\s+on\s+card|\s+in\s+account|\s*$|\s*,|\s*\.)/i,
+        /clasificar\s+(?:en|como)\s+(.+?)(?:\s+en\s+tarjeta|\s+en\s+cuenta|\s*$|\s*,|\s*\.)/i,
+      ];
+      
+      for (const pattern of explicitCategoryPatterns) {
+        const match = rawMsg.match(pattern);
+        if (match && match[1]) {
+          const explicitCategory = match[1].trim();
+          console.log('[process-financial-input] EXPLICIT CATEGORY INSTRUCTION detected:', explicitCategory);
+          
+          // Buscar categoria do usuário pelo nome explícito
+          const { data: explicitCat } = await supabase
+            .from('categories')
+            .select('id, name')
+            .eq('user_id', input.user_id)
+            .is('deleted_at', null)
+            .ilike('name', `%${explicitCategory}%`)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          if (explicitCat) {
+            resolved_category_id = explicitCat.id;
+            console.log('[process-financial-input] CATEGORY RESOLVED VIA EXPLICIT INSTRUCTION:', explicitCat.name);
+          }
+          break;
+        }
+      }
+    }
+
+    // 2.0b: Extrair card_hint de "no cartão X" se não já definido
+    if (!input.card_hint && !isValidUUID(resolved_card_id)) {
+      const rawMsg = (input.raw_message || '');
+      const cardHintPatterns = [
+        /no\s+cart[aã]o\s+(.+?)(?:\s*$|\s*,|\s*\.)/i,
+        /on\s+(?:the\s+)?card\s+(.+?)(?:\s*$|\s*,|\s*\.)/i,
+        /en\s+(?:la\s+)?tarjeta\s+(.+?)(?:\s*$|\s*,|\s*\.)/i,
+      ];
+      for (const pattern of cardHintPatterns) {
+        const match = rawMsg.match(pattern);
+        if (match && match[1]) {
+          input.card_hint = match[1].trim();
+          console.log('[process-financial-input] CARD HINT extracted from message:', input.card_hint);
+          break;
+        }
+      }
+    }
+
     // 2.1 PRIORIDADE 1: Resolver CATEGORIA por KEYWORDS da mensagem original (raw_message)
+    // Somente se PRIORIDADE 0 (instrução explícita) não resolveu
     if (!isValidUUID(resolved_category_id)) {
       const rawMsgForLookup = (input.raw_message || '').toLowerCase();
+      
+      // Excluir palavras que são nomes de cartões/bancos/marcas de pagamento
+      const brandExclusionWords = new Set([
+        'mercado', 'pago', 'pagbank', 'pagseguro', 'picpay', 'stone', 'cielo',
+        'nubank', 'inter', 'itau', 'bradesco', 'santander', 'caixa', 'sicredi',
+        'sicoob', 'banrisul', 'safra', 'modal', 'daycoval', 'bmg', 'agibank',
+        'next', 'neon', 'original', 'will', 'rico', 'clear',
+        // Palavras de contexto que não devem pontuar categorias
+        'classificar', 'categorizar', 'cartao', 'conta', 'resposta', 'usuario',
+        'despesa', 'receita', 'gastei', 'paguei', 'comprei',
+      ]);
+      
       const rawWords = rawMsgForLookup
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9\s]/g, ' ')
         .split(/\s+/)
-        .filter((w: string) => w.length > 3);
+        .filter((w: string) => w.length > 3 && !brandExclusionWords.has(w));
 
       console.log('[process-financial-input] RAW MESSAGE KEYWORD LOOKUP - words:', rawWords.slice(0, 10));
 
