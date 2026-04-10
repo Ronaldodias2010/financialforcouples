@@ -812,6 +812,29 @@ serve(async (req) => {
     let resolved_card_id: string | null = input.resolved_card_id;
     let resolved_account_id: string | null = input.resolved_account_id;
 
+    // ========================================
+    // VALIDAÇÃO: Se category_hint existe e resolved_category_id não bate, re-resolver
+    // Isso previne casos onde a IA resolveu para categoria errada
+    // ========================================
+    if (isValidUUID(resolved_category_id) && input.category_hint) {
+      const { data: resolvedCatCheck } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('id', resolved_category_id)
+        .single();
+      
+      if (resolvedCatCheck) {
+        const hintNorm = normalizeText(input.category_hint);
+        const resolvedNameNorm = normalizeText(resolvedCatCheck.name);
+        
+        // Se o hint não corresponde ao nome da categoria resolvida, invalidar
+        if (!resolvedNameNorm.includes(hintNorm) && !hintNorm.includes(resolvedNameNorm)) {
+          console.log('[process-financial-input] ⚠️ CATEGORY MISMATCH: hint="' + input.category_hint + '" but resolved to "' + resolvedCatCheck.name + '". Re-resolving...');
+          resolved_category_id = null;
+        }
+      }
+    }
+
     // 2.0 PRIORIDADE 0: Detectar instrução EXPLÍCITA do usuário ("classificar em X", "categorizar como X")
     if (!isValidUUID(resolved_category_id)) {
       const rawMsg = (input.raw_message || '').toLowerCase();
