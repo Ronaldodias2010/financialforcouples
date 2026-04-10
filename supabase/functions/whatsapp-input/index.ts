@@ -831,6 +831,27 @@ Deno.serve(async (req) => {
       console.log('[whatsapp-input] MERGE STATE - After merge:', mergedState);
 
       // =====================================================
+      // VALIDAÇÃO: Se category_hint existe e resolved_category_id não bate, re-resolver
+      // =====================================================
+      if (mergedState.resolved_category_id && mergedState.category_hint) {
+        const { data: resolvedCatCheck } = await supabase
+          .from('categories')
+          .select('id, name')
+          .eq('id', mergedState.resolved_category_id)
+          .single();
+        
+        if (resolvedCatCheck) {
+          const hintNorm = (mergedState.category_hint || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, '').trim();
+          const resolvedNameNorm = resolvedCatCheck.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, '').trim();
+          
+          if (!resolvedNameNorm.includes(hintNorm) && !hintNorm.includes(resolvedNameNorm)) {
+            console.log('[whatsapp-input] ⚠️ CATEGORY MISMATCH: hint="' + mergedState.category_hint + '" but resolved to "' + resolvedCatCheck.name + '". Invalidating resolved_category_id.');
+            mergedState.resolved_category_id = null;
+          }
+        }
+      }
+
+      // =====================================================
       // RESOLUÇÃO ANTECIPADA DE HINTS
       // =====================================================
       let resolved_category_id: string | null = null;
