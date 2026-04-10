@@ -354,6 +354,45 @@ const SUBCATEGORY_KEYWORDS: Record<string, { name_pt: string; name_en: string; n
       keywords_en: ['fee', 'bank fee', 'maintenance', 'atm', 'withdrawal', 'transfer', 'overdraft', 'service charge'],
       keywords_es: ['tarifa', 'comisión', 'anualidad', 'mantenimiento', 'retiro', 'transferencia', 'banco']
     }
+  ],
+  // Veículos & Financiamentos / Vehicles & Financing
+  'veiculos': [
+    {
+      name_pt: 'Manutenção', name_en: 'Maintenance', name_es: 'Mantenimiento',
+      keywords_pt: ['mecanico', 'mecânico', 'oficina', 'borracheiro', 'funilaria', 'lanternagem', 'autopeças', 'autopecas', 'lava jato', 'lavagem', 'polimento', 'alinhamento', 'balanceamento', 'troca de oleo', 'troca de óleo', 'revisão', 'revisao', 'pneu', 'freio', 'embreagem', 'suspensão', 'amortecedor', 'reparo', 'conserto', 'manutenção', 'manutencao'],
+      keywords_en: ['mechanic', 'garage', 'workshop', 'repair', 'tire', 'oil change', 'service', 'maintenance', 'parts', 'car wash', 'detailing', 'alignment', 'brake', 'suspension'],
+      keywords_es: ['mecánico', 'taller', 'llanta', 'cambio de aceite', 'revisión', 'mantenimiento', 'repuestos', 'lavado', 'freno', 'suspensión']
+    },
+    {
+      name_pt: 'Combustível', name_en: 'Fuel', name_es: 'Combustible',
+      keywords_pt: ['combustivel', 'combustível', 'gasolina', 'etanol', 'alcool', 'álcool', 'diesel', 'gnv', 'abasteci', 'abastecer', 'posto', 'shell', 'ipiranga', 'petrobras'],
+      keywords_en: ['fuel', 'gasoline', 'gas station', 'petrol', 'diesel', 'fill up'],
+      keywords_es: ['combustible', 'gasolina', 'gasolinera', 'diésel', 'tanque']
+    },
+    {
+      name_pt: 'Prestação Veículo', name_en: 'Car Payment', name_es: 'Cuota Vehículo',
+      keywords_pt: ['prestação', 'financiamento', 'parcela carro', 'parcela veículo', 'consórcio', 'consorcio'],
+      keywords_en: ['car payment', 'auto loan', 'vehicle financing', 'installment'],
+      keywords_es: ['cuota', 'financiamiento', 'préstamo auto']
+    },
+    {
+      name_pt: 'Seguro Veículo', name_en: 'Car Insurance', name_es: 'Seguro Auto',
+      keywords_pt: ['seguro auto', 'seguro carro', 'seguro veículo', 'apólice', 'sinistro', 'franquia'],
+      keywords_en: ['car insurance', 'auto insurance', 'vehicle insurance', 'policy'],
+      keywords_es: ['seguro auto', 'seguro vehículo', 'póliza']
+    },
+    {
+      name_pt: 'IPVA', name_en: 'Vehicle Tax', name_es: 'Impuesto Vehicular',
+      keywords_pt: ['ipva', 'imposto veículo', 'imposto carro'],
+      keywords_en: ['vehicle tax', 'car tax', 'road tax'],
+      keywords_es: ['impuesto vehicular', 'tenencia']
+    },
+    {
+      name_pt: 'Licenciamento', name_en: 'Registration', name_es: 'Licencia',
+      keywords_pt: ['licenciamento', 'crlv', 'documento veículo', 'detran', 'emplacamento'],
+      keywords_en: ['vehicle registration', 'license', 'registration'],
+      keywords_es: ['licencia', 'registro vehicular', 'matriculación']
+    }
   ]
 };
 
@@ -382,7 +421,11 @@ function getCategoryKey(categoryName: string): string | null {
     'shopping': 'compras',
     'financeiro': 'financeiro',
     'financial': 'financeiro',
-    'financiero': 'financeiro'
+    'financiero': 'financeiro',
+    'veiculos  financiamentos': 'veiculos',
+    'veiculos': 'veiculos',
+    'vehicles  financing': 'veiculos',
+    'vehiculos  financiamientos': 'veiculos'
   };
   return mapping[normalized] || null;
 }
